@@ -49,7 +49,7 @@ export function Header({ title }: HeaderProps) {
   return (
     <>
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <TouchableOpacity testID="header-avatar" style={[styles.avatar, { backgroundColor: user?.avatar_color || '#00E5FF' }]}>
+        <TouchableOpacity testID="header-avatar" style={[styles.avatar, { backgroundColor: user?.avatar_color || '#00F2FF' }]}>
           <Text style={styles.avatarText}>{initials}</Text>
         </TouchableOpacity>
         <Text style={styles.title}>{title || 'ARENADARE'}</Text>
@@ -66,7 +66,7 @@ export function Header({ title }: HeaderProps) {
           <Animated.View style={[styles.drawer, drawerStyle, { paddingTop: insets.top + 28 }]}>
             <Text style={styles.drawerLabel}>IMPOSTAZIONI</Text>
             <View style={styles.userRow}>
-              <View style={[styles.drawerAvatar, { backgroundColor: user?.avatar_color || '#00E5FF' }]}>
+              <View style={[styles.drawerAvatar, { backgroundColor: user?.avatar_color || '#00F2FF' }]}>
                 <Text style={styles.drawerAvatarText}>{initials}</Text>
               </View>
               <View>
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderLeftColor: '#222222',
   },
-  drawerLabel: { color: '#00E5FF', fontSize: 11, fontWeight: '700', letterSpacing: 3, marginBottom: 20 },
+  drawerLabel: { color: '#00F2FF', fontSize: 11, fontWeight: '700', letterSpacing: 3, marginBottom: 20 },
   userRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
   drawerAvatar: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   drawerAvatarText: { color: '#050505', fontWeight: '800', fontSize: 20 },
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   xpBadgeLabel: { color: '#777777', fontSize: 11, fontWeight: '700', letterSpacing: 2 },
-  xpBadgeValue: { color: '#FFD700', fontSize: 16, fontWeight: '900' },
+  xpBadgeValue: { color: '#D4AF37', fontSize: 16, fontWeight: '900' },
   divider: { height: 1, backgroundColor: '#1E1E1E', marginVertical: 10 },
   drawerItem: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14 },
   drawerItemIcon: { fontSize: 20 },

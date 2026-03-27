@@ -72,12 +72,25 @@
 ### Tab NEXUS TRIGGER
 - [x] Placeholder schermata con feature list (MediaPipe coming soon)
 
-### Design System
-- [x] Dark Mode: Background #050505, Card #111111
-- [x] Cyan Neon: #00E5FF (primary accent)
-- [x] Gold: #FFD700 (XP, coach, floating button)
-- [x] Scale-down animations su tutti i bottoni (Reanimated)
-- [x] iPhone/iOS optimized con safe area insets
+### CORE Tab (v2 - Marzo 2026)
+- [x] Live pulse dot animation (Reanimated withRepeat) su LIVE battles
+- [x] "N BATTLE IN CORSO ADESSO" banner rosso
+- [x] Live battle card border highlight
+- [x] Sezione Medaglie con contatori
+
+### CREWS Tab "La Tribù" (v2 - Marzo 2026)
+- [x] Sezione "INVITI PENDENTI" con badge rosso e contatore
+- [x] Invite cards stile Apple (accept ✓ / decline ✕)
+- [x] Accept/decline rimuove l'invito dalla lista
+
+### DNA Tab "Bio-Scan" (v2 - Marzo 2026)
+- [x] Effetto Bio-Scan all'ingresso (useFocusEffect + Reanimated)
+- [x] Scan line animata che attraversa il Radar Chart
+- [x] Talent Card condivisibile con bottone "↑ CONDIVIDI" (React Native Share API)
+
+### Tab Bar (v2 - Marzo 2026)
+- [x] Badge rosso "3" su CREWS per inviti pendenti
+- [x] Colori aggiornati: Cyan #00F2FF, Gold #D4AF37
 
 ---
 

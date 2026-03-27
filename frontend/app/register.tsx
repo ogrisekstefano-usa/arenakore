@@ -101,7 +101,7 @@ export default function Register() {
                 autoCapitalize="none"
                 autoCorrect={false}
               />
-              {usernameChecking && <ActivityIndicator color="#00E5FF" style={styles.statusIcon} />}
+              {usernameChecking && <ActivityIndicator color="#00F2FF" style={styles.statusIcon} />}
               {!usernameChecking && usernameAvailable === true && (
                 <Text style={[styles.statusIcon, { color: '#34C759', fontSize: 18 }]}>✓</Text>
               )}
@@ -208,12 +208,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
   content: { paddingHorizontal: 24, flexGrow: 1 },
   backBtn: { marginBottom: 32 },
-  backText: { color: '#00E5FF', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  backText: { color: '#00F2FF', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
   title: { color: '#FFFFFF', fontSize: 40, fontWeight: '900', letterSpacing: -1.5 },
   subtitle: { color: '#555555', fontSize: 14, marginTop: 6, marginBottom: 40 },
   form: { gap: 20 },
   fieldGroup: { gap: 8 },
-  label: { color: '#00E5FF', fontSize: 11, fontWeight: '700', letterSpacing: 2 },
+  label: { color: '#00F2FF', fontSize: 11, fontWeight: '700', letterSpacing: 2 },
   input: {
     backgroundColor: '#111111', borderWidth: 1, borderColor: '#222222',
     borderRadius: 8, padding: 16, color: '#FFFFFF', fontSize: 16,
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   },
   pwdInput: { flex: 1, padding: 16, color: '#FFFFFF', fontSize: 16 },
   showHide: { paddingHorizontal: 14 },
-  showHideText: { color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  showHideText: { color: '#00F2FF', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
   strengthBar: { height: 3, backgroundColor: '#222222', borderRadius: 2, overflow: 'hidden' },
   strengthFill: { height: '100%', borderRadius: 2 },
   termsRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -244,17 +244,17 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#444',
     alignItems: 'center', justifyContent: 'center',
   },
-  checkboxChecked: { backgroundColor: '#00E5FF', borderColor: '#00E5FF' },
+  checkboxChecked: { backgroundColor: '#00F2FF', borderColor: '#00F2FF' },
   checkmark: { color: '#050505', fontSize: 14, fontWeight: '900' },
   termsText: { color: '#A0A0A0', fontSize: 14, flex: 1 },
-  termsLink: { color: '#00E5FF', fontWeight: '700' },
+  termsLink: { color: '#00F2FF', fontWeight: '700' },
   error: { color: '#FF3B30', fontSize: 13, textAlign: 'center' },
   submitButton: {
-    backgroundColor: '#00E5FF', borderRadius: 8,
+    backgroundColor: '#00F2FF', borderRadius: 8,
     paddingVertical: 18, alignItems: 'center', marginTop: 8,
   },
   submitButtonDisabled: { opacity: 0.4 },
   submitButtonText: { color: '#050505', fontSize: 15, fontWeight: '800', letterSpacing: 1.5 },
   loginLink: { color: '#555555', fontSize: 14, textAlign: 'center', marginTop: 8 },
-  loginLinkBold: { color: '#00E5FF', fontWeight: '700' },
+  loginLinkBold: { color: '#00F2FF', fontWeight: '700' },
 });

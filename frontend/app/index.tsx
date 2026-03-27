@@ -77,14 +77,14 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   loadingArena: { fontSize: 56, fontWeight: '900', color: '#FFFFFF', letterSpacing: -2 },
-  loadingDare: { fontSize: 56, fontWeight: '900', color: '#FFD700', letterSpacing: -2 },
+  loadingDare: { fontSize: 56, fontWeight: '900', color: '#D4AF37', letterSpacing: -2 },
   bg: { flex: 1 },
   bgImage: { opacity: 0.35 },
   overlay: { flex: 1, backgroundColor: 'rgba(5,5,5,0.70)' },
   content: { flex: 1, paddingHorizontal: 24, justifyContent: 'space-between' },
   logoContainer: { flex: 1, justifyContent: 'center', alignItems: 'flex-start' },
   tagline: {
-    color: '#00E5FF', fontSize: 11, fontWeight: '700',
+    color: '#00F2FF', fontSize: 11, fontWeight: '700',
     letterSpacing: 4, marginBottom: 8, textTransform: 'uppercase',
   },
   appNameArena: {
@@ -92,14 +92,14 @@ const styles = StyleSheet.create({
     letterSpacing: -3, lineHeight: 84, textTransform: 'uppercase',
   },
   appNameDare: {
-    color: '#FFD700', fontSize: 80, fontWeight: '900',
+    color: '#D4AF37', fontSize: 80, fontWeight: '900',
     letterSpacing: -3, lineHeight: 84, textTransform: 'uppercase',
     marginTop: -12,
   },
   subtitle: { color: '#A0A0A0', fontSize: 13, marginTop: 16, letterSpacing: 0.5 },
   buttons: { gap: 12, paddingBottom: 8 },
   primaryButton: {
-    backgroundColor: '#00E5FF', borderRadius: 8,
+    backgroundColor: '#00F2FF', borderRadius: 8,
     paddingVertical: 18, alignItems: 'center',
   },
   primaryButtonText: {
@@ -108,9 +108,9 @@ const styles = StyleSheet.create({
   outlineButton: {
     backgroundColor: 'transparent', borderRadius: 8,
     paddingVertical: 18, alignItems: 'center',
-    borderWidth: 1.5, borderColor: '#00E5FF',
+    borderWidth: 1.5, borderColor: '#00F2FF',
   },
   outlineButtonText: {
-    color: '#00E5FF', fontSize: 16, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase',
+    color: '#00F2FF', fontSize: 16, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase',
   },
 });

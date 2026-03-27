@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 
 const TAB_CONFIG = [
   { name: 'core', icon: 'home', label: 'CORE' },
-  { name: 'crews', icon: 'people', label: 'CREWS' },
+  { name: 'crews', icon: 'people', label: 'CREWS', badge: 3 },
   { name: 'nexus-trigger', icon: 'add', label: '', isCenter: true },
   { name: 'dna', icon: 'analytics', label: 'DNA' },
   { name: 'nexus', icon: 'flash', label: 'NEXUS' },
@@ -61,11 +61,18 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             onPress={onPress}
             style={styles.tabItem}
           >
-            <Ionicons
-              name={(config?.icon || 'home') as any}
-              size={22}
-              color={isFocused ? '#00E5FF' : '#3A3A3A'}
-            />
+            <View style={styles.iconWrap}>
+              <Ionicons
+                name={(config?.icon || 'home') as any}
+                size={22}
+                color={isFocused ? '#00F2FF' : '#3A3A3A'}
+              />
+              {(config as any)?.badge > 0 && (
+                <View style={styles.redBadge}>
+                  <Text style={styles.redBadgeText}>{(config as any).badge}</Text>
+                </View>
+              )}
+            </View>
             <Text style={[styles.tabLabel, isFocused && styles.tabLabelActive]}>
               {config?.label}
             </Text>
@@ -112,10 +119,18 @@ const styles = StyleSheet.create({
   tabItem: {
     flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3,
   },
+  iconWrap: { position: 'relative' },
+  redBadge: {
+    position: 'absolute', top: -4, right: -8,
+    backgroundColor: '#FF3B30', borderRadius: 8,
+    minWidth: 16, height: 16, alignItems: 'center',
+    justifyContent: 'center', paddingHorizontal: 4,
+  },
+  redBadgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '800' },
   tabLabel: {
     color: '#3A3A3A', fontSize: 9, fontWeight: '700', letterSpacing: 1,
   },
-  tabLabelActive: { color: '#00E5FF' },
+  tabLabelActive: { color: '#00F2FF' },
   centerContainer: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
   },
@@ -128,10 +143,10 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#FFD700',
+    backgroundColor: '#D4AF37',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#FFD700',
+    shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.55,
     shadowRadius: 12,

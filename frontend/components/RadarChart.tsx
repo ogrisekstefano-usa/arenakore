@@ -57,11 +57,11 @@ export function RadarChart({ stats, size = 280 }: RadarChartProps) {
         <Polygon
           points={dataPolygon}
           fill="rgba(0,229,255,0.12)"
-          stroke="#00E5FF"
+          stroke="#00F2FF"
           strokeWidth={2}
         />
         {dataPoints.map((p, i) => (
-          <Circle key={`dot-${i}`} cx={p.x} cy={p.y} r={4} fill="#00E5FF" />
+          <Circle key={`dot-${i}`} cx={p.x} cy={p.y} r={4} fill="#00F2FF" />
         ))}
         {ATTRS.map((a, i) => {
           const lp = polarToXY(cx, cy, labelR, (i * 360) / n);

@@ -72,7 +72,7 @@ export default function NexusTab() {
       />
 
       {loading ? (
-        <View style={styles.center}><ActivityIndicator color="#00E5FF" size="large" /></View>
+        <View style={styles.center}><ActivityIndicator color="#00F2FF" size="large" /></View>
       ) : (
         <FlatList
           data={filtered}
@@ -106,9 +106,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
     backgroundColor: '#111111', borderWidth: 1, borderColor: '#1E1E1E',
   },
-  filterChipActive: { backgroundColor: 'rgba(0,229,255,0.1)', borderColor: '#00E5FF' },
+  filterChipActive: { backgroundColor: 'rgba(0,229,255,0.1)', borderColor: '#00F2FF' },
   filterText: { color: '#555', fontSize: 12, fontWeight: '600' },
-  filterTextActive: { color: '#00E5FF', fontWeight: '700' },
+  filterTextActive: { color: '#00F2FF', fontWeight: '700' },
   listContent: { paddingHorizontal: 16, paddingBottom: 24 },
   discCard: {
     backgroundColor: '#111111', borderRadius: 12, padding: 14,
@@ -124,17 +124,17 @@ const styles = StyleSheet.create({
   discTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   discName: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', flex: 1 },
   coachTag: { backgroundColor: 'rgba(255,215,0,0.12)', borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2 },
-  coachTagText: { color: '#FFD700', fontSize: 8, fontWeight: '800', letterSpacing: 1 },
+  coachTagText: { color: '#D4AF37', fontSize: 8, fontWeight: '800', letterSpacing: 1 },
   discDesc: { color: '#555', fontSize: 12, lineHeight: 17 },
-  discCat: { color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  discCat: { color: '#00F2FF', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
   forgeCard: {
     backgroundColor: '#1A1A1A', borderRadius: 12, padding: 16,
     marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)', gap: 6,
   },
-  forgeTitle: { color: '#FFD700', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
+  forgeTitle: { color: '#D4AF37', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
   forgeSub: { color: '#555', fontSize: 13 },
   forgeBtn: {
-    backgroundColor: '#FFD700', borderRadius: 7, paddingVertical: 10,
+    backgroundColor: '#D4AF37', borderRadius: 7, paddingVertical: 10,
     alignItems: 'center', marginTop: 4,
   },
   forgeBtnText: { color: '#050505', fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },

@@ -66,20 +66,20 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 32 },
   xpContainer: { alignItems: 'center' },
   plus: {
-    color: '#FFD700', fontSize: 36, fontWeight: '900',
+    color: '#D4AF37', fontSize: 36, fontWeight: '900',
     textShadowColor: 'rgba(255,215,0,0.4)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
   },
   xpNumber: {
-    color: '#FFD700', fontSize: 110, fontWeight: '900',
+    color: '#D4AF37', fontSize: 110, fontWeight: '900',
     letterSpacing: -5, lineHeight: 110,
     textShadowColor: 'rgba(255,215,0,0.3)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 30,
   },
   xpLabel: {
-    color: '#FFD700', fontSize: 40, fontWeight: '900', letterSpacing: 6,
+    color: '#D4AF37', fontSize: 40, fontWeight: '900', letterSpacing: 6,
     textShadowColor: 'rgba(255,215,0,0.3)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 15,
