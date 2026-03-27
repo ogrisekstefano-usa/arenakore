@@ -4,16 +4,19 @@ import { Tabs, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useSharedValue, withSpring, useAnimatedStyle, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth, UserRole } from '../../contexts/AuthContext';
 import { playTabSwitch } from '../../utils/sounds';
 
-const TAB_CONFIG = [
-  { name: 'kore', icon: 'shield-outline', iconBold: 'shield', label: 'KORE' },
-  { name: 'crews', icon: 'people', iconBold: 'people-sharp', label: 'CREWS' },
-  { name: 'nexus-trigger', icon: 'flash', iconBold: 'flash-sharp', label: 'NEXUS', isCenter: true },
-  { name: 'dna', icon: 'analytics', iconBold: 'analytics-sharp', label: 'DNA' },
-  { name: 'hall', icon: 'trophy', iconBold: 'trophy-sharp', label: 'RANK' },
-];
+// Dynamic tab config based on active role
+function getTabConfig(activeRole: UserRole) {
+  return [
+    { name: 'kore', icon: 'shield-outline', iconBold: 'shield', label: 'KORE' },
+    { name: 'crews', icon: activeRole === 'COACH' ? 'easel' : 'people', iconBold: activeRole === 'COACH' ? 'easel-sharp' : 'people-sharp', label: activeRole === 'COACH' ? 'MY STUDIO' : 'CREWS' },
+    { name: 'nexus-trigger', icon: 'flash', iconBold: 'flash-sharp', label: 'NEXUS', isCenter: true },
+    { name: 'dna', icon: 'analytics', iconBold: 'analytics-sharp', label: 'DNA' },
+    { name: 'hall', icon: 'trophy', iconBold: 'trophy-sharp', label: 'RANK' },
+  ];
+}
 
 function GoldButton({ onPress, focused }: { onPress: () => void; focused: boolean }) {
   const scale = useSharedValue(1);
@@ -51,7 +54,9 @@ function GoldButton({ onPress, focused }: { onPress: () => void; focused: boolea
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const insets = useSafeAreaInsets();
+  const { activeRole } = useAuth();
   const prevRef = useRef(state.index);
+  const TAB_CONFIG = getTabConfig(activeRole);
 
   useEffect(() => {
     if (prevRef.current !== state.index) {

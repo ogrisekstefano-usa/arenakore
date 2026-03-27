@@ -3,6 +3,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../utils/api';
 
 const TOKEN_KEY = '@arenakore_token';
+const ROLE_KEY = '@arenakore_active_role';
+
+// ========== MULTI-ROLE SYSTEM ==========
+export type UserRole = 'ADMIN' | 'GYM_OWNER' | 'COACH' | 'ATHLETE';
+
+export const ROLE_CONFIG: Record<UserRole, { label: string; icon: string; color: string; description: string }> = {
+  ADMIN: { label: 'ADMIN', icon: '\ud83d\udd12', color: '#FF3B30', description: 'Full system access' },
+  GYM_OWNER: { label: 'GYM OWNER', icon: '\ud83c\udfdb\ufe0f', color: '#D4AF37', description: 'Gym & Coach management' },
+  COACH: { label: 'COACH', icon: '\ud83e\uddd1\u200d\ud83c\udfeb', color: '#00F2FF', description: 'Studio & Template control' },
+  ATHLETE: { label: 'ATHLETE', icon: '\ud83c\udfc3', color: '#34C759', description: 'Standard experience' },
+};
 
 export interface DNAStats {
   velocita: number;
@@ -32,6 +43,8 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
+  activeRole: UserRole;
+  setActiveRole: (role: UserRole) => void;
   login: (email: string, password: string) => Promise<User>;
   register: (username: string, email: string, password: string) => Promise<User>;
   completeOnboarding: (role: string, sport: string) => Promise<void>;
@@ -46,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeRole, setActiveRoleState] = useState<UserRole>('ATHLETE');
 
   useEffect(() => {
     loadToken();
@@ -54,10 +68,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadToken = async () => {
     try {
       const savedToken = await AsyncStorage.getItem(TOKEN_KEY);
+      const savedRole = await AsyncStorage.getItem(ROLE_KEY);
       if (savedToken) {
         const userData = await api.me(savedToken);
         setToken(savedToken);
         setUser(userData);
+        // Restore saved active role, or derive from user data
+        if (savedRole && ['ADMIN', 'GYM_OWNER', 'COACH', 'ATHLETE'].includes(savedRole)) {
+          setActiveRoleState(savedRole as UserRole);
+        } else if (userData.is_admin) {
+          setActiveRoleState('ADMIN');
+        }
       }
     } catch {
       await AsyncStorage.removeItem(TOKEN_KEY);
@@ -66,11 +87,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const setActiveRole = async (role: UserRole) => {
+    setActiveRoleState(role);
+    await AsyncStorage.setItem(ROLE_KEY, role);
+  };
+
   const login = async (email: string, password: string): Promise<User> => {
     const result = await api.login({ email, password });
     await AsyncStorage.setItem(TOKEN_KEY, result.token);
     setToken(result.token);
     setUser(result.user);
+    // Auto-detect role on login
+    if (result.user.is_admin) {
+      setActiveRoleState('ADMIN');
+      await AsyncStorage.setItem(ROLE_KEY, 'ADMIN');
+    }
     return result.user;
   };
 
@@ -95,8 +126,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     await AsyncStorage.removeItem(TOKEN_KEY);
+    await AsyncStorage.removeItem(ROLE_KEY);
     setToken(null);
     setUser(null);
+    setActiveRoleState('ATHLETE');
   };
 
   const refreshUser = async () => {
@@ -114,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, completeOnboarding, logout, refreshUser, updateUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, activeRole, setActiveRole, login, register, completeOnboarding, logout, refreshUser, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

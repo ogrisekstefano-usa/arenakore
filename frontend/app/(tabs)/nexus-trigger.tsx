@@ -13,7 +13,7 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Line, Circle, Text as SvgText, G, Polygon } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth, UserRole, ROLE_CONFIG } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { playAcceptPing, playRecordBroken, startBioScanHum, playBioMatchPing } from '../../utils/sounds';
 import { MotionAnalyzer, MotionState, ExerciseType, SkeletonPose } from '../../utils/MotionAnalyzer';
@@ -694,21 +694,33 @@ function PulseTicker({ reduced }: { reduced?: boolean }) {
   );
 }
 
-// ========== BURGER MENU with GLASS + FOUNDER PRIDE (tier-aware) ==========
-function BurgerMenu({ visible, onClose, user, onLogout, deviceTier }: { visible: boolean; onClose: () => void; user: any; onLogout: () => void; deviceTier: DeviceTier }) {
+// ========== BURGER MENU with ADMIN PRIVILEGES + GHOSTING ==========
+function BurgerMenu({ visible, onClose, user, onLogout, deviceTier, activeRole, onRoleSwitch }: {
+  visible: boolean; onClose: () => void; user: any; onLogout: () => void; deviceTier: DeviceTier;
+  activeRole: UserRole; onRoleSwitch: (role: UserRole) => void;
+}) {
   if (!visible) return null;
   const isFounder = user?.is_founder || user?.is_admin;
+  const isAdmin = user?.is_admin;
   const isLegacy = deviceTier === 'legacy';
+  const ROLES: UserRole[] = ['ADMIN', 'GYM_OWNER', 'COACH', 'ATHLETE'];
+
   const items = [
     { icon: '\ud83e\uddec', label: 'Bio-Signature Scan', sub: 'Ricalibra i sensori' },
     { icon: '\u2699\ufe0f', label: 'Settings', sub: 'Configurazione NEXUS' },
     { icon: '\ud83c\udfc6', label: 'Founders Club', sub: isFounder ? `Founder #${user?.founder_number || '?'}` : 'Non ancora membro' },
     { icon: '\ud83d\udcac', label: 'Supporto', sub: 'Contatta il team KORE' },
   ];
+
+  // GYM HUB (visible for GYM_OWNER role)
+  const gymItems = [
+    { icon: '\ud83c\udfdb\ufe0f', label: 'GYM HUB', sub: 'Gestione Coach & Eventi' },
+    { icon: '\ud83d\udcca', label: 'Analytics Palestra', sub: 'Iscrizioni, Revenue, Attivit\u00e0' },
+  ];
+
   return (
     <Modal transparent visible={visible} animationType="none" onRequestClose={onClose}>
       <TouchableOpacity style={bm$.backdrop} activeOpacity={1} onPress={onClose}>
-        {/* LEGACY: simple dark overlay. HIGH/STANDARD: blur effect */}
         <View style={isLegacy ? bm$.blurLayerLegacy : bm$.blurLayer} />
         <Animated.View entering={SlideInRight.duration(250)} exiting={SlideOutRight.duration(200)} style={bm$.panel}>
           <LinearGradient colors={['rgba(8,8,8,0.97)', 'rgba(5,5,5,0.99)']} style={bm$.panelInner}>
@@ -728,12 +740,61 @@ function BurgerMenu({ visible, onClose, user, onLogout, deviceTier }: { visible:
                   <View style={bm$.itemText}><Text style={bm$.itemLabel}>{item.label}</Text><Text style={bm$.itemSub}>{item.sub}</Text></View>
                 </TouchableOpacity>
               ))}
+
+              {/* GYM HUB — Visible when ghosting as GYM_OWNER */}
+              {activeRole === 'GYM_OWNER' && (
+                <View style={bm$.gymSection}>
+                  <View style={bm$.sectionDivider} />
+                  <Text style={bm$.sectionTitle}>{'\ud83c\udfdb\ufe0f'} GYM HUB</Text>
+                  {gymItems.map((item, i) => (
+                    <TouchableOpacity key={`gym-${i}`} style={bm$.item} activeOpacity={0.7}>
+                      <Text style={bm$.itemIcon}>{item.icon}</Text>
+                      <View style={bm$.itemText}><Text style={[bm$.itemLabel, { color: '#D4AF37' }]}>{item.label}</Text><Text style={bm$.itemSub}>{item.sub}</Text></View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+
               {isFounder && (
                 <View style={bm$.founderPride}>
                   <Text style={bm$.founderStar}>{'\u2605'}</Text>
                   <Text style={bm$.founderQuote}>You are one of the first 100 to enter the Kore. Your legacy is permanent.</Text>
                 </View>
               )}
+
+              {/* ========== ADMIN PRIVILEGES — GHOSTING SWITCHER ========== */}
+              {isAdmin && (
+                <View style={bm$.adminSection}>
+                  <View style={bm$.sectionDivider} />
+                  <Text style={bm$.adminTitle}>{'\ud83d\udd12'} ADMIN PRIVILEGES</Text>
+                  <Text style={bm$.adminSub}>GHOSTING MODE — Cambia ruolo istantaneamente</Text>
+                  <View style={bm$.roleGrid}>
+                    {ROLES.map((role) => {
+                      const cfg = ROLE_CONFIG[role];
+                      const isActive = activeRole === role;
+                      return (
+                        <TouchableOpacity
+                          key={role}
+                          style={[bm$.roleBtn, isActive && { borderColor: cfg.color, backgroundColor: `${cfg.color}15` }]}
+                          onPress={() => onRoleSwitch(role)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={bm$.roleIcon}>{cfg.icon}</Text>
+                          <Text style={[bm$.roleLabel, isActive && { color: cfg.color }]}>{cfg.label}</Text>
+                          {isActive && <View style={[bm$.roleDot, { backgroundColor: cfg.color }]} />}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                  <View style={bm$.activeRoleBar}>
+                    <Text style={[bm$.activeRoleText, { color: ROLE_CONFIG[activeRole].color }]}>
+                      {ROLE_CONFIG[activeRole].icon} GHOSTING AS: {ROLE_CONFIG[activeRole].label}
+                    </Text>
+                    <Text style={bm$.activeRoleDesc}>{ROLE_CONFIG[activeRole].description}</Text>
+                  </View>
+                </View>
+              )}
+
               {/* LOGOUT — Red opaque */}
               <TouchableOpacity style={bm$.logoutBtn} activeOpacity={0.7} onPress={onLogout}>
                 <Text style={bm$.logoutIcon}>{'\ud83d\udeaa'}</Text>
@@ -791,6 +852,29 @@ const bm$ = StyleSheet.create({
   logoutIcon: { fontSize: 20, width: 32 },
   logoutLabel: { color: 'rgba(255,59,48,0.7)', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
   logoutSub: { color: 'rgba(255,59,48,0.35)', fontSize: 10 },
+  // Admin Privileges + Ghosting
+  adminSection: { marginTop: 8, paddingHorizontal: 20 },
+  sectionDivider: { height: 1, backgroundColor: 'rgba(255,59,48,0.08)', marginBottom: 12 },
+  sectionTitle: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
+  adminTitle: { color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 4 },
+  adminSub: { color: '#555', fontSize: 8, fontWeight: '700', letterSpacing: 1, marginBottom: 12 },
+  roleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  roleBtn: {
+    width: '47%' as any, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)',
+    alignItems: 'center', gap: 4, position: 'relative' as any,
+  },
+  roleIcon: { fontSize: 18 },
+  roleLabel: { color: '#888', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
+  roleDot: { position: 'absolute' as any, top: 6, right: 6, width: 6, height: 6, borderRadius: 3 },
+  activeRoleBar: {
+    marginTop: 12, padding: 10, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', alignItems: 'center', gap: 2,
+  },
+  activeRoleText: { fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  activeRoleDesc: { color: '#555', fontSize: 8, fontWeight: '600' },
+  // GYM Hub section
+  gymSection: { marginTop: 4 },
   footer: { color: '#333', fontSize: 9, fontWeight: '600', letterSpacing: 1, paddingHorizontal: 20, paddingBottom: 30 },
 });
 
@@ -922,7 +1006,7 @@ function ScanLine({ active }: { active: boolean }) {
 export default function NexusTriggerScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, token, updateUser, logout } = useAuth();
+  const { user, token, updateUser, logout, activeRole, setActiveRole } = useAuth();
 
   const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'countdown' | 'scanning' | 'results'>('console');
   const [exercise, setExercise] = useState<ExerciseType>('squat');
@@ -1134,7 +1218,7 @@ export default function NexusTriggerScreen() {
       )}
 
       <CinemaResults visible={phase === 'results'} result={scanResult} user={user} onClose={handleResultClose} />
-      <BurgerMenu visible={burgerOpen} onClose={() => setBurgerOpen(false)} user={user} onLogout={() => { setBurgerOpen(false); stopSensors(); logout(); router.replace('/'); }} deviceTier={deviceTier} />
+      <BurgerMenu visible={burgerOpen} onClose={() => setBurgerOpen(false)} user={user} onLogout={() => { setBurgerOpen(false); stopSensors(); logout(); router.replace('/'); }} deviceTier={deviceTier} activeRole={activeRole} onRoleSwitch={(role) => { setActiveRole(role); }} />
     </View>
   );
 }
