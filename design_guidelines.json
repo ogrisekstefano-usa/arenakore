@@ -1,0 +1,208 @@
+{
+  "theme": "DARK",
+  "archetype": "The Performance Pro + Electric Neon",
+  "design_philosophy": "Tactical Minimalism with High-Energy Triggers. Deep Obsidian backgrounds focus the eye, Cyan Neon signals active states and core interactions, and Gold is reserved purely for high-value focal points like the Nexus Trigger, XP, and Medals. The interface must feel like premium, competitive athletic equipment—sharp, responsive, and intense.",
+  "colors": {
+    "background": "#050505",
+    "surface": "#121212",
+    "surface_elevated": "#1A1A1A",
+    "primary": "#00E5FF",
+    "accent_gold": "#FFD700",
+    "text_primary": "#FFFFFF",
+    "text_secondary": "#A0A0A0",
+    "text_tertiary": "#666666",
+    "border": "#222222",
+    "error": "#FF3B30",
+    "success": "#34C759"
+  },
+  "typography": {
+    "font_family": "System",
+    "h1": {
+      "fontSize": 32,
+      "fontWeight": "900",
+      "letterSpacing": -1,
+      "color": "#FFFFFF",
+      "textTransform": "uppercase"
+    },
+    "h2": {
+      "fontSize": 24,
+      "fontWeight": "800",
+      "letterSpacing": -0.5,
+      "color": "#FFFFFF"
+    },
+    "h3": {
+      "fontSize": 18,
+      "fontWeight": "700",
+      "color": "#FFFFFF"
+    },
+    "body_lg": {
+      "fontSize": 16,
+      "fontWeight": "500",
+      "color": "#FFFFFF"
+    },
+    "body": {
+      "fontSize": 14,
+      "fontWeight": "400",
+      "color": "#A0A0A0"
+    },
+    "label": {
+      "fontSize": 12,
+      "fontWeight": "700",
+      "letterSpacing": 2,
+      "color": "#00E5FF",
+      "textTransform": "uppercase"
+    }
+  },
+  "spacing_and_layout": {
+    "base_unit": 8,
+    "screen_padding": 24,
+    "element_gap": 16,
+    "border_radius": {
+      "sm": 4,
+      "md": 8,
+      "lg": 16,
+      "full": 9999
+    }
+  },
+  "components": {
+    "button_primary": {
+      "backgroundColor": "#00E5FF",
+      "borderRadius": 8,
+      "paddingVertical": 16,
+      "paddingHorizontal": 24,
+      "alignItems": "center",
+      "justifyContent": "center",
+      "textStyle": {
+        "color": "#050505",
+        "fontWeight": "800",
+        "fontSize": 16,
+        "textTransform": "uppercase"
+      }
+    },
+    "button_outline": {
+      "backgroundColor": "transparent",
+      "borderWidth": 1,
+      "borderColor": "#00E5FF",
+      "borderRadius": 8,
+      "paddingVertical": 16,
+      "paddingHorizontal": 24,
+      "alignItems": "center",
+      "justifyContent": "center",
+      "textStyle": {
+        "color": "#00E5FF",
+        "fontWeight": "800",
+        "fontSize": 16,
+        "textTransform": "uppercase"
+      }
+    },
+    "button_gold_nexus": {
+      "backgroundColor": "#FFD700",
+      "borderRadius": 9999,
+      "width": 64,
+      "height": 64,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "shadowColor": "#FFD700",
+      "shadowOffset": {
+        "width": 0,
+        "height": 4
+      },
+      "shadowOpacity": 0.4,
+      "shadowRadius": 8,
+      "elevation": 8,
+      "position": "absolute",
+      "bottom": 24,
+      "zIndex": 50
+    },
+    "input_field": {
+      "backgroundColor": "#121212",
+      "borderWidth": 1,
+      "borderColor": "#222222",
+      "borderRadius": 8,
+      "padding": 16,
+      "color": "#FFFFFF",
+      "fontSize": 16
+    },
+    "card": {
+      "backgroundColor": "#121212",
+      "borderRadius": 16,
+      "padding": 16,
+      "borderWidth": 1,
+      "borderColor": "#222222"
+    },
+    "tab_bar": {
+      "backgroundColor": "#121212",
+      "borderTopWidth": 1,
+      "borderTopColor": "#222222",
+      "height": 80,
+      "flexDirection": "row",
+      "justifyContent": "space-around",
+      "alignItems": "center",
+      "paddingBottom": 20
+    }
+  },
+  "interactions_and_animations": {
+    "buttons": "All interactive buttons MUST use `react-native-reanimated`. Wrap with `Pressable`, use `useSharedValue` and map `onPressIn` to scale down to 0.95 using `withSpring`, and `onPressOut` to return to scale 1.",
+    "welcome_bonus": "The 100 XP Welcome Bonus (Step 3) must feature a massive gold text fading in (`withTiming`) and scaling up (`withSpring`) on a pure black (#050505) screen.",
+    "settings_drawer": "The Hamburger menu triggers a settings drawer that slides in from the right edge. Use Reanimated `translateX` to animate the transition.",
+    "dna_radar": "Load the biometric radar chart with a staggered opacity and scale entrance animation to emphasize the high-tech, data-driven nature of the app."
+  },
+  "screens_and_flow": {
+    "Auth_Index": {
+      "layout": "Centered hero visual. Massive typography ('ARENADARE'). Two primary action buttons: 'START LEGACY' (Cyan Fill) and 'RESUME' (Cyan Outline).",
+      "background": "Use a dark textured image overlay with opacity 0.8 over #050505."
+    },
+    "Auth_Forms": {
+      "layout": "Real-time validation text (Green/Red) directly under inputs. Include 'Mostra/Nascondi' (Show/Hide) toggle inside the password input. T&C checkbox.",
+      "language": "Italian"
+    },
+    "Onboarding": {
+      "step_1": "Grid of three massive selection cards: 'Atleta', 'Coach', 'Palestra'. Active state triggers a Cyan Neon border.",
+      "step_2": "Visual masonry or scrollable list for Sport selection. High-contrast images.",
+      "step_3": "Black screen. Giant Gold '100 XP' text illuminates the center. Redirects to CORE tab."
+    },
+    "Core_Tab": {
+      "layout": "Header with user Avatar (Left) and Hamburger Menu (Right). A horizontal XP Bar below the header. Feed of 'Battle Live' cards and Medals."
+    },
+    "Crews_Tab": {
+      "layout": "Social feed layout for Crews. Apple-style swipe-to-action on the list items for 'Invites'."
+    },
+    "DNA_Tab": {
+      "layout": "High-tech layout. A Biometric Radar Chart occupies the top 50%. A grid-based 'Talent Card' shows numeric stats below."
+    },
+    "Nexus_Tab": {
+      "layout": "Discipline Library displaying video/image-based cards. 'Discipline Forge' visible only for Coach role."
+    }
+  },
+  "testing_guidelines": {
+    "test_ids": "All interactive and key informational elements MUST include a `testID` attribute (the React Native equivalent of `data-testid`). Format: kebab-case, role-based. Example: `testID='login-submit-button'`."
+  },
+  "image_urls": {
+    "hero_background": {
+      "url": "https://images.pexels.com/photos/7733627/pexels-photo-7733627.jpeg",
+      "description": "Artistic shot of a shirtless man with neon paint, ideal for the Auth Index background when darkened."
+    },
+    "gym_performance": {
+      "url": "https://images.pexels.com/photos/4720570/pexels-photo-4720570.jpeg",
+      "description": "Man curling dumbbells, perfect for the 'Atleta' role card or sports category placeholders."
+    },
+    "chalk_hands": {
+      "url": "https://images.pexels.com/photos/7674490/pexels-photo-7674490.jpeg",
+      "description": "Chalked hands lifting a barbell, great for background texture or sport selection."
+    },
+    "sports_collage": {
+      "url": "https://images.unsplash.com/photo-1512144825472-b4d1e4cdeb68",
+      "description": "Generic sports texture for placeholder cards."
+    }
+  },
+  "instructions_to_main_agent": [
+    "This is a React Native Expo App. Do NOT use HTML, CSS, or Tailwind.",
+    "Use standard React Native `StyleSheet.create` for all styling logic.",
+    "Implement layout using React Native `View`, `Text`, `TextInput`, `Image`, and `Pressable`.",
+    "All physical buttons MUST be wrapped in a custom animated component using `react-native-reanimated`. Utilize `useSharedValue` and `withSpring` to scale the button down to 0.95 on `onPressIn` and back to 1 on `onPressOut`.",
+    "Build a custom Bottom Tab Navigator to support the protruding, floating Gold +NEXUS trigger button in the absolute center. Do not use the default tab bar appearance for the center icon.",
+    "Strictly follow the color palette constraints: #050505 Background, #00E5FF Cyan accents, and #FFD700 Gold accents.",
+    "Ensure the entire UI is built with Italian language text (e.g., 'Atleta', 'Palestra', 'Mostra/Nascondi').",
+    "Append `testID` string attributes to all buttons, inputs, tabs, and interactive elements to satisfy automated testing requirements."
+  ]
+}
