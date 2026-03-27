@@ -25,7 +25,7 @@ export default function Login() {
     try {
       const result = await login(email, password);
       if (result.onboarding_completed) {
-        router.replace('/(tabs)/core');
+        router.replace('/(tabs)/kore');
       } else {
         router.replace('/onboarding/step1');
       }

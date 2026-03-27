@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../utils/api';
 
-const TOKEN_KEY = '@arenadare_token';
+const TOKEN_KEY = '@arenakore_token';
 
 export interface DNAStats {
   velocita: number;
@@ -81,9 +81,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return result.user;
   };
 
-  const completeOnboarding = async (role: string, sport: string) => {
+  const completeOnboarding = async (role: string, sport: string, category?: string, isVersatile?: boolean) => {
     if (!token) throw new Error('Non autenticato');
-    const updatedUser = await api.completeOnboarding({ role, sport }, token);
+    const updatedUser = await api.completeOnboarding({
+      role,
+      sport,
+      category,
+      is_versatile: isVersatile,
+    }, token);
     setUser(updatedUser);
   };
 

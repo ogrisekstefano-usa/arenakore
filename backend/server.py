@@ -72,8 +72,10 @@ class UserLogin(BaseModel):
 
 
 class OnboardingUpdate(BaseModel):
-    role: str
+    role: Optional[str] = "Kore Member"
     sport: str
+    category: Optional[str] = None
+    is_versatile: Optional[bool] = False
 
 
 class PushTokenData(BaseModel):
@@ -163,21 +165,180 @@ async def complete_onboarding(data: OnboardingUpdate, current_user: dict = Depen
         "tecnica": random.randint(42, 92),
         "potenza": random.randint(42, 92),
     }
+    update_data = {
+        "role": data.role or "Kore Member",
+        "sport": data.sport,
+        "category": data.category,
+        "is_versatile": data.is_versatile or False,
+        "xp": 100,
+        "dna": dna,
+        "onboarding_completed": True,
+    }
     await db.users.update_one(
         {"_id": current_user["_id"]},
-        {"$set": {
-            "role": data.role,
-            "sport": data.sport,
-            "xp": 100,
-            "dna": dna,
-            "onboarding_completed": True,
-        }}
+        {"$set": update_data}
     )
     updated = await db.users.find_one({"_id": current_user["_id"]})
     return user_to_response(updated)
 
 
-@api_router.get("/battles")
+# ====================================
+# SPORTS DATABASE (50+ sport, 8 Macro-Categorie)
+# ====================================
+
+SPORTS_DATABASE = {
+    "atletica": {
+        "label": "ATLETICA", "icon": "🏃", "color": "#FF6B00",
+        "sports": [
+            {"id": "sprint", "label": "Sprint", "icon": "⚡"},
+            {"id": "mezzofondo", "label": "Mezzofondo", "icon": "🏃"},
+            {"id": "maratona", "label": "Maratona", "icon": "🏅"},
+            {"id": "salto_alto", "label": "Salto in Alto", "icon": "🦘"},
+            {"id": "salto_lungo", "label": "Salto in Lungo", "icon": "📏"},
+            {"id": "lancio_peso", "label": "Lancio del Peso", "icon": "🏋️"},
+            {"id": "lancio_disco", "label": "Lancio del Disco", "icon": "🥏"},
+            {"id": "giavellotto", "label": "Giavellotto", "icon": "🎯"},
+            {"id": "decathlon", "label": "Decathlon", "icon": "🔟"},
+            {"id": "ostacoli", "label": "Corsa ad Ostacoli", "icon": "🚧"},
+        ],
+    },
+    "combat": {
+        "label": "COMBAT", "icon": "🥊", "color": "#FF3B30",
+        "sports": [
+            {"id": "boxe", "label": "Boxe", "icon": "🥊"},
+            {"id": "mma", "label": "MMA", "icon": "🥋"},
+            {"id": "kickboxing", "label": "Kickboxing", "icon": "🦶"},
+            {"id": "judo", "label": "Judo", "icon": "🥋"},
+            {"id": "karate", "label": "Karate", "icon": "🤛"},
+            {"id": "taekwondo", "label": "Taekwondo", "icon": "🦵"},
+            {"id": "wrestling", "label": "Wrestling", "icon": "💪"},
+            {"id": "muay_thai", "label": "Muay Thai", "icon": "🇹🇭"},
+            {"id": "bjj", "label": "Brazilian Jiu-Jitsu", "icon": "🤼"},
+            {"id": "scherma", "label": "Scherma", "icon": "🤺"},
+        ],
+    },
+    "acqua": {
+        "label": "ACQUA", "icon": "🌊", "color": "#007AFF",
+        "sports": [
+            {"id": "nuoto", "label": "Nuoto", "icon": "🏊"},
+            {"id": "pallanuoto", "label": "Pallanuoto", "icon": "🤽"},
+            {"id": "tuffi", "label": "Tuffi", "icon": "🤿"},
+            {"id": "surf", "label": "Surf", "icon": "🏄"},
+            {"id": "canottaggio", "label": "Canottaggio", "icon": "🚣"},
+            {"id": "kayak", "label": "Kayak", "icon": "🛶"},
+            {"id": "vela", "label": "Vela", "icon": "⛵"},
+        ],
+    },
+    "team": {
+        "label": "TEAM SPORT", "icon": "⚽", "color": "#34C759",
+        "sports": [
+            {"id": "calcio", "label": "Calcio", "icon": "⚽"},
+            {"id": "basket", "label": "Basket", "icon": "🏀"},
+            {"id": "pallavolo", "label": "Pallavolo", "icon": "🏐"},
+            {"id": "rugby", "label": "Rugby", "icon": "🏉"},
+            {"id": "hockey", "label": "Hockey", "icon": "🏒"},
+            {"id": "football", "label": "Football Americano", "icon": "🏈"},
+            {"id": "handball", "label": "Handball", "icon": "🤾"},
+            {"id": "baseball", "label": "Baseball", "icon": "⚾"},
+            {"id": "cricket", "label": "Cricket", "icon": "🏏"},
+        ],
+    },
+    "fitness": {
+        "label": "FITNESS", "icon": "🏋️", "color": "#D4AF37",
+        "sports": [
+            {"id": "crossfit", "label": "CrossFit", "icon": "🔥"},
+            {"id": "powerlifting", "label": "Powerlifting", "icon": "🏋️"},
+            {"id": "bodybuilding", "label": "Bodybuilding", "icon": "💪"},
+            {"id": "calisthenics", "label": "Calisthenics", "icon": "🤸"},
+            {"id": "hiit", "label": "HIIT", "icon": "⏱️"},
+            {"id": "functional", "label": "Functional Training", "icon": "🔄"},
+            {"id": "strongman", "label": "Strongman", "icon": "🏆"},
+        ],
+    },
+    "outdoor": {
+        "label": "OUTDOOR", "icon": "🏔️", "color": "#30B0C7",
+        "sports": [
+            {"id": "ciclismo", "label": "Ciclismo", "icon": "🚴"},
+            {"id": "trail_running", "label": "Trail Running", "icon": "🏞️"},
+            {"id": "arrampicata", "label": "Arrampicata", "icon": "🧗"},
+            {"id": "sci", "label": "Sci", "icon": "⛷️"},
+            {"id": "snowboard", "label": "Snowboard", "icon": "🏂"},
+            {"id": "skateboard", "label": "Skateboard", "icon": "🛹"},
+            {"id": "parkour", "label": "Parkour", "icon": "🏃‍♂️"},
+            {"id": "golf", "label": "Golf", "icon": "⛳"},
+            {"id": "tennis", "label": "Tennis", "icon": "🎾"},
+            {"id": "padel", "label": "Padel", "icon": "🏓"},
+        ],
+    },
+    "mind_body": {
+        "label": "MIND & BODY", "icon": "🧘", "color": "#AF52DE",
+        "sports": [
+            {"id": "yoga", "label": "Yoga", "icon": "🧘"},
+            {"id": "pilates", "label": "Pilates", "icon": "🤸"},
+            {"id": "tai_chi", "label": "Tai Chi", "icon": "☯️"},
+            {"id": "ginnastica_artistica", "label": "Ginnastica Artistica", "icon": "🤸"},
+            {"id": "ginnastica_ritmica", "label": "Ginnastica Ritmica", "icon": "🎀"},
+            {"id": "danza", "label": "Danza", "icon": "💃"},
+        ],
+    },
+    "extreme": {
+        "label": "EXTREME", "icon": "🔥", "color": "#FF2D55",
+        "sports": [
+            {"id": "triathlon", "label": "Triathlon", "icon": "🏊‍♂️"},
+            {"id": "ironman", "label": "Ironman", "icon": "🦾"},
+            {"id": "ultra_trail", "label": "Ultra Trail", "icon": "🏔️"},
+            {"id": "obstacle_race", "label": "Obstacle Race", "icon": "🏅"},
+            {"id": "freerunning", "label": "Freerunning", "icon": "🤸"},
+            {"id": "tiro", "label": "Tiro a Segno", "icon": "🎯"},
+        ],
+    },
+}
+
+
+@api_router.get("/sports/categories")
+async def get_sport_categories():
+    """Return the 8 macro-categories for onboarding Level 1"""
+    categories = []
+    for cat_id, cat in SPORTS_DATABASE.items():
+        categories.append({
+            "id": cat_id,
+            "label": cat["label"],
+            "icon": cat["icon"],
+            "color": cat["color"],
+            "sport_count": len(cat["sports"]),
+        })
+    return categories
+
+
+@api_router.get("/sports/{category_id}")
+async def get_sports_by_category(category_id: str):
+    """Return sports within a specific category for onboarding Level 2"""
+    if category_id not in SPORTS_DATABASE:
+        raise HTTPException(status_code=404, detail="Categoria non trovata")
+    cat = SPORTS_DATABASE[category_id]
+    return {
+        "category": cat["label"],
+        "icon": cat["icon"],
+        "color": cat["color"],
+        "sports": cat["sports"],
+    }
+
+
+@api_router.get("/sports/search/{query}")
+async def search_sports(query: str):
+    """Smart search across all sports for the predictive search"""
+    query_lower = query.lower()
+    results = []
+    for cat_id, cat in SPORTS_DATABASE.items():
+        for sport in cat["sports"]:
+            if query_lower in sport["label"].lower() or query_lower in sport["id"].lower():
+                results.append({
+                    **sport,
+                    "category": cat_id,
+                    "category_label": cat["label"],
+                    "category_color": cat["color"],
+                })
+    return results
 async def get_battles(current_user: dict = Depends(get_current_user)):
     battles = await db.battles.find().sort("created_at", -1).to_list(20)
     return [

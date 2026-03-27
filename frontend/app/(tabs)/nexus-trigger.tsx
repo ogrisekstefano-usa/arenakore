@@ -63,7 +63,7 @@ function CyberGrid({ pulse }: { pulse: Animated.SharedValue<number> }) {
         <Rect x={20} y={SCREEN_H - 160} width={40} height={40} stroke="#00F2FF" strokeWidth={1.5} fill="none" opacity={0.4} />
         <Rect x={SCREEN_W - 60} y={SCREEN_H - 160} width={40} height={40} stroke="#00F2FF" strokeWidth={1.5} fill="none" opacity={0.4} />
         {/* HUD text */}
-        <SvgText x={24} y={72} fill="#00F2FF" fontSize={9} fontWeight="bold" opacity={0.6}>NEXUS SYNC v2.1</SvgText>
+        <SvgText x={24} y={72} fill="#00F2FF" fontSize={9} fontWeight="bold" opacity={0.6}>ARENAKORE v2.1</SvgText>
         <SvgText x={SCREEN_W - 120} y={72} fill="#00F2FF" fontSize={9} fontWeight="bold" opacity={0.6}>BIOMETRIC SCAN</SvgText>
       </Svg>
     </Animated.View>
@@ -252,7 +252,7 @@ function PermissionModal({
           </View>
           <Text style={styles.permTitle}>Accesso Fotocamera</Text>
           <Text style={styles.permDesc}>
-            ArenaDare utilizza la fotocamera per la{'\n'}scansione biometrica Nexus Sync
+            ArenaKore utilizza la fotocamera per la{'\n'}scansione biometrica Nexus Sync
           </Text>
           <TouchableOpacity style={styles.permAllowBtn} onPress={onAllow}>
             <Text style={styles.permAllowText}>CONSENTI</Text>

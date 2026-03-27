@@ -32,7 +32,7 @@ function DisciplineCard({ disc, isCoach }: { disc: any; isCoach: boolean }) {
   );
 }
 
-export default function NexusTab() {
+export default function NexusLibTab() {
   const { token, user } = useAuth();
   const [disciplines, setDisciplines] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,9 +50,9 @@ export default function NexusTab() {
   const filtered = filter === 'Tutti' ? disciplines : disciplines.filter(d => d.category === filter);
 
   return (
-    <View style={styles.container} testID="nexus-tab">
+    <View style={styles.container} testID="nexus-lib-tab">
       <StatusBar barStyle="light-content" />
-      <Header title="NEXUS" />
+      <Header title="NEXUS LIB" />
 
       <FlatList
         horizontal

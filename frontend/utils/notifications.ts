@@ -61,7 +61,7 @@ export async function getExpoPushToken(): Promise<string | null> {
   if (!Device.isDevice || Platform.OS === 'web') return null;
   try {
     const token = await Notifications.getExpoPushTokenAsync({
-      projectId: 'arenadare-nexus',
+      projectId: 'arenakore-nexus',
     });
     return token.data;
   } catch {
@@ -72,24 +72,24 @@ export async function getExpoPushToken(): Promise<string | null> {
 export async function setupAndroidNotificationChannel() {
   if (Platform.OS !== 'android') return;
   // Adrenalina channel
-  await Notifications.setNotificationChannelAsync('arenadare-adrenalina', {
-    name: 'ArenaDare Adrenalina',
+  await Notifications.setNotificationChannelAsync('arenakore-adrenalina', {
+    name: 'ArenaKore Adrenalina',
     importance: Notifications.AndroidImportance.MAX,
     vibrationPattern: [0, 200, 50, 200, 50, 300],
     lightColor: '#FF3B30',
     sound: 'default',
   });
   // Precisione channel
-  await Notifications.setNotificationChannelAsync('arenadare-precisione', {
-    name: 'ArenaDare Precisione',
+  await Notifications.setNotificationChannelAsync('arenakore-precisione', {
+    name: 'ArenaKore Precisione',
     importance: Notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 100, 200, 100],
     lightColor: '#34C759',
     sound: 'default',
   });
   // Power channel
-  await Notifications.setNotificationChannelAsync('arenadare-power', {
-    name: 'ArenaDare Power',
+  await Notifications.setNotificationChannelAsync('arenakore-power', {
+    name: 'ArenaKore Power',
     importance: Notifications.AndroidImportance.MAX,
     vibrationPattern: [0, 300, 100, 300],
     lightColor: '#D4AF37',
@@ -108,7 +108,7 @@ export async function sendBattleLiveNotification(battleTitle: string, sport?: st
         body: `"${battleTitle}" è ora LIVE! Entra nell'Arena.`,
         sound: true,
         data: { type: 'battle_live', sport },
-        ...(Platform.OS === 'android' && { channelId: `arenadare-${config.tone}` }),
+        ...(Platform.OS === 'android' && { channelId: `arenakore-${config.tone}` }),
       },
       trigger: null,
     });
@@ -131,7 +131,7 @@ export async function sendXPRewardNotification(xpEarned: number, recordsBroken: 
         body: `Challenge completata con successo!${recordText}`,
         sound: true,
         data: { type: 'xp_reward', xp: xpEarned },
-        ...(Platform.OS === 'android' && { channelId: `arenadare-${config.tone}` }),
+        ...(Platform.OS === 'android' && { channelId: `arenakore-${config.tone}` }),
       },
       trigger: null,
     });
@@ -150,7 +150,7 @@ export async function sendLevelUpNotification(newLevel: number) {
         body: `Hai raggiunto il Level ${newLevel}! La leggenda cresce.`,
         sound: true,
         data: { type: 'level_up', level: newLevel },
-        ...(Platform.OS === 'android' && { channelId: 'arenadare-power' }),
+        ...(Platform.OS === 'android' && { channelId: 'arenakore-power' }),
       },
       trigger: null,
     });
@@ -169,7 +169,7 @@ export async function sendScanCompleteNotification(score: number) {
         body: `Performance score: ${score.toFixed(1)}% — Analisi DNA aggiornata.`,
         sound: true,
         data: { type: 'scan_complete', score },
-        ...(Platform.OS === 'android' && { channelId: 'arenadare-precisione' }),
+        ...(Platform.OS === 'android' && { channelId: 'arenakore-precisione' }),
       },
       trigger: null,
     });

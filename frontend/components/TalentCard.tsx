@@ -61,7 +61,7 @@ interface TalentCardProps {
 
 export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle }: TalentCardProps) {
   const dna = user.dna;
-  const qrData = `arenadare://athlete/${user.id}`;
+  const qrData = `arenakore://athlete/${user.id}`;
   const avgStat = dna
     ? Math.round(
         (dna.velocita + dna.forza + dna.resistenza + dna.agilita + dna.tecnica + dna.potenza) / 6
@@ -79,8 +79,8 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle 
 
     try {
       await Share.share({
-        message: `🏟️ ARENADARE TALENT CARD\n━━━━━━━━━━━━━━━\n👤 ${user.username?.toUpperCase()}\n🏅 LVL ${user.level} | ${user.xp} XP\n🎯 ${user.sport?.toUpperCase() || 'ATLETA'}${xpText}${recordText}\n\n${statsText}\n\nOVR: ${avgStat}/100\n━━━━━━━━━━━━━━━\n#ArenaDare #${user.sport} #Performance`,
-        title: `${user.username} - ArenaDare Talent Card`,
+        message: `🏟️ ARENAKORE TALENT CARD\n━━━━━━━━━━━━━━━\n👤 ${user.username?.toUpperCase()}\n🏅 LVL ${user.level} | ${user.xp} XP\n🎯 ${user.sport?.toUpperCase() || 'ATLETA'}${xpText}${recordText}\n\n${statsText}\n\nOVR: ${avgStat}/100\n━━━━━━━━━━━━━━━\n#ArenaKore #${user.sport} #Performance`,
+        title: `${user.username} - ArenaKore Talent Card`,
       });
     } catch (e) {
       Alert.alert('Condivisione non disponibile');
@@ -93,7 +93,7 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle 
       <View style={styles.cardHeader}>
         <View style={styles.cardBrand}>
           <Text style={styles.brandArena}>ARENA</Text>
-          <Text style={styles.brandDare}>DARE</Text>
+          <Text style={styles.brandDare}>KORE</Text>
         </View>
         <Text style={styles.cardType}>TALENT CARD</Text>
       </View>

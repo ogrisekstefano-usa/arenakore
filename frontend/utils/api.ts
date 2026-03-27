@@ -28,8 +28,14 @@ export const api = {
   checkUsername: (username: string) =>
     request(`/auth/check-username?username=${encodeURIComponent(username)}`),
 
-  completeOnboarding: (data: { role: string; sport: string }, token: string) =>
+  completeOnboarding: (data: { role?: string; sport: string; category?: string; is_versatile?: boolean }, token: string) =>
     request('/auth/onboarding', { method: 'PUT', body: JSON.stringify(data) }, token),
+
+  getSportCategories: () => request('/sports/categories'),
+
+  getSportsByCategory: (categoryId: string) => request(`/sports/${categoryId}`),
+
+  searchSports: (query: string) => request(`/sports/search/${encodeURIComponent(query)}`),
 
   getBattles: (token: string) => request('/battles', {}, token),
 

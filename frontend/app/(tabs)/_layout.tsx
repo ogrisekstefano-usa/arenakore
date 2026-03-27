@@ -1,18 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
-import { useEffect } from 'react';
 
 const TAB_CONFIG = [
-  { name: 'core', icon: 'home', label: 'CORE' },
+  { name: 'kore', icon: 'home', label: 'KORE' },
   { name: 'crews', icon: 'people', label: 'CREWS', badge: 3 },
   { name: 'nexus-trigger', icon: 'add', label: '', isCenter: true },
   { name: 'dna', icon: 'analytics', label: 'DNA' },
-  { name: 'nexus', icon: 'flash', label: 'NEXUS' },
+  { name: 'nexus-lib', icon: 'library', label: 'NEXUS LIB' },
 ];
 
 function GoldButton({ onPress }: { onPress: () => void }) {
@@ -51,6 +50,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           return (
             <View key={route.key} style={styles.centerContainer}>
               <GoldButton onPress={onPress} />
+              <Text style={styles.centerLabel}>NEXUS</Text>
             </View>
           );
         }
@@ -98,11 +98,11 @@ export default function TabsLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
-      <Tabs.Screen name="core" />
+      <Tabs.Screen name="kore" />
       <Tabs.Screen name="crews" />
       <Tabs.Screen name="nexus-trigger" />
       <Tabs.Screen name="dna" />
-      <Tabs.Screen name="nexus" />
+      <Tabs.Screen name="nexus-lib" />
     </Tabs>
   );
 }
@@ -128,11 +128,14 @@ const styles = StyleSheet.create({
   },
   redBadgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '800' },
   tabLabel: {
-    color: '#3A3A3A', fontSize: 9, fontWeight: '700', letterSpacing: 1,
+    color: '#3A3A3A', fontSize: 8, fontWeight: '700', letterSpacing: 1,
   },
   tabLabelActive: { color: '#00F2FF' },
   centerContainer: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
+  },
+  centerLabel: {
+    color: '#3A3A3A', fontSize: 8, fontWeight: '700', letterSpacing: 1, marginTop: 38,
   },
   nexusWrapper: {
     position: 'absolute',

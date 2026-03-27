@@ -15,7 +15,7 @@ export default function AuthLanding() {
   useEffect(() => {
     if (!isLoading && token && user) {
       if (user.onboarding_completed) {
-        router.replace('/(tabs)/core');
+        router.replace('/(tabs)/kore');
       } else {
         router.replace('/onboarding/step1');
       }
@@ -25,8 +25,11 @@ export default function AuthLanding() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingArena}>ARENA</Text>
-        <Text style={styles.loadingDare}>DARE</Text>
+        <View style={styles.loadingRow}>
+          <Text style={styles.loadingArena}>ARENA</Text>
+          <Text style={styles.loadingKore}>KORE</Text>
+        </View>
+        <Text style={styles.loadingSub}>The Core of Performance</Text>
       </View>
     );
   }
@@ -42,9 +45,12 @@ export default function AuthLanding() {
         <View style={styles.overlay}>
           <View style={[styles.content, { paddingTop: insets.top + 60, paddingBottom: insets.bottom + 40 }]}>
             <View style={styles.logoContainer}>
-              <Text style={styles.tagline}>THE ARENA AWAITS</Text>
-              <Text style={styles.appNameArena}>ARENA</Text>
-              <Text style={styles.appNameDare}>DARE</Text>
+              <Text style={styles.tagline}>THE CORE OF PERFORMANCE</Text>
+              <View style={styles.nameRow}>
+                <Text style={styles.appNameArena}>ARENA</Text>
+                <Text style={styles.appNameKore}>KORE</Text>
+              </View>
+              <View style={styles.dividerLine} />
               <Text style={styles.subtitle}>Analisi Biometrica · Performance · Crew</Text>
             </View>
             <View style={styles.buttons}>
@@ -74,36 +80,42 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
   loadingContainer: {
     flex: 1, backgroundColor: '#050505',
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center', gap: 8,
   },
-  loadingArena: { fontSize: 56, fontWeight: '900', color: '#FFFFFF', letterSpacing: -2 },
-  loadingDare: { fontSize: 56, fontWeight: '900', color: '#D4AF37', letterSpacing: -2 },
+  loadingRow: { flexDirection: 'row', gap: 6 },
+  loadingArena: { fontSize: 48, fontWeight: '900', color: '#FFFFFF', letterSpacing: -2 },
+  loadingKore: { fontSize: 48, fontWeight: '900', color: '#D4AF37', letterSpacing: -2 },
+  loadingSub: { color: '#555', fontSize: 12, fontWeight: '600', letterSpacing: 3, textTransform: 'uppercase' },
   bg: { flex: 1 },
-  bgImage: { opacity: 0.35 },
-  overlay: { flex: 1, backgroundColor: 'rgba(5,5,5,0.70)' },
+  bgImage: { opacity: 0.30 },
+  overlay: { flex: 1, backgroundColor: 'rgba(5,5,5,0.72)' },
   content: { flex: 1, paddingHorizontal: 24, justifyContent: 'space-between' },
   logoContainer: { flex: 1, justifyContent: 'center', alignItems: 'flex-start' },
   tagline: {
-    color: '#00F2FF', fontSize: 11, fontWeight: '700',
-    letterSpacing: 4, marginBottom: 8, textTransform: 'uppercase',
+    color: '#00F2FF', fontSize: 10, fontWeight: '700',
+    letterSpacing: 5, marginBottom: 12, textTransform: 'uppercase',
   },
+  nameRow: { flexDirection: 'row', gap: 8 },
   appNameArena: {
-    color: '#FFFFFF', fontSize: 80, fontWeight: '900',
-    letterSpacing: -3, lineHeight: 84, textTransform: 'uppercase',
+    color: '#FFFFFF', fontSize: 72, fontWeight: '900',
+    letterSpacing: -3, lineHeight: 78, textTransform: 'uppercase',
   },
-  appNameDare: {
-    color: '#D4AF37', fontSize: 80, fontWeight: '900',
-    letterSpacing: -3, lineHeight: 84, textTransform: 'uppercase',
-    marginTop: -12,
+  appNameKore: {
+    color: '#D4AF37', fontSize: 72, fontWeight: '900',
+    letterSpacing: -3, lineHeight: 78, textTransform: 'uppercase',
   },
-  subtitle: { color: '#A0A0A0', fontSize: 13, marginTop: 16, letterSpacing: 0.5 },
+  dividerLine: {
+    width: 48, height: 2, backgroundColor: '#D4AF37',
+    marginTop: 16, marginBottom: 12, opacity: 0.6,
+  },
+  subtitle: { color: '#888', fontSize: 13, letterSpacing: 0.5 },
   buttons: { gap: 12, paddingBottom: 8 },
   primaryButton: {
     backgroundColor: '#00F2FF', borderRadius: 8,
     paddingVertical: 18, alignItems: 'center',
   },
   primaryButtonText: {
-    color: '#050505', fontSize: 16, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase',
+    color: '#050505', fontSize: 16, fontWeight: '800', letterSpacing: 2,
   },
   outlineButton: {
     backgroundColor: 'transparent', borderRadius: 8,
@@ -111,6 +123,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#00F2FF',
   },
   outlineButtonText: {
-    color: '#00F2FF', fontSize: 16, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase',
+    color: '#00F2FF', fontSize: 16, fontWeight: '800', letterSpacing: 2,
   },
 });

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, RefreshControl,
-  ActivityIndicator, StatusBar,
+  ActivityIndicator, StatusBar, TouchableOpacity,
 } from 'react-native';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle,
@@ -37,7 +37,6 @@ const xp$ = StyleSheet.create({
   fill: { height: '100%', backgroundColor: '#D4AF37', borderRadius: 2 },
 });
 
-// Pulsing live indicator
 function LiveDot() {
   const opacity = useSharedValue(1);
   useEffect(() => {
@@ -58,11 +57,26 @@ const STATUS_CFG: Record<string, { label: string; color: string; bg: string; pul
 
 function BattleCard({ battle }: { battle: any }) {
   const s = STATUS_CFG[battle.status] || STATUS_CFG.upcoming;
+  const pulseScale = useSharedValue(1);
+  
+  useEffect(() => {
+    if (battle.status === 'live') {
+      pulseScale.value = withRepeat(
+        withSequence(
+          withTiming(1.02, { duration: 1000 }),
+          withTiming(1, { duration: 1000 })
+        ),
+        -1, false
+      );
+    }
+  }, [battle.status]);
+
+  const liveStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulseScale.value }],
+  }));
+
   return (
-    <View
-      style={[bc$.card, battle.status === 'live' && bc$.cardLive]}
-      testID={`battle-card-${battle.id}`}
-    >
+    <Animated.View style={[bc$.card, battle.status === 'live' && bc$.cardLive, liveStyle]}>
       <View style={bc$.row}>
         <View style={[bc$.badge, { backgroundColor: s.bg }]}>
           {s.pulse && <LiveDot />}
@@ -76,7 +90,7 @@ function BattleCard({ battle }: { battle: any }) {
         <Text style={bc$.sport}>{battle.sport}</Text>
         <Text style={bc$.participants}>👥 {battle.participants_count} atleti</Text>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -109,7 +123,7 @@ const MEDALS = [
   { emoji: '🎖️', label: 'Onore', count: 8 },
 ];
 
-export default function CoreTab() {
+export default function KoreTab() {
   const { user, token } = useAuth();
   const [battles, setBattles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -129,9 +143,9 @@ export default function CoreTab() {
   useEffect(() => { loadBattles(); }, [token]);
 
   return (
-    <View style={styles.container} testID="core-tab">
+    <View style={styles.container} testID="kore-tab">
       <StatusBar barStyle="light-content" />
-      <Header title="CORE" />
+      <Header title="KORE" />
       <XPBar xp={user?.xp || 0} level={user?.level || 1} />
 
       {loading ? (
