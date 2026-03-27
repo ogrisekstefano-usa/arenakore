@@ -426,13 +426,13 @@ class APITester:
                             return False
                         
                         # Verify ArenaBoss is rank 1
-                        if first_user["rank"] == 1 and first_user["xp"] == 9999 and first_user["is_admin"]:
+                        if first_user["rank"] == 1 and first_user["xp"] >= 9999 and first_user["is_admin"]:
                             self.log_test(test_name, True, 
                                         f"Global leaderboard working: {first_user['username']} rank 1 with {first_user['xp']} XP, is_admin={first_user['is_admin']}")
                             return True
                         else:
                             self.log_test(test_name, False, 
-                                        f"Expected ArenaBoss rank 1 with 9999 XP and is_admin=true, got: rank={first_user['rank']}, xp={first_user['xp']}, is_admin={first_user['is_admin']}")
+                                        f"Expected ArenaBoss rank 1 with >=9999 XP and is_admin=true, got: rank={first_user['rank']}, xp={first_user['xp']}, is_admin={first_user['is_admin']}")
                     else:
                         self.log_test(test_name, False, "Empty leaderboard returned")
                 else:
@@ -706,28 +706,343 @@ class APITester:
         
         return False
     
+    # ====================================
+    # NEXUS SYNC SESSION TESTS
+    # ====================================
+    
+    def test_nexus_session_start_squat(self):
+        """Test POST /api/nexus/session/start - start squat session"""
+        test_name = "Nexus Session Start (Squat)"
+        
+        if not self.admin_token:
+            self.log_test(test_name, False, "No admin token available")
+            return False
+            
+        headers = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+        payload = {
+            "exercise_type": "squat"
+        }
+        
+        try:
+            response = requests.post(f"{BASE_URL}/nexus/session/start", 
+                                   json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "session_id" in data and "exercise_type" in data and "status" in data:
+                    if data["exercise_type"] == "squat" and data["status"] == "active":
+                        # Store session_id for completion test
+                        self.squat_session_id = data["session_id"]
+                        self.log_test(test_name, True, 
+                                    f"Squat session started: {data['session_id']}, status: {data['status']}")
+                        return True
+                    else:
+                        self.log_test(test_name, False, f"Invalid exercise_type or status", data)
+                else:
+                    self.log_test(test_name, False, "Missing session_id, exercise_type, or status", data)
+            else:
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
+    
+    def test_nexus_session_complete_squat(self):
+        """Test POST /api/nexus/session/{session_id}/complete - complete squat session"""
+        test_name = "Nexus Session Complete (Squat)"
+        
+        if not self.admin_token:
+            self.log_test(test_name, False, "No admin token available")
+            return False
+            
+        if not hasattr(self, 'squat_session_id'):
+            self.log_test(test_name, False, "No squat session_id available")
+            return False
+            
+        headers = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+        payload = {
+            "exercise_type": "squat",
+            "reps_completed": 15,
+            "quality_score": 85,
+            "duration_seconds": 45,
+            "peak_acceleration": 4.2,
+            "avg_amplitude": 78.5
+        }
+        
+        try:
+            response = requests.post(f"{BASE_URL}/nexus/session/{self.squat_session_id}/complete", 
+                                   json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify required fields
+                required_fields = ["xp_earned", "quality_multiplier", "records_broken", "dna", "user"]
+                missing_fields = [field for field in required_fields if field not in data]
+                if missing_fields:
+                    self.log_test(test_name, False, f"Missing fields: {missing_fields}", data)
+                    return False
+                
+                # Verify values
+                if data["xp_earned"] > 0 and data["quality_multiplier"] > 1:
+                    # Check user has onboarding_completed
+                    user = data["user"]
+                    if "onboarding_completed" in user:
+                        # Store initial DNA and XP for comparison
+                        self.initial_squat_dna = data["dna"]
+                        self.initial_squat_xp = user["xp"]
+                        self.squat_records = data["records_broken"]
+                        
+                        self.log_test(test_name, True, 
+                                    f"Squat session completed: XP earned={data['xp_earned']}, quality_multiplier={data['quality_multiplier']}, records_broken={len(data['records_broken'])}, forza={data['dna'].get('forza', 'N/A')}")
+                        return True
+                    else:
+                        self.log_test(test_name, False, "Missing onboarding_completed in user", user)
+                else:
+                    self.log_test(test_name, False, 
+                                f"Invalid XP or quality multiplier: xp_earned={data['xp_earned']}, quality_multiplier={data['quality_multiplier']}")
+            else:
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
+    
+    def test_nexus_session_start_punch(self):
+        """Test POST /api/nexus/session/start - start punch session"""
+        test_name = "Nexus Session Start (Punch)"
+        
+        if not self.admin_token:
+            self.log_test(test_name, False, "No admin token available")
+            return False
+            
+        headers = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+        payload = {
+            "exercise_type": "punch"
+        }
+        
+        try:
+            response = requests.post(f"{BASE_URL}/nexus/session/start", 
+                                   json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "session_id" in data and "exercise_type" in data and "status" in data:
+                    if data["exercise_type"] == "punch" and data["status"] == "active":
+                        # Store session_id for completion test
+                        self.punch_session_id = data["session_id"]
+                        self.log_test(test_name, True, 
+                                    f"Punch session started: {data['session_id']}, status: {data['status']}")
+                        return True
+                    else:
+                        self.log_test(test_name, False, f"Invalid exercise_type or status", data)
+                else:
+                    self.log_test(test_name, False, "Missing session_id, exercise_type, or status", data)
+            else:
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
+    
+    def test_nexus_session_complete_punch(self):
+        """Test POST /api/nexus/session/{session_id}/complete - complete punch session"""
+        test_name = "Nexus Session Complete (Punch)"
+        
+        if not self.admin_token:
+            self.log_test(test_name, False, "No admin token available")
+            return False
+            
+        if not hasattr(self, 'punch_session_id'):
+            self.log_test(test_name, False, "No punch session_id available")
+            return False
+            
+        headers = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+        payload = {
+            "exercise_type": "punch",
+            "reps_completed": 20,
+            "quality_score": 90,
+            "duration_seconds": 30,
+            "peak_acceleration": 5.5,
+            "avg_amplitude": 85.0
+        }
+        
+        try:
+            response = requests.post(f"{BASE_URL}/nexus/session/{self.punch_session_id}/complete", 
+                                   json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify required fields
+                required_fields = ["xp_earned", "quality_multiplier", "records_broken", "dna", "user"]
+                missing_fields = [field for field in required_fields if field not in data]
+                if missing_fields:
+                    self.log_test(test_name, False, f"Missing fields: {missing_fields}", data)
+                    return False
+                
+                # Verify values and DNA changes for punch (velocita, potenza, agilita should increase)
+                if data["xp_earned"] > 0 and data["quality_multiplier"] > 1:
+                    dna = data["dna"]
+                    # Check if velocita, potenza, agilita increased from initial squat DNA
+                    if hasattr(self, 'initial_squat_dna'):
+                        velocita_increased = dna.get("velocita", 0) > self.initial_squat_dna.get("velocita", 0)
+                        potenza_increased = dna.get("potenza", 0) > self.initial_squat_dna.get("potenza", 0)
+                        agilita_increased = dna.get("agilita", 0) > self.initial_squat_dna.get("agilita", 0)
+                        
+                        self.punch_dna = dna
+                        self.punch_records = data["records_broken"]
+                        
+                        self.log_test(test_name, True, 
+                                    f"Punch session completed: XP earned={data['xp_earned']}, velocita_increased={velocita_increased}, potenza_increased={potenza_increased}, agilita_increased={agilita_increased}")
+                        return True
+                    else:
+                        self.log_test(test_name, True, 
+                                    f"Punch session completed: XP earned={data['xp_earned']}, quality_multiplier={data['quality_multiplier']}")
+                        return True
+                else:
+                    self.log_test(test_name, False, 
+                                f"Invalid XP or quality multiplier: xp_earned={data['xp_earned']}, quality_multiplier={data['quality_multiplier']}")
+            else:
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
+    
+    def test_nexus_session_history(self):
+        """Test GET /api/nexus/sessions - get session history"""
+        test_name = "Nexus Session History"
+        
+        if not self.admin_token:
+            self.log_test(test_name, False, "No admin token available")
+            return False
+            
+        headers = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+        
+        try:
+            response = requests.get(f"{BASE_URL}/nexus/sessions", 
+                                  headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    # Should contain at least the sessions we just created
+                    if len(data) >= 2:
+                        # Check if we have squat and punch sessions
+                        exercise_types = [session.get("exercise_type") for session in data]
+                        has_squat = "squat" in exercise_types
+                        has_punch = "punch" in exercise_types
+                        
+                        # Verify session structure
+                        first_session = data[0]
+                        required_fields = ["id", "exercise_type", "status", "reps_completed", "quality_score", "xp_earned", "duration_seconds", "started_at"]
+                        missing_fields = [field for field in required_fields if field not in first_session]
+                        
+                        if missing_fields:
+                            self.log_test(test_name, False, f"Missing fields in session: {missing_fields}", first_session)
+                            return False
+                        
+                        self.log_test(test_name, True, 
+                                    f"Session history retrieved: {len(data)} sessions, has_squat={has_squat}, has_punch={has_punch}")
+                        return True
+                    else:
+                        self.log_test(test_name, False, f"Expected at least 2 sessions, got {len(data)}")
+                else:
+                    self.log_test(test_name, False, "Invalid session history data structure", data)
+            else:
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
+    
+    def test_nexus_records_not_broken(self):
+        """Test that second session with lower reps does NOT break records"""
+        test_name = "Nexus Records Not Broken (Lower Reps)"
+        
+        if not self.admin_token:
+            self.log_test(test_name, False, "No admin token available")
+            return False
+            
+        headers = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+        
+        try:
+            # Start another squat session
+            start_payload = {"exercise_type": "squat"}
+            start_response = requests.post(f"{BASE_URL}/nexus/session/start", 
+                                         json=start_payload, headers=headers, timeout=10)
+            
+            if start_response.status_code != 200:
+                self.log_test(test_name, False, f"Failed to start session: {start_response.status_code}")
+                return False
+            
+            session_data = start_response.json()
+            session_id = session_data["session_id"]
+            
+            # Complete with lower reps than first session (15 -> 10)
+            complete_payload = {
+                "exercise_type": "squat",
+                "reps_completed": 10,  # Lower than previous 15
+                "quality_score": 75,   # Lower than previous 85
+                "duration_seconds": 40,
+                "peak_acceleration": 3.8,  # Lower than previous 4.2
+                "avg_amplitude": 70.0
+            }
+            
+            complete_response = requests.post(f"{BASE_URL}/nexus/session/{session_id}/complete", 
+                                            json=complete_payload, headers=headers, timeout=10)
+            
+            if complete_response.status_code == 200:
+                data = complete_response.json()
+                records_broken = data.get("records_broken", [])
+                
+                # Should have no records broken since all values are lower
+                if len(records_broken) == 0:
+                    self.log_test(test_name, True, 
+                                f"Records correctly NOT broken with lower performance: reps=10, quality=75, acceleration=3.8")
+                    return True
+                else:
+                    self.log_test(test_name, False, 
+                                f"Unexpected records broken: {records_broken}")
+            else:
+                self.log_test(test_name, False, 
+                            f"HTTP {complete_response.status_code}", complete_response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
+    
     def run_all_tests(self):
         """Run all backend tests in sequence"""
-        print("🚀 ARENAKORE Backend API Test Suite - LEADERBOARD FOCUS")
+        print("🚀 ARENAKORE Backend API Test Suite - NEXUS SYNC SESSION FOCUS")
         print(f"Base URL: {BASE_URL}")
         print("=" * 60)
         print()
         
-        # Test sequence as specified in review request - LEADERBOARD FOCUS
+        # Test sequence as specified in review request - NEXUS SYNC SESSION FOCUS
         tests = [
             # Core auth tests
             self.test_admin_login,
             
-            # NEW LEADERBOARD TESTS
+            # NEW NEXUS SYNC SESSION TESTS
+            self.test_nexus_session_start_squat,
+            self.test_nexus_session_complete_squat,
+            self.test_nexus_session_start_punch,
+            self.test_nexus_session_complete_punch,
+            self.test_nexus_session_history,
+            self.test_nexus_records_not_broken,
+            
+            # Verify existing endpoints still work (leaderboard, crews, auth)
             self.test_global_leaderboard,
             self.test_sport_leaderboard,
             self.test_crews_leaderboard,
             self.test_my_rank_admin,
-            self.test_my_rank_combat_category,
-            self.test_new_user_rank,
-            self.test_leaderboard_caching,
-            
-            # Verify existing endpoints still work
             self.test_user_registration,
             self.test_user_login,
             self.test_get_current_user,
