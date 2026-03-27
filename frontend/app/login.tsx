@@ -23,7 +23,12 @@ export default function Login() {
     setLoading(true);
     setError('');
     try {
-      await login(email, password);
+      const result = await login(email, password);
+      if (result.onboarding_completed) {
+        router.replace('/(tabs)/core');
+      } else {
+        router.replace('/onboarding/step1');
+      }
     } catch (e: any) {
       setError(e.message || 'Errore di accesso');
     } finally {

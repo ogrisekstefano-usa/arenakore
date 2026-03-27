@@ -62,6 +62,7 @@ export default function Register() {
     setError('');
     try {
       await register(username, email, password);
+      router.replace('/onboarding/step1');
     } catch (e: any) {
       setError(e.message || 'Errore di registrazione');
     } finally {
