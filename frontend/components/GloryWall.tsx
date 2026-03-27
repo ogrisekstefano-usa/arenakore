@@ -13,6 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { api } from '../utils/api';
 import { playAcceptPing } from '../utils/sounds';
 import { HALL_OF_KORE_BG } from '../utils/images';
+import { ControlCenter } from './ControlCenter';
 
 const MEDAL_COLORS = {
   1: { bg: 'rgba(212,175,55,0.2)', border: 'rgba(212,175,55,0.5)', text: '#D4AF37', glow: '#D4AF37', emoji: '\ud83e\udd47' },
@@ -336,6 +337,7 @@ export function HallOfKore() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const hasPlayedTop10 = useRef(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!token) return;
@@ -384,6 +386,7 @@ export function HallOfKore() {
   const categories = Object.keys(CATEGORY_LABELS);
 
   return (
+    <>
     <ImageBackground
       source={{ uri: HALL_OF_KORE_BG }}
       style={gl$.container}
@@ -401,6 +404,9 @@ export function HallOfKore() {
             <Text style={gl$.titleIcon}>{'\ud83c\udfc6'}</Text>
             <Text style={gl$.title}>HALL OF KORE</Text>
           </View>
+          <TouchableOpacity onPress={() => setMenuOpen(true)} style={{ padding: 6 }}>
+            <Text style={{ color: '#00F2FF', fontSize: 22, fontWeight: '700' }}>{'\u2630'}</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Tab Switcher */}
@@ -516,6 +522,8 @@ export function HallOfKore() {
         )}
       </LinearGradient>
     </ImageBackground>
+    <ControlCenter visible={menuOpen} onClose={() => setMenuOpen(false)} />
+    </>
   );
 }
 
@@ -523,7 +531,7 @@ const gl$ = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
   overlay: { flex: 1 },
   header: {
-    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 16, paddingBottom: 10,
   },
   titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
