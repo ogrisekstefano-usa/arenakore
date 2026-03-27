@@ -110,6 +110,12 @@ export const api = {
   getRescanEligibility: (token: string) => request('/nexus/rescan-eligibility', {}, token),
   completeBioscan: (token: string) => request('/nexus/bioscan', { method: 'POST' }, token),
 
+  // ========== NOTIFICATION ENGINE — SPRINT 9 ==========
+  getNotifications: (token: string) => request('/notifications', {}, token),
+  markNotificationRead: (token: string, id: string) => request(`/notifications/${id}/read`, { method: 'POST' }, token),
+  createTestNotification: (token: string) => request('/notifications/test-trigger', { method: 'POST' }, token),
+  getDnaHistory: (token: string) => request('/dna/history', {}, token),
+
   // ========== COACH STUDIO — TEMPLATE ENGINE ==========
   createTemplate: (data: { name: string; exercise: string; target_time: number; target_reps: number; xp_reward: number; difficulty: string; description?: string }, token: string) =>
     request('/templates', { method: 'POST', body: JSON.stringify(data) }, token),

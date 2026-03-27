@@ -1,13 +1,15 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar, ImageBackground,
-  Dimensions,
+  Dimensions, TouchableOpacity,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { Header } from '../../components/Header';
 import { RadarChart } from '../../components/RadarChart';
+import { RadarChartMulti, RadarMultiLegend } from '../../components/RadarChartMulti';
+import { NotificationDrawer } from '../../components/notifications/NotificationDrawer';
 import { TalentCard } from '../../components/TalentCard';
 import { useFocusEffect } from 'expo-router';
 import Animated, {
@@ -99,6 +101,12 @@ export default function DNATab() {
   const [showGlitch, setShowGlitch] = useState(false);
   const [eligibility, setEligibility] = useState<any>(null);
   const [showEvoGlow, setShowEvoGlow] = useState(false);
+  // SPRINT 9: Notifications + History
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifDrawer, setShowNotifDrawer] = useState(false);
+  const [historyScans, setHistoryScans] = useState<any[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   const scanOpacity = useSharedValue(0);
   const scanScale = useSharedValue(0.88);
@@ -115,6 +123,8 @@ export default function DNATab() {
       scanScale.value = withSpring(1, { damping: 14, stiffness: 100 });
       loadRecentChallenge();
       loadEligibility();
+      loadNotifications();
+      loadDnaHistory();
     }, [])
   );
 
@@ -153,6 +163,41 @@ export default function DNATab() {
     } catch (e) { /* silenced */ }
   };
 
+  const loadNotifications = async () => {
+    if (!token) return;
+    try {
+      const data = await api.getNotifications(token);
+      setNotifications(data.notifications || []);
+      setUnreadCount(data.unread_count || 0);
+    } catch (e) { /* silenced */ }
+  };
+
+  const loadDnaHistory = async () => {
+    if (!token) return;
+    try {
+      const data = await api.getDnaHistory(token);
+      setHistoryScans(data.scans || []);
+    } catch (e) { /* silenced */ }
+  };
+
+  const handleMarkRead = async (id: string) => {
+    if (!token) return;
+    try {
+      await api.markNotificationRead(token, id);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (e) { /* silenced */ }
+  };
+
+  const handleMarkAllRead = async () => {
+    if (!token) return;
+    try {
+      await api.markNotificationRead(token, 'all');
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setUnreadCount(0);
+    } catch (e) { /* silenced */ }
+  };
+
   const scanStyle = useAnimatedStyle(() => ({
     opacity: scanOpacity.value,
     transform: [{ scale: scanScale.value }],
@@ -166,7 +211,23 @@ export default function DNATab() {
   return (
     <View style={styles.container} testID="dna-tab">
       <StatusBar barStyle="light-content" />
-      <Header title="DNA" />
+      <Header
+        title="DNA"
+        rightAction={
+          <TouchableOpacity
+            onPress={() => setShowNotifDrawer(true)}
+            style={styles.notifBell}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="notifications" size={19} color={unreadCount > 0 ? '#00F2FF' : 'rgba(255,255,255,0.4)'} />
+            {unreadCount > 0 && (
+              <View style={styles.notifBellBadge}>
+                <Text style={styles.notifBellBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        }
+      />
       <GlitchOverlay active={showGlitch} />
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -306,8 +367,82 @@ export default function DNATab() {
             />
           </View>
         )}
+
+        {/* ====== DNA HISTORY — SPRINT 9 ====== */}
+        {historyScans.length > 0 && (
+          <View style={styles.historySectionWrap}>
+            <TouchableOpacity
+              style={styles.historyToggle}
+              onPress={() => setShowHistory(!showHistory)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.historyToggleLeft}>
+                <Ionicons name="analytics" size={13} color="#D4AF37" />
+                <Text style={styles.historyToggleLabel}>CRONOLOGIA BIO-SIGNATURE</Text>
+                <View style={styles.historyCountBadge}>
+                  <Text style={styles.historyCountText}>{historyScans.length}</Text>
+                </View>
+              </View>
+              <Ionicons
+                name={showHistory ? 'chevron-up' : 'chevron-down'}
+                size={14}
+                color="rgba(255,255,255,0.35)"
+              />
+            </TouchableOpacity>
+
+            {showHistory && (
+              <View style={styles.historyContent}>
+                <View style={styles.multiRadarWrap}>
+                  <RadarChartMulti scans={historyScans} size={220} />
+                  <RadarMultiLegend scanCount={Math.min(historyScans.length, 3)} />
+                </View>
+
+                <View style={styles.timelineWrap}>
+                  {[...historyScans].reverse().map((scan, idx) => {
+                    const scanDate = scan.scanned_at
+                      ? new Date(scan.scanned_at).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()
+                      : '\u2014';
+                    const avg = scan.dna
+                      ? Math.round(Object.values(scan.dna as Record<string, number>).reduce((a: number, b: number) => a + b, 0) / 6)
+                      : 0;
+                    const typeBadgeColor = scan.scan_type === 'baseline' ? 'rgba(255,255,255,0.35)' : scan.scan_type === 'validation' ? '#00F2FF' : '#D4AF37';
+                    return (
+                      <View key={idx} style={styles.timelineRow}>
+                        <View style={styles.timelineDotCol}>
+                          <View style={[styles.timelineDot, { backgroundColor: idx === 0 ? '#00F2FF' : idx === 1 ? '#D4AF37' : 'rgba(255,255,255,0.3)' }]} />
+                          {idx < historyScans.length - 1 && <View style={styles.timelineLine} />}
+                        </View>
+                        <View style={styles.timelineInfo}>
+                          <View style={styles.timelineTopRow}>
+                            <Text style={styles.timelineDate}>{scanDate}</Text>
+                            <View style={[styles.timelineTypeBadge, { borderColor: typeBadgeColor + '55' }]}>
+                              <Text style={[styles.timelineTypeText, { color: typeBadgeColor }]}>
+                                {scan.scan_type.toUpperCase()}
+                              </Text>
+                            </View>
+                          </View>
+                          <Text style={styles.timelineAvg}>DNA MEDIO: <Text style={styles.timelineAvgVal}>{avg}/100</Text></Text>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+
         <View style={{ height: 32 }} />
       </ScrollView>
+
+      <NotificationDrawer
+        visible={showNotifDrawer}
+        onClose={() => setShowNotifDrawer(false)}
+        notifications={notifications}
+        unreadCount={unreadCount}
+        onMarkRead={handleMarkRead}
+        onMarkAllRead={handleMarkAllRead}
+      />
     </View>
   );
 }
@@ -418,4 +553,46 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', fontSize: 13, fontWeight: '900',
     letterSpacing: 2, textTransform: 'uppercase',
   },
+  // Notification Bell
+  notifBell: { position: 'relative', padding: 4 },
+  notifBellBadge: {
+    position: 'absolute', top: 0, right: 0,
+    backgroundColor: '#00F2FF', borderRadius: 7,
+    minWidth: 14, height: 14,
+    alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  notifBellBadgeText: { color: '#000', fontSize: 8, fontWeight: '900' },
+  // History Section
+  historySectionWrap: {
+    marginHorizontal: 14, marginTop: 16,
+    borderRadius: 16, overflow: 'hidden',
+    borderWidth: 1, borderColor: 'rgba(212,175,55,0.14)',
+    backgroundColor: 'rgba(212,175,55,0.03)',
+  },
+  historyToggle: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 14,
+  },
+  historyToggleLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  historyToggleLabel: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  historyCountBadge: {
+    backgroundColor: 'rgba(212,175,55,0.15)', borderRadius: 8,
+    paddingHorizontal: 7, paddingVertical: 2,
+  },
+  historyCountText: { color: '#D4AF37', fontSize: 9, fontWeight: '900' },
+  historyContent: { borderTopWidth: 1, borderTopColor: 'rgba(212,175,55,0.1)', paddingBottom: 16 },
+  multiRadarWrap: { alignItems: 'center', paddingVertical: 16 },
+  timelineWrap: { paddingHorizontal: 16, gap: 0 },
+  timelineRow: { flexDirection: 'row', gap: 12, paddingVertical: 8 },
+  timelineDotCol: { alignItems: 'center', width: 10 },
+  timelineDot: { width: 10, height: 10, borderRadius: 5, marginTop: 4 },
+  timelineLine: { width: 2, flex: 1, backgroundColor: 'rgba(255,255,255,0.07)', marginTop: 4 },
+  timelineInfo: { flex: 1, gap: 4 },
+  timelineTopRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  timelineDate: { color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
+  timelineTypeBadge: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1 },
+  timelineTypeText: { fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
+  timelineAvg: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  timelineAvgVal: { color: 'rgba(255,255,255,0.65)', fontWeight: '900' },
 });

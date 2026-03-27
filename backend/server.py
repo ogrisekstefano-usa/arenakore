@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import os
 import logging
 import random
@@ -660,6 +661,15 @@ async def get_crews(current_user: dict = Depends(get_current_user)):
 
 @app.on_event("startup")
 async def seed_data():
+    # Start Bio-Evolution notification scheduler
+    scheduler.add_job(
+        check_notification_triggers,
+        'interval', hours=6,
+        id='bio_evolution_notif',
+        replace_existing=True,
+    )
+    scheduler.start()
+    logger.info("[NotifEngine] Scheduler started — running every 6h")
     # THE FOUNDER PROTOCOL — Retroactive badge for first 100 users
     founder_count = await db.users.count_documents({"is_founder": True})
     if founder_count == 0:
@@ -1054,8 +1064,106 @@ async def get_rescan_eligibility(current_user: dict = Depends(get_current_user))
                 "message": f"PROSSIMA EVOLUZIONE TRA: {days_remaining} GIORNI"}
 
     return {**base_response, "can_scan": True, "scan_type": "evolution",
-            "phase": "evolution_ready", "hours_remaining": None, "days_remaining": None,
+            "phase": "evolution_ready", "hours_remaining": None, "days_remaining": 0,
             "message": "EVOLUTION SCAN DISPONIBILE"}
+
+
+# ============================================================
+# SPRINT 9 — NOTIFICATION ENGINE ENDPOINTS
+# ============================================================
+
+@api_router.get("/notifications")
+async def get_notifications(current_user: dict = Depends(get_current_user)):
+    """Get user's notifications, most recent first"""
+    user_id = str(current_user["_id"])
+    raw = await db.notifications.find(
+        {"user_id": user_id}
+    ).sort("created_at", -1).to_list(50)
+
+    result = []
+    for n in raw:
+        meta = NOTIF_ICONS.get(n.get("type", ""), {"icon": "notifications", "color": "#FFFFFF"})
+        result.append({
+            "id": str(n["_id"]),
+            "type": n.get("type"),
+            "title": n.get("title"),
+            "body": n.get("body"),
+            "read": n.get("read", False),
+            "icon": meta["icon"],
+            "accent_color": meta["color"],
+            "created_at": n.get("created_at").isoformat() if n.get("created_at") else None,
+        })
+
+    unread_count = sum(1 for n in result if not n["read"])
+    return {"notifications": result, "unread_count": unread_count}
+
+
+@api_router.post("/notifications/{notif_id}/read")
+async def mark_notification_read(notif_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark a single notification (or 'all') as read"""
+    user_id = str(current_user["_id"])
+    if notif_id == "all":
+        await db.notifications.update_many(
+            {"user_id": user_id, "read": False},
+            {"$set": {"read": True}}
+        )
+        return {"success": True, "action": "all_marked_read"}
+    try:
+        oid = ObjectId(notif_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid notification ID")
+    result = await db.notifications.update_one(
+        {"_id": oid, "user_id": user_id},
+        {"$set": {"read": True}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    return {"success": True, "id": notif_id}
+
+
+@api_router.post("/notifications/test-trigger")
+async def test_notification_trigger(current_user: dict = Depends(get_current_user)):
+    """ADMIN ONLY: Force-create a test notification for the current user"""
+    now = datetime.now(timezone.utc)
+    await db.notifications.insert_one({
+        "user_id": str(current_user["_id"]),
+        "type": "hype_24h",
+        "title": "DOMANI: EVOLUZIONE DNA",
+        "body": "Preparati per la nuova Bio-Signature. La tua finestra evolutiva apre domani.",
+        "read": False, "created_at": now,
+    })
+    return {"success": True, "message": "Test notification created"}
+
+
+@api_router.get("/dna/history")
+async def get_dna_history(current_user: dict = Depends(get_current_user)):
+    """Return full DNA scan history with month-over-month improvement rates"""
+    dna_scans = current_user.get("dna_scans", [])
+    history = []
+    for scan in dna_scans:
+        scanned_at = scan.get("scanned_at")
+        if scanned_at and hasattr(scanned_at, 'tzinfo') and scanned_at.tzinfo is None:
+            scanned_at = scanned_at.replace(tzinfo=timezone.utc)
+        history.append({
+            "dna": scan.get("dna", {}),
+            "scanned_at": scanned_at.isoformat() if scanned_at else None,
+            "scan_type": scan.get("scan_type", "unknown"),
+        })
+
+    # Month-over-month improvements between consecutive scans
+    improvements_over_time = []
+    dna_keys = ["velocita", "forza", "resistenza", "agilita", "tecnica", "potenza"]
+    for i in range(1, len(history)):
+        prev = history[i - 1]["dna"]
+        curr = history[i]["dna"]
+        rates = {k: round(((curr.get(k, 0) - prev.get(k, 0)) / prev.get(k, 1) * 100), 1) for k in dna_keys}
+        improvements_over_time.append(rates)
+
+    return {
+        "scans": history,
+        "total": len(history),
+        "improvements_over_time": improvements_over_time,
+    }
 
 
 @api_router.post("/nexus/bioscan")
@@ -2165,7 +2273,99 @@ app.add_middleware(
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# ============================================================
+# NOTIFICATION ENGINE — SPRINT 9
+# ============================================================
+scheduler = AsyncIOScheduler(timezone="UTC")
+
+NOTIF_ICONS = {
+    "hype_24h":        {"icon": "flash",       "color": "#D4AF37"},
+    "evolution_ready": {"icon": "scan",         "color": "#00F2FF"},
+    "pro_grace_warning": {"icon": "warning",   "color": "#FF453A"},
+    "pro_revoked":     {"icon": "lock-closed",  "color": "#FF453A"},
+    "bio_scan_reminder": {"icon": "time",       "color": "#888888"},
+}
+
+async def check_notification_triggers():
+    """Background job: check all users for Bio-Evolution notification events every 6h"""
+    now = datetime.now(timezone.utc)
+    logger.info(f"[NotifEngine] Checking triggers at {now.strftime('%Y-%m-%d %H:%M UTC')}")
+
+    try:
+        async for user in db.users.find(
+            {"validation_scanned_at": {"$exists": True, "$ne": None}}
+        ):
+            validation_at = user.get("validation_scanned_at")
+            if not validation_at:
+                continue
+            if hasattr(validation_at, 'tzinfo') and validation_at.tzinfo is None:
+                validation_at = validation_at.replace(tzinfo=timezone.utc)
+
+            days_since = (now - validation_at).days
+            user_id = str(user["_id"])
+
+            # Skip if user already did evolution scan
+            dna_scans = user.get("dna_scans", [])
+            did_evolve = any(
+                s.get("scan_type") == "evolution"
+                and (lambda sa: sa and (sa.replace(tzinfo=timezone.utc) if sa.tzinfo is None else sa) > validation_at)(s.get("scanned_at"))
+                for s in dna_scans
+            )
+            if did_evolve:
+                continue
+
+            async def notif_exists(ntype: str, days: int = 2) -> bool:
+                return bool(await db.notifications.find_one({
+                    "user_id": user_id, "type": ntype,
+                    "created_at": {"$gte": now - timedelta(days=days)}
+                }))
+
+            async def create_notif(ntype: str, title: str, body: str):
+                await db.notifications.insert_one({
+                    "user_id": user_id, "type": ntype,
+                    "title": title, "body": body,
+                    "read": False, "created_at": now,
+                })
+                logger.info(f"[NotifEngine] '{ntype}' created for {user_id}")
+
+            # Day 29: 24h hype
+            if 29 <= days_since < 30:
+                if not await notif_exists("hype_24h"):
+                    await create_notif("hype_24h",
+                        "DOMANI: EVOLUZIONE DNA",
+                        "Preparati per la nuova Bio-Signature. La tua finestra evolutiva apre domani.")
+
+            # Day 30: Evolution ready
+            elif 30 <= days_since < 31:
+                if not await notif_exists("evolution_ready"):
+                    await create_notif("evolution_ready",
+                        "EVOLUTION SCAN DISPONIBILE",
+                        "La tua finestra evolutiva è aperta. Esegui la Bio-Scan per mantenere l'accesso PRO.")
+
+            # Day 32: PRO grace warning
+            elif 32 <= days_since < 33 and user.get("pro_unlocked"):
+                if not await notif_exists("pro_grace_warning"):
+                    await create_notif("pro_grace_warning",
+                        "ACCESSO PRO A RISCHIO",
+                        "Hai 24 ore per completare la Bio-Scan o perderai i tuoi privilegi PRO.")
+
+            # Day 33+: Revoke PRO
+            elif days_since >= 33 and user.get("pro_unlocked"):
+                await db.users.update_one(
+                    {"_id": user["_id"]},
+                    {"$set": {"pro_unlocked": False, "pro_revoked_at": now}}
+                )
+                if not await notif_exists("pro_revoked", days=7):
+                    await create_notif("pro_revoked",
+                        "BIO-FIRMA SCADUTA",
+                        "Accesso PRO sospeso. Completa la Bio-Scan per ripristinare i tuoi privilegi.")
+
+    except Exception as e:
+        logger.error(f"[NotifEngine] Error: {e}")
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    if scheduler.running:
+        scheduler.shutdown(wait=False)
     client.close()

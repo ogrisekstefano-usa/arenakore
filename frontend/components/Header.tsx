@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { ControlCenter } from './ControlCenter';
 
-export function Header({ title }: { title: string }) {
+export function Header({ title, rightAction }: { title: string; rightAction?: React.ReactNode }) {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -19,9 +19,12 @@ export function Header({ title }: { title: string }) {
             <Text style={styles.brandKore}>KORE</Text>
           </View>
           <Text style={styles.title}>{title}</Text>
-          <TouchableOpacity onPress={() => setMenuOpen(true)} style={styles.menuBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="menu" size={24} color="#00F2FF" />
-          </TouchableOpacity>
+          <View style={styles.rightRow}>
+            {rightAction}
+            <TouchableOpacity onPress={() => setMenuOpen(true)} style={styles.menuBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Ionicons name="menu" size={24} color="#00F2FF" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
       <ControlCenter visible={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -36,5 +39,6 @@ const styles = StyleSheet.create({
   brandArena: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 0 },
   brandKore: { color: '#D4AF37', fontSize: 15, fontWeight: '900', letterSpacing: 0 },
   title: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
+  rightRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   menuBtn: { padding: 6 },
 });
