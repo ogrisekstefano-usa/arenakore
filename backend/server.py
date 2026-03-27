@@ -919,6 +919,169 @@ async def search_users(query: str, current_user: dict = Depends(get_current_user
 
 
 # ====================================
+# NEXUS SYNC — SESSION ENGINE
+# ====================================
+@api_router.post("/nexus/session/start")
+async def start_nexus_session(body: dict, current_user: dict = Depends(get_current_user)):
+    """Start a new Nexus Sync training session"""
+    exercise_type = body.get("exercise_type", "squat")  # squat | punch
+    target_reps = body.get("target_reps", 0)
+
+    session = {
+        "user_id": current_user["_id"],
+        "exercise_type": exercise_type,
+        "target_reps": target_reps,
+        "status": "active",
+        "started_at": datetime.now(timezone.utc),
+        "completed_at": None,
+        "reps_completed": 0,
+        "quality_score": 0,
+        "xp_earned": 0,
+        "motion_data": {},
+    }
+    result = await db.nexus_sessions.insert_one(session)
+
+    return {
+        "session_id": str(result.inserted_id),
+        "exercise_type": exercise_type,
+        "status": "active",
+    }
+
+
+@api_router.post("/nexus/session/{session_id}/complete")
+async def complete_nexus_session(session_id: str, body: dict, current_user: dict = Depends(get_current_user)):
+    """Complete a Nexus Sync session with real motion data"""
+    session = await db.nexus_sessions.find_one({"_id": ObjectId(session_id)})
+    if not session:
+        raise HTTPException(status_code=404, detail="Sessione non trovata")
+
+    reps = body.get("reps_completed", 0)
+    quality_score = min(body.get("quality_score", 50), 100)
+    exercise_type = body.get("exercise_type", session.get("exercise_type", "squat"))
+    duration_seconds = body.get("duration_seconds", 30)
+    peak_acceleration = body.get("peak_acceleration", 0)
+    avg_amplitude = body.get("avg_amplitude", 0)
+
+    # REAL XP CALCULATION
+    # Base XP: 5 per rep
+    base_xp = reps * 5
+    # Quality bonus: up to 3x multiplier for perfect form
+    quality_multiplier = 1 + (quality_score / 100) * 2  # 1.0 → 3.0
+    # Gold bonus for high quality (>80%)
+    gold_bonus = int(reps * 2) if quality_score >= 80 else 0
+    # Duration bonus
+    time_bonus = min(int(duration_seconds / 10), 20)
+
+    total_xp = int(base_xp * quality_multiplier) + gold_bonus + time_bonus
+
+    # Update session
+    await db.nexus_sessions.update_one({"_id": ObjectId(session_id)}, {"$set": {
+        "status": "completed",
+        "completed_at": datetime.now(timezone.utc),
+        "reps_completed": reps,
+        "quality_score": quality_score,
+        "xp_earned": total_xp,
+        "duration_seconds": duration_seconds,
+        "peak_acceleration": peak_acceleration,
+        "avg_amplitude": avg_amplitude,
+        "motion_data": body.get("motion_data", {}),
+    }})
+
+    # Update user XP
+    user = await db.users.find_one({"_id": current_user["_id"]})
+    current_xp = user.get("xp", 0) + total_xp
+    new_level = current_xp // 500 + 1
+    level_up = new_level > user.get("level", 1)
+
+    # Update DNA based on exercise type
+    dna = user.get("dna", {})
+    if exercise_type == "squat":
+        dna["forza"] = min(100, dna.get("forza", 50) + reps * 0.3)
+        dna["resistenza"] = min(100, dna.get("resistenza", 50) + reps * 0.2)
+        dna["potenza"] = min(100, dna.get("potenza", 50) + reps * 0.1)
+    elif exercise_type == "punch":
+        dna["velocita"] = min(100, dna.get("velocita", 50) + reps * 0.3)
+        dna["potenza"] = min(100, dna.get("potenza", 50) + reps * 0.2)
+        dna["agilita"] = min(100, dna.get("agilita", 50) + reps * 0.1)
+
+    # Round DNA values
+    dna = {k: round(v, 1) for k, v in dna.items()}
+
+    # Check for records
+    records_broken = []
+    user_records = user.get("records", {})
+    if reps > user_records.get(f"{exercise_type}_reps", 0):
+        records_broken.append(f"{exercise_type}_reps")
+        user_records[f"{exercise_type}_reps"] = reps
+    if quality_score > user_records.get(f"{exercise_type}_quality", 0):
+        records_broken.append(f"{exercise_type}_quality")
+        user_records[f"{exercise_type}_quality"] = quality_score
+    if peak_acceleration > user_records.get("peak_acceleration", 0):
+        records_broken.append("peak_acceleration")
+        user_records["peak_acceleration"] = peak_acceleration
+
+    await db.users.update_one({"_id": current_user["_id"]}, {"$set": {
+        "xp": current_xp,
+        "level": new_level,
+        "dna": dna,
+        "records": user_records,
+        "last_active": datetime.now(timezone.utc),
+    }})
+
+    updated_user = await db.users.find_one({"_id": current_user["_id"]})
+
+    return {
+        "session_id": session_id,
+        "exercise_type": exercise_type,
+        "reps_completed": reps,
+        "quality_score": quality_score,
+        "base_xp": base_xp,
+        "quality_multiplier": round(quality_multiplier, 2),
+        "gold_bonus": gold_bonus,
+        "time_bonus": time_bonus,
+        "xp_earned": total_xp,
+        "records_broken": records_broken,
+        "level_up": level_up,
+        "new_level": new_level,
+        "new_xp": current_xp,
+        "dna": dna,
+        "user": {
+            "id": str(updated_user["_id"]),
+            "username": updated_user["username"],
+            "email": updated_user["email"],
+            "xp": updated_user.get("xp", 0),
+            "level": updated_user.get("level", 1),
+            "sport": updated_user.get("sport"),
+            "category": updated_user.get("category"),
+            "dna": updated_user.get("dna"),
+            "is_admin": updated_user.get("is_admin", False),
+            "onboarding_completed": updated_user.get("onboarding_completed", True),
+            "is_versatile": updated_user.get("is_versatile", False),
+            "role": updated_user.get("role"),
+        },
+    }
+
+
+@api_router.get("/nexus/sessions")
+async def get_nexus_sessions(current_user: dict = Depends(get_current_user)):
+    """Get user's Nexus Sync session history"""
+    sessions = await db.nexus_sessions.find(
+        {"user_id": current_user["_id"]}
+    ).sort("started_at", -1).to_list(20)
+
+    return [{
+        "id": str(s["_id"]),
+        "exercise_type": s.get("exercise_type"),
+        "status": s.get("status"),
+        "reps_completed": s.get("reps_completed", 0),
+        "quality_score": s.get("quality_score", 0),
+        "xp_earned": s.get("xp_earned", 0),
+        "duration_seconds": s.get("duration_seconds", 0),
+        "started_at": s.get("started_at", "").isoformat() if s.get("started_at") else None,
+    } for s in sessions]
+
+
+# ====================================
 # LEADERBOARD / GLORY WALL ENGINE
 # ====================================
 # Simple in-memory cache with TTL

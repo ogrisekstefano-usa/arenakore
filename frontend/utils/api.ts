@@ -96,4 +96,13 @@ export const api = {
     if (category) path += `?category=${encodeURIComponent(category)}`;
     return request(path, {}, token);
   },
+
+  // Nexus Sync Sessions
+  startNexusSession: (data: { exercise_type: string; target_reps?: number }, token: string) =>
+    request('/nexus/session/start', { method: 'POST', body: JSON.stringify(data) }, token),
+
+  completeNexusSession: (sessionId: string, data: any, token: string) =>
+    request(`/nexus/session/${sessionId}/complete`, { method: 'POST', body: JSON.stringify(data) }, token),
+
+  getNexusSessions: (token: string) => request('/nexus/sessions', {}, token),
 };

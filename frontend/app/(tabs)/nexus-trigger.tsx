@@ -7,14 +7,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming,
-  useAnimatedStyle, withSpring, withDelay, runOnJS,
-  Easing, interpolate,
+  useAnimatedStyle, withSpring, withDelay, Easing, interpolate,
 } from 'react-native-reanimated';
-import Svg, { Line, Rect, Circle, Text as SvgText } from 'react-native-svg';
+import Svg, { Line, Rect, Circle, Text as SvgText, G, Ellipse } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
-import { sendScanCompleteNotification, sendXPRewardNotification } from '../../utils/notifications';
+import { playAcceptPing, playRecordBroken } from '../../utils/sounds';
+import { MotionAnalyzer, MotionState, ExerciseType, SkeletonPose } from '../../utils/MotionAnalyzer';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 const GRID_SIZE = 40;
@@ -22,101 +22,198 @@ const COLS = Math.ceil(SCREEN_W / GRID_SIZE);
 const ROWS = Math.ceil(SCREEN_H / GRID_SIZE);
 
 // =====================
-// CYBER GRID OVERLAY (SVG)
+// CYBER GRID OVERLAY
 // =====================
 function CyberGrid({ pulse }: { pulse: Animated.SharedValue<number> }) {
   const animStyle = useAnimatedStyle(() => ({
     opacity: interpolate(pulse.value, [0, 1], [0.15, 0.4]),
   }));
-
   return (
     <Animated.View style={[StyleSheet.absoluteFill, animStyle]} pointerEvents="none">
       <Svg width={SCREEN_W} height={SCREEN_H}>
-        {/* Vertical lines */}
         {Array.from({ length: COLS + 1 }).map((_, i) => (
-          <Line
-            key={`v-${i}`}
-            x1={i * GRID_SIZE} y1={0}
-            x2={i * GRID_SIZE} y2={SCREEN_H}
-            stroke="#00F2FF" strokeWidth={0.5} opacity={0.3}
-          />
+          <Line key={`v-${i}`} x1={i * GRID_SIZE} y1={0} x2={i * GRID_SIZE} y2={SCREEN_H}
+            stroke="#00F2FF" strokeWidth={0.5} opacity={0.3} />
         ))}
-        {/* Horizontal lines */}
         {Array.from({ length: ROWS + 1 }).map((_, i) => (
-          <Line
-            key={`h-${i}`}
-            x1={0} y1={i * GRID_SIZE}
-            x2={SCREEN_W} y2={i * GRID_SIZE}
-            stroke="#00F2FF" strokeWidth={0.5} opacity={0.3}
-          />
+          <Line key={`h-${i}`} x1={0} y1={i * GRID_SIZE} x2={SCREEN_W} y2={i * GRID_SIZE}
+            stroke="#00F2FF" strokeWidth={0.5} opacity={0.3} />
         ))}
-        {/* Center crosshair */}
         <Circle cx={SCREEN_W / 2} cy={SCREEN_H / 2} r={60} stroke="#00F2FF" strokeWidth={1.5} fill="none" opacity={0.5} />
         <Circle cx={SCREEN_W / 2} cy={SCREEN_H / 2} r={90} stroke="#00F2FF" strokeWidth={0.8} fill="none" opacity={0.25} strokeDasharray="8,6" />
         <Line x1={SCREEN_W / 2 - 80} y1={SCREEN_H / 2} x2={SCREEN_W / 2 - 30} y2={SCREEN_H / 2} stroke="#00F2FF" strokeWidth={1.5} opacity={0.6} />
         <Line x1={SCREEN_W / 2 + 30} y1={SCREEN_H / 2} x2={SCREEN_W / 2 + 80} y2={SCREEN_H / 2} stroke="#00F2FF" strokeWidth={1.5} opacity={0.6} />
         <Line x1={SCREEN_W / 2} y1={SCREEN_H / 2 - 80} x2={SCREEN_W / 2} y2={SCREEN_H / 2 - 30} stroke="#00F2FF" strokeWidth={1.5} opacity={0.6} />
         <Line x1={SCREEN_W / 2} y1={SCREEN_H / 2 + 30} x2={SCREEN_W / 2} y2={SCREEN_H / 2 + 80} stroke="#00F2FF" strokeWidth={1.5} opacity={0.6} />
-        {/* Corner brackets */}
         <Rect x={20} y={80} width={40} height={40} stroke="#00F2FF" strokeWidth={1.5} fill="none" opacity={0.4} />
         <Rect x={SCREEN_W - 60} y={80} width={40} height={40} stroke="#00F2FF" strokeWidth={1.5} fill="none" opacity={0.4} />
         <Rect x={20} y={SCREEN_H - 160} width={40} height={40} stroke="#00F2FF" strokeWidth={1.5} fill="none" opacity={0.4} />
         <Rect x={SCREEN_W - 60} y={SCREEN_H - 160} width={40} height={40} stroke="#00F2FF" strokeWidth={1.5} fill="none" opacity={0.4} />
-        {/* HUD text */}
         <SvgText x={24} y={72} fill="#00F2FF" fontSize={9} fontWeight="bold" opacity={0.6}>ARENAKORE v2.1</SvgText>
-        <SvgText x={SCREEN_W - 120} y={72} fill="#00F2FF" fontSize={9} fontWeight="bold" opacity={0.6}>BIOMETRIC SCAN</SvgText>
+        <SvgText x={SCREEN_W - 130} y={72} fill="#00F2FF" fontSize={9} fontWeight="bold" opacity={0.6}>NEXUS SYNC</SvgText>
       </Svg>
     </Animated.View>
   );
 }
 
 // =====================
-// SCAN LINE ANIMATION
+// SENSOR SKELETON — Animated Cyan body that reacts to sensors
 // =====================
-function ScanLine({ active }: { active: boolean }) {
-  const translateY = useSharedValue(0);
+function SensorSkeleton({ pose, exerciseType }: { pose: SkeletonPose; exerciseType: ExerciseType }) {
+  const cx = SCREEN_W / 2;
+  const baseY = SCREEN_H * 0.38;
+  const glowOpacity = 0.3 + pose.intensity * 0.7;
 
-  useEffect(() => {
-    if (active) {
-      translateY.value = withRepeat(
-        withTiming(SCREEN_H - 200, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-        -1, true
-      );
-    }
-  }, [active]);
+  // Calculate joint positions based on sensor data
+  const headY = baseY - 90 + pose.torsoTilt * 10;
+  const shoulderY = baseY - 55 + pose.torsoTilt * 8;
+  const hipY = baseY + 20 + pose.hipDrop * 35;
+  const kneeY = hipY + 60 - pose.kneeAngle * 25;
+  const footY = kneeY + 55 + pose.kneeAngle * 10;
 
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    opacity: active ? 0.7 : 0,
-  }));
+  // Arm positions
+  const shoulderSpread = 35;
+  const elbowSpread = 50 + pose.armExtension * 30;
+  const handSpread = 55 + pose.armExtension * 60;
+  const elbowY = shoulderY + 40 - pose.armExtension * 15;
+  const handY = elbowY + 35 - pose.armExtension * 20;
+
+  // Rotation offset
+  const rotOff = pose.shoulderRotation * 8;
+
+  const joints = [
+    // Head
+    { x: cx + rotOff, y: headY, r: 12 },
+    // Neck
+    { x: cx + rotOff, y: headY + 18 },
+    // Shoulders
+    { x: cx - shoulderSpread + rotOff, y: shoulderY },
+    { x: cx + shoulderSpread + rotOff, y: shoulderY },
+    // Elbows
+    { x: cx - elbowSpread + rotOff * 0.5, y: elbowY },
+    { x: cx + elbowSpread + rotOff * 0.5, y: elbowY },
+    // Hands
+    { x: cx - handSpread + rotOff * 0.3, y: handY },
+    { x: cx + handSpread + rotOff * 0.3, y: handY },
+    // Hip center
+    { x: cx, y: hipY },
+    // Hips
+    { x: cx - 20, y: hipY },
+    { x: cx + 20, y: hipY },
+    // Knees
+    { x: cx - 22, y: kneeY },
+    { x: cx + 22, y: kneeY },
+    // Feet
+    { x: cx - 25, y: footY },
+    { x: cx + 25, y: footY },
+  ];
+
+  // Bone connections [from, to]
+  const bones = [
+    [0, 1],   // head-neck
+    [1, 2], [1, 3],   // neck-shoulders
+    [2, 4], [3, 5],   // shoulders-elbows
+    [4, 6], [5, 7],   // elbows-hands
+    [1, 8],            // neck-hip center
+    [8, 9], [8, 10],  // hip center-hips
+    [9, 11], [10, 12], // hips-knees
+    [11, 13], [12, 14], // knees-feet
+  ];
 
   return (
-    <Animated.View style={[styles.scanLine, animStyle]} pointerEvents="none">
-      <View style={styles.scanLineGradient} />
-    </Animated.View>
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Svg width={SCREEN_W} height={SCREEN_H}>
+        {/* Glow circles behind major joints */}
+        <Circle cx={joints[0].x} cy={joints[0].y} r={20}
+          fill="#00F2FF" opacity={glowOpacity * 0.15} />
+        <Circle cx={joints[8].x} cy={joints[8].y} r={16}
+          fill="#00F2FF" opacity={glowOpacity * 0.1} />
+
+        {/* Bones */}
+        {bones.map(([from, to], i) => (
+          <Line key={`bone-${i}`}
+            x1={joints[from].x} y1={joints[from].y}
+            x2={joints[to].x} y2={joints[to].y}
+            stroke="#00F2FF" strokeWidth={2.5}
+            opacity={glowOpacity}
+            strokeLinecap="round"
+          />
+        ))}
+
+        {/* Joints */}
+        {joints.map((j, i) => (
+          <G key={`joint-${i}`}>
+            <Circle cx={j.x} cy={j.y} r={i === 0 ? 10 : 5}
+              fill="#00F2FF" opacity={glowOpacity * 0.8} />
+            <Circle cx={j.x} cy={j.y} r={i === 0 ? 12 : 7}
+              stroke="#00F2FF" strokeWidth={1} fill="none"
+              opacity={glowOpacity * 0.4} />
+          </G>
+        ))}
+
+        {/* Data overlay text */}
+        <SvgText x={cx - 60} y={baseY - 120} fill="#00F2FF" fontSize={8}
+          fontWeight="bold" opacity={0.5}>
+          KEYPOINTS: 17 · TRACKING: ACTIVE
+        </SvgText>
+      </Svg>
+    </View>
   );
 }
 
 // =====================
-// COUNTDOWN COMPONENT
+// EXERCISE SELECTOR
+// =====================
+function ExerciseSelector({ onSelect }: { onSelect: (e: ExerciseType) => void }) {
+  return (
+    <View style={sel$.container}>
+      <Text style={sel$.title}>SELEZIONA ESERCIZIO</Text>
+      <Text style={sel$.subtitle}>Scegli il pattern di movimento da analizzare</Text>
+      <View style={sel$.row}>
+        <TouchableOpacity style={sel$.card} onPress={() => onSelect('squat')} activeOpacity={0.85}>
+          <Text style={sel$.icon}>🏋️</Text>
+          <Text style={sel$.name}>DEEP SQUAT</Text>
+          <Text style={sel$.desc}>Forza · Resistenza · Potenza</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={sel$.card} onPress={() => onSelect('punch')} activeOpacity={0.85}>
+          <Text style={sel$.icon}>🥊</Text>
+          <Text style={sel$.name}>EXPLOSIVE PUNCH</Text>
+          <Text style={sel$.desc}>Velocità · Potenza · Agilità</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const sel$ = StyleSheet.create({
+  container: { alignItems: 'center', gap: 16 },
+  title: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
+  subtitle: { color: '#555', fontSize: 12, marginBottom: 8 },
+  row: { flexDirection: 'row', gap: 12, paddingHorizontal: 20 },
+  card: {
+    flex: 1, alignItems: 'center', gap: 8, paddingVertical: 24,
+    backgroundColor: 'rgba(0,242,255,0.04)', borderRadius: 16,
+    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.15)',
+  },
+  icon: { fontSize: 32 },
+  name: { color: '#00F2FF', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
+  desc: { color: '#555', fontSize: 9, textAlign: 'center' },
+});
+
+// =====================
+// COUNTDOWN
 // =====================
 function Countdown({ onComplete }: { onComplete: () => void }) {
   const [count, setCount] = useState(3);
   const scale = useSharedValue(0.3);
   const opacity = useSharedValue(0);
 
-  const doHaptic = useCallback(() => {
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    }
-  }, []);
-
   useEffect(() => {
     const interval = setInterval(() => {
       setCount(prev => {
         if (prev <= 1) {
           clearInterval(interval);
-          doHaptic();
+          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
           setTimeout(onComplete, 400);
           return 0;
         }
@@ -130,42 +227,39 @@ function Countdown({ onComplete }: { onComplete: () => void }) {
     scale.value = 0.3;
     opacity.value = 0;
     scale.value = withSpring(1, { damping: 8, stiffness: 150 });
-    opacity.value = withSequence(
-      withTiming(1, { duration: 200 }),
-      withDelay(500, withTiming(0.4, { duration: 300 }))
-    );
-    doHaptic();
+    opacity.value = withSequence(withTiming(1, { duration: 200 }), withDelay(500, withTiming(0.4, { duration: 300 })));
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
   }, [count]);
 
   const animStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
+    transform: [{ scale: scale.value }], opacity: opacity.value,
   }));
 
   return (
-    <View style={styles.countdownOverlay}>
-      <Animated.View style={[styles.countdownCircle, animStyle]}>
-        <Text style={styles.countdownText}>
-          {count === 0 ? 'START' : count}
-        </Text>
+    <View style={ct$.overlay}>
+      <Animated.View style={[ct$.circle, animStyle]}>
+        <Text style={ct$.text}>{count === 0 ? 'GO' : count}</Text>
       </Animated.View>
-      <Text style={styles.countdownSub}>
-        {count > 0 ? 'PREPARATI' : 'NEXUS ATTIVATO'}
-      </Text>
+      <Text style={ct$.sub}>{count > 0 ? 'PREPARATI' : 'NEXUS ATTIVATO'}</Text>
     </View>
   );
 }
 
+const ct$ = StyleSheet.create({
+  overlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 25, backgroundColor: 'rgba(5,5,5,0.85)' },
+  circle: {
+    width: 160, height: 160, borderRadius: 80,
+    backgroundColor: 'rgba(0,242,255,0.08)', borderWidth: 3, borderColor: '#00F2FF',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  text: { color: '#00F2FF', fontSize: 64, fontWeight: '900', letterSpacing: -2 },
+  sub: { color: '#888', fontSize: 12, fontWeight: '700', letterSpacing: 3, marginTop: 24 },
+});
+
 // =====================
 // RESULTS MODAL
 // =====================
-function ResultsModal({
-  visible, result, onClose,
-}: {
-  visible: boolean;
-  result: any;
-  onClose: () => void;
-}) {
+function ResultsModal({ visible, result, onClose }: { visible: boolean; result: any; onClose: () => void }) {
   const slideY = useSharedValue(300);
   const fadeIn = useSharedValue(0);
 
@@ -177,55 +271,69 @@ function ResultsModal({
   }, [visible]);
 
   const containerStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: slideY.value }],
-    opacity: fadeIn.value,
+    transform: [{ translateY: slideY.value }], opacity: fadeIn.value,
   }));
 
   if (!visible || !result) return null;
 
   return (
     <Modal transparent visible={visible} animationType="none">
-      <View style={styles.resultBackdrop}>
-        <Animated.View style={[styles.resultCard, containerStyle]}>
-          <Text style={styles.resultTitle}>⚡ SCAN COMPLETATO</Text>
+      <View style={res$.backdrop}>
+        <Animated.View style={[res$.card, containerStyle]}>
+          <Text style={res$.title}>⚡ SESSIONE COMPLETATA</Text>
 
-          <View style={styles.resultScoreCircle}>
-            <Text style={styles.resultScoreVal}>{result.performance_score?.toFixed(1) || '—'}</Text>
-            <Text style={styles.resultScoreLabel}>SCORE</Text>
+          <View style={res$.scoreCircle}>
+            <Text style={res$.scoreVal}>{result.quality_score || '—'}</Text>
+            <Text style={res$.scoreLabel}>QUALITÀ</Text>
           </View>
 
-          <View style={styles.resultRow}>
-            <View style={styles.resultStat}>
-              <Text style={styles.resultStatLabel}>XP BASE</Text>
-              <Text style={styles.resultStatVal}>+{result.base_xp}</Text>
+          <View style={res$.statsRow}>
+            <View style={res$.stat}>
+              <Text style={res$.statVal}>{result.reps_completed}</Text>
+              <Text style={res$.statLabel}>REPS</Text>
             </View>
-            <View style={styles.resultStat}>
-              <Text style={styles.resultStatLabel}>BONUS</Text>
-              <Text style={[styles.resultStatVal, { color: '#D4AF37' }]}>+{result.perf_bonus + result.time_bonus}</Text>
+            <View style={res$.stat}>
+              <Text style={[res$.statVal, { color: '#D4AF37' }]}>+{result.xp_earned}</Text>
+              <Text style={res$.statLabel}>XP TOTALI</Text>
             </View>
-            <View style={styles.resultStat}>
-              <Text style={styles.resultStatLabel}>TOTALE</Text>
-              <Text style={[styles.resultStatVal, { color: '#00F2FF' }]}>+{result.xp_earned}</Text>
+            <View style={res$.stat}>
+              <Text style={[res$.statVal, { color: '#D4AF37' }]}>x{result.quality_multiplier}</Text>
+              <Text style={res$.statLabel}>MULTI</Text>
             </View>
+          </View>
+
+          <View style={res$.breakdownRow}>
+            <Text style={res$.breakdownText}>Base: +{result.base_xp}</Text>
+            <Text style={res$.breakdownText}>Gold Bonus: +{result.gold_bonus}</Text>
+            <Text style={res$.breakdownText}>Tempo: +{result.time_bonus}</Text>
           </View>
 
           {result.records_broken?.length > 0 && (
-            <View style={styles.recordBanner}>
-              <Text style={styles.recordTitle}>🏆 RECORD INFRANTI!</Text>
-              <Text style={styles.recordList}>
-                {result.records_broken.map((r: string) => r.toUpperCase()).join(' · ')}
-              </Text>
+            <View style={res$.recordBanner}>
+              <Text style={res$.recordTitle}>🏆 RECORD INFRANTI!</Text>
+              <Text style={res$.recordList}>{result.records_broken.join(' · ')}</Text>
             </View>
           )}
 
           {result.level_up && (
-            <View style={styles.levelUpBanner}>
-              <Text style={styles.levelUpText}>🌟 LEVEL UP! → LVL {result.new_level}</Text>
+            <View style={res$.levelBanner}>
+              <Text style={res$.levelText}>🌟 LEVEL UP! → LVL {result.new_level}</Text>
             </View>
           )}
 
-          <TouchableOpacity style={styles.resultCloseBtn} onPress={onClose}>
-            <Text style={styles.resultCloseBtnText}>CHIUDI</Text>
+          {result.dna && (
+            <View style={res$.dnaRow}>
+              {Object.entries(result.dna).map(([k, v]: [string, any]) => (
+                <View key={k} style={res$.dnaItem}>
+                  <Text style={res$.dnaVal}>{Math.round(v)}</Text>
+                  <Text style={res$.dnaLabel}>{k.slice(0, 3).toUpperCase()}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          <TouchableOpacity style={res$.closeBtn} onPress={onClose}>
+            <Text style={res$.closeBtnText}>CHIUDI</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -233,36 +341,64 @@ function ResultsModal({
   );
 }
 
+const res$ = StyleSheet.create({
+  backdrop: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(5,5,5,0.9)' },
+  card: {
+    width: SCREEN_W * 0.88, backgroundColor: '#111', borderRadius: 20, padding: 24, alignItems: 'center',
+    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.3)',
+  },
+  title: { color: '#00F2FF', fontSize: 11, fontWeight: '800', letterSpacing: 4, marginBottom: 16 },
+  scoreCircle: {
+    width: 90, height: 90, borderRadius: 45,
+    backgroundColor: 'rgba(0,242,255,0.06)', borderWidth: 2.5, borderColor: '#00F2FF',
+    alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+  },
+  scoreVal: { color: '#FFFFFF', fontSize: 28, fontWeight: '900' },
+  scoreLabel: { color: '#00F2FF', fontSize: 7, fontWeight: '700', letterSpacing: 2 },
+  statsRow: { flexDirection: 'row', width: '100%', justifyContent: 'space-around', marginBottom: 12 },
+  stat: { alignItems: 'center', gap: 3 },
+  statVal: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
+  statLabel: { color: '#555', fontSize: 8, fontWeight: '700', letterSpacing: 1 },
+  breakdownRow: { flexDirection: 'row', gap: 12, marginBottom: 12 },
+  breakdownText: { color: '#555', fontSize: 10, fontWeight: '600' },
+  recordBanner: {
+    width: '100%', backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: 10, padding: 12,
+    alignItems: 'center', borderWidth: 1, borderColor: 'rgba(212,175,55,0.3)', marginBottom: 8, gap: 3,
+  },
+  recordTitle: { color: '#D4AF37', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
+  recordList: { color: '#D4AF37', fontSize: 10 },
+  levelBanner: {
+    width: '100%', backgroundColor: 'rgba(0,242,255,0.08)', borderRadius: 10, padding: 12,
+    alignItems: 'center', borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)', marginBottom: 8,
+  },
+  levelText: { color: '#00F2FF', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
+  dnaRow: { flexDirection: 'row', gap: 10, marginVertical: 8 },
+  dnaItem: { alignItems: 'center', gap: 1 },
+  dnaVal: { color: '#00F2FF', fontSize: 14, fontWeight: '900' },
+  dnaLabel: { color: '#555', fontSize: 7, fontWeight: '700', letterSpacing: 0.5 },
+  closeBtn: { width: '100%', backgroundColor: '#00F2FF', borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
+  closeBtnText: { color: '#050505', fontSize: 14, fontWeight: '800', letterSpacing: 2 },
+});
+
 // =====================
-// PERMISSION MODAL (Apple-style)
+// SCAN LINE
 // =====================
-function PermissionModal({
-  visible, onAllow, onDeny,
-}: {
-  visible: boolean;
-  onAllow: () => void;
-  onDeny: () => void;
-}) {
+function ScanLine({ active }: { active: boolean }) {
+  const translateY = useSharedValue(0);
+  useEffect(() => {
+    if (active) {
+      translateY.value = withRepeat(
+        withTiming(SCREEN_H - 200, { duration: 2000, easing: Easing.inOut(Easing.ease) }), -1, true
+      );
+    }
+  }, [active]);
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }], opacity: active ? 0.7 : 0,
+  }));
   return (
-    <Modal transparent visible={visible} animationType="fade">
-      <View style={styles.permBackdrop}>
-        <View style={styles.permCard}>
-          <View style={styles.permIconCircle}>
-            <Text style={styles.permIcon}>📷</Text>
-          </View>
-          <Text style={styles.permTitle}>Accesso Fotocamera</Text>
-          <Text style={styles.permDesc}>
-            ArenaKore utilizza la fotocamera per la{'\n'}scansione biometrica Nexus Sync
-          </Text>
-          <TouchableOpacity style={styles.permAllowBtn} onPress={onAllow}>
-            <Text style={styles.permAllowText}>CONSENTI</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.permDenyBtn} onPress={onDeny}>
-            <Text style={styles.permDenyText}>Non ora</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
+    <Animated.View style={[styles.scanLine, animStyle]} pointerEvents="none">
+      <View style={styles.scanLineGradient} />
+    </Animated.View>
   );
 }
 
@@ -274,289 +410,478 @@ export default function NexusTriggerScreen() {
   const router = useRouter();
   const { user, token, updateUser } = useAuth();
 
-  // State machine: idle → permission → countdown → scanning → results
-  const [phase, setPhase] = useState<'idle' | 'permission' | 'countdown' | 'scanning' | 'results'>('idle');
-  const [scanProgress, setScanProgress] = useState(0);
+  // Phase: select → countdown → scanning → results
+  const [phase, setPhase] = useState<'select' | 'countdown' | 'scanning' | 'results'>('select');
+  const [exercise, setExercise] = useState<ExerciseType>('squat');
+  const [motionState, setMotionState] = useState<MotionState | null>(null);
   const [scanResult, setScanResult] = useState<any>(null);
-  const [showPermModal, setShowPermModal] = useState(false);
-  const scanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [timer, setTimer] = useState(0);
+
+  const analyzerRef = useRef<MotionAnalyzer | null>(null);
+  const accelSubRef = useRef<any>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startTimeRef = useRef<number>(0);
 
   // Animations
   const gridPulse = useSharedValue(0);
-  const triggerScale = useSharedValue(1);
   const triggerGlow = useSharedValue(0);
-  const hudOpacity = useSharedValue(1);
 
-  // Start grid pulse
   useEffect(() => {
     gridPulse.value = withRepeat(
       withSequence(
         withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
         withTiming(0, { duration: 1500, easing: Easing.inOut(Easing.ease) })
-      ),
-      -1, false
+      ), -1, false
     );
     triggerGlow.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1200 }),
-        withTiming(0.3, { duration: 1200 })
-      ),
-      -1, false
+      withSequence(withTiming(1, { duration: 1200 }), withTiming(0.3, { duration: 1200 })), -1, false
     );
   }, []);
-
-  const triggerAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: triggerScale.value }],
-  }));
 
   const glowStyle = useAnimatedStyle(() => ({
     shadowOpacity: interpolate(triggerGlow.value, [0, 1], [0.3, 0.9]),
     shadowRadius: interpolate(triggerGlow.value, [0, 1], [8, 25]),
   }));
 
-  const hudAnimStyle = useAnimatedStyle(() => ({
-    opacity: hudOpacity.value,
-  }));
-
-  // Handle scan start
-  const handleStartScan = () => {
-    if (Platform.OS === 'web') {
-      // On web, skip camera permission, go straight to countdown
-      setPhase('countdown');
-    } else {
-      setShowPermModal(true);
-      setPhase('permission');
-    }
-  };
-
-  const handlePermissionAllow = () => {
-    setShowPermModal(false);
+  // Handle exercise selection
+  const handleSelectExercise = (ex: ExerciseType) => {
+    setExercise(ex);
     setPhase('countdown');
   };
 
-  const handlePermissionDeny = () => {
-    setShowPermModal(false);
-    setPhase('idle');
-  };
-
-  const handleCountdownComplete = () => {
+  // Start session after countdown
+  const handleCountdownComplete = async () => {
     setPhase('scanning');
-    startScan();
-  };
 
-  const startScan = () => {
-    setScanProgress(0);
-    let progress = 0;
-    scanTimerRef.current = setInterval(() => {
-      progress += 2;
-      setScanProgress(progress);
-      if (progress >= 100) {
-        if (scanTimerRef.current) clearInterval(scanTimerRef.current);
-        completeScan();
+    // Start backend session
+    try {
+      if (token) {
+        const session = await api.startNexusSession({ exercise_type: exercise }, token);
+        setSessionId(session.session_id);
       }
-    }, 100);
+    } catch (e) {
+      console.log('Session start error:', e);
+    }
+
+    // Initialize motion analyzer
+    analyzerRef.current = new MotionAnalyzer(exercise);
+
+    // Start timer
+    startTimeRef.current = Date.now();
+    timerRef.current = setInterval(() => {
+      setTimer(Math.floor((Date.now() - startTimeRef.current) / 1000));
+    }, 1000);
+
+    // Start accelerometer
+    startSensors();
   };
 
-  const completeScan = async () => {
-    // Haptic feedback for completion
+  const startSensors = () => {
+    if (Platform.OS !== 'web') {
+      // Native only: use platform-specific accelerometer module
+      try {
+        const { startAccelerometer } = require('../../utils/nativeSensors');
+        accelSubRef.current = startAccelerometer((data: any) => {
+          if (analyzerRef.current) {
+            const state = analyzerRef.current.processAccelerometer(data);
+            setMotionState({ ...state });
+          }
+        });
+      } catch (e) {
+        console.log('Accelerometer not available on native');
+      }
+    }
+    // Web simulation is handled by useEffect below
+  };
+
+  // ========== WEB SIMULATION via REFS ==========
+  // Use ref to avoid closure issues with setInterval
+  const simDataRef = useRef({ reps: 0, quality: 0, tick: 0, lastRepTick: -100, qualities: [] as number[] });
+
+  useEffect(() => {
+    if (phase !== 'scanning' || Platform.OS !== 'web') return;
+
+    const currentExercise = exercise;
+    simDataRef.current = { reps: 0, quality: 0, tick: 0, lastRepTick: -100, qualities: [] };
+
+    const simInterval = setInterval(() => {
+      const d = simDataRef.current;
+      d.tick++;
+      const t = d.tick * 0.033;
+      let x = 0, y = 0, z = 0;
+
+      if (currentExercise === 'squat') {
+        const p = (t * 2.5) % (Math.PI * 2);
+        y = Math.sin(p) * 0.8;
+        x = Math.sin(t * 7) * 0.03;
+        const prevP = ((t - 0.033) * 2.5) % (Math.PI * 2);
+        if (Math.sin(prevP) < 0 && Math.sin(p) >= 0 && (d.tick - d.lastRepTick) > 30) {
+          d.reps++;
+          d.lastRepTick = d.tick;
+          const q = 65 + Math.random() * 30;
+          d.qualities.push(q);
+          d.quality = Math.round(d.qualities.reduce((a, b) => a + b) / d.qualities.length);
+        }
+      } else {
+        const cyclePos = t % 1.3;
+        if (cyclePos < 0.12) {
+          const prog = cyclePos / 0.12;
+          x = 4.5 * Math.sin(prog * Math.PI);
+          z = 3.0 * Math.sin(prog * Math.PI);
+        } else {
+          x = Math.sin(t * 4) * 0.03;
+          z = 0.02;
+        }
+        if (cyclePos > 0.04 && cyclePos < 0.08 && (d.tick - d.lastRepTick) > 25) {
+          d.reps++;
+          d.lastRepTick = d.tick;
+          const q = 60 + Math.random() * 35;
+          d.qualities.push(q);
+          d.quality = Math.round(d.qualities.reduce((a, b) => a + b) / d.qualities.length);
+        }
+      }
+
+      const magnitude = Math.sqrt(x * x + y * y + z * z);
+      const lastQ = d.qualities.length > 0 ? Math.round(d.qualities[d.qualities.length - 1]) : 0;
+
+      setMotionState({
+        reps: d.reps,
+        quality: d.quality,
+        currentPhase: magnitude > 1 ? (currentExercise === 'squat' ? 'down' : 'strike') : 'idle',
+        isInFrame: true,
+        peakAcceleration: Math.max(magnitude, 4.5),
+        avgAmplitude: d.quality,
+        amplitudes: [...d.qualities],
+        lastRepQuality: lastQ,
+        skeletonPose: {
+          torsoTilt: currentExercise === 'squat' ? Math.max(-1, Math.min(1, -y)) : Math.sin(t) * 0.15,
+          kneeAngle: currentExercise === 'squat' ? Math.max(0, -y * 1.5) : 0,
+          armExtension: currentExercise === 'punch' ? (magnitude > 1 ? 1 : 0) : 0,
+          shoulderRotation: currentExercise === 'punch' ? Math.min(1, x * 0.2) : 0,
+          hipDrop: currentExercise === 'squat' ? Math.max(0, -y * 1.2) : 0,
+          intensity: magnitude > 0.5 ? 0.8 : 0.2,
+        },
+      });
+    }, 50); // 20Hz for smoother state updates
+
+    return () => clearInterval(simInterval);
+  }, [phase, exercise]);
+
+      const t = tick * 0.033;
+      let x = 0, y = 0, z = 0;
+
+      if (exercise === 'squat') {
+        // Smooth squat cycle every ~2.5s
+        const phase = (t * 2.5) % (Math.PI * 2);
+        const sinVal = Math.sin(phase);
+        y = sinVal * 0.8;
+        x = Math.sin(t * 7) * 0.03;
+
+        // Count reps at the crossover from negative to positive Y (coming up from squat)
+        const prevPhase = ((t - 0.033) * 2.5) % (Math.PI * 2);
+        const prevSin = Math.sin(prevPhase);
+        if (prevSin < 0 && sinVal >= 0 && (tick - lastRepTick) > 30) {
+          simReps++;
+          lastRepTick = tick;
+          const q = 65 + Math.random() * 30;
+          qualities.push(q);
+          currentQuality = Math.round(qualities.reduce((a, b) => a + b) / qualities.length);
+        }
+      } else {
+        // Punch: sharp spike every ~1.3s
+        const cyclePos = t % 1.3;
+        if (cyclePos < 0.12) {
+          const p = cyclePos / 0.12;
+          x = 4.5 * Math.sin(p * Math.PI);
+          z = 3.0 * Math.sin(p * Math.PI);
+        } else {
+          x = Math.sin(t * 4) * 0.03;
+          z = 0.02;
+        }
+
+        // Count punch reps at the peak of each strike
+        if (cyclePos > 0.04 && cyclePos < 0.08 && (tick - lastRepTick) > 25) {
+          simReps++;
+          lastRepTick = tick;
+          const q = 60 + Math.random() * 35;
+          qualities.push(q);
+          currentQuality = Math.round(qualities.reduce((a, b) => a + b) / qualities.length);
+        }
+      }
+
+      // Update skeleton pose based on simulation
+      const skeletonPose = {
+        torsoTilt: exercise === 'squat' ? Math.max(-1, Math.min(1, -y)) : Math.sin(t) * 0.15,
+        kneeAngle: exercise === 'squat' ? Math.max(0, -y * 1.5) : 0,
+        armExtension: exercise === 'punch' ? (Math.sqrt(x * x + z * z) > 1 ? 1 : 0) : 0,
+        shoulderRotation: exercise === 'punch' ? x * 0.2 : 0,
+        hipDrop: exercise === 'squat' ? Math.max(0, -y * 1.2) : 0,
+        intensity: Math.sqrt(x * x + y * y + z * z) > 0.5 ? 0.8 : 0.2,
+      };
+
+      const magnitude = Math.sqrt(x * x + y * y + z * z);
+      const lastRepQ = qualities.length > 0 ? Math.round(qualities[qualities.length - 1]) : 0;
+
+      const newState: MotionState = {
+        reps: simReps,
+        quality: currentQuality,
+        currentPhase: magnitude > 1 ? (exercise === 'squat' ? 'down' : 'strike') : 'idle',
+        isInFrame: true,
+        peakAcceleration: Math.max(magnitude, 4.5),
+        avgAmplitude: currentQuality,
+        amplitudes: qualities,
+        lastRepQuality: lastRepQ,
+        skeletonPose,
+      };
+
+      setMotionState(newState);
+    }, 33);
+
+    accelSubRef.current = { remove: () => clearInterval(simInterval) };
+  };
+
+  const stopSensors = () => {
+    if (accelSubRef.current) {
+      accelSubRef.current.remove();
+      accelSubRef.current = null;
+    }
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  // Complete session
+  const handleStopSession = async () => {
+    stopSensors();
+
+    const durationSecs = Math.floor((Date.now() - startTimeRef.current) / 1000);
+    const reps = motionState?.reps || 0;
+    const quality = motionState?.quality || 50;
+    const peakAccel = motionState?.peakAcceleration || 0;
+    const avgAmp = motionState?.avgAmplitude || 0;
+
+    // Haptic
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
 
     try {
-      if (token) {
-        const result = await api.completeChallenge({
-          performance_score: Math.random() * 30 + 70,
-          duration_seconds: 5,
+      if (token && sessionId) {
+        const result = await api.completeNexusSession(sessionId, {
+          exercise_type: exercise,
+          reps_completed: reps,
+          quality_score: quality,
+          duration_seconds: durationSecs,
+          peak_acceleration: peakAccel,
+          avg_amplitude: avgAmp,
         }, token);
+
         setScanResult(result);
 
-        // Update user in context
-        if (result.user) {
-          updateUser(result.user);
-        }
-
-        // Send notifications
-        sendScanCompleteNotification(result.performance_score);
-        if (result.records_broken?.length > 0) {
-          sendXPRewardNotification(result.xp_earned, result.records_broken, user?.sport);
-        }
+        if (result.user) updateUser(result.user);
+        if (result.records_broken?.length > 0) playRecordBroken();
+        else playAcceptPing();
+      } else {
+        // Demo mode fallback
+        setScanResult({
+          exercise_type: exercise,
+          reps_completed: reps,
+          quality_score: quality,
+          base_xp: reps * 5,
+          quality_multiplier: 1 + (quality / 100) * 2,
+          gold_bonus: quality >= 80 ? reps * 2 : 0,
+          time_bonus: Math.min(Math.floor(durationSecs / 10), 20),
+          xp_earned: reps * 8 + 10,
+          records_broken: [],
+          level_up: false,
+          new_level: user?.level || 1,
+          dna: user?.dna,
+        });
+        playAcceptPing();
       }
     } catch (e) {
-      console.log('Challenge complete error:', e);
-      // Mock result for demo
+      console.log('Session complete error:', e);
       setScanResult({
-        performance_score: 87.3,
-        xp_earned: 125,
-        base_xp: 75,
-        perf_bonus: 35,
-        time_bonus: 15,
-        records_broken: ['velocita', 'potenza'],
+        reps_completed: reps,
+        quality_score: quality,
+        xp_earned: reps * 5,
+        base_xp: reps * 5,
+        quality_multiplier: 1,
+        gold_bonus: 0,
+        time_bonus: 0,
+        records_broken: [],
         level_up: false,
         new_level: user?.level || 1,
       });
     }
+
     setPhase('results');
   };
 
   const handleResultClose = () => {
-    setPhase('idle');
+    setPhase('select');
     setScanResult(null);
-    setScanProgress(0);
+    setSessionId(null);
+    setMotionState(null);
+    setTimer(0);
   };
 
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (scanTimerRef.current) clearInterval(scanTimerRef.current);
-    };
-  }, []);
+  // Cleanup on unmount
+  useEffect(() => () => { stopSensors(); }, []);
+
+  const formatTime = (s: number) => {
+    const min = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]} testID="nexus-trigger-screen">
       <StatusBar barStyle="light-content" />
 
-      {/* Simulated camera background */}
-      <View style={styles.cameraSimulation}>
-        <View style={styles.cameraNoise} />
-      </View>
+      {/* Dark camera background */}
+      <View style={styles.cameraSimulation} />
 
-      {/* Cyber Grid Overlay */}
+      {/* Cyber Grid */}
       <CyberGrid pulse={gridPulse} />
 
-      {/* Scan Line */}
+      {/* Scan Line during scanning */}
       <ScanLine active={phase === 'scanning'} />
 
+      {/* Sensor Skeleton during scanning */}
+      {phase === 'scanning' && motionState && (
+        <SensorSkeleton pose={motionState.skeletonPose} exerciseType={exercise} />
+      )}
+
       {/* Top HUD */}
-      <Animated.View style={[styles.topHud, { top: insets.top + 8 }, hudAnimStyle]}>
-        <TouchableOpacity testID="nexus-close-btn" onPress={() => router.back()} style={styles.closeBtn}>
+      <View style={[styles.topHud, { top: insets.top + 8 }]}>
+        <TouchableOpacity onPress={() => { stopSensors(); router.back(); }} style={styles.closeBtn}>
           <Text style={styles.closeText}>✕</Text>
         </TouchableOpacity>
         <View style={styles.hudCenter}>
           <View style={styles.liveIndicator}>
-            <View style={styles.liveDot} />
+            <View style={[styles.liveDot, phase === 'scanning' && { backgroundColor: '#FF3B30' }]} />
             <Text style={styles.liveText}>
-              {phase === 'scanning' ? 'SCANNING' : phase === 'results' ? 'COMPLETE' : 'NEXUS READY'}
+              {phase === 'scanning' ? 'RECORDING' : phase === 'results' ? 'COMPLETE' : 'NEXUS READY'}
             </Text>
           </View>
         </View>
         <View style={styles.closeBtn}>
-          <Text style={styles.hudFps}>
-            {phase === 'scanning' ? '30fps' : '—'}
-          </Text>
+          <Text style={styles.hudFps}>{phase === 'scanning' ? '30Hz' : '—'}</Text>
         </View>
-      </Animated.View>
+      </View>
 
-      {/* Scan progress bar */}
-      {phase === 'scanning' && (
-        <View style={[styles.scanProgressBar, { top: insets.top + 52 }]}>
-          <View style={[styles.scanProgressFill, { width: `${scanProgress}%` as any }]} />
-          <Text style={styles.scanProgressText}>{scanProgress}%</Text>
-        </View>
+      {/* ===== SCANNING HUD ===== */}
+      {phase === 'scanning' && motionState && (
+        <>
+          {/* REP COUNTER — Gold, large, top center */}
+          <View style={styles.repCounterWrap}>
+            <Text style={styles.repCounterVal}>{motionState.reps}</Text>
+            <Text style={styles.repCounterLabel}>REPS</Text>
+          </View>
+
+          {/* Timer */}
+          <View style={styles.timerWrap}>
+            <Text style={styles.timerText}>{formatTime(timer)}</Text>
+          </View>
+
+          {/* Quality meter — right side */}
+          <View style={styles.qualityBar}>
+            <View style={styles.qualityTrack}>
+              <View style={[styles.qualityFill, { height: `${motionState.quality}%` as any }]} />
+            </View>
+            <Text style={styles.qualityVal}>{motionState.quality}</Text>
+            <Text style={styles.qualityLabel}>Q</Text>
+          </View>
+
+          {/* Last rep quality */}
+          {motionState.lastRepQuality > 0 && (
+            <View style={styles.lastRepBadge}>
+              <Text style={styles.lastRepText}>
+                {motionState.lastRepQuality >= 80 ? '🔥 GOLD' :
+                  motionState.lastRepQuality >= 60 ? '⚡ BUONO' : '💪 OK'}
+              </Text>
+            </View>
+          )}
+
+          {/* XP accumulation */}
+          <View style={styles.xpAccumWrap}>
+            <Text style={styles.xpAccumVal}>+{motionState.reps * 5} XP</Text>
+          </View>
+
+          {/* OUT OF FRAME WARNING */}
+          {!motionState.isInFrame && (
+            <View style={styles.outOfFrameWarn}>
+              <Text style={styles.outOfFrameText}>⚠️ ATHLETE OUT OF FRAME</Text>
+              <Text style={styles.outOfFrameSub}>REALIGN TO KORE</Text>
+            </View>
+          )}
+
+          {/* Exercise indicator */}
+          <View style={styles.exerciseLabel}>
+            <Text style={styles.exerciseLabelText}>
+              {exercise === 'squat' ? '🏋️ DEEP SQUAT' : '🥊 EXPLOSIVE PUNCH'}
+            </Text>
+          </View>
+
+          {/* Stop button */}
+          <TouchableOpacity
+            testID="nexus-stop-btn"
+            style={[styles.stopBtn, { bottom: insets.bottom + 16 }]}
+            onPress={handleStopSession}
+          >
+            <View style={styles.stopInner}>
+              <View style={styles.stopSquare} />
+            </View>
+            <Text style={styles.stopLabel}>TERMINA SESSIONE</Text>
+          </TouchableOpacity>
+        </>
       )}
 
-      {/* Center content based on phase */}
-      {phase === 'idle' && (
+      {/* ===== SELECT PHASE ===== */}
+      {phase === 'select' && (
         <View style={styles.centerContent}>
-          <Animated.View style={triggerAnimStyle}>
-            <TouchableOpacity
-              testID="nexus-start-scan"
-              onPress={handleStartScan}
-              onPressIn={() => { triggerScale.value = withSpring(0.9, { damping: 12 }); }}
-              onPressOut={() => { triggerScale.value = withSpring(1, { damping: 12 }); }}
-              activeOpacity={1}
-            >
-              <Animated.View style={[styles.triggerButton, glowStyle]}>
-                <Text style={styles.triggerIcon}>⚡</Text>
-                <Text style={styles.triggerLabel}>TRIGGER</Text>
-              </Animated.View>
-            </TouchableOpacity>
-          </Animated.View>
-          <Text style={styles.triggerHint}>Premi per attivare lo scan biometrico</Text>
+          <ExerciseSelector onSelect={handleSelectExercise} />
         </View>
       )}
 
-      {phase === 'countdown' && (
-        <Countdown onComplete={handleCountdownComplete} />
-      )}
+      {/* ===== COUNTDOWN ===== */}
+      {phase === 'countdown' && <Countdown onComplete={handleCountdownComplete} />}
 
-      {phase === 'scanning' && (
-        <View style={styles.centerContent}>
-          <View style={styles.scanActiveCircle}>
-            <ActivityIndicator color="#00F2FF" size="large" />
-            <Text style={styles.scanActiveText}>ANALISI IN CORSO</Text>
-            <Text style={styles.scanActiveSub}>Elaborazione dati biometrici...</Text>
+      {/* Bottom HUD (shown in select/scanning) */}
+      {phase !== 'results' && phase !== 'countdown' && (
+        <View style={[styles.bottomHud, { bottom: phase === 'scanning' ? insets.bottom + 70 : insets.bottom + 16 }]}>
+          <View style={styles.hudStat}>
+            <Text style={styles.hudStatLabel}>SPORT</Text>
+            <Text style={styles.hudStatVal}>{user?.sport?.toUpperCase() || '—'}</Text>
+          </View>
+          <View style={styles.hudStat}>
+            <Text style={styles.hudStatLabel}>LVL</Text>
+            <Text style={[styles.hudStatVal, { color: '#D4AF37' }]}>{user?.level || 1}</Text>
+          </View>
+          <View style={styles.hudStat}>
+            <Text style={styles.hudStatLabel}>XP</Text>
+            <Text style={[styles.hudStatVal, { color: '#D4AF37' }]}>{user?.xp || 0}</Text>
           </View>
         </View>
       )}
 
-      {/* Bottom HUD */}
-      <Animated.View style={[styles.bottomHud, { bottom: insets.bottom + 16 }, hudAnimStyle]}>
-        <View style={styles.hudStat}>
-          <Text style={styles.hudStatLabel}>SPORT</Text>
-          <Text style={styles.hudStatVal}>{user?.sport?.toUpperCase() || '—'}</Text>
-        </View>
-        <View style={styles.hudStat}>
-          <Text style={styles.hudStatLabel}>LVL</Text>
-          <Text style={[styles.hudStatVal, { color: '#D4AF37' }]}>{user?.level || 1}</Text>
-        </View>
-        <View style={styles.hudStat}>
-          <Text style={styles.hudStatLabel}>XP</Text>
-          <Text style={[styles.hudStatVal, { color: '#D4AF37' }]}>{user?.xp || 0}</Text>
-        </View>
-      </Animated.View>
-
-      {/* Permission Modal */}
-      <PermissionModal
-        visible={showPermModal}
-        onAllow={handlePermissionAllow}
-        onDeny={handlePermissionDeny}
-      />
-
       {/* Results Modal */}
-      <ResultsModal
-        visible={phase === 'results'}
-        result={scanResult}
-        onClose={handleResultClose}
-      />
+      <ResultsModal visible={phase === 'results'} result={scanResult} onClose={handleResultClose} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
-
-  // Camera simulation
-  cameraSimulation: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#0A0A0A',
-  },
-  cameraNoise: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#080808',
-    opacity: 0.9,
-  },
-
-  // Scan line
-  scanLine: {
-    position: 'absolute', left: 0, right: 0, height: 3, zIndex: 10,
-  },
-  scanLineGradient: {
-    flex: 1,
-    backgroundColor: '#00F2FF',
-    shadowColor: '#00F2FF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 20,
-    elevation: 10,
-  },
+  cameraSimulation: { ...StyleSheet.absoluteFillObject, backgroundColor: '#080808' },
+  scanLine: { position: 'absolute', left: 0, right: 0, height: 3, zIndex: 10 },
+  scanLineGradient: { flex: 1, backgroundColor: '#00F2FF' },
 
   // Top HUD
-  topHud: {
-    position: 'absolute', left: 0, right: 0,
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 16, zIndex: 20,
-  },
+  topHud: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, zIndex: 20 },
   closeBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   closeText: { color: '#888', fontSize: 22, fontWeight: '300' },
   hudCenter: { alignItems: 'center' },
@@ -565,136 +890,74 @@ const styles = StyleSheet.create({
   liveText: { color: '#00F2FF', fontSize: 10, fontWeight: '800', letterSpacing: 2 },
   hudFps: { color: '#555', fontSize: 10, fontWeight: '700' },
 
-  // Scan progress
-  scanProgressBar: {
-    position: 'absolute', left: 20, right: 20, height: 3,
-    backgroundColor: '#1A1A1A', borderRadius: 2, zIndex: 20, overflow: 'hidden',
-  },
-  scanProgressFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
-  scanProgressText: {
-    position: 'absolute', right: 0, top: 6, color: '#00F2FF',
-    fontSize: 10, fontWeight: '800', letterSpacing: 1,
-  },
-
   // Center content
-  centerContent: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center', alignItems: 'center', zIndex: 15,
-  },
+  centerContent: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 15 },
 
-  // Trigger button
-  triggerButton: {
-    width: 120, height: 120, borderRadius: 60,
-    backgroundColor: 'rgba(0,242,255,0.08)',
-    borderWidth: 2.5, borderColor: '#00F2FF',
+  // REP COUNTER — Gold, large
+  repCounterWrap: {
+    position: 'absolute', top: 100, left: 0, right: 0,
+    alignItems: 'center', zIndex: 30,
+  },
+  repCounterVal: { color: '#D4AF37', fontSize: 72, fontWeight: '900', letterSpacing: -3 },
+  repCounterLabel: { color: '#D4AF37', fontSize: 10, fontWeight: '700', letterSpacing: 4, marginTop: -8 },
+
+  // Timer
+  timerWrap: { position: 'absolute', top: 80, left: 20, zIndex: 30 },
+  timerText: { color: '#00F2FF', fontSize: 14, fontWeight: '700', fontVariant: ['tabular-nums'] },
+
+  // Quality bar — right side vertical
+  qualityBar: { position: 'absolute', right: 16, top: SCREEN_H * 0.25, alignItems: 'center', gap: 4, zIndex: 30 },
+  qualityTrack: {
+    width: 6, height: 120, backgroundColor: 'rgba(0,242,255,0.1)', borderRadius: 3,
+    overflow: 'hidden', justifyContent: 'flex-end',
+  },
+  qualityFill: { width: '100%', backgroundColor: '#00F2FF', borderRadius: 3 },
+  qualityVal: { color: '#00F2FF', fontSize: 16, fontWeight: '900' },
+  qualityLabel: { color: '#555', fontSize: 8, fontWeight: '700' },
+
+  // Last rep badge
+  lastRepBadge: {
+    position: 'absolute', top: 200, left: 0, right: 0,
+    alignItems: 'center', zIndex: 30,
+  },
+  lastRepText: { color: '#D4AF37', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
+
+  // XP accumulation
+  xpAccumWrap: { position: 'absolute', top: 80, right: 16, zIndex: 30 },
+  xpAccumVal: { color: '#D4AF37', fontSize: 14, fontWeight: '800' },
+
+  // Out of frame warning
+  outOfFrameWarn: {
+    position: 'absolute', top: SCREEN_H * 0.55, left: 20, right: 20,
+    backgroundColor: 'rgba(0,242,255,0.12)', borderRadius: 12,
+    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.4)',
+    padding: 14, alignItems: 'center', zIndex: 35,
+  },
+  outOfFrameText: { color: '#00F2FF', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
+  outOfFrameSub: { color: '#00F2FF', fontSize: 9, fontWeight: '600', letterSpacing: 1, opacity: 0.7, marginTop: 3 },
+
+  // Exercise label
+  exerciseLabel: {
+    position: 'absolute', top: SCREEN_H * 0.65, left: 0, right: 0,
+    alignItems: 'center', zIndex: 30,
+  },
+  exerciseLabelText: { color: '#555', fontSize: 11, fontWeight: '700', letterSpacing: 2 },
+
+  // Stop button
+  stopBtn: {
+    position: 'absolute', left: 0, right: 0, alignItems: 'center', zIndex: 30,
+  },
+  stopInner: {
+    width: 56, height: 56, borderRadius: 28,
+    backgroundColor: 'rgba(255,59,48,0.15)', borderWidth: 3, borderColor: '#FF3B30',
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#00F2FF',
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 15,
   },
-  triggerIcon: { fontSize: 40, marginBottom: 2 },
-  triggerLabel: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
-  triggerHint: { color: '#555', fontSize: 12, marginTop: 24, letterSpacing: 0.5 },
-
-  // Countdown
-  countdownOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center', alignItems: 'center', zIndex: 25,
-    backgroundColor: 'rgba(5,5,5,0.85)',
-  },
-  countdownCircle: {
-    width: 160, height: 160, borderRadius: 80,
-    backgroundColor: 'rgba(0,242,255,0.08)',
-    borderWidth: 3, borderColor: '#00F2FF',
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6, shadowRadius: 30, elevation: 15,
-  },
-  countdownText: { color: '#00F2FF', fontSize: 64, fontWeight: '900', letterSpacing: -2 },
-  countdownSub: { color: '#888', fontSize: 12, fontWeight: '700', letterSpacing: 3, marginTop: 24 },
-
-  // Scan active
-  scanActiveCircle: { alignItems: 'center', gap: 16 },
-  scanActiveText: { color: '#00F2FF', fontSize: 14, fontWeight: '800', letterSpacing: 3 },
-  scanActiveSub: { color: '#555', fontSize: 12 },
+  stopSquare: { width: 20, height: 20, borderRadius: 4, backgroundColor: '#FF3B30' },
+  stopLabel: { color: '#FF3B30', fontSize: 9, fontWeight: '700', letterSpacing: 2, marginTop: 6 },
 
   // Bottom HUD
-  bottomHud: {
-    position: 'absolute', left: 0, right: 0,
-    flexDirection: 'row', justifyContent: 'space-around',
-    paddingHorizontal: 32, zIndex: 20,
-  },
+  bottomHud: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-around', paddingHorizontal: 32, zIndex: 20 },
   hudStat: { alignItems: 'center', gap: 2 },
   hudStatLabel: { color: '#555', fontSize: 9, fontWeight: '700', letterSpacing: 2 },
   hudStatVal: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
-
-  // Permission modal
-  permBackdrop: {
-    flex: 1, justifyContent: 'center', alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.7)',
-  },
-  permCard: {
-    width: SCREEN_W * 0.78, backgroundColor: '#1A1A1A',
-    borderRadius: 16, padding: 28, alignItems: 'center',
-    borderWidth: 1, borderColor: '#2A2A2A',
-  },
-  permIconCircle: {
-    width: 64, height: 64, borderRadius: 32,
-    backgroundColor: 'rgba(0,242,255,0.1)',
-    alignItems: 'center', justifyContent: 'center', marginBottom: 16,
-  },
-  permIcon: { fontSize: 30 },
-  permTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '700', marginBottom: 8 },
-  permDesc: { color: '#888', fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
-  permAllowBtn: {
-    width: '100%', backgroundColor: '#00F2FF', borderRadius: 10,
-    paddingVertical: 14, alignItems: 'center', marginBottom: 10,
-  },
-  permAllowText: { color: '#050505', fontSize: 15, fontWeight: '800', letterSpacing: 1 },
-  permDenyBtn: { paddingVertical: 8 },
-  permDenyText: { color: '#888', fontSize: 14 },
-
-  // Results modal
-  resultBackdrop: {
-    flex: 1, justifyContent: 'center', alignItems: 'center',
-    backgroundColor: 'rgba(5,5,5,0.9)',
-  },
-  resultCard: {
-    width: SCREEN_W * 0.85, backgroundColor: '#111111',
-    borderRadius: 20, padding: 28, alignItems: 'center',
-    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.3)',
-  },
-  resultTitle: {
-    color: '#00F2FF', fontSize: 12, fontWeight: '800', letterSpacing: 4, marginBottom: 20,
-  },
-  resultScoreCircle: {
-    width: 100, height: 100, borderRadius: 50,
-    backgroundColor: 'rgba(0,242,255,0.06)',
-    borderWidth: 2.5, borderColor: '#00F2FF',
-    alignItems: 'center', justifyContent: 'center', marginBottom: 24,
-  },
-  resultScoreVal: { color: '#FFFFFF', fontSize: 32, fontWeight: '900' },
-  resultScoreLabel: { color: '#00F2FF', fontSize: 8, fontWeight: '700', letterSpacing: 2 },
-  resultRow: { flexDirection: 'row', width: '100%', justifyContent: 'space-around', marginBottom: 20 },
-  resultStat: { alignItems: 'center', gap: 4 },
-  resultStatLabel: { color: '#555', fontSize: 9, fontWeight: '700', letterSpacing: 1 },
-  resultStatVal: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
-  recordBanner: {
-    width: '100%', backgroundColor: 'rgba(212,175,55,0.08)',
-    borderRadius: 10, padding: 14, alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.3)', marginBottom: 12, gap: 4,
-  },
-  recordTitle: { color: '#D4AF37', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
-  recordList: { color: '#D4AF37', fontSize: 11, fontWeight: '600' },
-  levelUpBanner: {
-    width: '100%', backgroundColor: 'rgba(0,242,255,0.08)',
-    borderRadius: 10, padding: 14, alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)', marginBottom: 12,
-  },
-  levelUpText: { color: '#00F2FF', fontSize: 13, fontWeight: '800', letterSpacing: 1 },
-  resultCloseBtn: {
-    width: '100%', backgroundColor: '#00F2FF', borderRadius: 10,
-    paddingVertical: 14, alignItems: 'center', marginTop: 8,
-  },
-  resultCloseBtnText: { color: '#050505', fontSize: 14, fontWeight: '800', letterSpacing: 2 },
 });
