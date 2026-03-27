@@ -112,6 +112,10 @@ def user_to_response(user: dict) -> dict:
         "avatar_color": user.get("avatar_color", "#00E5FF"),
         "is_admin": user.get("is_admin", False),
         "is_founder": user.get("is_founder", False),
+        "founder_number": user.get("founder_number"),
+        "height_cm": user.get("height_cm"),
+        "weight_kg": user.get("weight_kg"),
+        "is_pro": (user.get("level", 1) >= 10 or user.get("xp", 0) >= 3000),
     }
 
 
