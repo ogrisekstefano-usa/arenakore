@@ -435,7 +435,7 @@ function PulseTicker() {
 }
 
 // ========== BURGER MENU with GLASS + FOUNDER PRIDE ==========
-function BurgerMenu({ visible, onClose, user }: { visible: boolean; onClose: () => void; user: any }) {
+function BurgerMenu({ visible, onClose, user, onLogout }: { visible: boolean; onClose: () => void; user: any; onLogout: () => void }) {
   if (!visible) return null;
   const isFounder = user?.is_founder || user?.is_admin;
   const items = [
@@ -468,6 +468,14 @@ function BurgerMenu({ visible, onClose, user }: { visible: boolean; onClose: () 
                   <Text style={bm$.founderQuote}>You are one of the first 100 to enter the Kore. Your legacy is permanent.</Text>
                 </View>
               )}
+              {/* LOGOUT — Red opaque */}
+              <TouchableOpacity style={bm$.logoutBtn} activeOpacity={0.7} onPress={onLogout}>
+                <Text style={bm$.logoutIcon}>{'\ud83d\udeaa'}</Text>
+                <View style={bm$.itemText}>
+                  <Text style={bm$.logoutLabel}>LOGOUT</Text>
+                  <Text style={bm$.logoutSub}>Esci dal tuo Legacy</Text>
+                </View>
+              </TouchableOpacity>
             </ScrollView>
             <PulseTicker />
             <Text style={bm$.footer}>ARENAKORE v2.1 {'\u00b7'} NEXUS SYNC</Text>
@@ -500,6 +508,13 @@ const bm$ = StyleSheet.create({
   },
   founderStar: { color: '#D4AF37', fontSize: 22 },
   founderQuote: { color: '#D4AF37', fontSize: 11, fontWeight: '600', fontStyle: 'italic', textAlign: 'center', lineHeight: 17, opacity: 0.85 },
+  logoutBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 16,
+    paddingHorizontal: 20, marginTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(255,59,48,0.08)',
+  },
+  logoutIcon: { fontSize: 20, width: 32 },
+  logoutLabel: { color: 'rgba(255,59,48,0.7)', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
+  logoutSub: { color: 'rgba(255,59,48,0.35)', fontSize: 10 },
   footer: { color: '#333', fontSize: 9, fontWeight: '600', letterSpacing: 1, paddingHorizontal: 20, paddingBottom: 30 },
 });
 
@@ -631,7 +646,7 @@ function ScanLine({ active }: { active: boolean }) {
 export default function NexusTriggerScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, token, updateUser } = useAuth();
+  const { user, token, updateUser, logout } = useAuth();
 
   const [phase, setPhase] = useState<'bioscan' | 'forge' | 'countdown' | 'scanning' | 'results'>('bioscan');
   const [exercise, setExercise] = useState<ExerciseType>('squat');
@@ -819,7 +834,7 @@ export default function NexusTriggerScreen() {
       )}
 
       <CinemaResults visible={phase === 'results'} result={scanResult} user={user} onClose={handleResultClose} />
-      <BurgerMenu visible={burgerOpen} onClose={() => setBurgerOpen(false)} user={user} />
+      <BurgerMenu visible={burgerOpen} onClose={() => setBurgerOpen(false)} user={user} onLogout={() => { setBurgerOpen(false); stopSensors(); logout(); router.replace('/'); }} />
     </View>
   );
 }
