@@ -4,7 +4,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { Header } from '../../components/Header';
 import { RadarChart } from '../../components/RadarChart';
@@ -19,13 +19,13 @@ import { DNA_HERO_IMAGE } from '../../utils/images';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
-const ATTRS = [
-  { key: 'velocita',   label: 'Velocità',   icon: '⚡' },
-  { key: 'forza',      label: 'Forza',      icon: '💪' },
-  { key: 'resistenza', label: 'Resistenza', icon: '🫀' },
-  { key: 'agilita',    label: 'Agilità',    icon: '🏃' },
-  { key: 'tecnica',    label: 'Tecnica',    icon: '🎯' },
-  { key: 'potenza',    label: 'Potenza',    icon: '💥' },
+const ATTRS: { key: string; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
+  { key: 'velocita',   label: 'VELOCITA',   icon: 'flash',           color: '#00F2FF' },
+  { key: 'forza',      label: 'FORZA',      icon: 'barbell',         color: '#FFFFFF' },
+  { key: 'resistenza', label: 'RESISTENZA', icon: 'heart',           color: '#FF453A' },
+  { key: 'agilita',    label: 'AGILITA',    icon: 'walk',            color: '#00F2FF' },
+  { key: 'tecnica',    label: 'TECNICA',    icon: 'navigate-circle', color: '#FFFFFF' },
+  { key: 'potenza',    label: 'POTENZA',    icon: 'flash-sharp',     color: '#FFD700' },
 ];
 
 // GLITCH OVERLAY
@@ -37,20 +37,15 @@ function GlitchOverlay({ active }: { active: boolean }) {
   useEffect(() => {
     if (active) {
       glitchOpacity.value = withSequence(
-        withTiming(0.7, { duration: 50 }),
-        withTiming(0, { duration: 30 }),
-        withTiming(0.5, { duration: 40 }),
-        withTiming(0, { duration: 30 }),
-        withTiming(0.3, { duration: 60 }),
-        withTiming(0, { duration: 90 }),
+        withTiming(0.7, { duration: 50 }), withTiming(0, { duration: 30 }),
+        withTiming(0.5, { duration: 40 }), withTiming(0, { duration: 30 }),
+        withTiming(0.3, { duration: 60 }), withTiming(0, { duration: 90 }),
       );
       scanY.value = 0;
       scanY.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.ease) });
       stripesOpacity.value = withSequence(
-        withTiming(0.6, { duration: 80 }),
-        withTiming(0, { duration: 120 }),
-        withTiming(0.3, { duration: 60 }),
-        withTiming(0, { duration: 100 }),
+        withTiming(0.6, { duration: 80 }), withTiming(0, { duration: 120 }),
+        withTiming(0.3, { duration: 60 }), withTiming(0, { duration: 100 }),
       );
     }
   }, [active]);
@@ -63,7 +58,6 @@ function GlitchOverlay({ active }: { active: boolean }) {
   const stripesStyle = useAnimatedStyle(() => ({ opacity: stripesOpacity.value }));
 
   if (!active) return null;
-
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       <Animated.View style={[gStyles.tint, overlayStyle]} />
@@ -112,12 +106,10 @@ export default function DNATab() {
       setShowGlitch(false);
       setTimeout(() => setShowGlitch(true), 50);
       setTimeout(() => setShowGlitch(false), 450);
-
       scanOpacity.value = 0;
       scanScale.value = 0.88;
       scanOpacity.value = withTiming(1, { duration: 550 });
       scanScale.value = withSpring(1, { damping: 14, stiffness: 100 });
-
       loadRecentChallenge();
     }, [])
   );
@@ -135,9 +127,7 @@ export default function DNATab() {
           setTimeout(() => setIsGlowing(false), 8000);
         }
       }
-    } catch (e) {
-      // Production: error silenced
-    }
+    } catch (e) { /* silenced */ }
   };
 
   const scanStyle = useAnimatedStyle(() => ({
@@ -152,12 +142,8 @@ export default function DNATab() {
       <GlitchOverlay active={showGlitch} />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* HERO SECTION with athlete silhouette */}
-        <ImageBackground
-          source={{ uri: DNA_HERO_IMAGE }}
-          style={styles.heroImage}
-          imageStyle={styles.heroImageStyle}
-        >
+        {/* HERO SECTION */}
+        <ImageBackground source={{ uri: DNA_HERO_IMAGE }} style={styles.heroImage} imageStyle={styles.heroImageStyle}>
           <LinearGradient
             colors={['rgba(5,5,5,0.4)', 'rgba(5,5,5,0.75)', 'rgba(5,5,5,0.98)']}
             locations={[0, 0.5, 0.9]}
@@ -165,7 +151,7 @@ export default function DNATab() {
           >
             <View style={styles.dnaHeader}>
               <Text style={styles.dnaLabel}>ANALISI BIOMETRICA</Text>
-              <Text style={styles.dnaSport}>{user?.sport?.toUpperCase() || '—'}</Text>
+              <Text style={styles.dnaSport}>{user?.sport?.toUpperCase() || '\u2014'}</Text>
               <View style={[styles.roleBadge, { backgroundColor: getRoleColor(user?.role) + '18' }]}>
                 <Text style={[styles.roleText, { color: getRoleColor(user?.role) }]}>
                   {user?.role?.toUpperCase() || 'KORE MEMBER'}
@@ -173,21 +159,16 @@ export default function DNATab() {
               </View>
             </View>
 
-            {/* RadarChart floating over hero with glass effect */}
             {dna && (
               <Animated.View style={[styles.chartGlass, scanStyle]}>
                 <View style={styles.glassInner}>
-                  <RadarChart
-                    stats={dna}
-                    size={260}
-                    glowing={isGlowing}
-                    recordsBroken={lastRecords}
-                  />
+                  <RadarChart stats={dna} size={260} glowing={isGlowing} recordsBroken={lastRecords} />
                 </View>
                 {isGlowing && lastRecords.length > 0 && (
                   <View style={styles.glowBanner}>
+                    <Ionicons name="trophy" size={14} color="#D4AF37" />
                     <Text style={styles.glowBannerText}>
-                      🏆 RECORD: {lastRecords.map(r => r.toUpperCase()).join(' · ')}
+                      RECORD: {lastRecords.map(r => r.toUpperCase()).join(' \u00b7 ')}
                     </Text>
                   </View>
                 )}
@@ -198,11 +179,12 @@ export default function DNATab() {
 
         {!dna && (
           <View style={styles.noData}>
-            <Text style={styles.noDataText}>Completa l'onboarding{'\n'}per sbloccare il tuo DNA ⚡</Text>
+            <Ionicons name="flash" size={28} color="#00F2FF" />
+            <Text style={styles.noDataText}>Completa l'onboarding{'\n'}per sbloccare il tuo DNA</Text>
           </View>
         )}
 
-        {/* Stat cards with glassmorphism */}
+        {/* Stat cards — monochromatic Ionicons */}
         {dna && (
           <Animated.View style={[styles.statsGrid, scanStyle]}>
             {ATTRS.map((a, i) => {
@@ -210,13 +192,18 @@ export default function DNATab() {
               const broken = lastRecords.includes(a.key);
               return (
                 <View key={a.key} style={[styles.statCard, broken && styles.statCardBroken]}>
-                  <Text style={styles.statIcon}>{a.icon}</Text>
+                  <Ionicons name={a.icon} size={18} color={broken ? '#D4AF37' : a.color} />
                   <Text style={styles.statLabel}>{a.label}</Text>
                   <Text style={[styles.statValue, broken && styles.statValueBroken]}>{val}</Text>
                   <View style={styles.statBar}>
                     <View style={[styles.statFill, { width: `${val}%` as any }, broken && styles.statFillBroken]} />
                   </View>
-                  {broken && <Text style={styles.newRecordBadge}>★ RECORD</Text>}
+                  {broken && (
+                    <View style={styles.newRecordRow}>
+                      <Ionicons name="star" size={8} color="#D4AF37" />
+                      <Text style={styles.newRecordBadge}>RECORD</Text>
+                    </View>
+                  )}
                 </View>
               );
             })}
@@ -226,7 +213,10 @@ export default function DNATab() {
         {/* GLORY SHOT */}
         {user && dna && (
           <View style={styles.talentSection}>
-            <Text style={styles.sectionTitle}>⚡  GLORY SHOT</Text>
+            <View style={styles.sectionRow}>
+              <Ionicons name="flash" size={14} color="#00F2FF" />
+              <Text style={styles.sectionTitle}>GLORY SHOT</Text>
+            </View>
             <TalentCard
               user={user}
               xpEarned={lastChallenge?.xp_earned}
@@ -235,7 +225,6 @@ export default function DNATab() {
             />
           </View>
         )}
-
         <View style={{ height: 32 }} />
       </ScrollView>
     </View>
@@ -244,62 +233,51 @@ export default function DNATab() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
-
-  // Hero
   heroImage: { width: '100%', minHeight: 480 },
   heroImageStyle: { opacity: 0.35 },
   heroGradient: { flex: 1, paddingTop: 16 },
   dnaHeader: { paddingHorizontal: 24, paddingBottom: 8, gap: 4 },
-  dnaLabel: { color: '#00F2FF', fontSize: 10, fontWeight: '700', letterSpacing: 3 },
+  dnaLabel: { color: '#00F2FF', fontSize: 10, fontWeight: '800', letterSpacing: 3 },
   dnaSport: { color: '#FFFFFF', fontSize: 30, fontWeight: '900', letterSpacing: -1, textTransform: 'uppercase' },
   roleBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, marginTop: 4 },
-  roleText: { fontSize: 10, fontWeight: '800', letterSpacing: 2 },
-
-  // Glass chart container
+  roleText: { fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   chartGlass: {
     alignItems: 'center', marginTop: 8, marginHorizontal: 16,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: 20, padding: 12,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-    overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 20, padding: 12,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', overflow: 'hidden',
   },
   glassInner: { alignItems: 'center' },
   glowBanner: {
-    width: '100%',
-    backgroundColor: 'rgba(212,175,55,0.08)',
-    borderRadius: 10, padding: 10,
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)',
-    alignItems: 'center', marginTop: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    width: '100%', backgroundColor: 'rgba(212,175,55,0.08)',
+    borderRadius: 10, padding: 10, borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)',
+    justifyContent: 'center', marginTop: 8,
   },
-  glowBannerText: { color: '#D4AF37', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
-  noData: { padding: 40, alignItems: 'center' },
-  noDataText: { color: '#555', fontSize: 14, textAlign: 'center', lineHeight: 22 },
-
-  // Stats grid — glassmorphism
+  glowBannerText: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  noData: { padding: 40, alignItems: 'center', gap: 10 },
+  noDataText: { color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center', lineHeight: 22, fontWeight: '600' },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 14, gap: 8, marginTop: 16 },
   statCard: {
     width: '30%', flexGrow: 1,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: 14, padding: 12,
+    backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 12,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', gap: 3,
   },
-  statCardBroken: {
-    borderColor: 'rgba(212,175,55,0.25)',
-    backgroundColor: 'rgba(212,175,55,0.03)',
-  },
-  statIcon: { fontSize: 18 },
-  statLabel: { color: '#555', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  statCardBroken: { borderColor: 'rgba(212,175,55,0.25)', backgroundColor: 'rgba(212,175,55,0.03)' },
+  statLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
   statValue: { color: '#FFFFFF', fontSize: 24, fontWeight: '900' },
   statValueBroken: { color: '#D4AF37' },
   statBar: { height: 3, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden', marginTop: 2 },
   statFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
   statFillBroken: { backgroundColor: '#D4AF37' },
-  newRecordBadge: { color: '#D4AF37', fontSize: 8, fontWeight: '800', letterSpacing: 1, marginTop: 2 },
-
+  newRecordRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
+  newRecordBadge: { color: '#D4AF37', fontSize: 8, fontWeight: '900', letterSpacing: 1 },
   talentSection: { marginTop: 20 },
+  sectionRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 16, paddingBottom: 12,
+  },
   sectionTitle: {
-    color: '#FFFFFF', fontSize: 12, fontWeight: '800',
-    letterSpacing: 2, paddingHorizontal: 16,
-    paddingBottom: 12, textTransform: 'uppercase',
+    color: '#FFFFFF', fontSize: 13, fontWeight: '900',
+    letterSpacing: 2, textTransform: 'uppercase',
   },
 });

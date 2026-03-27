@@ -1,12 +1,13 @@
 /**
- * ARENAKORE — Global Control Center
- * Accessible from all tabs via the ☰ icon in the Header.
- * Contains: Settings, Founder Pride, GYM HUB, ADMIN Ghosting, Logout.
+ * ARENAKORE — Global Control Center v3.0
+ * NIKE-GRADE: Monochromatic icons, Bold Sans-Serif, Segmented Ghosting.
+ * Stadium-at-night luminosity. Zero emoji. Zero color icons.
  */
 import React, { useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Platform, Dimensions,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   SlideInRight, SlideOutRight, Easing,
@@ -17,11 +18,23 @@ import { useAuth, UserRole, ROLE_CONFIG } from '../contexts/AuthContext';
 import { profileDevice, getTierLabel, getTrackingMode } from '../utils/DeviceIntelligence';
 
 const { width: SW } = Dimensions.get('window');
+const CYAN = '#00F2FF';
+const GOLD = '#FFD700';
+const WHITE = '#FFFFFF';
+const DIM = 'rgba(255,255,255,0.4)';
+
+// Monochromatic icon mapping — no emoji anywhere
+const ROLE_ICONS: Record<UserRole, { icon: keyof typeof Ionicons.glyphMap; color: string }> = {
+  ADMIN: { icon: 'shield-checkmark', color: '#FF453A' },
+  GYM_OWNER: { icon: 'business', color: GOLD },
+  COACH: { icon: 'fitness', color: CYAN },
+  ATHLETE: { icon: 'person', color: '#32D74B' },
+};
 
 // ========== PULSE TICKER ==========
 function PulseTicker() {
   const scrollX = useSharedValue(0);
-  const TXT = '[LIVE] ALEX_K PUNCH (98Q) \u2022 MAYA_J JOINED BULLS \u2022 WORLD RECORD HALL OF KORE \u2022 3 NEW FOUNDERS \u2022 SHARKS VS WOLVES (LIVE) \u2022 ';
+  const TXT = 'LIVE \u2022 ALEX_K PUNCH 98Q \u2022 MAYA_J JOINED BULLS \u2022 WORLD RECORD HALL OF KORE \u2022 3 NEW FOUNDERS \u2022 SHARKS VS WOLVES DUEL \u2022 ';
   useEffect(() => {
     scrollX.value = withRepeat(withTiming(-SW * 3, { duration: 25000, easing: Easing.linear }), -1, false);
   }, []);
@@ -43,120 +56,130 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
   const isAdmin = user?.is_admin;
   const ROLES: UserRole[] = ['ADMIN', 'GYM_OWNER', 'COACH', 'ATHLETE'];
 
-  // Device tier (computed once)
   const profile = profileDevice();
-  const deviceTier = profile.tier;
 
   if (!visible) return null;
 
-  const items = [
-    { icon: '\ud83e\uddec', label: 'Bio-Signature Scan', sub: 'Ricalibra i sensori' },
-    { icon: '\u2699\ufe0f', label: 'Settings', sub: 'Configurazione NEXUS' },
-    { icon: '\ud83c\udfc6', label: 'Founders Club', sub: isFounder ? `Founder #${user?.founder_number || '?'}` : 'Non ancora membro' },
-    { icon: '\ud83d\udcac', label: 'Supporto', sub: 'Contatta il team KORE' },
+  const menuItems: { icon: keyof typeof Ionicons.glyphMap; label: string; sub: string; color: string }[] = [
+    { icon: 'scan', label: 'BIO-SCAN', sub: 'Ricalibra sensori', color: CYAN },
+    { icon: 'settings-sharp', label: 'SETTINGS', sub: 'Configurazione NEXUS', color: WHITE },
+    { icon: 'trophy', label: 'FOUNDERS CLUB', sub: isFounder ? `Founder #${user?.founder_number || '—'}` : 'Non membro', color: GOLD },
+    { icon: 'chatbubble-ellipses', label: 'SUPPORTO', sub: 'Contatta il team', color: WHITE },
   ];
 
-  const gymItems = [
-    { icon: '\ud83c\udfdb\ufe0f', label: 'GYM HUB', sub: 'Gestione Coach & Eventi' },
-    { icon: '\ud83d\udcca', label: 'Analytics Palestra', sub: 'Iscrizioni, Revenue, Attivit\u00e0' },
-  ];
-
-  const handleLogout = () => {
-    onClose();
-    logout();
-    router.replace('/');
-  };
+  const handleLogout = () => { onClose(); logout(); router.replace('/'); };
 
   return (
     <Modal transparent visible={visible} animationType="none" onRequestClose={onClose}>
       <TouchableOpacity style={st.backdrop} activeOpacity={1} onPress={onClose}>
         <View style={st.blurLayer} />
         <Animated.View entering={SlideInRight.duration(250)} exiting={SlideOutRight.duration(200)} style={st.panel}>
-          <LinearGradient colors={['rgba(8,8,8,0.97)', 'rgba(5,5,5,0.99)']} style={st.panelInner}>
+          <LinearGradient colors={['#080808', '#050505']} style={st.panelInner}>
+            {/* Header */}
             <View style={st.header}>
               <Text style={st.headerTitle}>CONTROL CENTER</Text>
-              <TouchableOpacity onPress={onClose}><Text style={st.closeX}>{'\u2715'}</Text></TouchableOpacity>
+              <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                <Ionicons name="close" size={22} color={DIM} />
+              </TouchableOpacity>
             </View>
 
-            {/* Device Tier */}
+            {/* Tier Badge */}
             <View style={st.tierBadge}>
-              <Text style={st.tierLabel}>{getTierLabel(deviceTier)}</Text>
-              <Text style={st.tierSub}>{getTrackingMode(deviceTier)}</Text>
+              <Ionicons name="hardware-chip" size={14} color={CYAN} />
+              <View>
+                <Text style={st.tierLabel}>{getTierLabel(profile.tier)}</Text>
+                <Text style={st.tierSub}>{getTrackingMode(profile.tier)}</Text>
+              </View>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 30 }}>
-              {/* Menu Items */}
-              {items.map((item, i) => (
+              {/* Menu Items — Monochromatic */}
+              {menuItems.map((item, i) => (
                 <TouchableOpacity key={i} style={st.item} activeOpacity={0.7}>
-                  <Text style={st.itemIcon}>{item.icon}</Text>
+                  <View style={st.iconWrap}>
+                    <Ionicons name={item.icon} size={18} color={item.color} />
+                  </View>
                   <View style={st.itemText}>
                     <Text style={st.itemLabel}>{item.label}</Text>
                     <Text style={st.itemSub}>{item.sub}</Text>
                   </View>
+                  <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.15)" />
                 </TouchableOpacity>
               ))}
 
-              {/* GYM HUB — GYM_OWNER role */}
+              {/* GYM HUB — GYM_OWNER */}
               {activeRole === 'GYM_OWNER' && (
                 <View style={st.section}>
                   <View style={st.divider} />
-                  <Text style={st.sectionTitle}>{'\ud83c\udfdb\ufe0f'} GYM HUB</Text>
-                  {gymItems.map((item, i) => (
-                    <TouchableOpacity key={`gym-${i}`} style={st.item} activeOpacity={0.7}>
-                      <Text style={st.itemIcon}>{item.icon}</Text>
-                      <View style={st.itemText}>
-                        <Text style={[st.itemLabel, { color: '#D4AF37' }]}>{item.label}</Text>
-                        <Text style={st.itemSub}>{item.sub}</Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
+                  <Text style={st.sectionTitle}>GYM HUB</Text>
+                  <TouchableOpacity style={st.item} activeOpacity={0.7}>
+                    <View style={st.iconWrap}><Ionicons name="people" size={18} color={GOLD} /></View>
+                    <View style={st.itemText}><Text style={st.itemLabel}>GESTIONE COACH</Text><Text style={st.itemSub}>Assegna ruoli e permessi</Text></View>
+                    <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.15)" />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={st.item} activeOpacity={0.7}>
+                    <View style={st.iconWrap}><Ionicons name="calendar" size={18} color={GOLD} /></View>
+                    <View style={st.itemText}><Text style={st.itemLabel}>EVENTI</Text><Text style={st.itemSub}>Calendario e competizioni</Text></View>
+                    <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.15)" />
+                  </TouchableOpacity>
                 </View>
               )}
 
               {/* Founder Pride */}
               {isFounder && (
                 <View style={st.founderPride}>
-                  <Text style={st.founderStar}>{'\u2605'}</Text>
-                  <Text style={st.founderQuote}>You are one of the first 100 to enter the Kore. Your legacy is permanent.</Text>
+                  <Ionicons name="star" size={18} color={GOLD} />
+                  <Text style={st.founderQuote}>YOU ARE ONE OF THE FIRST 100. YOUR LEGACY IS PERMANENT.</Text>
                 </View>
               )}
 
-              {/* ADMIN PRIVILEGES — GHOSTING SWITCHER */}
+              {/* ===== ADMIN PRIVILEGES — SEGMENTED GHOSTING ===== */}
               {isAdmin && (
                 <View style={st.adminSection}>
                   <View style={st.divider} />
-                  <Text style={st.adminTitle}>{'\ud83d\udd12'} ADMIN PRIVILEGES</Text>
-                  <Text style={st.adminSub}>GHOSTING MODE — Cambia ruolo istantaneamente</Text>
-                  <View style={st.roleGrid}>
+                  <View style={st.adminHeader}>
+                    <Ionicons name="shield-checkmark" size={14} color="#FF453A" />
+                    <Text style={st.adminTitle}>ADMIN PRIVILEGES</Text>
+                  </View>
+                  <Text style={st.adminSub}>GHOSTING MODE</Text>
+
+                  {/* Segmented Control */}
+                  <View style={st.segmented}>
                     {ROLES.map((role) => {
-                      const cfg = ROLE_CONFIG[role];
+                      const rc = ROLE_ICONS[role];
                       const isActive = activeRole === role;
                       return (
                         <TouchableOpacity
                           key={role}
-                          style={[st.roleBtn, isActive && { borderColor: cfg.color, backgroundColor: `${cfg.color}15` }]}
+                          style={[st.segBtn, isActive && { backgroundColor: `${rc.color}18`, borderColor: rc.color }]}
                           onPress={() => setActiveRole(role)}
                           activeOpacity={0.7}
                         >
-                          <Text style={st.roleIcon}>{cfg.icon}</Text>
-                          <Text style={[st.roleLabel, isActive && { color: cfg.color }]}>{cfg.label}</Text>
-                          {isActive && <View style={[st.roleDot, { backgroundColor: cfg.color }]} />}
+                          <Ionicons name={rc.icon} size={16} color={isActive ? rc.color : 'rgba(255,255,255,0.25)'} />
+                          <Text style={[st.segLabel, isActive && { color: rc.color, opacity: 1 }]}>
+                            {role === 'GYM_OWNER' ? 'GYM' : role}
+                          </Text>
                         </TouchableOpacity>
                       );
                     })}
                   </View>
-                  <View style={st.activeRoleBar}>
-                    <Text style={[st.activeRoleText, { color: ROLE_CONFIG[activeRole].color }]}>
-                      {ROLE_CONFIG[activeRole].icon} GHOSTING AS: {ROLE_CONFIG[activeRole].label}
+
+                  {/* Active Role Indicator */}
+                  <View style={st.activeBar}>
+                    <Ionicons name={ROLE_ICONS[activeRole].icon} size={12} color={ROLE_ICONS[activeRole].color} />
+                    <Text style={[st.activeText, { color: ROLE_ICONS[activeRole].color }]}>
+                      GHOSTING: {ROLE_CONFIG[activeRole].label}
                     </Text>
-                    <Text style={st.activeRoleDesc}>{ROLE_CONFIG[activeRole].description}</Text>
                   </View>
                 </View>
               )}
 
               {/* LOGOUT */}
-              <TouchableOpacity style={st.logoutBtn} activeOpacity={0.7} onPress={handleLogout}>
-                <Text style={st.logoutIcon}>{'\ud83d\udeaa'}</Text>
+              <View style={st.divider} />
+              <TouchableOpacity style={st.logoutItem} activeOpacity={0.7} onPress={handleLogout}>
+                <View style={[st.iconWrap, { backgroundColor: 'rgba(255,69,58,0.06)' }]}>
+                  <Ionicons name="log-out-outline" size={18} color="rgba(255,69,58,0.6)" />
+                </View>
                 <View style={st.itemText}>
                   <Text style={st.logoutLabel}>LOGOUT</Text>
                   <Text style={st.logoutSub}>Esci dal tuo Legacy</Text>
@@ -165,7 +188,7 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
             </ScrollView>
 
             <PulseTicker />
-            <Text style={st.footer}>ARENAKORE v2.1 {'\u00b7'} NEXUS SYNC</Text>
+            <Text style={st.footer}>ARENAKORE v2.1</Text>
           </LinearGradient>
         </Animated.View>
       </TouchableOpacity>
@@ -176,62 +199,54 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
 const st = StyleSheet.create({
   backdrop: { flex: 1, flexDirection: 'row' },
   blurLayer: {
-    flex: 1, backgroundColor: 'rgba(0,18,25,0.65)',
-    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(18px) saturate(120%)', WebkitBackdropFilter: 'blur(18px) saturate(120%)' } as any : {}),
+    flex: 1, backgroundColor: 'rgba(0,12,18,0.7)',
+    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px) saturate(130%)', WebkitBackdropFilter: 'blur(20px) saturate(130%)' } as any : {}),
   },
-  panel: { width: SW * 0.75, height: '100%' },
-  panelInner: { flex: 1, paddingTop: 60, borderLeftWidth: 1.5, borderLeftColor: 'rgba(0,242,255,0.1)' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 8 },
-  headerTitle: { color: '#00F2FF', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
-  closeX: { color: '#555', fontSize: 22 },
+  panel: { width: SW * 0.78, height: '100%' },
+  panelInner: { flex: 1, paddingTop: 60, borderLeftWidth: 1.5, borderLeftColor: 'rgba(0,242,255,0.06)' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 22, marginBottom: 16 },
+  headerTitle: { color: WHITE, fontSize: 13, fontWeight: '800', letterSpacing: 4 },
   tierBadge: {
-    marginHorizontal: 20, marginBottom: 16, paddingVertical: 8, paddingHorizontal: 14,
-    backgroundColor: 'rgba(0,242,255,0.04)', borderRadius: 8,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.08)', gap: 2,
+    flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 22, marginBottom: 20,
+    paddingVertical: 10, paddingHorizontal: 14, backgroundColor: 'rgba(0,242,255,0.03)',
+    borderRadius: 10, borderWidth: 1, borderColor: 'rgba(0,242,255,0.06)',
   },
-  tierLabel: { color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
-  tierSub: { color: '#555', fontSize: 8, fontWeight: '600', letterSpacing: 1 },
-  item: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 20 },
-  itemIcon: { fontSize: 22, width: 32 },
+  tierLabel: { color: CYAN, fontSize: 11, fontWeight: '800', letterSpacing: 2 },
+  tierSub: { color: DIM, fontSize: 7, fontWeight: '600', letterSpacing: 1 },
+  item: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 15, paddingHorizontal: 22 },
+  iconWrap: { width: 34, height: 34, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.04)', alignItems: 'center', justifyContent: 'center' },
   itemText: { flex: 1, gap: 2 },
-  itemLabel: { color: '#FFFFFF', fontSize: 13, fontWeight: '800', letterSpacing: 1 },
-  itemSub: { color: '#555', fontSize: 10 },
+  itemLabel: { color: WHITE, fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
+  itemSub: { color: DIM, fontSize: 10, fontWeight: '500' },
   section: { marginTop: 4 },
-  divider: { height: 1, backgroundColor: 'rgba(0,242,255,0.06)', marginHorizontal: 20, marginBottom: 12 },
-  sectionTitle: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 2, paddingHorizontal: 20, marginBottom: 4 },
+  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.04)', marginHorizontal: 22, marginVertical: 8 },
+  sectionTitle: { color: GOLD, fontSize: 10, fontWeight: '900', letterSpacing: 3, paddingHorizontal: 22, marginBottom: 4 },
   founderPride: {
-    marginHorizontal: 20, marginTop: 12, padding: 16, borderRadius: 12,
-    backgroundColor: 'rgba(212,175,55,0.06)', borderWidth: 1, borderColor: 'rgba(212,175,55,0.12)',
-    alignItems: 'center', gap: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    marginHorizontal: 22, marginTop: 12, padding: 14, borderRadius: 12,
+    backgroundColor: 'rgba(255,215,0,0.04)', borderWidth: 1, borderColor: 'rgba(255,215,0,0.08)',
   },
-  founderStar: { fontSize: 24, color: '#D4AF37' },
-  founderQuote: { color: '#D4AF37', fontSize: 11, fontWeight: '600', fontStyle: 'italic', textAlign: 'center', lineHeight: 17, opacity: 0.85 },
-  adminSection: { marginTop: 8, paddingHorizontal: 20 },
-  adminTitle: { color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 4 },
-  adminSub: { color: '#555', fontSize: 8, fontWeight: '700', letterSpacing: 1, marginBottom: 12 },
-  roleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  roleBtn: {
-    width: '47%' as any, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10,
+  founderQuote: { flex: 1, color: GOLD, fontSize: 10, fontWeight: '700', letterSpacing: 0.5, lineHeight: 16, opacity: 0.85 },
+  adminSection: { marginTop: 4, paddingHorizontal: 22 },
+  adminHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
+  adminTitle: { color: '#FF453A', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  adminSub: { color: DIM, fontSize: 8, fontWeight: '700', letterSpacing: 1.5, marginBottom: 12 },
+  segmented: { flexDirection: 'row', gap: 6, marginBottom: 12 },
+  segBtn: {
+    flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10, borderRadius: 10,
     borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)',
-    alignItems: 'center', gap: 4, position: 'relative' as any,
   },
-  roleIcon: { fontSize: 18 },
-  roleLabel: { color: '#888', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
-  roleDot: { position: 'absolute' as any, top: 6, right: 6, width: 6, height: 6, borderRadius: 3 },
-  activeRoleBar: {
-    marginTop: 12, padding: 10, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.02)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', alignItems: 'center', gap: 2,
+  segLabel: { fontSize: 7, fontWeight: '900', letterSpacing: 1.5, color: 'rgba(255,255,255,0.25)', opacity: 0.6 },
+  activeBar: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 8, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)',
   },
-  activeRoleText: { fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  activeRoleDesc: { color: '#555', fontSize: 8, fontWeight: '600' },
-  logoutBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 16,
-    paddingHorizontal: 20, marginTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(255,59,48,0.08)',
-  },
-  logoutIcon: { fontSize: 20, width: 32 },
-  logoutLabel: { color: 'rgba(255,59,48,0.7)', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
-  logoutSub: { color: 'rgba(255,59,48,0.35)', fontSize: 10 },
-  ticker: { height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.06)', justifyContent: 'center' },
-  tickerText: { color: '#00F2FF', fontSize: 9, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.7 },
-  footer: { color: '#333', fontSize: 9, fontWeight: '600', letterSpacing: 1, paddingHorizontal: 20, paddingBottom: 30 },
+  activeText: { fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  logoutItem: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 15, paddingHorizontal: 22, marginTop: 4 },
+  logoutLabel: { color: 'rgba(255,69,58,0.6)', fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
+  logoutSub: { color: 'rgba(255,69,58,0.3)', fontSize: 10 },
+  ticker: { height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.04)', justifyContent: 'center' },
+  tickerText: { color: CYAN, fontSize: 8, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.5 },
+  footer: { color: 'rgba(255,255,255,0.12)', fontSize: 9, fontWeight: '700', letterSpacing: 2, paddingHorizontal: 22, paddingBottom: 30 },
 });

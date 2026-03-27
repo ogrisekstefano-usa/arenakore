@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, StatusBar } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import Animated, {
   useSharedValue, withTiming, withSequence, withSpring,
@@ -76,7 +77,7 @@ export default function Step3() {
 
       <View style={styles.center}>
         <Animated.View style={[styles.iconCircle, pulseStyle]}>
-          <Text style={styles.icon}>{isVersatile ? '🌐' : '⚡'}</Text>
+          <Ionicons name={isVersatile ? 'globe' : 'flash'} size={36} color={isVersatile ? '#D4AF37' : '#00F2FF'} />
         </Animated.View>
 
         {isVersatile ? (

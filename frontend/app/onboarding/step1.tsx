@@ -7,19 +7,20 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 import { CATEGORY_IMAGES } from '../../utils/images';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
-const MACRO_CATEGORIES = [
-  { id: 'atletica', label: 'ATLETICA', icon: '🏃', desc: 'Track & Field', color: '#FF6B00' },
-  { id: 'combat', label: 'COMBAT', icon: '🥊', desc: 'Arti Marziali', color: '#FF3B30' },
-  { id: 'acqua', label: 'ACQUA', icon: '🌊', desc: 'Sport Acquatici', color: '#007AFF' },
-  { id: 'team', label: 'TEAM SPORT', icon: '⚽', desc: 'Sport di Squadra', color: '#34C759' },
-  { id: 'fitness', label: 'FITNESS', icon: '🏋️', desc: 'Forza & Conditioning', color: '#D4AF37' },
-  { id: 'outdoor', label: 'OUTDOOR', icon: '🏔️', desc: 'Natura & Endurance', color: '#30B0C7' },
-  { id: 'mind_body', label: 'MIND & BODY', icon: '🧘', desc: 'Corpo & Mente', color: '#AF52DE' },
-  { id: 'extreme', label: 'EXTREME', icon: '🔥', desc: 'Oltre il Limite', color: '#FF2D55' },
+const MACRO_CATEGORIES: { id: string; label: string; ionicon: keyof typeof Ionicons.glyphMap; desc: string; color: string }[] = [
+  { id: 'atletica', label: 'ATLETICA', ionicon: 'walk', desc: 'Track & Field', color: '#FF6B00' },
+  { id: 'combat', label: 'COMBAT', ionicon: 'hand-left', desc: 'Arti Marziali', color: '#FF3B30' },
+  { id: 'acqua', label: 'ACQUA', ionicon: 'water', desc: 'Sport Acquatici', color: '#007AFF' },
+  { id: 'team', label: 'TEAM SPORT', ionicon: 'football', desc: 'Sport di Squadra', color: '#34C759' },
+  { id: 'fitness', label: 'FITNESS', ionicon: 'barbell', desc: 'Forza & Conditioning', color: '#D4AF37' },
+  { id: 'outdoor', label: 'OUTDOOR', ionicon: 'trail-sign', desc: 'Natura & Endurance', color: '#30B0C7' },
+  { id: 'mind_body', label: 'MIND & BODY', ionicon: 'leaf', desc: 'Corpo & Mente', color: '#AF52DE' },
+  { id: 'extreme', label: 'EXTREME', ionicon: 'flame', desc: 'Oltre il Limite', color: '#FF2D55' },
 ];
 
 export default function Step1() {
@@ -73,7 +74,7 @@ export default function Step1() {
                   style={styles.cardGradient}
                 >
                   <View style={styles.cardContent}>
-                    <Text style={styles.cardIcon}>{cat.icon}</Text>
+                    <Ionicons name={cat.ionicon} size={22} color={selected === cat.id ? cat.color : '#FFFFFF'} />
                     <Text style={[
                       styles.cardLabel,
                       selected === cat.id && { color: cat.color },
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
   progressBar: { height: 2, backgroundColor: '#1E1E1E', borderRadius: 2, marginBottom: 14 },
   progressFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
   title: { color: '#FFFFFF', fontSize: 32, fontWeight: '900', letterSpacing: -1.5, lineHeight: 36 },
-  subtitle: { color: '#555', fontSize: 13, marginTop: 4 },
+  subtitle: { color: 'rgba(255,255,255,0.55)', fontSize: 13, marginTop: 4 },
   grid: {
     flexDirection: 'row', flexWrap: 'wrap',
     justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 8,

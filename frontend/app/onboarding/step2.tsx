@@ -6,6 +6,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../utils/api';
 
 const { width: SCREEN_W } = Dimensions.get('window');
@@ -71,7 +72,7 @@ export default function Step2() {
 
       {/* Smart Search Bar */}
       <View style={styles.searchContainer}>
-        <Text style={styles.searchIcon}>🔍</Text>
+        <Ionicons name="search" size={16} color="rgba(255,255,255,0.4)" />
         <TextInput
           testID="sport-search-input"
           style={styles.searchInput}

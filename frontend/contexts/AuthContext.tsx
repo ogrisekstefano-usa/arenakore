@@ -8,11 +8,11 @@ const ROLE_KEY = '@arenakore_active_role';
 // ========== MULTI-ROLE SYSTEM ==========
 export type UserRole = 'ADMIN' | 'GYM_OWNER' | 'COACH' | 'ATHLETE';
 
-export const ROLE_CONFIG: Record<UserRole, { label: string; icon: string; color: string; description: string }> = {
-  ADMIN: { label: 'ADMIN', icon: '\ud83d\udd12', color: '#FF3B30', description: 'Full system access' },
-  GYM_OWNER: { label: 'GYM OWNER', icon: '\ud83c\udfdb\ufe0f', color: '#D4AF37', description: 'Gym & Coach management' },
-  COACH: { label: 'COACH', icon: '\ud83e\uddd1\u200d\ud83c\udfeb', color: '#00F2FF', description: 'Studio & Template control' },
-  ATHLETE: { label: 'ATHLETE', icon: '\ud83c\udfc3', color: '#34C759', description: 'Standard experience' },
+export const ROLE_CONFIG: Record<UserRole, { label: string; ionicon: string; color: string; description: string }> = {
+  ADMIN: { label: 'ADMIN', ionicon: 'shield-checkmark', color: '#FF453A', description: 'Full system access' },
+  GYM_OWNER: { label: 'GYM OWNER', ionicon: 'business', color: '#D4AF37', description: 'Gym & Coach management' },
+  COACH: { label: 'COACH', ionicon: 'fitness', color: '#00F2FF', description: 'Studio & Template control' },
+  ATHLETE: { label: 'ATHLETE', ionicon: 'person', color: '#32D74B', description: 'Standard experience' },
 };
 
 export interface DNAStats {

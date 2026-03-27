@@ -13,6 +13,7 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Line, Circle, Text as SvgText, G, Polygon } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth, UserRole, ROLE_CONFIG } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { playAcceptPing, playRecordBroken, startBioScanHum, playBioMatchPing } from '../../utils/sounds';
@@ -293,7 +294,7 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
           <>
             <Text style={bio$.matchLabel}>BIO-SIGNATURE MATCHED</Text>
             <Text style={bio$.matchText}>{matchText}</Text>
-            {isFounder && <Text style={bio$.founderGlow}>{'\u2605'} FOUNDER #{user?.founder_number || '?'}</Text>}
+            {isFounder && <Text style={bio$.founderGlow}><Ionicons name="star" size={12} color="#D4AF37" /> FOUNDER #{user?.founder_number || '?'}</Text>}
           </>
         )}
       </View>
@@ -316,7 +317,7 @@ const bio$ = StyleSheet.create({
   phase: { color: '#D4AF37', fontSize: 10, fontWeight: '700', letterSpacing: 2 },
   bioRow: { flexDirection: 'row', gap: 24, marginTop: 4 },
   bioItem: { alignItems: 'center', gap: 2 },
-  bioLabel: { color: '#555', fontSize: 8, fontWeight: '700', letterSpacing: 2 },
+  bioLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 8, fontWeight: '700', letterSpacing: 2 },
   bioVal: { color: '#00F2FF', fontSize: 16, fontWeight: '900' },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: SW * 0.55, marginTop: 8 },
   progressTrack: { flex: 1, height: 3, backgroundColor: 'rgba(0,242,255,0.15)', borderRadius: 2, overflow: 'hidden' },
@@ -346,11 +347,18 @@ function NexusConsole({ user, onScan, onForge, deviceTier }: {
 
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: founderShimmer.value }));
 
+  const CONSOLE_ICONS: Record<string, { ionName: keyof typeof Ionicons.glyphMap; color: string }> = {
+    scan: { ionName: 'scan', color: '#00F2FF' },
+    forge: { ionName: 'construct', color: '#D4AF37' },
+    hall: { ionName: 'trophy', color: '#D4AF37' },
+    dna: { ionName: 'analytics', color: '#00F2FF' },
+  };
+
   const buttons = [
-    { key: 'scan', icon: '\ud83e\uddec', title: 'NEXUS SCAN', sub: 'BIO-SKELETON TRACKING', image: CONSOLE_IMAGES.scan, action: onScan },
-    { key: 'forge', icon: '\ud83d\udee0\ufe0f', title: 'THE FORGE', sub: 'CREA \u00b7 SELEZIONA \u00b7 SFIDA', image: CONSOLE_IMAGES.forge, action: onForge },
-    { key: 'hall', icon: '\ud83c\udfc6', title: 'HALL OF KORE', sub: 'LEADERBOARD GLOBALE', image: CONSOLE_IMAGES.hall, action: () => router.push('/(tabs)/hall') },
-    { key: 'dna', icon: '\ud83d\udcca', title: 'MY DNA', sub: 'STATS RADAR BIOMETRICO', image: CONSOLE_IMAGES.dna, action: () => router.push('/(tabs)/dna') },
+    { key: 'scan', title: 'NEXUS SCAN', sub: 'BIO-SKELETON TRACKING', image: CONSOLE_IMAGES.scan, action: onScan },
+    { key: 'forge', title: 'THE FORGE', sub: 'CREA \u00b7 SELEZIONA \u00b7 SFIDA', image: CONSOLE_IMAGES.forge, action: onForge },
+    { key: 'hall', title: 'HALL OF KORE', sub: 'LEADERBOARD GLOBALE', image: CONSOLE_IMAGES.hall, action: () => router.push('/(tabs)/hall') },
+    { key: 'dna', title: 'MY DNA', sub: 'STATS RADAR BIOMETRICO', image: CONSOLE_IMAGES.dna, action: () => router.push('/(tabs)/dna') },
   ];
 
   return (
@@ -363,7 +371,10 @@ function NexusConsole({ user, onScan, onForge, deviceTier }: {
           <Text style={cn$.subtitle}>COMMAND CENTER</Text>
           {isFounder && (
             <Animated.View style={[cn$.founderBadge, shimmerStyle]}>
-              <Text style={cn$.founderText}>{'\u2605'} FOUNDER</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Ionicons name="star" size={10} color="#D4AF37" />
+                <Text style={cn$.founderText}>FOUNDER</Text>
+              </View>
             </Animated.View>
           )}
           <View style={cn$.tierRow}>
@@ -377,7 +388,7 @@ function NexusConsole({ user, onScan, onForge, deviceTier }: {
               <TouchableOpacity key={btn.key} style={cn$.card} activeOpacity={0.85} onPress={btn.action}>
                 <ImageBackground source={{ uri: btn.image }} style={cn$.cardBg} imageStyle={cn$.cardImage}>
                   <LinearGradient colors={['rgba(5,5,5,0.15)', 'rgba(5,5,5,0.6)', 'rgba(5,5,5,0.97)']} locations={[0, 0.35, 0.85]} style={cn$.cardGradient}>
-                    <Text style={cn$.cardIcon}>{btn.icon}</Text>
+                    <Ionicons name={CONSOLE_ICONS[btn.key].ionName} size={32} color={CONSOLE_ICONS[btn.key].color} />
                     <View style={cn$.cardBottom}>
                       <Text style={cn$.cardTitle}>{btn.title}</Text>
                       <Text style={cn$.cardSub}>{btn.sub}</Text>
@@ -397,9 +408,9 @@ const cn$ = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
   safe: { flex: 1 },
   header: { alignItems: 'center', paddingTop: 16, paddingBottom: 8, gap: 2 },
-  brandLabel: { color: '#333', fontSize: 9, fontWeight: '800', letterSpacing: 4 },
+  brandLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 9, fontWeight: '800', letterSpacing: 4 },
   title: { color: '#D4AF37', fontSize: 32, fontWeight: '900', letterSpacing: 8 },
-  subtitle: { color: '#00F2FF', fontSize: 11, fontWeight: '700', letterSpacing: 4, opacity: 0.7 },
+  subtitle: { color: '#00F2FF', fontSize: 11, fontWeight: '700', letterSpacing: 4, opacity: 0.85 },
   founderBadge: {
     marginTop: 6, paddingHorizontal: 14, paddingVertical: 4,
     borderRadius: 12, borderWidth: 1, borderColor: '#D4AF37', backgroundColor: 'rgba(212,175,55,0.08)',
@@ -481,12 +492,12 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
         </Text>
         <View style={fg$.exRow}>
           <TouchableOpacity style={fg$.exCard} onPress={() => onSelect(mode, 'squat')} activeOpacity={0.8}>
-            <Text style={fg$.exIcon}>{'\ud83c\udfcb\ufe0f'}</Text>
+            <Ionicons name="barbell" size={36} color="#00F2FF" />
             <Text style={fg$.exName}>DEEP SQUAT</Text>
             <Text style={fg$.exDesc}>Forza {'\u00b7'} Potenza</Text>
           </TouchableOpacity>
           <TouchableOpacity style={fg$.exCard} onPress={() => onSelect(mode, 'punch')} activeOpacity={0.8}>
-            <Text style={fg$.exIcon}>{'\ud83e\udd4a'}</Text>
+            <Ionicons name="hand-left" size={36} color="#00F2FF" />
             <Text style={fg$.exName}>EXPLOSIVE PUNCH</Text>
             <Text style={fg$.exDesc}>Velocit{'\u00e0'} {'\u00b7'} Agilit{'\u00e0'}</Text>
           </TouchableOpacity>
@@ -503,15 +514,15 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
       <View style={fg$.cardsCol}>
         <ForgeCard mode="personal" title="PERSONAL TRAINING" subtitle={"Focus DNA \u00b7 Migliora le tue stats atletiche"}
           image={FORGE_IMAGES.personal} onPress={() => setMode('personal')}
-          iconEl={<Animated.View style={dnaS}><Text style={fg$.forgeIcon}>{'\ud83e\uddec'}</Text></Animated.View>}
+          iconEl={<Animated.View style={dnaS}><Ionicons name="analytics" size={24} color="#00F2FF" /></Animated.View>}
         />
         <ForgeCard mode="battle" title="POINTS BATTLE" subtitle={"Hall of Kore \u00b7 XP massimo per scalare il Rank"}
           image={FORGE_IMAGES.battle} onPress={() => setMode('battle')}
-          iconEl={<View style={fg$.iconRow}><Text style={fg$.forgeIcon}>{'\ud83c\udfc6'}</Text><Animated.View style={flameS}><Text style={fg$.flameSmall}>{'\ud83d\udd25'}</Text></Animated.View></View>}
+          iconEl={<View style={fg$.iconRow}><Ionicons name="trophy" size={24} color="#D4AF37" /><Animated.View style={flameS}><Ionicons name="flame" size={14} color="#FF3B30" style={{ marginLeft: -4, marginTop: -6 }} /></Animated.View></View>}
         />
         <ForgeCard mode="duel" title="LIVE DUEL" subtitle={"Tempo reale \u00b7 Sfida un avversario"}
           image={FORGE_IMAGES.duel} onPress={() => setMode('duel')}
-          iconEl={<Animated.View style={boltS}><Text style={fg$.forgeIcon}>{'\u26a1\u26a1'}</Text></Animated.View>}
+          iconEl={<Animated.View style={boltS}><Ionicons name="flash" size={24} color="#00F2FF" /></Animated.View>}
         />
       </View>
       {/* GESTIONE TEMPLATE — Admin/Coach Premium only */}
@@ -529,16 +540,19 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
       <Modal visible={showTemplateCreator} transparent animationType="slide">
         <View style={fg$.modalOverlay}>
           <View style={fg$.modalContent}>
-            <Text style={fg$.modalTitle}>{'\ud83d\udee0\ufe0f'} CREA TEMPLATE</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <Ionicons name="construct" size={18} color="#D4AF37" />
+              <Text style={fg$.modalTitle}>CREA TEMPLATE</Text>
+            </View>
             <Text style={fg$.modalLabel}>NOME TEMPLATE</Text>
             <TextInput style={fg$.modalInput} value={templateName} onChangeText={setTemplateName} placeholder="Es: Sprint Finale" placeholderTextColor="#555" />
             <Text style={fg$.modalLabel}>ESERCIZIO</Text>
             <View style={fg$.modalRow}>
               <TouchableOpacity style={[fg$.modalChoice, templateExercise === 'squat' && fg$.modalChoiceActive]} onPress={() => setTemplateExercise('squat')}>
-                <Text style={fg$.modalChoiceText}>{'\ud83c\udfcb\ufe0f'} SQUAT</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Ionicons name="barbell" size={14} color="#00F2FF" /><Text style={fg$.modalChoiceText}>SQUAT</Text></View>
               </TouchableOpacity>
               <TouchableOpacity style={[fg$.modalChoice, templateExercise === 'punch' && fg$.modalChoiceActive]} onPress={() => setTemplateExercise('punch')}>
-                <Text style={fg$.modalChoiceText}>{'\ud83e\udd4a'} PUNCH</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Ionicons name="hand-left" size={14} color="#00F2FF" /><Text style={fg$.modalChoiceText}>PUNCH</Text></View>
               </TouchableOpacity>
             </View>
             <Text style={fg$.modalLabel}>TEMPO (SEC)</Text>
@@ -561,7 +575,7 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
 const fg$ = StyleSheet.create({
   container: { alignItems: 'center', gap: 12, paddingHorizontal: 16, width: '100%' },
   title: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 5 },
-  sub: { color: '#666', fontSize: 11, marginBottom: 4 },
+  sub: { color: 'rgba(255,255,255,0.55)', fontSize: 11, marginBottom: 4 },
   cardsCol: { width: '100%', gap: 10 },
   card: { width: '100%', height: 130, borderRadius: 16, overflow: 'hidden' },
   imageBg: { width: '100%', height: '100%' },
@@ -577,7 +591,7 @@ const fg$ = StyleSheet.create({
   // Exercise select
   selectWrap: { alignItems: 'center', gap: 14, paddingHorizontal: 20, width: '100%' },
   selectTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
-  selectSub: { color: '#666', fontSize: 11, textAlign: 'center' },
+  selectSub: { color: 'rgba(255,255,255,0.55)', fontSize: 11, textAlign: 'center' },
   exRow: { flexDirection: 'row', gap: 12, width: '100%' },
   exCard: {
     flex: 1, alignItems: 'center', gap: 8, paddingVertical: 28,
@@ -586,7 +600,7 @@ const fg$ = StyleSheet.create({
   },
   exIcon: { fontSize: 36 },
   exName: { color: '#00F2FF', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
-  exDesc: { color: '#555', fontSize: 9 },
+  exDesc: { color: 'rgba(255,255,255,0.5)', fontSize: 9 },
   backBtn: { marginTop: 8 },
   backText: { color: '#555', fontSize: 11, fontWeight: '700' },
   // Template Management
@@ -705,17 +719,17 @@ function BurgerMenu({ visible, onClose, user, onLogout, deviceTier, activeRole, 
   const isLegacy = deviceTier === 'legacy';
   const ROLES: UserRole[] = ['ADMIN', 'GYM_OWNER', 'COACH', 'ATHLETE'];
 
-  const items = [
-    { icon: '\ud83e\uddec', label: 'Bio-Signature Scan', sub: 'Ricalibra i sensori' },
-    { icon: '\u2699\ufe0f', label: 'Settings', sub: 'Configurazione NEXUS' },
-    { icon: '\ud83c\udfc6', label: 'Founders Club', sub: isFounder ? `Founder #${user?.founder_number || '?'}` : 'Non ancora membro' },
-    { icon: '\ud83d\udcac', label: 'Supporto', sub: 'Contatta il team KORE' },
+  const items: { iconName: keyof typeof Ionicons.glyphMap; iconColor: string; label: string; sub: string }[] = [
+    { iconName: 'scan', iconColor: '#00F2FF', label: 'Bio-Signature Scan', sub: 'Ricalibra i sensori' },
+    { iconName: 'settings-sharp', iconColor: '#FFFFFF', label: 'Settings', sub: 'Configurazione NEXUS' },
+    { iconName: 'trophy', iconColor: '#D4AF37', label: 'Founders Club', sub: isFounder ? `Founder #${user?.founder_number || '?'}` : 'Non ancora membro' },
+    { iconName: 'chatbubble-ellipses', iconColor: '#FFFFFF', label: 'Supporto', sub: 'Contatta il team KORE' },
   ];
 
   // GYM HUB (visible for GYM_OWNER role)
-  const gymItems = [
-    { icon: '\ud83c\udfdb\ufe0f', label: 'GYM HUB', sub: 'Gestione Coach & Eventi' },
-    { icon: '\ud83d\udcca', label: 'Analytics Palestra', sub: 'Iscrizioni, Revenue, Attivit\u00e0' },
+  const gymItems: { iconName: keyof typeof Ionicons.glyphMap; iconColor: string; label: string; sub: string }[] = [
+    { iconName: 'business', iconColor: '#D4AF37', label: 'GYM HUB', sub: 'Gestione Coach & Eventi' },
+    { iconName: 'bar-chart', iconColor: '#00F2FF', label: 'Analytics Palestra', sub: 'Iscrizioni, Revenue, Attivit\u00e0' },
   ];
 
   return (
@@ -736,7 +750,7 @@ function BurgerMenu({ visible, onClose, user, onLogout, deviceTier, activeRole, 
             <ScrollView showsVerticalScrollIndicator={false}>
               {items.map((item, i) => (
                 <TouchableOpacity key={i} style={bm$.item} activeOpacity={0.7}>
-                  <Text style={bm$.itemIcon}>{item.icon}</Text>
+                  <Ionicons name={item.iconName} size={18} color={item.iconColor} />
                   <View style={bm$.itemText}><Text style={bm$.itemLabel}>{item.label}</Text><Text style={bm$.itemSub}>{item.sub}</Text></View>
                 </TouchableOpacity>
               ))}
@@ -745,10 +759,13 @@ function BurgerMenu({ visible, onClose, user, onLogout, deviceTier, activeRole, 
               {activeRole === 'GYM_OWNER' && (
                 <View style={bm$.gymSection}>
                   <View style={bm$.sectionDivider} />
-                  <Text style={bm$.sectionTitle}>{'\ud83c\udfdb\ufe0f'} GYM HUB</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 }}>
+                    <Ionicons name="business" size={16} color="#D4AF37" />
+                    <Text style={bm$.sectionTitle}>GYM HUB</Text>
+                  </View>
                   {gymItems.map((item, i) => (
                     <TouchableOpacity key={`gym-${i}`} style={bm$.item} activeOpacity={0.7}>
-                      <Text style={bm$.itemIcon}>{item.icon}</Text>
+                      <Ionicons name={item.iconName} size={18} color={item.iconColor} />
                       <View style={bm$.itemText}><Text style={[bm$.itemLabel, { color: '#D4AF37' }]}>{item.label}</Text><Text style={bm$.itemSub}>{item.sub}</Text></View>
                     </TouchableOpacity>
                   ))}
@@ -757,7 +774,7 @@ function BurgerMenu({ visible, onClose, user, onLogout, deviceTier, activeRole, 
 
               {isFounder && (
                 <View style={bm$.founderPride}>
-                  <Text style={bm$.founderStar}>{'\u2605'}</Text>
+                  <Ionicons name="star" size={16} color="#D4AF37" />
                   <Text style={bm$.founderQuote}>You are one of the first 100 to enter the Kore. Your legacy is permanent.</Text>
                 </View>
               )}
@@ -766,12 +783,18 @@ function BurgerMenu({ visible, onClose, user, onLogout, deviceTier, activeRole, 
               {isAdmin && (
                 <View style={bm$.adminSection}>
                   <View style={bm$.sectionDivider} />
-                  <Text style={bm$.adminTitle}>{'\ud83d\udd12'} ADMIN PRIVILEGES</Text>
-                  <Text style={bm$.adminSub}>GHOSTING MODE — Cambia ruolo istantaneamente</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Ionicons name="shield-checkmark" size={16} color="#FF453A" />
+                    <Text style={bm$.adminTitle}>ADMIN PRIVILEGES</Text>
+                  </View>
+                  <Text style={bm$.adminSub}>GHOSTING MODE {'\u2014'} Cambia ruolo istantaneamente</Text>
                   <View style={bm$.roleGrid}>
                     {ROLES.map((role) => {
                       const cfg = ROLE_CONFIG[role];
                       const isActive = activeRole === role;
+                      const roleIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
+                        ADMIN: 'shield-checkmark', GYM_OWNER: 'business', COACH: 'fitness', ATHLETE: 'person',
+                      };
                       return (
                         <TouchableOpacity
                           key={role}
@@ -779,7 +802,7 @@ function BurgerMenu({ visible, onClose, user, onLogout, deviceTier, activeRole, 
                           onPress={() => onRoleSwitch(role)}
                           activeOpacity={0.7}
                         >
-                          <Text style={bm$.roleIcon}>{cfg.icon}</Text>
+                          <Ionicons name={roleIcons[role]} size={18} color={isActive ? cfg.color : 'rgba(255,255,255,0.4)'} />
                           <Text style={[bm$.roleLabel, isActive && { color: cfg.color }]}>{cfg.label}</Text>
                           {isActive && <View style={[bm$.roleDot, { backgroundColor: cfg.color }]} />}
                         </TouchableOpacity>
@@ -787,9 +810,12 @@ function BurgerMenu({ visible, onClose, user, onLogout, deviceTier, activeRole, 
                     })}
                   </View>
                   <View style={bm$.activeRoleBar}>
-                    <Text style={[bm$.activeRoleText, { color: ROLE_CONFIG[activeRole].color }]}>
-                      {ROLE_CONFIG[activeRole].icon} GHOSTING AS: {ROLE_CONFIG[activeRole].label}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Ionicons name={({ ADMIN: 'shield-checkmark', GYM_OWNER: 'business', COACH: 'fitness', ATHLETE: 'person' } as Record<string, any>)[activeRole]} size={14} color={ROLE_CONFIG[activeRole].color} />
+                      <Text style={[bm$.activeRoleText, { color: ROLE_CONFIG[activeRole].color }]}>
+                        GHOSTING: {ROLE_CONFIG[activeRole].label}
+                      </Text>
+                    </View>
                     <Text style={bm$.activeRoleDesc}>{ROLE_CONFIG[activeRole].description}</Text>
                   </View>
                 </View>
@@ -797,7 +823,7 @@ function BurgerMenu({ visible, onClose, user, onLogout, deviceTier, activeRole, 
 
               {/* LOGOUT — Red opaque */}
               <TouchableOpacity style={bm$.logoutBtn} activeOpacity={0.7} onPress={onLogout}>
-                <Text style={bm$.logoutIcon}>{'\ud83d\udeaa'}</Text>
+                <Ionicons name="log-out-outline" size={18} color="#FF453A" />
                 <View style={bm$.itemText}>
                   <Text style={bm$.logoutLabel}>LOGOUT</Text>
                   <Text style={bm$.logoutSub}>Esci dal tuo Legacy</Text>
@@ -911,8 +937,11 @@ function CinemaResults({ visible, result, user, onClose }: { visible: boolean; r
         <Animated.View style={[cin$.card, cs]}>
           <ScrollView contentContainerStyle={cin$.scroll} showsVerticalScrollIndicator={false}>
             <View style={cin$.titleRow}>
-              <Text style={cin$.title}>{'\u26a1'} SESSIONE COMPLETATA</Text>
-              {isFounder && <Animated.View style={[cin$.founderBadge, ss]}><Text style={cin$.founderText}>{'\u2605'} FOUNDER</Text></Animated.View>}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="flash" size={18} color="#00F2FF" />
+                <Text style={cin$.title}>SESSIONE COMPLETATA</Text>
+              </View>
+              {isFounder && <Animated.View style={[cin$.founderBadge, ss]}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Ionicons name="star" size={10} color="#D4AF37" /><Text style={cin$.founderText}>FOUNDER</Text></View></Animated.View>}
             </View>
             <Text style={cin$.username}>{user?.username || 'Atleta'}</Text>
             <View style={cin$.scoreCircle}><Text style={cin$.scoreVal}>{result.quality_score || '\u2014'}</Text><Text style={cin$.scoreLabel}>QUALIT{'\u00c0'}</Text></View>
@@ -923,9 +952,9 @@ function CinemaResults({ visible, result, user, onClose }: { visible: boolean; r
               <View style={cin$.stat}><Text style={cin$.statVal}>{result.base_xp}</Text><Text style={cin$.statLabel}>BASE</Text></View>
             </View>
             {result.records_broken?.length > 0 && (
-              <View style={cin$.record}><Text style={cin$.recordTitle}>{'\ud83c\udfc6'} RECORD INFRANTI!</Text><Text style={cin$.recordList}>{result.records_broken.join(' \u00b7 ')}</Text></View>
+              <View style={cin$.record}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}><Ionicons name="trophy" size={16} color="#D4AF37" /><Text style={cin$.recordTitle}>RECORD INFRANTI!</Text></View><Text style={cin$.recordList}>{result.records_broken.join(' \u00b7 ')}</Text></View>
             )}
-            {result.level_up && <View style={cin$.level}><Text style={cin$.levelText}>{'\ud83c\udf1f'} LEVEL UP! {'\u2192'} LVL {result.new_level}</Text></View>}
+            {result.level_up && <View style={cin$.level}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}><Ionicons name="sparkles" size={16} color="#D4AF37" /><Text style={cin$.levelText}>LEVEL UP! {'\u2192'} LVL {result.new_level}</Text></View></View>}
             {result.dna && (
               <View style={cin$.dnaRow}>{Object.entries(result.dna).map(([k, v]: [string, any]) => (
                 <View key={k} style={cin$.dnaItem}><Text style={cin$.dnaVal}>{Math.round(v)}</Text><Text style={cin$.dnaLabel}>{k.slice(0, 3).toUpperCase()}</Text></View>
@@ -1188,7 +1217,7 @@ export default function NexusTriggerScreen() {
           <View style={[st.liveDot, phase === 'scanning' && { backgroundColor: '#FF3B30' }]} />
           <Text style={st.liveText}>{phase === 'scanning' ? 'RECORDING' : phase === 'bioscan' ? 'INITIALIZING' : phase === 'forge' ? 'FORGE' : 'NEXUS'}</Text>
         </View>
-        <TouchableOpacity onPress={() => setBurgerOpen(true)} style={st.hudBtn}><Text style={st.menuIcon}>{'\u2630'}</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setBurgerOpen(true)} style={st.hudBtn}><Ionicons name="menu" size={20} color="#00F2FF" /></TouchableOpacity>
       </View>
 
       {phase === 'bioscan' && <BioScanTrigger user={user} onComplete={() => {
@@ -1206,10 +1235,10 @@ export default function NexusTriggerScreen() {
             <View style={st.qualTrack}><View style={[st.qualFill, { height: `${motionState.quality}%` as any }]} /></View>
             <Text style={st.qualVal}>{motionState.quality}</Text><Text style={st.qualLabel}>Q</Text>
           </View>
-          {motionState.lastRepQuality > 0 && <View style={st.lastRep}><Text style={st.lastRepText}>{motionState.lastRepQuality >= 80 ? '\ud83d\udd25 GOLD' : motionState.lastRepQuality >= 60 ? '\u26a1 BUONO' : '\ud83d\udcaa OK'}</Text></View>}
+          {motionState.lastRepQuality > 0 && <View style={st.lastRep}><Text style={st.lastRepText}>{motionState.lastRepQuality >= 80 ? 'GOLD' : motionState.lastRepQuality >= 60 ? 'BUONO' : 'OK'}</Text></View>}
           <View style={st.xpAcc}><Text style={st.xpAccVal}>+{motionState.reps * 5} XP</Text></View>
           <MiniDNARadar dna={user?.dna} explosive={isExplosive} />
-          <View style={st.exLabel}><Text style={st.exLabelText}>{exercise === 'squat' ? '\ud83c\udfcb\ufe0f DEEP SQUAT' : '\ud83e\udd4a EXPLOSIVE PUNCH'}{forgeMode !== 'personal' ? ` \u00b7 ${forgeMode === 'battle' ? 'POINTS BATTLE' : 'LIVE DUEL'}` : ''}</Text></View>
+          <View style={st.exLabel}><Text style={st.exLabelText}>{exercise === 'squat' ? 'DEEP SQUAT' : 'EXPLOSIVE PUNCH'}{forgeMode !== 'personal' ? ` \u00b7 ${forgeMode === 'battle' ? 'POINTS BATTLE' : 'LIVE DUEL'}` : ''}</Text></View>
           <TouchableOpacity testID="nexus-stop-btn" style={[st.stopBtn, { bottom: insets.bottom + 16 }]} onPress={handleStop}>
             <View style={st.stopInner}><View style={st.stopSq} /></View>
             <Text style={st.stopLabel}>TERMINA SESSIONE</Text>
@@ -1249,7 +1278,7 @@ const st = StyleSheet.create({
   xpAcc: { position: 'absolute', top: 80, right: 16, zIndex: 30 },
   xpAccVal: { color: '#D4AF37', fontSize: 14, fontWeight: '800' },
   exLabel: { position: 'absolute', top: SH * 0.65, left: 0, right: 0, alignItems: 'center', zIndex: 30 },
-  exLabelText: { color: '#555', fontSize: 11, fontWeight: '700', letterSpacing: 2 },
+  exLabelText: { color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
   stopBtn: { position: 'absolute', left: 0, right: 0, alignItems: 'center', zIndex: 30 },
   stopInner: { width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(255,59,48,0.12)', borderWidth: 3, borderColor: '#FF3B30', alignItems: 'center', justifyContent: 'center' },
   stopSq: { width: 20, height: 20, borderRadius: 4, backgroundColor: '#FF3B30' },

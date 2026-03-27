@@ -6,7 +6,7 @@
 **Stack Tecnico**: Expo React Native SDK 54 + FastAPI + MongoDB  
 **Bundle ID**: `com.arenakore.app`  
 **Data creazione**: Marzo 2026  
-**Versione**: 2.1 — NIKE-GRADE OVERHAUL COMPLETE
+**Versione**: 3.0 — RIFONDAZIONE ESTETICA TOTALE COMPLETE
 
 ---
 

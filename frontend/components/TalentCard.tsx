@@ -2,17 +2,18 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Share, Alert, Dimensions } from 'react-native';
 import Svg, { Polygon, Circle, Line } from 'react-native-svg';
 import QRCode from 'react-native-qrcode-svg';
+import { Ionicons } from '@expo/vector-icons';
 import { User, DNAStats } from '../contexts/AuthContext';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
-const ATTRS = [
-  { key: 'velocita', label: 'VEL', fullLabel: 'Velocità', icon: '⚡' },
-  { key: 'forza', label: 'FOR', fullLabel: 'Forza', icon: '💪' },
-  { key: 'resistenza', label: 'RES', fullLabel: 'Resistenza', icon: '🫀' },
-  { key: 'agilita', label: 'AGI', fullLabel: 'Agilità', icon: '🏃' },
-  { key: 'tecnica', label: 'TEC', fullLabel: 'Tecnica', icon: '🎯' },
-  { key: 'potenza', label: 'POT', fullLabel: 'Potenza', icon: '💥' },
+const ATTRS: { key: string; label: string; fullLabel: string; ionicon: keyof typeof Ionicons.glyphMap; color: string }[] = [
+  { key: 'velocita', label: 'VEL', fullLabel: 'Velocit\u00e0', ionicon: 'flash', color: '#00F2FF' },
+  { key: 'forza', label: 'FOR', fullLabel: 'Forza', ionicon: 'barbell', color: '#FFFFFF' },
+  { key: 'resistenza', label: 'RES', fullLabel: 'Resistenza', ionicon: 'heart', color: '#FF453A' },
+  { key: 'agilita', label: 'AGI', fullLabel: 'Agilit\u00e0', ionicon: 'walk', color: '#00F2FF' },
+  { key: 'tecnica', label: 'TEC', fullLabel: 'Tecnica', ionicon: 'navigate-circle', color: '#FFFFFF' },
+  { key: 'potenza', label: 'POT', fullLabel: 'Potenza', ionicon: 'flash-sharp', color: '#FFD700' },
 ];
 
 function polarToXY(cx: number, cy: number, r: number, angleDeg: number) {
@@ -75,13 +76,13 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
       ? ATTRS.map(a => `${a.fullLabel}: ${dna[a.key as keyof DNAStats]}`).join(' · ')
       : '';
     const recordText = recordsBroken.length > 0
-      ? `\n🏆 Record: ${recordsBroken.join(', ').toUpperCase()}`
+      ? `\nRecord: ${recordsBroken.join(', ').toUpperCase()}`
       : '';
-    const xpText = xpEarned ? `\n⚡ +${xpEarned} XP guadagnati!` : '';
+    const xpText = xpEarned ? `\n+${xpEarned} XP guadagnati!` : '';
 
     try {
       await Share.share({
-        message: `🏟️ ARENAKORE TALENT CARD\n━━━━━━━━━━━━━━━\n👤 ${user.username?.toUpperCase()}\n🏅 LVL ${user.level} | ${user.xp} XP\n🎯 ${user.sport?.toUpperCase() || 'ATLETA'}${xpText}${recordText}\n\n${statsText}\n\nOVR: ${avgStat}/100\n━━━━━━━━━━━━━━━\n#ArenaKore #${user.sport} #Performance`,
+        message: `ARENAKORE TALENT CARD\n${'━'.repeat(15)}\n${user.username?.toUpperCase()}\nLVL ${user.level} | ${user.xp} XP\n${user.sport?.toUpperCase() || 'ATLETA'}${xpText}${recordText}\n\n${statsText}\n\nOVR: ${avgStat}/100\n${'━'.repeat(15)}\n#ArenaKore #${user.sport} #Performance`,
         title: `${user.username} - ArenaKore Talent Card`,
       });
     } catch (e) {
@@ -141,7 +142,7 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
       {/* Records */}
       {recordsBroken.length > 0 && (
         <View style={styles.recordRow}>
-          <Text style={styles.recordIcon}>🏆</Text>
+          <Ionicons name="trophy" size={16} color="#D4AF37" />
           <Text style={styles.recordText}>
             {recordsBroken.map(r => r.toUpperCase()).join(' · ')}
           </Text>

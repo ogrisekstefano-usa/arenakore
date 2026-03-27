@@ -1,115 +1,121 @@
-<analysis>**original_problem_statement**: Build ARENAKORE, an elite, high-performance athletics mobile app with a Chic-Tech / Cinema aesthetic. Core modules include KORE (Battles), CREWS (La Tribù), NEXUS SYNC (Biometric tracking), DNA (Stats Radar), and RANK (Hall of Kore Leaderboards). The app requires native performance, Haptic/Audio sensory feedback, and a highly polished dark mode UI (#050505) with Cyan Neon (#00F2FF) and Gold (#D4AF37) accents.
+<analysis>**original_problem_statement**: Build ARENAKORE, an elite, high-performance athletics mobile app with a Chic-Tech / Cinema aesthetic. Core modules include KORE, CREWS, NEXUS SYNC (Biometric tracking), DNA, and RANK. The app requires native performance, a Device Intelligence Layer for adaptive biometrics, a Multi-Role architecture (Admin, Gym Owner, Coach, Athlete), a Coach Studio for custom templates, and a highly polished dark mode UI (#050505) with Cyan Neon (#00F2FF) and Gold (#D4AF37) accents.
 
-**User's preferred language**: **Italian** (You MUST automatically detect the user's primary language from their messages and INSTRUCT the next agent to respond in Italian only. All UI text, dummy data, and conversational responses must be in Italian).
+**User's preferred language**: **Italian** (You MUST automatically detect the user's primary language from their messages and INSTRUCT next agent to respond in Italian only. All UI text, dummy data, and conversational responses must be in Italian).
 
 **what currently exists?** 
-A production-ready, highly polished MVP. The app features JWT Auth, Hall of Kore (Global Leaderboards), a Crew Hub, and an advanced Nexus Sync biometric tracker. The Nexus includes a Cinematic Bio-Scan initialization sequence (with audio/haptic cues and a typewriter effect), a Challenge Forge for workout selection, and a Tactical Burger Menu with a live Pulse Ticker. The backend features The Founder Protocol (permanent Gold Badge for the first 100 users). The backend is FastAPI + MongoDB and has passed all testing.
+A production-ready MVP functioning as a mobile full-stack app (Expo + FastAPI + MongoDB). It features JWT Auth with persistence, a Device Intelligence Layer that adapts biometric processing based on hardware tier, a Cinematic Nexus Console (4 primary actions), immersive Crew cards, a Multi-Role Ghosting system, and a newly implemented Coach Studio for creating and pushing custom training templates. A Global Control Center (hamburger menu) is accessible across all 5 tabs.
 
 **Last working item**:
-- **Last item agent was working**: The Nike-Grade Overhaul. The user requested a strict 5-tab global lock (KORE, CREWS, NEXUS, DNA, RANK), a Digital Shadow motion-reactive skeleton (using camera motion detection instead of an autonomous GIF), Nike-style Challenge Forge cards (using dramatic athlete photos and black LinearGradients), an intense BackdropBlur on the Burger menu, and a 1.5s shimmer animation on the Founder Gold badge. The agent used the vision expert to fetch images and overwrote  and  to implement these UI/logic changes.
-- **Status**: IN PROGRESS (Code written, compilation and UI testing pending).
-- **Agent Testing Done**: N
-- **Which testing method agent to use?** Frontend screenshot tool (to verify Tab Bar, Challenge Forge styling, and Burger Menu Blur) and manual testing / console logs (to ensure the new Motion Detection skeleton logic doesn't crash Metro).
+- **Last item agent was working**: Aesthetic Refoundation (Nike Lab Look). The user strictly demanded a move away from colored emojis and thin/dark fonts. The agent was actively replacing emojis with Monochromatic Ionicons (White, Cyan, Gold), updating titles to bold Sans-Serif/All-Caps, and redesigning the Ghosting Switcher in the  to use a Segmented Control instead of a 2x2 grid.
+- **Status**: IN PROGRESS
+- **Agent Testing Done**: N (Code written for , but UI testing and app-wide propagation pending)
+- **Which testing method agent to use?** Frontend screenshot tool to verify typography, monochromatic icon replacements, and the new segmented control rendering.
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-Issue 1: Verify the Nike-Grade Overhaul Compilation
-- Attempted fixes: The agent just wrote a massive overwrite to  and .
-- Next debug checklist: Restart the frontend Expo server. Check for Metro bundler syntax errors or missing imports (especially related to , , or camera logic).
-- Why fix this issue and what will be achieved with the fix? Ensures the app actually runs with the new elite UI changes before presenting to the user.
-- Status: TESTING PENDING
+Issue 1: Validate and Propagate Aesthetic Refoundation 🔴 P0
+- Attempted fixes: The agent just overwrote  to implement the segmented control and Ionicons.
+- Next debug checklist: Check  rendering via screenshot tool. Then, search and replace all remaining colored emojis (e.g., 🔥, 🏋️, 🏆, 🏔️) in , , and  with vector icons (Ionicons). Update font weights to  or  for titles.
+- Why fix this issue and what will be achieved with the fix? The user absolutely hates the childish emojis and demands a serious, elite Chic-Tech aesthetic. 
+- Status: IN PROGRESS
 - Is recurring issue? N
 - Should Test frontend/backend/both after fix? frontend
 - Blocked on other issue: None
 
 **In progress Task List**:
-Task 1: Validate Visuals of the Nike-Grade Overhaul
-- Where to resume: Use the screenshot tool to navigate the app. 
-- What will be achieved with this? Verify that: 1) The Tab Bar strictly shows the 5 requested tabs. 2) The Challenge Forge shows the new dramatic images with dark gradients. 3) The Burger Menu has the intense Backdrop Blur. 4) The Founder Badge shimmers.
-- Status: TESTING PENDING
+Task 1: Overhaul Slide Menu and Ghosting UI 🔴 P0
+- Where to resume: . Verify the segmented control displays correctly for Admin users and handles state () changes flawlessly.
+- What will be achieved with this? A professional interface for switching roles (Admin, Gym Hub, Coach Studio, Athlete) without grid clunkiness.
+- Status: IN PROGRESS
 - Should Test frontend/backend/both after fix? frontend
-- Blocked on something: Compiling Issue 1.
+- Blocked on something: None
 
 **Upcoming and Future Tasks**
 Upcoming Tasks:
-- P0: Verify the Digital Shadow Skeleton logic in . Ensure it correctly anchors to camera motion and doesn't animate on its own.
-- P1: Native Device Testing. Features like ,  intensity, and Camera Motion Detection need to be validated on a physical iOS/Android device via Expo Go.
+- P1: Global Emoji Purge. Audit the entire codebase and eradicate all native emojis. Replace with  or  (White for general, Cyan  for biometrics, Gold  for status).
+- P2: Implement Backend API logic for  (Gym Owner role). Currently, the UI for Gym Owners is mocked. 
+- P2: Refactor  and . Both files have exceeded 1100 lines and contain multiple heavy sub-components (Consoles, Modals, Coach Studios).
 
 **Completed work in this session**
-- The Founder Protocol backend logic (retroactive badging for first 100 users) (DONE)
-- Haptic Punch (Heavy/Medium vibration based on motion) (DONE)
-- App.json production cleanup (Bundle ID ) (DONE)
-- Global Rebrand: Replaced Glory Wall entirely with HALL OF KORE and renamed 5th tab to RANK (DONE)
-- Nexus Sync Overhaul: Added Bio-Scan Initialization (Laser, Audio Hum, Typewriter text), Challenge Forge, and Tactical Burger Menu with Global Pulse Ticker (DONE)
+- KORE Tab visual bug fixes (Unicode  rendering) (DONE)
+- Auth Persistence (JWT AsyncStorage + Auto-redirect) and Logout (DONE)
+- Device Intelligence Layer () with HIGH/STANDARD/LEGACY tier detection and adaptive Skeleton rendering (DONE)
+- The Console implementation in Nexus Tab (4 cinematic buttons: NEXUS SCAN, THE FORGE, HALL OF KORE, MY DNA) (DONE)
+- Immersive Crews Tab (WoW background images replacing standard lists) (DONE)
+- Multi-Role Architecture (Admin, Gym Owner, Coach, Athlete) & Ghosting Switcher (DONE)
+- Global Control Center extraction () and ☰ icon added to all 5 tabs (DONE)
+- Coach Studio & Template Engine (Backend CRUD  + Frontend creation/push UI) (DONE)
 
 **Earlier issues found/mentioned but not fixed**
 None.
 
 **Known issue recurrence from previous fork**
-- Issue recurrence in previous fork: Metro Bundler caching old syntax errors (e.g., dangling comments). 
-- Recurrence count: 2
+- Issue recurrence in previous fork: Metro Bundler caching old syntax errors or failing to resolve new modules after large refactors.
+- Recurrence count: 3
 - Status: RESOLVED
-- Note: If Expo throws a syntax error after a  replacement, restart the Metro bundler completely.
+- Note: Use expo: ERROR (not running)
+expo: started to nuke the cache and restart the bundler if you encounter persistent Metro ghost errors.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-React Native Expo, Expo Router, conditional Platform-specific logic, , , Web Audio API (Oscillators for scanning sounds), , , React Native Reanimated (Shimmers, Pulses), FastAPI.
+React Native Expo, Expo Router, conditional Platform-specific logic, , Web Audio API, , , React Native Reanimated (v4), FastAPI, MongoDB.  dynamically scales visual effects (like SVG glow and  intensity) based on device RAM/CPU heuristics.
 
 **key DB schema**
-- : {..., is_admin: bool, is_founder: bool, xp, level, avatar_color}
+- : {is_admin, is_founder, xp, level, avatar_color}
+- : {name, category, owner_id}
+-  (NEW): {name, exercise, difficulty, time_limit, reps_target, xp_reward, coach_id, created_at}
 
 **changes in tech stack**
-- Added Web Audio API implementation in  to handle the Cyber Hum scanning noise.
-- Replaced standalone media-pipe tracking with a custom Camera Motion Detection mathematical anchor for the Cyan Skeleton (to act as a Digital Shadow).
+- Standardized the use of  (from ) to handle the monochromatic UI constraints.
 
 **All files of reference**
--  (Contains the strict 5-tab lock)
--  (Contains Bio-Scan, Challenge Forge, Motion Skeleton, Burger Menu)
--  (Contains the marketing copy and admin credentials)
+-  (Currently being edited for the Aesthetic overhaul)
+-  (Contains the Console and Biometrics)
+-  (Contains the new Coach Studio)
+-  (Updated with  endpoints)
 
 **Areas that need refactoring**
--  has become extremely large (>1000 lines) combining camera logic, animations, modals, and multiple sub-components (Burger Menu, Results, Forge). It is functional but would benefit from component splitting in a future phase.
+-  and  are massive (>1100 lines each) and house too many complex inline components.
 
 **key api endpoints**
--  (Returns  status)
 - 
+- 
+-  (Mocked in frontend, needs backend wiring if fully utilized)
 
 **Critical Info for New Agent**
 - **Language Policy**: **Italian**.
-- **Terminology Ban**: The term Glory Wall is banned. It MUST always be referred to as **HALL OF KORE**.
-- **Tab Bar Lock**: The user explicitly demanded a strict 5-tab lock: , , , , . Do not add hidden tabs or change this order.
-- **The Skeleton Truth**: The user rejected an autonomously moving skeleton. The skeleton must strictly react to real camera motion to act as a digital shadow.
+- **AESTHETIC RULES (DO OR DIE)**: The user **HATES** colored emojis and dim text. You MUST use Monochromatic Vector Icons (White for general, Cyan  for tech/bio, Gold  for status). Fonts MUST be Sans-Serif, BOLD, and highly luminous against the dark background. 
+- **Ghosting Mode**: Handled via  in . It dynamically changes the Tab Bar (e.g.,  becomes  for Coaches).
+- Always restart frontend (expo: stopped
+expo: started) after heavy  or file writes before screenshotting.
 
 **documents and test reports created in this job**
-- 
-- 
 -  (Updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-- *Latest*: User requested the Nike-Grade Overhaul: Strict 5-tab lock, Motion-anchored skeleton, dramatic athlete images with linear gradients for the Challenge Forge, intense BackdropBlur for the Burger menu, and a shimmering Founder badge.
-- *Previous*: Agent asked for plan confirmation.
-- *Previous*: User reported the UI looked messy and requested the Nike-Grade Overhaul.
-- *Previous*: Agent completed the Pulse Ticker and Audio Cues.
-- *Previous*: User requested a Global Pulse Ticker in the Burger menu, Audio Cues for the Bio-Scan, and Founder Pride text.
-- *Previous*: Agent implemented the Kore Rebirth.
-- *Previous*: User defined Kore Rebirth (Bio-signature Typewriter, Challenge Forge icons, Burger Glass blur, Share card).
-- *Previous*: Agent implemented the Elite Specification (Bio-Scan trigger).
-- *Previous*: User requested Elite Specification (Bio-Scan line, DNA pulse, Cinema Session End).
-- *Previous*: User demanded an emergency naming intervention: Change Glory Wall to HALL OF KORE globally.
+- *Latest*: Rifondazione estetica totale. Commanded removal of colored emojis, enforcement of bold luminous fonts, and redesign of the Admin Ghosting menu to a professional Segmented Control.
+- *Previous*: Prompt for SPRINT 2: COACH STUDIO & TEMPLATE ENGINE. 
+- *Previous*: Complaint that the hamburger menu wasn't visible on all tabs. (Resolved by creating Global ).
+- *Previous*: Prompt for SPRINT 1: Multi-Role & Ghosting Mode.
+- *Previous*: Prompt for NIKE-GRADE OVERHAUL (NEXUS Console, Immersive Crews).
+- *Previous*: Complaint about cache (mostra ancora tutto vecchio).
+- *Previous*: Prompt to implement DEVICE INTELLIGENCE LAYER.
+- *Previous*: Prompt for Auth Persistence and Logout functionality.
+- *Previous*: Plan approval for P0 compilation check from the previous fork.
 
 **Project Health Check:**
-Healthy, but pending compilation check. The backend is 100% solid. The frontend just underwent a massive architectural rewrite of the main Nexus file and Layout tab bar.
+Healthy Backend. Frontend is stable but visually in-flux due to the current Aesthetic Overhaul command.
 
 **3rd Party Integrations**
--  — (Used to fetch dramatic athlete images for the UI).
+-  — Emergent Tool (Used to generate dramatic WoW athlete images).
 
 **Testing status**
-- Testing agent used after significant changes: YES (Backend was tested via  and passed 100%).
-- Troubleshoot agent used after agent stuck in loop: NO.
-- Test files created: None.
-- Known regressions: None, but the latest  overwrite has not yet been compiled or viewed.
+- Testing agent used after significant changes: NO (Screenshot tool heavily relied upon for UI checks).
+- Troubleshoot agent used after agent stuck in loop: NO
+- Test files created: None
+- Known regressions: None, but the latest  rewrite has not been compiled or visually verified yet.
 
 **Credentials to test flow:**
 Available in :
@@ -117,4 +123,4 @@ Available in :
 - Demo User:  / 
 
 **What agent forgot to execute**
-The agent implemented the code for the final Nike-Grade Overhaul but the session ended before the agent could run [18:52:39] Starting project at /app/frontend, compile the app, and take screenshots to verify the complex UI changes (LinearGradient, BlurView, and the new Motion Skeleton logic). This must be verified immediately upon resuming.</analysis>
+The agent started the Rifondazione estetica totale by rewriting  with Ionicons and a Segmented Control, but the session ended before compiling, visually testing it, or propagating the emoji-purge and bold font rules to the rest of the application (, , ). This must be completed immediately.</analysis>
