@@ -29,6 +29,7 @@ import { profileDevice, DeviceProfile, DeviceTier, getTierLabel, getTrackingMode
 import { CyberGrid, DigitalShadow, ScanLine } from '../../components/nexus/NexusVisuals';
 import { BurgerMenu } from '../../components/nexus/NexusBurgerMenu';
 import { CinemaResults } from '../../components/nexus/NexusCinemaResults';
+import { ProUnlockModal } from '../../components/nexus/ProUnlockModal';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -161,8 +162,8 @@ const bio$ = StyleSheet.create({
 });
 
 // ========== NEXUS CONSOLE ==========
-function NexusConsole({ user, onScan, onForge, deviceTier }: {
-  user: any; onScan: () => void; onForge: () => void; deviceTier: DeviceTier;
+function NexusConsole({ user, onScan, onForge, deviceTier, eligibility }: {
+  user: any; onScan: () => void; onForge: () => void; deviceTier: DeviceTier; eligibility: any;
 }) {
   const router = useRouter();
   const isFounder = user?.is_founder || user?.is_admin;
@@ -197,6 +198,25 @@ function NexusConsole({ user, onScan, onForge, deviceTier }: {
           <View style={cn$.tierRow}><View style={cn$.tierDot} /><Text style={cn$.tierText}>{getTierLabel(deviceTier)} ACTIVE</Text></View>
         </View>
         <ScrollView style={cn$.scroll} contentContainerStyle={cn$.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* Bio-Scan Eligibility Status */}
+          {eligibility && (
+            <View style={[
+              cn$.eligBanner,
+              eligibility.can_scan ? cn$.eligBannerActive : cn$.eligBannerLocked,
+            ]}>
+              <Ionicons
+                name={eligibility.can_scan ? 'scan' : eligibility.phase === 'locked' ? 'lock-closed' : 'time-outline'}
+                size={12}
+                color={eligibility.can_scan ? '#00F2FF' : eligibility.phase === 'locked' ? '#444' : '#D4AF37'}
+              />
+              <Text style={[cn$.eligText, eligibility.can_scan ? cn$.eligTextActive : cn$.eligTextLocked]}>
+                {eligibility.message}
+              </Text>
+              {eligibility.can_scan && (
+                <View style={cn$.eligReadyDot} />
+              )}
+            </View>
+          )}
           <View style={cn$.grid}>
             {buttons.map((btn) => (
               <TouchableOpacity key={btn.key} style={cn$.card} activeOpacity={0.85} onPress={btn.action}>
@@ -237,6 +257,18 @@ const cn$ = StyleSheet.create({
   cardBottom: { gap: 4 },
   cardTitle: { color: '#D4AF37', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   cardSub: { color: '#00F2FF', fontSize: 8, fontWeight: '700', letterSpacing: 1.5, opacity: 0.7 },
+  // BIO-SCAN ELIGIBILITY BANNER
+  eligBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
+    borderWidth: 1, marginTop: 10, marginBottom: 2,
+  },
+  eligBannerActive: { backgroundColor: 'rgba(0,242,255,0.05)', borderColor: 'rgba(0,242,255,0.18)' },
+  eligBannerLocked: { backgroundColor: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.07)' },
+  eligText: { flex: 1, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  eligTextActive: { color: '#00F2FF' },
+  eligTextLocked: { color: 'rgba(255,255,255,0.3)' },
+  eligReadyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF', shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4 },
 });
 
 // ========== CHALLENGE FORGE ==========
@@ -415,6 +447,10 @@ export default function NexusTriggerScreen() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showMenu, setShowMenu] = useState(false);
   const [deviceTier, setDeviceTier] = useState<DeviceTier>('standard');
+  // SPRINT 7: Bio-Evolution Engine
+  const [eligibility, setEligibility] = useState<any>(null);
+  const [showProUnlock, setShowProUnlock] = useState(false);
+  const [bioscanResult, setBioscanResult] = useState<any>(null);
 
   const analyzerRef = useRef<MotionAnalyzer | null>(null);
   const startTimeRef = useRef(0);
@@ -424,6 +460,14 @@ export default function NexusTriggerScreen() {
   const motionTimeoutRef = useRef<any>(null);
 
   useEffect(() => { const dp = profileDevice(); setDeviceTier(dp.tier); }, []);
+
+  // SPRINT 7: Fetch bio-scan eligibility on mount
+  useEffect(() => {
+    if (!token) return;
+    api.getRescanEligibility(token)
+      .then(data => setEligibility(data))
+      .catch(() => {});
+  }, [token]);
 
   // Web camera & motion detection — SPRINT 5: Camera VISIBLE, overlay reduced
   useEffect(() => {
@@ -534,7 +578,7 @@ export default function NexusTriggerScreen() {
   const fmt = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
   if (phase === 'console') {
-    return <NexusConsole user={user} onScan={() => setPhase('bioscan')} onForge={() => setPhase('forge')} deviceTier={deviceTier} />;
+    return <NexusConsole user={user} onScan={() => setPhase('bioscan')} onForge={() => setPhase('forge')} deviceTier={deviceTier} eligibility={eligibility} />;
   }
 
   if (phase === 'forge') {
@@ -561,7 +605,24 @@ export default function NexusTriggerScreen() {
       <DigitalShadow pose={skeleton} exercise={exercise} goldFlash={goldFlash} motionActive={motionActive} deviceTier={deviceTier} />
       <ScanLine active={phase === 'scanning'} />
       {phase === 'scanning' && <MiniDNARadar dna={user?.dna} explosive={motionActive} />}
-      {phase === 'bioscan' && <BioScanTrigger user={user} onComplete={() => setPhase('forge')} />}
+      {phase === 'bioscan' && <BioScanTrigger user={user} onComplete={async () => {
+        setPhase('forge');
+        // SPRINT 7: Record bioscan snapshot + check PRO unlock
+        if (token) {
+          const prevPro = user?.pro_unlocked;
+          try {
+            const result = await api.completeBioscan(token);
+            if (result.user) updateUser(result.user);
+            if (result.pro_newly_unlocked || (result.pro_unlocked && !prevPro)) {
+              setBioscanResult(result);
+              setShowProUnlock(true);
+            }
+            // Refresh eligibility
+            const elig = await api.getRescanEligibility(token);
+            setEligibility(elig);
+          } catch (_) { /* silenced — user goes to forge regardless */ }
+        }
+      }} />}
       {phase === 'countdown' && <Countdown onComplete={handleCountdownDone} />}
 
       {/* SPRINT 5: Military/Tech HUD — Corner Layout */}
@@ -632,6 +693,11 @@ export default function NexusTriggerScreen() {
       )}
 
       <CinemaResults visible={phase === 'results'} result={scanResult} user={user} onClose={handleResultClose} />
+      <ProUnlockModal
+        visible={showProUnlock}
+        onClose={() => setShowProUnlock(false)}
+        avgDna={bioscanResult?.avg_dna}
+      />
       <BurgerMenu visible={showMenu} onClose={() => setShowMenu(false)} user={user} onLogout={logout} deviceTier={deviceTier} activeRole={activeRole} onRoleSwitch={setActiveRole} />
     </View>
   );

@@ -106,6 +106,10 @@ export const api = {
 
   getNexusSessions: (token: string) => request('/nexus/sessions', {}, token),
 
+  // ========== BIO-EVOLUTION ENGINE — SPRINT 7 ==========
+  getRescanEligibility: (token: string) => request('/nexus/rescan-eligibility', {}, token),
+  completeBioscan: (token: string) => request('/nexus/bioscan', { method: 'POST' }, token),
+
   // ========== COACH STUDIO — TEMPLATE ENGINE ==========
   createTemplate: (data: { name: string; exercise: string; target_time: number; target_reps: number; xp_reward: number; difficulty: string; description?: string }, token: string) =>
     request('/templates', { method: 'POST', body: JSON.stringify(data) }, token),

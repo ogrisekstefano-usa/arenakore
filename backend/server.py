@@ -123,6 +123,7 @@ def user_to_response(user: dict) -> dict:
         "height_cm": user.get("height_cm"),
         "weight_kg": user.get("weight_kg"),
         "is_pro": (user.get("level", 1) >= 10 or user.get("xp", 0) >= 3000),
+        "pro_unlocked": user.get("pro_unlocked", False),
     }
 
 
@@ -194,6 +195,8 @@ async def complete_onboarding(data: OnboardingUpdate, current_user: dict = Depen
         "tecnica": random.randint(42, 92),
         "potenza": random.randint(42, 92),
     }
+    now_ts = datetime.now(timezone.utc)
+    dna_scan_entry = {"dna": dna, "scanned_at": now_ts, "scan_type": "baseline"}
     update_data = {
         "role": data.role or "Kore Member",
         "sport": data.sport,
@@ -201,6 +204,8 @@ async def complete_onboarding(data: OnboardingUpdate, current_user: dict = Depen
         "is_versatile": data.is_versatile or False,
         "xp": 100,
         "dna": dna,
+        "dna_scans": [dna_scan_entry],
+        "baseline_scanned_at": now_ts,
         "onboarding_completed": True,
     }
     await db.users.update_one(
@@ -956,6 +961,184 @@ async def search_users(query: str, current_user: dict = Depends(get_current_user
         }
         for u in users
     ]
+
+
+# ====================================
+# NEXUS BIO-EVOLUTION ENGINE — SPRINT 7
+# ====================================
+
+@api_router.get("/nexus/rescan-eligibility")
+async def get_rescan_eligibility(current_user: dict = Depends(get_current_user)):
+    """The 48h/30d Bio-Scan Rule: Check if user can perform a bio-scan"""
+    now = datetime.now(timezone.utc)
+    dna = current_user.get("dna")
+
+    # 1. No DNA at all → initial scan needed (onboarding not completed)
+    if not dna:
+        return {
+            "can_scan": True, "scan_type": "initial", "phase": "no_scan",
+            "message": "AVVIA LA TUA PRIMA BIO-SCAN",
+            "previous_dna": None, "current_dna": None,
+            "improvement_rates": {}, "days_remaining": None, "hours_remaining": None,
+            "pro_unlocked": False, "avg_dna": 0,
+        }
+
+    avg_dna = round(sum(dna.values()) / 6, 1)
+    dna_scans = current_user.get("dna_scans", [])
+    baseline_scanned_at = current_user.get("baseline_scanned_at")
+    validation_scanned_at = current_user.get("validation_scanned_at")
+
+    # 2. Retroactive: old users with DNA but no scan history → set baseline
+    if not dna_scans:
+        created_at = current_user.get("created_at", now - timedelta(days=7))
+        if hasattr(created_at, 'tzinfo') and created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        baseline_scan = {"dna": dna, "scanned_at": created_at, "scan_type": "baseline"}
+        dna_scans = [baseline_scan]
+        baseline_scanned_at = created_at
+        await db.users.update_one(
+            {"_id": current_user["_id"]},
+            {"$set": {"dna_scans": dna_scans, "baseline_scanned_at": created_at}}
+        )
+
+    # Ensure timezone awareness
+    if baseline_scanned_at and hasattr(baseline_scanned_at, 'tzinfo') and baseline_scanned_at.tzinfo is None:
+        baseline_scanned_at = baseline_scanned_at.replace(tzinfo=timezone.utc)
+    if validation_scanned_at and hasattr(validation_scanned_at, 'tzinfo') and validation_scanned_at.tzinfo is None:
+        validation_scanned_at = validation_scanned_at.replace(tzinfo=timezone.utc)
+
+    # 3. Compute improvement rates vs previous scan
+    improvement_rates = {}
+    prev_dna = dna_scans[0]["dna"] if dna_scans else None
+    if len(dna_scans) >= 2:
+        prev_dna = dna_scans[-2]["dna"]
+    if prev_dna:
+        for k in ["velocita", "forza", "resistenza", "agilita", "tecnica", "potenza"]:
+            pv = prev_dna.get(k, 0)
+            cv = dna.get(k, 0)
+            improvement_rates[k] = round(((cv - pv) / pv * 100) if pv > 0 else 0, 1)
+
+    base_response = {
+        "previous_dna": prev_dna, "current_dna": dna,
+        "improvement_rates": improvement_rates,
+        "pro_unlocked": current_user.get("pro_unlocked", False),
+        "avg_dna": avg_dna,
+    }
+
+    # 4. No validation scan yet → check 48h rule
+    if not validation_scanned_at:
+        hours_since = 0
+        if baseline_scanned_at:
+            hours_since = (now - baseline_scanned_at).total_seconds() / 3600
+        else:
+            hours_since = 48  # Allow if no tracking
+
+        hours_remaining = max(0, 48 - hours_since)
+        if hours_remaining > 0:
+            h, m = int(hours_remaining), int((hours_remaining % 1) * 60)
+            return {**base_response, "can_scan": False, "scan_type": "validation_pending",
+                    "phase": "validation_pending", "hours_remaining": round(hours_remaining, 1),
+                    "days_remaining": None, "message": f"VALIDATION SCAN TRA: {h}H {m:02d}M"}
+
+        return {**base_response, "can_scan": True, "scan_type": "validation",
+                "phase": "validation_ready", "hours_remaining": None, "days_remaining": None,
+                "message": "VALIDATION SCAN DISPONIBILE"}
+
+    # 5. Has validation → check 30-day lock
+    days_since_validation = (now - validation_scanned_at).days
+    days_remaining = max(0, 30 - days_since_validation)
+
+    if days_remaining > 0:
+        return {**base_response, "can_scan": False, "scan_type": "locked",
+                "phase": "locked", "days_remaining": days_remaining, "hours_remaining": None,
+                "message": f"PROSSIMA EVOLUZIONE TRA: {days_remaining} GIORNI"}
+
+    return {**base_response, "can_scan": True, "scan_type": "evolution",
+            "phase": "evolution_ready", "hours_remaining": None, "days_remaining": None,
+            "message": "EVOLUTION SCAN DISPONIBILE"}
+
+
+@api_router.post("/nexus/bioscan")
+async def complete_bioscan(current_user: dict = Depends(get_current_user)):
+    """Record a bio-scan snapshot, compute improvements, check PRO unlock"""
+    now = datetime.now(timezone.utc)
+    dna = current_user.get("dna")
+
+    if not dna:
+        raise HTTPException(status_code=400, detail="Completa l'onboarding prima della bio-scan")
+
+    dna_scans = current_user.get("dna_scans", [])
+    baseline_scanned_at = current_user.get("baseline_scanned_at")
+    validation_scanned_at = current_user.get("validation_scanned_at")
+
+    if baseline_scanned_at and hasattr(baseline_scanned_at, 'tzinfo') and baseline_scanned_at.tzinfo is None:
+        baseline_scanned_at = baseline_scanned_at.replace(tzinfo=timezone.utc)
+    if validation_scanned_at and hasattr(validation_scanned_at, 'tzinfo') and validation_scanned_at.tzinfo is None:
+        validation_scanned_at = validation_scanned_at.replace(tzinfo=timezone.utc)
+
+    # Determine scan type and validate eligibility
+    scan_type = "baseline"
+    set_fields: dict = {}
+
+    if not dna_scans:
+        # First formal scan
+        scan_type = "baseline"
+        set_fields["baseline_scanned_at"] = now
+    elif not validation_scanned_at:
+        if baseline_scanned_at:
+            hours_since = (now - baseline_scanned_at).total_seconds() / 3600
+            if hours_since < 48:
+                h = int(48 - hours_since)
+                raise HTTPException(status_code=400, detail=f"Validation scan disponibile tra {h} ore")
+        scan_type = "validation"
+        set_fields["validation_scanned_at"] = now
+    else:
+        days_since = (now - validation_scanned_at).days
+        if days_since < 30:
+            raise HTTPException(status_code=400, detail=f"Prossima evoluzione tra {30 - days_since} giorni")
+        scan_type = "evolution"
+        set_fields["baseline_scanned_at"] = now
+        set_fields["validation_scanned_at"] = None
+
+    # Save scan snapshot
+    new_scan = {"dna": dict(dna), "scanned_at": now, "scan_type": scan_type}
+
+    # Compute improvements vs previous scan
+    improvement_rates: dict = {}
+    prev_dna = None
+    if dna_scans:
+        prev_dna = dna_scans[-1]["dna"]
+        for k in ["velocita", "forza", "resistenza", "agilita", "tecnica", "potenza"]:
+            pv = prev_dna.get(k, 0)
+            cv = dna.get(k, 0)
+            improvement_rates[k] = round(((cv - pv) / pv * 100) if pv > 0 else 0, 1)
+
+    # Check PRO unlock
+    avg_dna = sum(dna.values()) / 6
+    was_pro = current_user.get("pro_unlocked", False)
+    if avg_dna > 75 and not was_pro:
+        set_fields["pro_unlocked"] = True
+
+    # Execute update
+    update_op: dict = {"$push": {"dna_scans": new_scan}}
+    if set_fields:
+        update_op["$set"] = set_fields
+
+    await db.users.update_one({"_id": current_user["_id"]}, update_op)
+    updated_user = await db.users.find_one({"_id": current_user["_id"]})
+
+    pro_newly_unlocked = avg_dna > 75 and not was_pro
+
+    return {
+        "scan_type": scan_type,
+        "previous_dna": prev_dna,
+        "current_dna": dna,
+        "improvement_rates": improvement_rates,
+        "avg_dna": round(avg_dna, 1),
+        "pro_unlocked": avg_dna > 75,
+        "pro_newly_unlocked": pro_newly_unlocked,
+        "user": user_to_response(updated_user),
+    }
 
 
 # ====================================

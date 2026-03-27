@@ -97,9 +97,12 @@ export default function DNATab() {
   const [isGlowing, setIsGlowing] = useState(false);
   const [lastChallenge, setLastChallenge] = useState<any>(null);
   const [showGlitch, setShowGlitch] = useState(false);
+  const [eligibility, setEligibility] = useState<any>(null);
+  const [showEvoGlow, setShowEvoGlow] = useState(false);
 
   const scanOpacity = useSharedValue(0);
   const scanScale = useSharedValue(0.88);
+  const radarExpand = useSharedValue(1);
 
   useFocusEffect(
     useCallback(() => {
@@ -111,6 +114,7 @@ export default function DNATab() {
       scanOpacity.value = withTiming(1, { duration: 550 });
       scanScale.value = withSpring(1, { damping: 14, stiffness: 100 });
       loadRecentChallenge();
+      loadEligibility();
     }, [])
   );
 
@@ -130,9 +134,33 @@ export default function DNATab() {
     } catch (e) { /* silenced */ }
   };
 
+  const loadEligibility = async () => {
+    if (!token) return;
+    try {
+      const data = await api.getRescanEligibility(token);
+      setEligibility(data);
+      // Trigger radar expansion animation if any attribute improved
+      const rates = data.improvement_rates || {};
+      const hasImproved = Object.values(rates).some((v: any) => (v as number) > 0);
+      if (hasImproved) {
+        radarExpand.value = withSequence(
+          withTiming(1.09, { duration: 650, easing: Easing.out(Easing.ease) }),
+          withSpring(1, { damping: 10, stiffness: 80 })
+        );
+        setShowEvoGlow(true);
+        setTimeout(() => setShowEvoGlow(false), 6000);
+      }
+    } catch (e) { /* silenced */ }
+  };
+
   const scanStyle = useAnimatedStyle(() => ({
     opacity: scanOpacity.value,
     transform: [{ scale: scanScale.value }],
+  }));
+
+  const radarStyle = useAnimatedStyle(() => ({
+    opacity: scanOpacity.value,
+    transform: [{ scale: scanScale.value * radarExpand.value }],
   }));
 
   return (
@@ -160,16 +188,22 @@ export default function DNATab() {
             </View>
 
             {dna && (
-              <Animated.View style={[styles.chartGlass, scanStyle]}>
+              <Animated.View style={[styles.chartGlass, radarStyle]}>
                 <View style={styles.glassInner}>
-                  <RadarChart stats={dna} size={260} glowing={isGlowing} recordsBroken={lastRecords} />
+                  <RadarChart stats={dna} size={260} glowing={isGlowing || showEvoGlow} recordsBroken={lastRecords} />
                 </View>
-                {isGlowing && lastRecords.length > 0 && (
+                {(isGlowing && lastRecords.length > 0) && (
                   <View style={styles.glowBanner}>
                     <Ionicons name="trophy" size={14} color="#D4AF37" />
                     <Text style={styles.glowBannerText}>
                       RECORD: {lastRecords.map(r => r.toUpperCase()).join(' \u00b7 ')}
                     </Text>
+                  </View>
+                )}
+                {showEvoGlow && (
+                  <View style={styles.evoBanner}>
+                    <Ionicons name="analytics" size={12} color="#00F2FF" />
+                    <Text style={styles.evoBannerText}>BIO-EVOLUZIONE RILEVATA</Text>
                   </View>
                 )}
               </Animated.View>
@@ -179,8 +213,40 @@ export default function DNATab() {
 
         {!dna && (
           <View style={styles.noData}>
-            <Ionicons name="flash" size={28} color="#00F2FF" />
-            <Text style={styles.noDataText}>Completa l'onboarding{'\n'}per sbloccare il tuo DNA</Text>
+            <View style={styles.noDataIconWrap}>
+              <Ionicons name="scan" size={36} color="#00F2FF" />
+            </View>
+            <Text style={styles.noDataTitle}>DNA NON RILEVATO</Text>
+            <Text style={styles.noDataText}>Completa il tuo onboarding per{'\n'}generare la tua firma biometrica</Text>
+            <View style={styles.firstScanCta}>
+              <View style={styles.firstScanDot} />
+              <Text style={styles.firstScanCtaText}>AVVIA PRIMA BIO-SCAN DAL NEXUS</Text>
+            </View>
+          </View>
+        )}
+
+        {/* BIO-EVOLUTION STATUS BANNER */}
+        {dna && eligibility && (
+          <View style={[
+            styles.eligibilityBanner,
+            eligibility.can_scan ? styles.eligibilityBannerActive : styles.eligibilityBannerLocked,
+          ]}>
+            <Ionicons
+              name={eligibility.can_scan ? 'flash' : eligibility.phase === 'locked' ? 'lock-closed' : 'time'}
+              size={12}
+              color={eligibility.can_scan ? '#00F2FF' : eligibility.phase === 'locked' ? '#555' : '#D4AF37'}
+            />
+            <Text style={[
+              styles.eligibilityText,
+              eligibility.can_scan ? styles.eligibilityTextActive : styles.eligibilityTextLocked,
+            ]}>
+              {eligibility.message}
+            </Text>
+            {eligibility.avg_dna > 0 && (
+              <View style={styles.avgDnaBadge}>
+                <Text style={styles.avgDnaText}>{eligibility.avg_dna}/100</Text>
+              </View>
+            )}
           </View>
         )}
 
@@ -190,9 +256,24 @@ export default function DNATab() {
             {ATTRS.map((a, i) => {
               const val = (dna[a.key as keyof typeof dna] as number) || 0;
               const broken = lastRecords.includes(a.key);
+              const improvement: number = eligibility?.improvement_rates?.[a.key] || 0;
+              const hasImprovement = improvement !== 0;
               return (
-                <View key={a.key} style={[styles.statCard, broken && styles.statCardBroken]}>
-                  <Ionicons name={a.icon} size={18} color={broken ? '#D4AF37' : a.color} />
+                <View key={a.key} style={[
+                  styles.statCard,
+                  broken && styles.statCardBroken,
+                  improvement > 0 && !broken && styles.statCardImproved,
+                ]}>
+                  <View style={styles.statCardTop}>
+                    <Ionicons name={a.icon} size={18} color={broken ? '#D4AF37' : improvement > 0 ? '#00F2FF' : a.color} />
+                    {hasImprovement && (
+                      <View style={[styles.improvBadge, improvement > 0 ? styles.improvPos : styles.improvNeg]}>
+                        <Text style={[styles.improvText, improvement > 0 ? styles.improvTextPos : styles.improvTextNeg]}>
+                          {improvement > 0 ? '+' : ''}{improvement}%
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                   <Text style={styles.statLabel}>{a.label}</Text>
                   <Text style={[styles.statValue, broken && styles.statValueBroken]}>{val}</Text>
                   <View style={styles.statBar}>
@@ -254,8 +335,65 @@ const styles = StyleSheet.create({
     justifyContent: 'center', marginTop: 8,
   },
   glowBannerText: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
-  noData: { padding: 40, alignItems: 'center', gap: 10 },
-  noDataText: { color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center', lineHeight: 22, fontWeight: '600' },
+  noData: { padding: 40, alignItems: 'center', gap: 12 },
+  noDataIconWrap: {
+    width: 72, height: 72, borderRadius: 36,
+    backgroundColor: 'rgba(0,242,255,0.06)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  noDataTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
+  noDataText: { color: 'rgba(255,255,255,0.45)', fontSize: 13, textAlign: 'center', lineHeight: 22 },
+  firstScanCta: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: 'rgba(0,242,255,0.06)', borderRadius: 10,
+    paddingHorizontal: 16, paddingVertical: 10,
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.18)',
+    marginTop: 4,
+  },
+  firstScanDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
+  firstScanCtaText: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  // Eligibility Banner
+  eligibilityBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    marginHorizontal: 14, marginTop: 12, marginBottom: 4,
+    borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
+    borderWidth: 1,
+  },
+  eligibilityBannerActive: {
+    backgroundColor: 'rgba(0,242,255,0.05)',
+    borderColor: 'rgba(0,242,255,0.18)',
+  },
+  eligibilityBannerLocked: {
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    borderColor: 'rgba(255,255,255,0.07)',
+  },
+  eligibilityText: { flex: 1, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  eligibilityTextActive: { color: '#00F2FF' },
+  eligibilityTextLocked: { color: 'rgba(255,255,255,0.35)' },
+  avgDnaBadge: {
+    backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)',
+  },
+  avgDnaText: { color: '#D4AF37', fontSize: 10, fontWeight: '900' },
+  // Evolution glow banner
+  evoBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    width: '100%', backgroundColor: 'rgba(0,242,255,0.06)',
+    borderRadius: 10, padding: 10, borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
+    justifyContent: 'center', marginTop: 8,
+  },
+  evoBannerText: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  // Stat card improvement
+  statCardImproved: { borderColor: 'rgba(0,242,255,0.2)', backgroundColor: 'rgba(0,242,255,0.03)' },
+  statCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  improvBadge: { borderRadius: 6, paddingHorizontal: 5, paddingVertical: 2 },
+  improvPos: { backgroundColor: 'rgba(0,242,255,0.1)', borderWidth: 0.5, borderColor: 'rgba(0,242,255,0.3)' },
+  improvNeg: { backgroundColor: 'rgba(255,69,58,0.08)', borderWidth: 0.5, borderColor: 'rgba(255,69,58,0.2)' },
+  improvText: { fontSize: 8, fontWeight: '900' },
+  improvTextPos: { color: '#00F2FF' },
+  improvTextNeg: { color: '#FF453A' },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 14, gap: 8, marginTop: 16 },
   statCard: {
     width: '30%', flexGrow: 1,
