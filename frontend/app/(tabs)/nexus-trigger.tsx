@@ -425,18 +425,22 @@ export default function NexusTriggerScreen() {
 
   useEffect(() => { const dp = profileDevice(); setDeviceTier(dp.tier); }, []);
 
-  // Web camera & motion detection
+  // Web camera & motion detection — SPRINT 5: Camera VISIBLE, overlay reduced
   useEffect(() => {
     if (phase !== 'scanning' || Platform.OS !== 'web') return;
     let stream: any; let videoEl: any; let motionIv: any; let prevFrame: any;
     (async () => {
       try {
-        stream = await (navigator as any).mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 320, height: 240 } });
+        stream = await (navigator as any).mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } });
         videoEl = document.createElement('video');
         videoEl.srcObject = stream; videoEl.muted = true; videoEl.playsInline = true;
-        videoEl.style.cssText = 'position:fixed;top:0;left:0;width:160px;height:120px;opacity:0;z-index:-1;';
-        const c = document.getElementById('nexus-cam'); if (c) c.appendChild(videoEl);
+        // SPRINT 5: Make camera VISIBLE as full-screen background (mirrored)
+        videoEl.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:cover;z-index:0;transform:scaleX(-1);opacity:1;';
+        const c = document.getElementById('nexus-cam');
+        if (c) c.appendChild(videoEl);
+        else document.body.prepend(videoEl);
         await videoEl.play();
+        // Motion detection canvas (hidden, uses low-res for performance)
         const cv = document.createElement('canvas'); cv.width = 160; cv.height = 120; const ctx = cv.getContext('2d');
         motionIv = setInterval(() => {
           if (!videoEl || videoEl.readyState < 2 || !ctx) return;
@@ -445,18 +449,22 @@ export default function NexusTriggerScreen() {
           if (prevFrame) {
             let d = 0; for (let i = 0; i < f.data.length; i += 16) d += Math.abs(f.data[i] - prevFrame.data[i]);
             const avgDiff = d / (f.data.length / 16);
-            if (avgDiff > 10) {
+            if (avgDiff > 8) {
               setMotionActive(true);
               if (motionTimeoutRef.current) clearTimeout(motionTimeoutRef.current);
-              motionTimeoutRef.current = setTimeout(() => setMotionActive(false), 600);
-              if (avgDiff > 18) { setGoldFlash(true); setTimeout(() => setGoldFlash(false), 400); }
+              motionTimeoutRef.current = setTimeout(() => setMotionActive(false), 500);
+              if (avgDiff > 16) { setGoldFlash(true); setTimeout(() => setGoldFlash(false), 350); }
             }
           }
           prevFrame = f;
-        }, 200);
+        }, 150);
       } catch (_) {}
     })();
-    return () => { if (motionIv) clearInterval(motionIv); if (stream) stream.getTracks().forEach((t: any) => t.stop()); if (videoEl?.parentNode) videoEl.parentNode.removeChild(videoEl); };
+    return () => {
+      if (motionIv) clearInterval(motionIv);
+      if (stream) stream.getTracks().forEach((t: any) => t.stop());
+      if (videoEl?.parentNode) videoEl.parentNode.removeChild(videoEl);
+    };
   }, [phase]);
 
   const handleForgeSelect = (mode: ForgeMode, ex: ExerciseType) => { setForgeMode(mode); setExercise(ex); setPhase('countdown'); };
@@ -547,35 +555,79 @@ export default function NexusTriggerScreen() {
   return (
     <View style={main$.container}>
       <StatusBar barStyle="light-content" />
-      <LinearGradient colors={['#050505', '#080808', '#050505']} style={StyleSheet.absoluteFill} />
-      <CyberGrid intensity={motionActive ? 0.6 : 0.3} />
+      {/* SPRINT 5: Camera-transparent dark overlay at 0.3 opacity */}
+      <View style={main$.cameraOverlay} />
+      <CyberGrid intensity={motionActive ? 0.5 : 0.2} scanning={phase === 'scanning'} />
       <DigitalShadow pose={skeleton} exercise={exercise} goldFlash={goldFlash} motionActive={motionActive} deviceTier={deviceTier} />
       <ScanLine active={phase === 'scanning'} />
       {phase === 'scanning' && <MiniDNARadar dna={user?.dna} explosive={motionActive} />}
       {phase === 'bioscan' && <BioScanTrigger user={user} onComplete={() => setPhase('forge')} />}
       {phase === 'countdown' && <Countdown onComplete={handleCountdownDone} />}
 
-      {/* Scanning HUD */}
+      {/* SPRINT 5: Military/Tech HUD — Corner Layout */}
       {phase === 'scanning' && (
-        <SafeAreaView style={main$.scanHud}>
+        <SafeAreaView style={hud$.container}>
           <View nativeID="nexus-cam" />
-          <View style={main$.hudTop}>
-            <Text style={main$.hudTimer}>{fmt(timer)}</Text>
-            <Text style={main$.hudEx}>{exercise === 'squat' ? 'DEEP SQUAT' : 'EXPLOSIVE PUNCH'}</Text>
+
+          {/* TOP-LEFT: Timer */}
+          <View style={hud$.topLeft}>
+            <Text style={hud$.cornerLabel}>ELAPSED</Text>
+            <Text style={hud$.timerVal}>{fmt(timer)}</Text>
+            <View style={hud$.timerBar}>
+              <View style={[hud$.timerBarFill, { width: `${Math.min(100, (timer / 120) * 100)}%` as any }]} />
+            </View>
           </View>
-          <View style={main$.hudCenter}>
-            <View style={main$.repBlock}><Text style={main$.repVal}>{motionState?.reps || 0}</Text><Text style={main$.repLabel}>REPS</Text></View>
-            <View style={main$.repBlock}><Text style={[main$.repVal, { color: '#D4AF37' }]}>{motionState?.quality || 0}</Text><Text style={main$.repLabel}>QUALITY</Text></View>
+
+          {/* TOP-RIGHT: Exercise & Mode */}
+          <View style={hud$.topRight}>
+            <Text style={hud$.cornerLabel}>PROTOCOL</Text>
+            <Text style={hud$.exerciseVal}>{exercise === 'squat' ? 'DEEP SQUAT' : 'EXPLOSIVE PUNCH'}</Text>
+            <View style={hud$.modeBadge}>
+              <Ionicons name={forgeMode === 'personal' ? 'analytics' : forgeMode === 'battle' ? 'trophy' : 'flash'} size={10} color="#D4AF37" />
+              <Text style={hud$.modeText}>{forgeMode.toUpperCase()}</Text>
+            </View>
           </View>
-          {motionState?.lastRepQuality ? (
-            <Animated.View entering={FadeInDown.duration(200)} key={motionState.reps} style={main$.lastRep}>
-              <Ionicons name="checkmark-circle" size={14} color={motionState.lastRepQuality >= 80 ? '#D4AF37' : '#00F2FF'} />
-              <Text style={[main$.lastRepText, motionState.lastRepQuality >= 80 && { color: '#D4AF37' }]}>REP #{motionState.reps} {'\u2014'} Q{motionState.lastRepQuality}</Text>
-            </Animated.View>
-          ) : null}
-          <TouchableOpacity style={main$.stopBtn} onPress={handleStop} activeOpacity={0.85}>
-            <Text style={main$.stopText}>STOP SESSION</Text>
-          </TouchableOpacity>
+
+          {/* CENTER: Last Rep Feedback */}
+          <View style={hud$.centerFeedback}>
+            {motionState?.lastRepQuality ? (
+              <Animated.View entering={FadeInDown.duration(200)} key={motionState.reps} style={hud$.repFeedback}>
+                <View style={[hud$.repFeedbackDot, motionState.lastRepQuality >= 80 && { backgroundColor: '#D4AF37' }]} />
+                <Text style={[hud$.repFeedbackText, motionState.lastRepQuality >= 80 && { color: '#D4AF37' }]}>
+                  REP #{motionState.reps} {'\u2014'} Q{motionState.lastRepQuality}
+                </Text>
+              </Animated.View>
+            ) : (
+              <View style={hud$.phaseIndicator}>
+                <View style={[hud$.phaseDot, motionActive && { backgroundColor: '#00F2FF' }]} />
+                <Text style={[hud$.phaseText, motionActive && { color: '#00F2FF' }]}>
+                  {motionActive ? 'TRACKING ACTIVE' : 'AWAITING MOTION'}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* BOTTOM-LEFT: Reps Counter */}
+          <View style={hud$.bottomLeft}>
+            <Text style={hud$.cornerLabel}>REPS</Text>
+            <Text style={hud$.repsVal}>{motionState?.reps || 0}</Text>
+            <Text style={hud$.repsUnit}>COMPLETED</Text>
+          </View>
+
+          {/* BOTTOM-RIGHT: Quality Score */}
+          <View style={hud$.bottomRight}>
+            <Text style={hud$.cornerLabel}>QUALITY</Text>
+            <Text style={[hud$.qualityVal, (motionState?.quality || 0) >= 80 && { color: '#D4AF37' }]}>{motionState?.quality || 0}</Text>
+            <Text style={hud$.qualityUnit}>AVG SCORE</Text>
+          </View>
+
+          {/* BOTTOM-CENTER: Stop Button */}
+          <View style={hud$.stopWrap}>
+            <TouchableOpacity style={hud$.stopBtn} onPress={handleStop} activeOpacity={0.85}>
+              <View style={hud$.stopDot} />
+              <Text style={hud$.stopText}>STOP SESSION</Text>
+            </TouchableOpacity>
+          </View>
         </SafeAreaView>
       )}
 
@@ -587,21 +639,128 @@ export default function NexusTriggerScreen() {
 
 const main$ = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
+  cameraOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(5,5,5,0.3)',
+    zIndex: 1,
+  },
   cancelWrap: { alignItems: 'center', marginTop: 20 },
   cancelText: { color: '#555', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
-  scanHud: { flex: 1, justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 20, zIndex: 20 },
-  hudTop: { alignItems: 'center', paddingTop: 20, gap: 2 },
-  hudTimer: { color: '#00F2FF', fontSize: 32, fontWeight: '900', fontVariant: ['tabular-nums'], letterSpacing: 4 },
-  hudEx: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '800', letterSpacing: 3 },
-  hudCenter: { flexDirection: 'row', justifyContent: 'center', gap: 40 },
-  repBlock: { alignItems: 'center', gap: 4 },
-  repVal: { color: '#00F2FF', fontSize: 48, fontWeight: '900', fontVariant: ['tabular-nums'] },
-  repLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '800', letterSpacing: 3 },
-  lastRep: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 6 },
-  lastRepText: { color: '#00F2FF', fontSize: 12, fontWeight: '700', letterSpacing: 2 },
-  stopBtn: {
-    backgroundColor: 'rgba(255,59,48,0.15)', borderRadius: 16, paddingVertical: 18,
-    alignItems: 'center', borderWidth: 1.5, borderColor: 'rgba(255,59,48,0.4)',
+});
+
+// SPRINT 5: Military/Tech Corner HUD
+const hud$ = StyleSheet.create({
+  container: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 20,
   },
-  stopText: { color: '#FF453A', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
+  // TOP-LEFT: Timer
+  topLeft: {
+    position: 'absolute', top: 56, left: 14,
+    gap: 3,
+  },
+  cornerLabel: {
+    color: 'rgba(0,242,255,0.5)', fontSize: 8, fontWeight: '900',
+    letterSpacing: 3,
+  },
+  timerVal: {
+    color: '#00F2FF', fontSize: 28, fontWeight: '900',
+    fontVariant: ['tabular-nums'], letterSpacing: 2,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
+  timerBar: {
+    width: 80, height: 2, backgroundColor: 'rgba(0,242,255,0.15)',
+    borderRadius: 1, overflow: 'hidden',
+  },
+  timerBarFill: {
+    height: '100%', backgroundColor: '#00F2FF', borderRadius: 1,
+  },
+  // TOP-RIGHT: Exercise & Mode
+  topRight: {
+    position: 'absolute', top: 56, right: 14,
+    alignItems: 'flex-end', gap: 3,
+  },
+  exerciseVal: {
+    color: '#FFFFFF', fontSize: 12, fontWeight: '900',
+    letterSpacing: 2,
+  },
+  modeBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: 'rgba(212,175,55,0.1)',
+    borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)',
+  },
+  modeText: {
+    color: '#D4AF37', fontSize: 8, fontWeight: '900', letterSpacing: 1.5,
+  },
+  // CENTER: Rep Feedback
+  centerFeedback: {
+    position: 'absolute', top: '45%' as any, left: 0, right: 0,
+    alignItems: 'center',
+  },
+  repFeedback: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8,
+    paddingHorizontal: 14, paddingVertical: 8,
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
+  },
+  repFeedbackDot: {
+    width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF',
+  },
+  repFeedbackText: {
+    color: '#00F2FF', fontSize: 12, fontWeight: '800', letterSpacing: 2,
+  },
+  phaseIndicator: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 6,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  phaseDot: {
+    width: 5, height: 5, borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  phaseText: {
+    color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '800', letterSpacing: 2,
+  },
+  // BOTTOM-LEFT: Reps
+  bottomLeft: {
+    position: 'absolute', bottom: 160, left: 14,
+    gap: 2,
+  },
+  repsVal: {
+    color: '#00F2FF', fontSize: 48, fontWeight: '900',
+    fontVariant: ['tabular-nums'], letterSpacing: 1,
+    lineHeight: 50,
+  },
+  repsUnit: {
+    color: 'rgba(0,242,255,0.35)', fontSize: 7, fontWeight: '900', letterSpacing: 2,
+  },
+  // BOTTOM-RIGHT: Quality
+  bottomRight: {
+    position: 'absolute', bottom: 160, right: 14,
+    alignItems: 'flex-end', gap: 2,
+  },
+  qualityVal: {
+    color: '#00F2FF', fontSize: 48, fontWeight: '900',
+    fontVariant: ['tabular-nums'], letterSpacing: 1,
+    lineHeight: 50,
+  },
+  qualityUnit: {
+    color: 'rgba(0,242,255,0.35)', fontSize: 7, fontWeight: '900', letterSpacing: 2,
+  },
+  // BOTTOM: Stop Button
+  stopWrap: {
+    position: 'absolute', bottom: 20, left: 20, right: 20,
+  },
+  stopBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    backgroundColor: 'rgba(255,59,48,0.12)', borderRadius: 14, paddingVertical: 18,
+    borderWidth: 1.5, borderColor: 'rgba(255,59,48,0.35)',
+  },
+  stopDot: {
+    width: 10, height: 10, borderRadius: 5, backgroundColor: '#FF453A',
+  },
+  stopText: {
+    color: '#FF453A', fontSize: 14, fontWeight: '900', letterSpacing: 3,
+  },
 });
