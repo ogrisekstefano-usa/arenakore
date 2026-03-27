@@ -1,121 +1,139 @@
-<analysis>Here is the summary of the LLM message history:
+<analysis>**original_problem_statement**: Build ARENAKORE, an elite, high-performance athletics mobile app with a Chic-Tech / Cinema aesthetic. Core modules include KORE (Battles), CREWS (La Tribù), NEXUS SYNC (Biometric tracking), DNA (Stats Radar), and GLORY WALL (Global Leaderboards). The app requires native performance, specific sound/haptic sensory feedback, and a highly polished dark mode UI (#050505) with Cyan Neon (#00F2FF) and Gold (#D4AF37) accents.
 
-**original_problem_statement:** Build ArenaDare, a full-stack Expo mobile app for performance athletics using a 'Fosbury' philosophy (performance data over aesthetics). Key requirements include an Atomic Nav system (CORE, CREWS, + Trigger, DNA, NEXUS), Gateway Auth with real-time validation, a 3-step Onboarding flow (Role, Sport, XP bonus), and a specific dark mode UI (#050505) with Cyan Neon and Gold accents.
-
-**User's preferred language:** **Italian** (You MUST automatically detect the user's primary language from their messages inside the <trajectory> tag and INSTRUCT next agent to respond in the user's preferred language only. The next agent MUST reply in Italian).
+**User's preferred language**: **Italian** (You MUST automatically detect the user's primary language from their messages and INSTRUCT the next agent to respond in Italian only. All UI text, dummy data, and conversational responses must be in Italian).
 
 **what currently exists?** 
-A functional MVP of ArenaDare exists. It features an active FastAPI + MongoDB backend and an Expo React Native frontend. JWT Auth (register, login) and a 3-step onboarding flow are fully implemented and tested. The core 5-tab Atomic Nav is built, styled with the user's chosen Dark/Cyan/Gold palette, and includes custom UI components like an XP bar, animated buttons, and a mock Radar Chart.
+A production-ready, highly polished MVP. The app features JWT Auth, a Cinematic Onboarding flow, a fully functional Glory Wall (Global/Sport/Crew Leaderboards with Glowing UI for Top 3), a Crew Hub (with Coach Gold badges and Weighted Average DNA calculations), and a functional Nexus Sync biometric tracker (using  for deep squats/explosive punches on Native and a mocked fallback for Web) complete with real-time XP calculation and a Cyan Skeleton UI overlay. The backend is FastAPI + MongoDB and has passed all 27/27 deep endpoint tests.
 
-**Last working item:**
-- **Last item agent was working:** The user requested a feature bundle called Pulse Sprint which includes: 
-  1. Opening  with a Cyan 'Cyber-Grid' overlay on the  tab.
-  2. Setting up  to trigger a Battle Iniziata! banner for crew members when a battle goes LIVE.
-  3. Tying challenge completion to a backend XP reward logic.
-  4. Adding a 'glow' animation to the DNA Radar Chart when records are broken.
-  The agent had just installed the required packages (, ), updated  for plugins/permissions, and created  before the session cut off.
-- **Status:** IN PROGRESS
-- **Agent Testing Done:** N
-- **Which testing method agent to use?** both (frontend screenshot tool for Camera UI / Radar Chart glow, and testing agent/curl for XP backend logic).
-- **User Testing Done:** N
+**Last working item**:
+- **Last item agent was working**: The user provided the final instructions for NATIVE STORE READY / PRODUCTION CLEANUP. This involves: 1) Logic Branching ( detection:  for Native, MediaPipe for Web), 2) The Founder Protocol (permanent Gold Badge for the first 100 users in the DB), 3) Haptic Sync (vibration on every recorded Rep in Nexus Sync for Native), 4) Production Cleanup (Bundle ID , disable  logs, Splash Screen check), and 5) Handover documentation ().
+- **Status**: NOT STARTED (The agent used the  tool to confirm the plan and the user just provided these detailed requirements. Execution has not yet begun).
+- **Agent Testing Done**: N
+- **Which testing method agent to use?** both (Backend for Founder logic; Frontend screenshot tool for Splash Screen and UI validation; manual testing for  conditional logic).
+- **User Testing Done**: N
 
-**All Pending/In progress Issue list:**
-None. No bugs are currently active; the app was perfectly healthy before the new feature request.
+**All Pending/In progress Issue list**:
+Issue 1: Haptic Sync (Native Only)
+- Attempted fixes: N/A
+- Next debug checklist: Modify  to call  (Success) whenever a repetition is counted, but ensure it is wrapped in a  check to prevent web crashes.
+- Why fix this issue and what will be achieved with the fix? Required for the sensory feedback requested by the user.
+- Status: NOT STARTED
+- Is recurring issue? N
+- Should Test frontend/backend/both after fix? frontend
+- Blocked on other issue: None
 
-**In progress Task List:**
-Task 1: Pulse Sprint Feature Implementation (Camera, Notifications, Backend XP, UI Glow) (Priority P0)
-Task Detail:
-- Task 1:
-   - Where to resume: You need to implement the Camera view inside  with a cyan grid overlay, flesh out local notifications logic in , create a backend endpoint in  to add XP on challenge completion, and add a reanimated glow effect to .
-   - What will be achieved with this: Engages the user with a mock biometric scan UI, pushes notification banners, dynamically updates user stats, and polishes the DNA UI.
-   - Status: IN PROGRESS
-   - Should Test frontend/backend/both after fix? both
-   - Blocked on something: No.
+Issue 2: Platform Logic Branching (MediaPipe Web vs Expo-Sensors Native)
+- Attempted fixes: N/A (Previous agent used a mock simulation for Web to avoid Metro bundler crashes).
+- Next debug checklist: Update  and the  files to use actual MediaPipe vision logic on the Web platform, while preserving the robust  logic for Native iOS/Android.
+- Why fix this issue and what will be achieved with the fix? Allows the user to demo real vision-tracking on the web while keeping the Native app reliant on high-performance accelerometers.
+- Status: NOT STARTED
+- Is recurring issue? N
+- Should Test frontend/backend/both after fix? frontend
+- Blocked on other issue: None
+
+**In progress Task List**:
+Task 1: The Founder Protocol
+- Where to resume: Modify the backend  user registration and user retrieval endpoints. Check if a user's chronological creation rank is <= 100. If so, append a permanent  or a specific Founder Badge property.
+- What will be achieved with this? Marketing gamification for early adopters in Chicago.
+- Status: NOT STARTED
+- Should Test frontend/backend/both after fix? both
+- Blocked on something: None
+
+Task 2: Production Cleanup & 
+- Where to resume: Verify  has  /  set to . Ensure Splash Screen image is properly configured (Gold/Black). Add logic to suppress  logs if needed. Create  with killer marketing copy and Admin credentials.
+- What will be achieved with this? Prepares the project for App Store / Play Store submission.
+- Status: NOT STARTED
+- Should Test frontend/backend/both after fix? manual/frontend
+- Blocked on something: None
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks:**
-  - P1: Crew management logic (Social feature) and backend integration for invitations (currently just mocked UI).
-  - P1: Global Leaderboard implementation.
-- **Future Tasks:**
-  - P2: Nexus Sync actual biometric analysis with MediaPipe (currently deferred/skipped per user's earlier instruction).
-  - P2: Talent Card social sharing functionality.
+Upcoming Tasks:
+- P0: Platform Logic Branching (MediaPipe Web vs Expo Sensors Native).
+- P0: Implement The Founder Protocol (First 100 users).
+- P0: Implement Haptic Sync on Reps in Nexus.
+- P1: Production Cleanup (, logs) and  creation.
+Future Tasks:
+- None. This is explicitly the final phase (NATIVE STORE READY) before delivery.
 
 **Completed work in this session**
-- Base Project Setup (React Native Expo, FastAPI, MongoDB) (DONE)
-- Design Guidelines extraction & implementation (DONE)
-- JWT Authentication (Register/Login) (DONE)
-- 3-Step Onboarding Flow (DONE)
-- 5-Tab Atomic Nav Structure (core, crews, nexus-trigger, dna, nexus) (DONE)
-- UI Polish (Cyan/Gold theme, CREWS badge, LIVE animations) (DONE)
+- Crew Management UI (La Tribù) & Sound Kit (, Deep Woosh on tab changes, Metallic Ping) (DONE)
+- Weighted Average DNA logic for Crews in backend (DONE)
+- The Glory Wall Global Leaderboard (GLOBAL, SPORT, CREWS tabs, UI & Backend) (DONE)
+- Nexus Sync MVP ( Accelerometer for native, fallback simulation for web, real XP calculation, records logic) (DONE)
 
 **Earlier issues found/mentioned but not fixed**
 None.
 
 **Known issue recurrence from previous fork**
-- Issue recurrence in previous fork: N/A (This is the first fork)
+- Issue recurrence in previous fork: None
 - Recurrence count: 0
-- Status: NOT STARTED
+- Status: RESOLVED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-React Native Expo (SDK 54), Expo Router, FastAPI, MongoDB (Motor), JWT Authentication, , , .
+React Native Expo, Expo Router, conditional Platform-specific file imports ( vs  to avoid Metro bundler crashes with native code), , FastAPI, MongoDB, , , .
 
 **key DB schema**
-- : {email, username, hashed_password, role, sport, xp, level, onboarding_completed, dna, avatar_color}
+- : {..., is_admin, xp, level, *needs founder logic*}
+- : {..., activity_feed, pending_invites}
+- : {...}
 
 **changes in tech stack**
-Added  and  for the new Pulse Sprint feature.
+- Added  for biometric tracking.
+- Implemented file-extension branching ( vs ) to fix Metro build errors on Web.
 
 **All files of reference**
--  (Needs camera implementation)
--  (Needs glow animation)
--  (Created but needs logic implementation)
--  (Needs XP reward endpoints)
--  (Updated with required plugins)
+-  (Needs Haptics and conditional MediaPipe logic)
+-  (Needs Founder Protocol logic)
+-  (Needs Production Cleanup)
+-  (To be created)
 
 **Areas that need refactoring**
--  currently just returns an empty view/redirect in its previous state; this needs a complete rewrite to render the full  with the 'Cyber-Grid'.
+The  currently runs a hardcoded mock simulation to calculate reps on the web. The user explicitly requested replacing this with MediaPipe computer vision for the web fallback.
 
 **key api endpoints**
 - 
 - 
 - 
 - 
--  (Returns mock data for the Core screen)
 
 **Critical Info for New Agent**
-- **Language Policy**: The user communicates exclusively in **Italian**. Ensure all conversational responses and dummy text/UI elements are in Italian.
-- **Expo Camera Guidelines**: Make sure to implement proper permission-request logic (handling ) inside  before rendering the camera. Use  per Expo SDK 54 syntax. 
-- Ensure you restart the expo server using  after significantly modifying  or adding native modules (like camera/notifications).
+- **Language Policy**: **Italian**.
+- **Platform Branching Warning**:  breaks the Expo Web build if imported statically. The previous agent successfully fixed this using Metro's platform-specific file resolution ( and ). Maintain this architectural boundary carefully when injecting MediaPipe for Web.
+- **Haptics**: Always wrap  in  checks.
 
 **documents and test reports created in this job**
 - 
 - 
-- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-- *Latest User Message (Pending implementation)*: Sonnet, il visual è devastante... Procediamo con il PULSE SPRINT: ACTIVATE THE TRIGGER... PUSH ENGINE... XP REWARD LOGIC... UI POLISH... - The agent started implementing these, but the session ended before code was written. Focus immediately on this request.
+- *Latest*: User provided the exact NATIVE STORE READY specification (Platform Branching, Founder Protocol, Haptic Sync, Production Cleanup, and README_STORE.md).
+- *Previous*: Agent asked for confirmation of plan using .
+- *Previous*: User provided the initial concept for Store readiness and requested to switch from MediaPipe Web to Native  (which was partially implemented, but now clarified to use BOTH depending on platform).
+- *Previous*: Agent presented the finished NEXUS SYNC.
+- *Previous*: User requested NEXUS SYNC (biometric tracking).
+- *Previous*: Agent presented the finished GLORY WALL.
+- *Previous*: User requested THE GLORY WALL (Global Leaderboards).
 
 **Project Health Check:**
-Healthy. No broken routes. Biometric data and global leaderboards are currently mocked. 
+Healthy. Backend passed 27/27 tests. Frontend builds successfully on Web with simulated sensors.
 
 **3rd Party Integrations**
-None applied yet that require a user key. (Emergent LLM key is suggested via PRD for future features but not actively driving current implementations).
+-  (used for Cinematic backgrounds).
+-  (MediaPipe - requested for Web fallback).
 
 **Testing status**
-- Testing agent used after significant changes: YES
-- Troubleshoot agent used after agent stuck in loop: NO
-- Test files created: 
-- Known regressions: None
+- Testing agent used after significant changes: YES (Backend  ran 3 times, passing 100%).
+- Troubleshoot agent used after agent stuck in loop: YES (Used once to fix a React State issue with orphaned simulation code).
+- Test files created: None.
+- Known regressions: None.
 
 **Credentials to test flow:**
-Use  /  (if previously seeded, or register a new one).
+Available in :
+- Admin/Founder:  /  (Username: ArenaBoss)
+- Demo User:  / 
 
 **What agent forgot to execute**
-The agent was cut off right after creating  and updating . It forgot to actually implement the camera overlay, the notification triggers, the backend XP route, and the RadarChart glow animation.
-
-<TESTING METHOD>
-Use  for the Camera UI and Radar Chart UI. Use  or  for validating the new FastAPI XP endpoint.
-</TESTING METHOD></analysis>
+The agent just received the final user instruction to finalize the Store Ready phase (Founder protocol, MediaPipe vs Native logic branching, App.json cleanup, and README generation). Nothing was forgotten, the session simply ended after the user provided these instructions. Proceed directly to executing them.</analysis>

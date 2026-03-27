@@ -12,9 +12,9 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.arenakore.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "Scan athletic movements for biometric analysis",
-        "NSMicrophoneUsageDescription": "Record Nexus Sync sessions with audio",
-        "NSMotionUsageDescription": "Track exercise form and count reps accurately"
+        "NSCameraUsageDescription": "Analizza la tua biomeccanica in tempo reale",
+        "NSMicrophoneUsageDescription": "Registra audio durante le sessioni Nexus",
+        "NSMotionUsageDescription": "Traccia i movimenti per contare le ripetizioni"
       }
     },
     "android": {

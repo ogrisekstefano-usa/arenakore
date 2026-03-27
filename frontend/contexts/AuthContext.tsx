@@ -25,6 +25,7 @@ export interface User {
   dna?: DNAStats;
   avatar_color: string;
   is_admin?: boolean;
+  is_founder?: boolean;
 }
 
 interface AuthContextType {
@@ -104,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userData = await api.me(token);
       setUser(userData);
     } catch {
-      console.log('Failed to refresh user');
+      // Failed to refresh user — silenced for production
     }
   };
 

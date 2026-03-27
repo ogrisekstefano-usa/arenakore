@@ -306,7 +306,9 @@ function CrewHub({ crew, onClose, token }: { crew: any; onClose: () => void; tok
       ]);
       setDetail(d);
       setFeed(f);
-    } catch (e) { console.log('Crew detail error:', e); }
+    } catch (e) {
+      // Production: error silenced
+    }
     finally { setLoading(false); }
   };
 
@@ -506,7 +508,9 @@ export default function CrewsTab() {
       setMyCrews(crews);
       setInvites(inv);
       setDismissedIds(new Set());
-    } catch (e) { console.log('Crews load error:', e); }
+    } catch (e) {
+      // Production: error silenced
+    }
     finally { setLoading(false); setRefreshing(false); }
   };
 

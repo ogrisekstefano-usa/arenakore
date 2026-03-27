@@ -111,6 +111,7 @@ def user_to_response(user: dict) -> dict:
         "dna": user.get("dna"),
         "avatar_color": user.get("avatar_color", "#00E5FF"),
         "is_admin": user.get("is_admin", False),
+        "is_founder": user.get("is_founder", False),
     }
 
 
@@ -126,6 +127,11 @@ async def register(data: UserRegister):
         raise HTTPException(status_code=400, detail="Email già registrata")
 
     colors = ["#00E5FF", "#FFD700", "#FF3B30", "#34C759", "#AF52DE", "#FF9F0A"]
+
+    # THE FOUNDER PROTOCOL: First 100 users get permanent Founder badge
+    total_users = await db.users.count_documents({})
+    is_founder = total_users < 100
+
     user = {
         "username": data.username,
         "email": data.email,
@@ -137,6 +143,8 @@ async def register(data: UserRegister):
         "onboarding_completed": False,
         "avatar_color": random.choice(colors),
         "dna": None,
+        "is_founder": is_founder,
+        "founder_number": (total_users + 1) if is_founder else None,
         "created_at": datetime.now(timezone.utc),
     }
     result = await db.users.insert_one(user)
@@ -632,6 +640,20 @@ async def get_crews(current_user: dict = Depends(get_current_user)):
 
 @app.on_event("startup")
 async def seed_data():
+    # THE FOUNDER PROTOCOL — Retroactive badge for first 100 users
+    founder_count = await db.users.count_documents({"is_founder": True})
+    if founder_count == 0:
+        # Get the first 100 users by creation date and mark as founders
+        early_users = await db.users.find().sort("created_at", 1).to_list(100)
+        for idx, u in enumerate(early_users):
+            if not u.get("is_founder"):
+                await db.users.update_one(
+                    {"_id": u["_id"]},
+                    {"$set": {"is_founder": True, "founder_number": idx + 1}}
+                )
+        if early_users:
+            logger.info(f"Founder Protocol: {len(early_users)} founders retroactively badged")
+
     if await db.battles.count_documents({}) == 0:
         battles = [
             {"title": "Sprint Challenge 100m", "description": "Chi è il più veloce? Sfida aperta a tutti gli atleti della piattaforma.", "sport": "Atletica", "status": "live", "xp_reward": 150, "participants_count": 24, "created_at": datetime.now(timezone.utc)},
@@ -1176,6 +1198,7 @@ async def get_leaderboard(
                 "xp": u.get("xp", 0),
                 "level": u.get("level", 1),
                 "is_admin": u.get("is_admin", False),
+                "is_founder": u.get("is_founder", False),
             })
 
     # Cache the result

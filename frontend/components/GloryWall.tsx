@@ -94,7 +94,7 @@ function GiantCard({ item, medal }: { item: any; medal: typeof MEDAL_COLORS[1] }
       <View style={[giant$.xpBadge, { backgroundColor: medal.bg }]}>
         <Text style={[giant$.xpText, { color: medal.text }]}>{item.xp?.toLocaleString()} XP</Text>
       </View>
-      {item.is_admin && (
+      {(item.is_founder || item.is_admin) && (
         <View style={giant$.founderTag}>
           <Text style={giant$.founderText}>FOUNDER</Text>
         </View>
@@ -148,7 +148,7 @@ function LeaderRow({ item, index }: { item: any; index: number }) {
         <View style={row$.info}>
           <View style={row$.nameRow}>
             <Text style={row$.name}>{item.username}</Text>
-            {item.is_admin && (
+            {(item.is_founder || item.is_admin) && (
               <View style={row$.founderPill}>
                 <Text style={row$.founderPillText}>F</Text>
               </View>
@@ -360,7 +360,7 @@ export function GloryWall({ visible, onClose }: { visible: boolean; onClose: () 
         hasPlayedTop10.current = true;
       }
     } catch (e) {
-      console.log('Leaderboard error:', e);
+      // Leaderboard load error silenced for production
     } finally {
       setLoading(false);
       setRefreshing(false);

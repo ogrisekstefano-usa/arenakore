@@ -113,7 +113,7 @@ export async function sendBattleLiveNotification(battleTitle: string, sport?: st
       trigger: null,
     });
   } catch (e) {
-    console.log('Battle notification error:', e);
+    // Production: error silenced
   }
 }
 
@@ -136,7 +136,7 @@ export async function sendXPRewardNotification(xpEarned: number, recordsBroken: 
       trigger: null,
     });
   } catch (e) {
-    console.log('XP notification error:', e);
+    // Production: error silenced
   }
 }
 
@@ -155,7 +155,7 @@ export async function sendLevelUpNotification(newLevel: number) {
       trigger: null,
     });
   } catch (e) {
-    console.log('Level up notification error:', e);
+    // Production: error silenced
   }
 }
 
@@ -174,6 +174,6 @@ export async function sendScanCompleteNotification(score: number) {
       trigger: null,
     });
   } catch (e) {
-    console.log('Scan notification error:', e);
+    // Production: error silenced
   }
 }

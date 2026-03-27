@@ -136,7 +136,7 @@ export default function DNATab() {
         }
       }
     } catch (e) {
-      console.log('History load error:', e);
+      // Production: error silenced
     }
   };
 
