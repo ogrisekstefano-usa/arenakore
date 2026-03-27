@@ -1,14 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { playTabSwitch } from '../../utils/sounds';
 
 const TAB_CONFIG = [
   { name: 'kore', icon: 'home', label: 'KORE' },
-  { name: 'crews', icon: 'people', label: 'CREWS', badge: 3 },
+  { name: 'crews', icon: 'people', label: 'CREWS' },
   { name: 'nexus-trigger', icon: 'add', label: '', isCenter: true },
   { name: 'dna', icon: 'analytics', label: 'DNA' },
   { name: 'nexus-lib', icon: 'library', label: 'NEXUS LIB' },
@@ -37,6 +38,16 @@ function GoldButton({ onPress }: { onPress: () => void }) {
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const insets = useSafeAreaInsets();
+  const prevIndexRef = useRef(state.index);
+
+  // Trigger Deep Woosh on actual tab change
+  useEffect(() => {
+    if (prevIndexRef.current !== state.index) {
+      playTabSwitch();
+      prevIndexRef.current = state.index;
+    }
+  }, [state.index]);
+
   return (
     <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
       {state.routes.map((route: any, index: number) => {
@@ -67,11 +78,6 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                 size={22}
                 color={isFocused ? '#00F2FF' : '#3A3A3A'}
               />
-              {(config as any)?.badge > 0 && (
-                <View style={styles.redBadge}>
-                  <Text style={styles.redBadgeText}>{(config as any).badge}</Text>
-                </View>
-              )}
             </View>
             <Text style={[styles.tabLabel, isFocused && styles.tabLabelActive]}>
               {config?.label}
@@ -120,13 +126,6 @@ const styles = StyleSheet.create({
     flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3,
   },
   iconWrap: { position: 'relative' },
-  redBadge: {
-    position: 'absolute', top: -4, right: -8,
-    backgroundColor: '#FF3B30', borderRadius: 8,
-    minWidth: 16, height: 16, alignItems: 'center',
-    justifyContent: 'center', paddingHorizontal: 4,
-  },
-  redBadgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '800' },
   tabLabel: {
     color: '#3A3A3A', fontSize: 8, fontWeight: '700', letterSpacing: 1,
   },

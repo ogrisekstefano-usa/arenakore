@@ -43,6 +43,29 @@ export const api = {
 
   getCrews: (token: string) => request('/crews', {}, token),
 
+  // Crew Management v2
+  createCrew: (data: { name: string; tagline?: string; category?: string }, token: string) =>
+    request('/crews/create', { method: 'POST', body: JSON.stringify(data) }, token),
+
+  getMyCrews: (token: string) => request('/crews/my-crews', {}, token),
+
+  getCrewDetail: (crewId: string, token: string) => request(`/crews/${crewId}`, {}, token),
+
+  getCrewFeed: (crewId: string, token: string) => request(`/crews/${crewId}/feed`, {}, token),
+
+  inviteToCrew: (crewId: string, username: string, token: string) =>
+    request(`/crews/${crewId}/invite`, { method: 'POST', body: JSON.stringify({ username }) }, token),
+
+  getPendingInvites: (token: string) => request('/crews/invites', {}, token),
+
+  acceptInvite: (inviteId: string, token: string) =>
+    request(`/crews/invites/${inviteId}/accept`, { method: 'POST' }, token),
+
+  declineInvite: (inviteId: string, token: string) =>
+    request(`/crews/invites/${inviteId}/decline`, { method: 'POST' }, token),
+
+  searchUsers: (query: string, token: string) => request(`/users/search/${encodeURIComponent(query)}`, {}, token),
+
   savePushToken: (pushToken: string, token: string) =>
     request('/users/push-token', { method: 'POST', body: JSON.stringify({ push_token: pushToken }) }, token),
 

@@ -240,6 +240,111 @@ backend:
           agent: "testing"
           comment: "COMPREHENSIVE TEST PASSED: Challenge history endpoint working correctly, returns proper data structure (empty list for new user as expected)"
 
+  - task: "Crew Create API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "POST /api/crews/create - creates crew with owner as first member, adds feed entry"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Crew creation successful, owner role verified, crew stored in crews_v2 collection with proper structure"
+
+  - task: "Crew Invite API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "POST /api/crews/{crew_id}/invite - invites user by username, prevents duplicates"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: User invitation successful, duplicate pending invite prevention working, existing member prevention working"
+
+  - task: "Crew Accept/Decline Invite API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "POST /api/crews/invites/{id}/accept and /decline - adds member, updates XP, logs feed"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Accept invite adds member to crew, decline invite works correctly, activity feed updated properly"
+
+  - task: "Crew Detail with Coach Role API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/crews/{crew_id} - returns members with is_coach=true for owner, role='Coach', dna data, crew_dna_average"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Crew detail shows 2 members, owner has is_coach=true and role='Coach', crew_dna_average calculated correctly with all 6 DNA keys"
+
+  - task: "Crew Battle Stats Weighted Average API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/crews/{crew_id}/battle-stats - returns weighted average DNA based on member XP. Weight = max(member.xp, 1)"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Weighted average DNA calculation working correctly, returns all 6 DNA keys (velocita, forza, resistenza, agilita, tecnica, potenza)"
+
+  - task: "Crew Feed API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/crews/{crew_id}/feed - returns activity feed entries sorted by created_at desc"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Activity feed contains crew_created and member_joined entries, proper chronological ordering"
+
+  - task: "User Search API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/users/search/{query} - regex search, excludes self"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: User search working correctly, finds users by username pattern, excludes current user from results"
+
 frontend:
   - task: "ARENAKORE Landing Page"
     implemented: true
@@ -339,8 +444,8 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "3.1"
-  test_sequence: 3
+  version: "4.0"
+  test_sequence: 4
   run_ui: false
 
 test_plan:
@@ -351,6 +456,10 @@ test_plan:
 
 agent_communication:
     - agent: "main"
-      message: "UI Refinements done: DNA Glitch transition, KORE LIVE heartbeat, FOUNDER badge. Also FIXED the battles API 404 bug (missing decorator). Please test ALL backend endpoints comprehensively. Auth: register a new user with POST /api/auth/register. Then use token for all. Test sports categories/search, battles, challenges. Base URL: https://arena-pulse-sprint.preview.emergentagent.com/api. Test credentials available in /app/memory/test_credentials.md."
+      message: "UI Refinements done: DNA Glitch transition, KORE LIVE heartbeat, FOUNDER badge. Also FIXED the battles API 404 bug (missing decorator). Please test ALL backend endpoints comprehensively. Auth: register a new user with POST /api/auth/register. Then use token for all. Test sports categories/search, battles, challenges. Base URL: https://arena-crews.preview.emergentagent.com/api. Test credentials available in /app/memory/test_credentials.md."
     - agent: "testing"
       message: "COMPREHENSIVE BACKEND TESTING COMPLETED: All 11 backend endpoints tested successfully. Full test flow executed: user registration → login → auth verification → sports APIs (categories/search/by-category) → onboarding with DNA generation → battles API (404 bug confirmed fixed) → challenge completion & history → admin login verification. All APIs working correctly with proper authentication, data validation, and response structures. Backend is production-ready."
+    - agent: "main"
+      message: "NEW CREW MANAGEMENT ENDPOINTS IMPLEMENTED: (1) POST /api/crews/create - creates crew with owner_id, (2) POST /api/crews/{crew_id}/invite - invites user by username, (3) GET /api/crews/my-crews - lists user's crews, (4) GET /api/crews/invites - pending invites, (5) POST /api/crews/invites/{id}/accept - accept invite (adds to crew + feed), (6) POST /api/crews/invites/{id}/decline, (7) GET /api/crews/{crew_id} - detail with members (includes is_coach=true for owner, role='Coach'), (8) GET /api/crews/{crew_id}/feed - activity feed, (9) GET /api/crews/{crew_id}/battle-stats - weighted average DNA, (10) GET /api/users/search/{query} - search users. PLEASE TEST ALL CREW endpoints with full flow: register 2 users → user1 creates crew → user1 invites user2 → user2 accepts → verify crew detail shows Coach badge → verify weighted average. Base URL: https://arena-crews.preview.emergentagent.com/api. Credentials in /app/memory/test_credentials.md."
+    - agent: "testing"
+      message: "COMPREHENSIVE CREW MANAGEMENT TESTING COMPLETED: All 7 crew management endpoints tested successfully with full flow execution. Test results: ✅ Crew creation with owner role ✅ User invitation system with duplicate prevention ✅ Accept/decline invite flow ✅ Crew detail with coach roles (is_coach=true, role='Coach') ✅ Activity feed with crew_created/member_joined entries ✅ Weighted average DNA calculation with all 6 keys ✅ User search functionality. Edge cases tested: duplicate pending invite prevention, existing member invite prevention, decline and re-invite flow. All crew management features are production-ready. Previously tested auth, sports, and battle endpoints remain fully functional."

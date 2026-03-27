@@ -2,7 +2,7 @@
 """
 ARENAKORE Backend API Test Suite
 Tests all backend endpoints comprehensively
-Base URL: https://arena-pulse-sprint.preview.emergentagent.com/api
+Base URL: https://arena-crews.preview.emergentagent.com/api
 """
 
 import requests
@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://arena-pulse-sprint.preview.emergentagent.com/api"
+BASE_URL = "https://arena-crews.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class APITester:

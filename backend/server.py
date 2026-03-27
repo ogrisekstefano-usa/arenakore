@@ -84,8 +84,18 @@ class PushTokenData(BaseModel):
 
 class ChallengeComplete(BaseModel):
     battle_id: Optional[str] = None
-    performance_score: Optional[float] = None  # 0-100
+    performance_score: Optional[float] = None
     duration_seconds: Optional[int] = None
+
+
+class CrewCreate(BaseModel):
+    name: str
+    tagline: Optional[str] = ""
+    category: Optional[str] = None
+
+
+class CrewInvite(BaseModel):
+    username: str
 
 
 def user_to_response(user: dict) -> dict:
@@ -654,6 +664,298 @@ async def seed_data():
             {"name": "Aqua Elite", "sport": "Nuoto", "members_count": 19, "xp_total": 10500},
         ]
         await db.crews.insert_many(crews)
+
+
+# ====================================
+# CREW MANAGEMENT ENDPOINTS
+# ====================================
+
+@api_router.post("/crews/create")
+async def create_crew(data: CrewCreate, current_user: dict = Depends(get_current_user)):
+    existing = await db.crews_v2.find_one({"name": data.name})
+    if existing:
+        raise HTTPException(status_code=400, detail="Nome Crew già esistente")
+
+    crew = {
+        "name": data.name,
+        "tagline": data.tagline or "",
+        "category": data.category,
+        "owner_id": current_user["_id"],
+        "members": [current_user["_id"]],
+        "members_count": 1,
+        "xp_total": current_user.get("xp", 0),
+        "created_at": datetime.now(timezone.utc),
+    }
+    result = await db.crews_v2.insert_one(crew)
+    crew["_id"] = result.inserted_id
+
+    # Add activity feed entry
+    await db.crew_feed.insert_one({
+        "crew_id": result.inserted_id,
+        "type": "crew_created",
+        "user_id": current_user["_id"],
+        "username": current_user["username"],
+        "message": f"{current_user['username']} ha fondato la Crew!",
+        "created_at": datetime.now(timezone.utc),
+    })
+
+    return crew_to_response(crew, current_user)
+
+
+@api_router.get("/crews/my-crews")
+async def get_my_crews(current_user: dict = Depends(get_current_user)):
+    crews = await db.crews_v2.find(
+        {"members": current_user["_id"]}
+    ).to_list(20)
+    return [crew_to_response(c, current_user) for c in crews]
+
+
+@api_router.get("/crews/invites")
+async def get_pending_invites(current_user: dict = Depends(get_current_user)):
+    invites = await db.crew_invites.find({
+        "to_user_id": current_user["_id"],
+        "status": "pending",
+    }).to_list(20)
+
+    result = []
+    for inv in invites:
+        crew = await db.crews_v2.find_one({"_id": inv["crew_id"]})
+        from_user = await db.users.find_one({"_id": inv["from_user_id"]})
+        result.append({
+            "id": str(inv["_id"]),
+            "crew_id": str(inv["crew_id"]),
+            "crew_name": crew["name"] if crew else "Unknown",
+            "crew_category": crew.get("category") if crew else None,
+            "crew_tagline": crew.get("tagline", "") if crew else "",
+            "from_username": from_user["username"] if from_user else "Unknown",
+            "created_at": inv["created_at"].isoformat(),
+        })
+    return result
+
+
+@api_router.post("/crews/{crew_id}/invite")
+async def invite_to_crew(crew_id: str, data: CrewInvite, current_user: dict = Depends(get_current_user)):
+    crew = await db.crews_v2.find_one({"_id": ObjectId(crew_id)})
+    if not crew:
+        raise HTTPException(status_code=404, detail="Crew non trovata")
+    if current_user["_id"] not in crew["members"]:
+        raise HTTPException(status_code=403, detail="Non sei membro di questa Crew")
+
+    target = await db.users.find_one({"username": data.username})
+    if not target:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    if target["_id"] in crew["members"]:
+        raise HTTPException(status_code=400, detail="Utente già membro")
+
+    existing = await db.crew_invites.find_one({
+        "crew_id": ObjectId(crew_id),
+        "to_user_id": target["_id"],
+        "status": "pending",
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Invito già inviato")
+
+    await db.crew_invites.insert_one({
+        "crew_id": ObjectId(crew_id),
+        "from_user_id": current_user["_id"],
+        "to_user_id": target["_id"],
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc),
+    })
+    return {"status": "invited", "username": data.username}
+
+
+@api_router.post("/crews/invites/{invite_id}/accept")
+async def accept_invite(invite_id: str, current_user: dict = Depends(get_current_user)):
+    invite = await db.crew_invites.find_one({"_id": ObjectId(invite_id)})
+    if not invite or invite["to_user_id"] != current_user["_id"]:
+        raise HTTPException(status_code=404, detail="Invito non trovato")
+    if invite["status"] != "pending":
+        raise HTTPException(status_code=400, detail="Invito non più valido")
+
+    await db.crew_invites.update_one(
+        {"_id": ObjectId(invite_id)},
+        {"$set": {"status": "accepted", "accepted_at": datetime.now(timezone.utc)}}
+    )
+
+    crew = await db.crews_v2.find_one({"_id": invite["crew_id"]})
+    if crew and current_user["_id"] not in crew["members"]:
+        await db.crews_v2.update_one(
+            {"_id": invite["crew_id"]},
+            {
+                "$push": {"members": current_user["_id"]},
+                "$inc": {"members_count": 1, "xp_total": current_user.get("xp", 0)},
+            }
+        )
+
+    # Activity feed
+    await db.crew_feed.insert_one({
+        "crew_id": invite["crew_id"],
+        "type": "member_joined",
+        "user_id": current_user["_id"],
+        "username": current_user["username"],
+        "message": f"{current_user['username']} si è unito alla Crew!",
+        "created_at": datetime.now(timezone.utc),
+    })
+
+    updated = await db.crews_v2.find_one({"_id": invite["crew_id"]})
+    return {"status": "accepted", "crew": crew_to_response(updated, current_user) if updated else None}
+
+
+@api_router.post("/crews/invites/{invite_id}/decline")
+async def decline_invite(invite_id: str, current_user: dict = Depends(get_current_user)):
+    invite = await db.crew_invites.find_one({"_id": ObjectId(invite_id)})
+    if not invite or invite["to_user_id"] != current_user["_id"]:
+        raise HTTPException(status_code=404, detail="Invito non trovato")
+
+    await db.crew_invites.update_one(
+        {"_id": ObjectId(invite_id)},
+        {"$set": {"status": "declined"}}
+    )
+    return {"status": "declined"}
+
+
+@api_router.get("/crews/{crew_id}")
+async def get_crew_detail(crew_id: str, current_user: dict = Depends(get_current_user)):
+    crew = await db.crews_v2.find_one({"_id": ObjectId(crew_id)})
+    if not crew:
+        raise HTTPException(status_code=404, detail="Crew non trovata")
+
+    owner_id = crew.get("owner_id")
+
+    # Get members with role info
+    members = []
+    for mid in crew.get("members", []):
+        u = await db.users.find_one({"_id": mid})
+        if u:
+            is_coach = (mid == owner_id)
+            members.append({
+                "id": str(u["_id"]),
+                "username": u["username"],
+                "avatar_color": u.get("avatar_color", "#00F2FF"),
+                "xp": u.get("xp", 0),
+                "level": u.get("level", 1),
+                "sport": u.get("sport"),
+                "role": "Coach" if is_coach else u.get("role", "Kore Member"),
+                "is_coach": is_coach,
+                "dna": u.get("dna"),
+            })
+
+    # Calculate crew weighted average DNA
+    crew_dna_avg = calculate_crew_weighted_average(members)
+
+    return {
+        **crew_to_response(crew, current_user),
+        "members": members,
+        "crew_dna_average": crew_dna_avg,
+    }
+
+
+@api_router.get("/crews/{crew_id}/feed")
+async def get_crew_feed(crew_id: str, current_user: dict = Depends(get_current_user)):
+    entries = await db.crew_feed.find(
+        {"crew_id": ObjectId(crew_id)}
+    ).sort("created_at", -1).to_list(30)
+
+    return [
+        {
+            "id": str(e["_id"]),
+            "type": e.get("type"),
+            "username": e.get("username"),
+            "message": e.get("message"),
+            "created_at": e.get("created_at", "").isoformat() if e.get("created_at") else None,
+        }
+        for e in entries
+    ]
+
+
+@api_router.get("/crews/{crew_id}/battle-stats")
+async def get_crew_battle_stats(crew_id: str, current_user: dict = Depends(get_current_user)):
+    """Get the crew's weighted-average DNA from all members for crew vs crew battles"""
+    crew = await db.crews_v2.find_one({"_id": ObjectId(crew_id)})
+    if not crew:
+        raise HTTPException(status_code=404, detail="Crew non trovata")
+
+    members_data = []
+    for mid in crew.get("members", []):
+        u = await db.users.find_one({"_id": mid})
+        if u:
+            members_data.append({
+                "xp": u.get("xp", 0),
+                "dna": u.get("dna"),
+            })
+
+    crew_avg = calculate_crew_weighted_average(members_data)
+
+    # Calculate total XP recalculated from members
+    total_xp = sum(m.get("xp", 0) for m in members_data)
+
+    return {
+        "crew_id": str(crew["_id"]),
+        "crew_name": crew["name"],
+        "members_count": len(members_data),
+        "total_xp": total_xp,
+        "weighted_average_dna": crew_avg,
+    }
+
+
+@api_router.get("/users/search/{query}")
+async def search_users(query: str, current_user: dict = Depends(get_current_user)):
+    """Search users by username for crew invites"""
+    users = await db.users.find({
+        "username": {"$regex": query, "$options": "i"},
+        "_id": {"$ne": current_user["_id"]},
+    }).to_list(10)
+    return [
+        {
+            "id": str(u["_id"]),
+            "username": u["username"],
+            "avatar_color": u.get("avatar_color", "#00F2FF"),
+            "xp": u.get("xp", 0),
+            "level": u.get("level", 1),
+        }
+        for u in users
+    ]
+
+
+def calculate_crew_weighted_average(members: list) -> dict:
+    """Calculate weighted average DNA for a crew based on member XP weights"""
+    if not members:
+        return {"velocita": 0, "forza": 0, "resistenza": 0, "agilita": 0, "tecnica": 0, "potenza": 0}
+
+    dna_keys = ["velocita", "forza", "resistenza", "agilita", "tecnica", "potenza"]
+    total_weight = 0
+    weighted_sums = {k: 0.0 for k in dna_keys}
+
+    for m in members:
+        dna = m.get("dna")
+        if not dna:
+            continue
+        # Weight = member XP (minimum 1 to avoid zero-division)
+        weight = max(m.get("xp", 1), 1)
+        total_weight += weight
+        for k in dna_keys:
+            weighted_sums[k] += dna.get(k, 50) * weight
+
+    if total_weight == 0:
+        return {k: 50 for k in dna_keys}
+
+    return {k: round(weighted_sums[k] / total_weight, 1) for k in dna_keys}
+
+
+def crew_to_response(crew: dict, current_user: dict = None) -> dict:
+    is_owner = current_user and crew.get("owner_id") == current_user["_id"]
+    return {
+        "id": str(crew["_id"]),
+        "name": crew["name"],
+        "tagline": crew.get("tagline", ""),
+        "category": crew.get("category"),
+        "owner_id": str(crew.get("owner_id", "")),
+        "members_count": crew.get("members_count", len(crew.get("members", []))),
+        "xp_total": crew.get("xp_total", 0),
+        "is_owner": is_owner,
+        "created_at": crew.get("created_at", "").isoformat() if crew.get("created_at") else None,
+    }
 
 
 app.include_router(api_router)
