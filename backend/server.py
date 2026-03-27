@@ -1,11 +1,15 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 import random
+import string
+import io
+import base64
 from pathlib import Path
 from pydantic import BaseModel
 from typing import Optional, List
@@ -13,6 +17,9 @@ from datetime import datetime, timezone, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from bson import ObjectId
+import qrcode
+from qrcode.image.styledpil import StyledPilImage
+from qrcode.image.styles.colormasks import SolidFillColorMask
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -1448,6 +1455,511 @@ def template_to_response(t: dict) -> dict:
         "created_at": t["created_at"].isoformat() if t.get("created_at") else None,
     }
 
+
+
+# ====================================
+# GYM HUB — ENTERPRISE ENGINE
+# ====================================
+
+APP_DOMAIN = os.environ.get('APP_DOMAIN', 'https://arenakore.com')
+
+
+def generate_event_code(length: int = 8) -> str:
+    """Generate a unique alphanumeric event code for QR"""
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
+
+
+def generate_qr_base64(data: str, gym_name: str = "", event_title: str = "") -> str:
+    """Generate a branded QR Code as base64 PNG — ARENAKORE dark theme"""
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=2,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+
+    # Nike-dark branded QR: Cyan (#00F2FF) on Dark (#050505)
+    img = qr.make_image(
+        image_factory=StyledPilImage,
+        color_mask=SolidFillColorMask(
+            back_color=(5, 5, 5),
+            front_color=(0, 242, 255),
+        ),
+    )
+
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+    buffer.seek(0)
+    return base64.b64encode(buffer.read()).decode('utf-8')
+
+
+async def get_or_create_gym(owner_id, owner_username: str) -> dict:
+    """Auto-provision a gym for a GYM_OWNER if none exists"""
+    gym = await db.gyms.find_one({"owner_id": owner_id})
+    if gym:
+        return gym
+
+    gym = {
+        "owner_id": owner_id,
+        "name": f"{owner_username}'s Gym",
+        "address": "",
+        "description": "",
+        "coaches": [],
+        "coaches_count": 0,
+        "events_count": 0,
+        "members_count": 1,
+        "created_at": datetime.now(timezone.utc),
+    }
+    result = await db.gyms.insert_one(gym)
+    gym["_id"] = result.inserted_id
+    return gym
+
+
+def gym_to_response(gym: dict) -> dict:
+    return {
+        "id": str(gym["_id"]),
+        "name": gym.get("name", ""),
+        "address": gym.get("address", ""),
+        "description": gym.get("description", ""),
+        "coaches_count": gym.get("coaches_count", 0),
+        "events_count": gym.get("events_count", 0),
+        "members_count": gym.get("members_count", 1),
+        "created_at": gym["created_at"].isoformat() if gym.get("created_at") else None,
+    }
+
+
+def gym_event_to_response(event: dict, include_qr: bool = False) -> dict:
+    resp = {
+        "id": str(event["_id"]),
+        "gym_id": str(event.get("gym_id", "")),
+        "title": event.get("title", ""),
+        "description": event.get("description", ""),
+        "exercise": event.get("exercise", "squat"),
+        "difficulty": event.get("difficulty", "medium"),
+        "event_date": event.get("event_date", ""),
+        "event_time": event.get("event_time", ""),
+        "max_participants": event.get("max_participants", 50),
+        "participants_count": event.get("participants_count", 0),
+        "event_code": event.get("event_code", ""),
+        "status": event.get("status", "upcoming"),
+        "gym_name": event.get("gym_name", ""),
+        "coach_name": event.get("coach_name", ""),
+        "xp_reward": event.get("xp_reward", 100),
+        "created_at": event["created_at"].isoformat() if event.get("created_at") else None,
+    }
+    if include_qr:
+        resp["qr_base64"] = event.get("qr_base64", "")
+    return resp
+
+
+# === Pydantic Models ===
+
+class GymUpdate(BaseModel):
+    name: Optional[str] = None
+    address: Optional[str] = None
+    description: Optional[str] = None
+
+
+class GymCoachAdd(BaseModel):
+    username: str
+
+
+class GymEventCreate(BaseModel):
+    title: str
+    description: Optional[str] = ""
+    exercise: str = "squat"       # squat | punch
+    difficulty: str = "medium"    # easy | medium | hard | extreme
+    event_date: str               # "2026-04-15"
+    event_time: str               # "18:30"
+    max_participants: int = 50
+    xp_reward: int = 100
+
+
+# === GYM PROFILE ===
+
+@api_router.get("/gym/me")
+async def get_my_gym(current_user: dict = Depends(get_current_user)):
+    """Get or auto-create the gym for current GYM_OWNER"""
+    gym = await get_or_create_gym(current_user["_id"], current_user.get("username", "Owner"))
+    return gym_to_response(gym)
+
+
+@api_router.put("/gym/me")
+async def update_my_gym(data: GymUpdate, current_user: dict = Depends(get_current_user)):
+    """Update gym profile"""
+    gym = await get_or_create_gym(current_user["_id"], current_user.get("username", "Owner"))
+    update_fields = {}
+    if data.name is not None:
+        update_fields["name"] = data.name
+    if data.address is not None:
+        update_fields["address"] = data.address
+    if data.description is not None:
+        update_fields["description"] = data.description
+
+    if update_fields:
+        await db.gyms.update_one({"_id": gym["_id"]}, {"$set": update_fields})
+
+    updated = await db.gyms.find_one({"_id": gym["_id"]})
+    return gym_to_response(updated)
+
+
+# === COACH ASSOCIATION ===
+
+@api_router.get("/gym/coaches")
+async def list_gym_coaches(current_user: dict = Depends(get_current_user)):
+    """List all coaches associated to the gym owner's gym"""
+    gym = await get_or_create_gym(current_user["_id"], current_user.get("username", "Owner"))
+    coach_ids = gym.get("coaches", [])
+
+    coaches = []
+    for cid in coach_ids:
+        user = await db.users.find_one({"_id": cid})
+        if user:
+            coaches.append({
+                "id": str(user["_id"]),
+                "username": user["username"],
+                "email": user.get("email", ""),
+                "avatar_color": user.get("avatar_color", "#00F2FF"),
+                "sport": user.get("sport"),
+                "xp": user.get("xp", 0),
+                "level": user.get("level", 1),
+                "dna": user.get("dna"),
+                "templates_count": await db.templates.count_documents({"coach_id": user["_id"]}),
+                "joined_at": user.get("created_at", "").isoformat() if user.get("created_at") else None,
+            })
+
+    return coaches
+
+
+@api_router.post("/gym/coaches")
+async def add_gym_coach(data: GymCoachAdd, current_user: dict = Depends(get_current_user)):
+    """Associate a coach to the gym by username"""
+    gym = await get_or_create_gym(current_user["_id"], current_user.get("username", "Owner"))
+
+    target = await db.users.find_one({"username": data.username})
+    if not target:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+
+    if target["_id"] in gym.get("coaches", []):
+        raise HTTPException(status_code=400, detail="Coach gi\u00e0 associato")
+
+    if target["_id"] == current_user["_id"]:
+        raise HTTPException(status_code=400, detail="Non puoi associare te stesso come coach")
+
+    await db.gyms.update_one(
+        {"_id": gym["_id"]},
+        {"$push": {"coaches": target["_id"]}, "$inc": {"coaches_count": 1}},
+    )
+
+    return {
+        "status": "associated",
+        "coach": {
+            "id": str(target["_id"]),
+            "username": target["username"],
+            "avatar_color": target.get("avatar_color", "#00F2FF"),
+            "sport": target.get("sport"),
+            "xp": target.get("xp", 0),
+            "level": target.get("level", 1),
+        },
+    }
+
+
+@api_router.delete("/gym/coaches/{coach_id}")
+async def remove_gym_coach(coach_id: str, current_user: dict = Depends(get_current_user)):
+    """Remove a coach from the gym"""
+    gym = await get_or_create_gym(current_user["_id"], current_user.get("username", "Owner"))
+
+    try:
+        cid = ObjectId(coach_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID coach invalido")
+
+    if cid not in gym.get("coaches", []):
+        raise HTTPException(status_code=404, detail="Coach non trovato nella palestra")
+
+    await db.gyms.update_one(
+        {"_id": gym["_id"]},
+        {"$pull": {"coaches": cid}, "$inc": {"coaches_count": -1}},
+    )
+
+    return {"status": "removed", "coach_id": coach_id}
+
+
+# === MASS EVENT GENERATOR ===
+
+@api_router.post("/gym/events")
+async def create_gym_event(data: GymEventCreate, current_user: dict = Depends(get_current_user)):
+    """Create a live mass event with auto-generated QR Code"""
+    gym = await get_or_create_gym(current_user["_id"], current_user.get("username", "Owner"))
+
+    # Generate unique event code
+    event_code = generate_event_code()
+    # Ensure uniqueness
+    while await db.gym_events.find_one({"event_code": event_code}):
+        event_code = generate_event_code()
+
+    # Build deep link URL
+    join_url = f"{APP_DOMAIN}/join/{event_code}"
+
+    # Generate QR Code as base64 PNG
+    qr_payload = f"{join_url}?gym={str(gym['_id'])}&exercise={data.exercise}&difficulty={data.difficulty}"
+    qr_base64 = generate_qr_base64(qr_payload, gym.get("name", ""), data.title)
+
+    event = {
+        "gym_id": gym["_id"],
+        "gym_name": gym.get("name", ""),
+        "owner_id": current_user["_id"],
+        "coach_name": current_user.get("username", "Owner"),
+        "title": data.title,
+        "description": data.description or "",
+        "exercise": data.exercise,
+        "difficulty": data.difficulty,
+        "event_date": data.event_date,
+        "event_time": data.event_time,
+        "max_participants": data.max_participants,
+        "xp_reward": data.xp_reward,
+        "event_code": event_code,
+        "join_url": join_url,
+        "qr_base64": qr_base64,
+        "qr_payload_url": qr_payload,
+        "participants": [],
+        "participants_count": 0,
+        "status": "upcoming",
+        "created_at": datetime.now(timezone.utc),
+    }
+    result = await db.gym_events.insert_one(event)
+    event["_id"] = result.inserted_id
+
+    # Increment gym event count
+    await db.gyms.update_one({"_id": gym["_id"]}, {"$inc": {"events_count": 1}})
+
+    return gym_event_to_response(event, include_qr=True)
+
+
+@api_router.get("/gym/events")
+async def list_gym_events(current_user: dict = Depends(get_current_user)):
+    """List all events for the gym owner's gym"""
+    gym = await get_or_create_gym(current_user["_id"], current_user.get("username", "Owner"))
+
+    events = await db.gym_events.find(
+        {"gym_id": gym["_id"]}
+    ).sort("created_at", -1).to_list(50)
+
+    return [gym_event_to_response(e, include_qr=True) for e in events]
+
+
+@api_router.get("/gym/events/{event_id}")
+async def get_gym_event_detail(event_id: str, current_user: dict = Depends(get_current_user)):
+    """Get full event detail including QR and participant list"""
+    try:
+        oid = ObjectId(event_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID evento invalido")
+
+    event = await db.gym_events.find_one({"_id": oid})
+    if not event:
+        raise HTTPException(status_code=404, detail="Evento non trovato")
+
+    # Enrich with participant data
+    participants = []
+    for pid in event.get("participants", []):
+        u = await db.users.find_one({"_id": pid})
+        if u:
+            participants.append({
+                "id": str(u["_id"]),
+                "username": u["username"],
+                "avatar_color": u.get("avatar_color", "#00F2FF"),
+                "xp": u.get("xp", 0),
+                "level": u.get("level", 1),
+                "sport": u.get("sport"),
+            })
+
+    resp = gym_event_to_response(event, include_qr=True)
+    resp["participants"] = participants
+    resp["join_url"] = event.get("join_url", "")
+    return resp
+
+
+@api_router.get("/gym/events/{event_id}/qr")
+async def get_event_qr(event_id: str, current_user: dict = Depends(get_current_user)):
+    """Get just the QR Code for an event"""
+    try:
+        oid = ObjectId(event_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID evento invalido")
+
+    event = await db.gym_events.find_one({"_id": oid})
+    if not event:
+        raise HTTPException(status_code=404, detail="Evento non trovato")
+
+    return {
+        "event_id": str(event["_id"]),
+        "event_code": event.get("event_code", ""),
+        "title": event.get("title", ""),
+        "join_url": event.get("join_url", ""),
+        "qr_base64": event.get("qr_base64", ""),
+        "gym_name": event.get("gym_name", ""),
+        "exercise": event.get("exercise", ""),
+        "difficulty": event.get("difficulty", ""),
+        "event_date": event.get("event_date", ""),
+        "event_time": event.get("event_time", ""),
+    }
+
+
+# === QR-CORE DEEP LINKING ===
+
+@api_router.get("/gym/join/{event_code}")
+async def join_via_qr(event_code: str):
+    """PUBLIC endpoint — No auth required. Returns event preview for QR scan landing page."""
+    event = await db.gym_events.find_one({"event_code": event_code})
+    if not event:
+        raise HTTPException(status_code=404, detail="Evento non trovato o codice scaduto")
+
+    gym = await db.gyms.find_one({"_id": event.get("gym_id")})
+
+    return {
+        "event_code": event_code,
+        "event_id": str(event["_id"]),
+        "title": event.get("title", ""),
+        "description": event.get("description", ""),
+        "exercise": event.get("exercise", "squat"),
+        "difficulty": event.get("difficulty", "medium"),
+        "event_date": event.get("event_date", ""),
+        "event_time": event.get("event_time", ""),
+        "xp_reward": event.get("xp_reward", 100),
+        "max_participants": event.get("max_participants", 50),
+        "participants_count": event.get("participants_count", 0),
+        "status": event.get("status", "upcoming"),
+        "gym": {
+            "id": str(gym["_id"]) if gym else "",
+            "name": gym.get("name", "") if gym else "",
+        },
+        "deep_link": {
+            "ios": "https://apps.apple.com/app/arenakore",
+            "android": "https://play.google.com/store/apps/details?id=com.arenakore.app",
+            "universal": f"{APP_DOMAIN}/join/{event_code}",
+        },
+    }
+
+
+@api_router.post("/gym/events/{event_id}/join")
+async def join_gym_event(event_id: str, current_user: dict = Depends(get_current_user)):
+    """Join a gym event (for registered and authenticated users)"""
+    try:
+        oid = ObjectId(event_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID evento invalido")
+
+    event = await db.gym_events.find_one({"_id": oid})
+    if not event:
+        raise HTTPException(status_code=404, detail="Evento non trovato")
+
+    if event.get("status") == "completed":
+        raise HTTPException(status_code=400, detail="Evento gi\u00e0 concluso")
+
+    if current_user["_id"] in event.get("participants", []):
+        raise HTTPException(status_code=400, detail="Sei gi\u00e0 iscritto a questo evento")
+
+    if event.get("participants_count", 0) >= event.get("max_participants", 50):
+        raise HTTPException(status_code=400, detail="Evento al completo")
+
+    # Add user to event
+    await db.gym_events.update_one(
+        {"_id": oid},
+        {"$push": {"participants": current_user["_id"]}, "$inc": {"participants_count": 1}},
+    )
+
+    # Auto-associate user to the gym (add to gym members if not already)
+    gym = await db.gyms.find_one({"_id": event.get("gym_id")})
+    if gym:
+        gym_members = gym.get("members", [])
+        if current_user["_id"] not in gym_members:
+            await db.gyms.update_one(
+                {"_id": gym["_id"]},
+                {"$push": {"members": current_user["_id"]}, "$inc": {"members_count": 1}},
+            )
+
+    return {
+        "status": "joined",
+        "event_id": str(event["_id"]),
+        "title": event.get("title", ""),
+        "gym_name": event.get("gym_name", ""),
+        "xp_reward": event.get("xp_reward", 100),
+        "participants_count": event.get("participants_count", 0) + 1,
+    }
+
+
+@api_router.post("/gym/join/{event_code}/enroll")
+async def enroll_via_event_code(event_code: str, current_user: dict = Depends(get_current_user)):
+    """Enroll in an event using the QR event_code (authenticated user deep link handler)"""
+    event = await db.gym_events.find_one({"event_code": event_code})
+    if not event:
+        raise HTTPException(status_code=404, detail="Evento non trovato o codice scaduto")
+
+    if event.get("status") == "completed":
+        raise HTTPException(status_code=400, detail="Evento gi\u00e0 concluso")
+
+    if current_user["_id"] in event.get("participants", []):
+        return {
+            "status": "already_enrolled",
+            "event_id": str(event["_id"]),
+            "title": event.get("title", ""),
+            "gym_name": event.get("gym_name", ""),
+        }
+
+    if event.get("participants_count", 0) >= event.get("max_participants", 50):
+        raise HTTPException(status_code=400, detail="Evento al completo")
+
+    # Enroll user
+    await db.gym_events.update_one(
+        {"_id": event["_id"]},
+        {"$push": {"participants": current_user["_id"]}, "$inc": {"participants_count": 1}},
+    )
+
+    # Auto-associate user to the gym
+    gym = await db.gyms.find_one({"_id": event.get("gym_id")})
+    if gym:
+        gym_members = gym.get("members", [])
+        if current_user["_id"] not in gym_members:
+            await db.gyms.update_one(
+                {"_id": gym["_id"]},
+                {"$push": {"members": current_user["_id"]}, "$inc": {"members_count": 1}},
+            )
+
+    return {
+        "status": "enrolled",
+        "event_id": str(event["_id"]),
+        "title": event.get("title", ""),
+        "gym_name": event.get("gym_name", ""),
+        "xp_reward": event.get("xp_reward", 100),
+        "participants_count": event.get("participants_count", 0) + 1,
+    }
+
+
+@api_router.put("/gym/events/{event_id}/status")
+async def update_event_status(event_id: str, body: dict, current_user: dict = Depends(get_current_user)):
+    """Update event status (upcoming → live → completed)"""
+    try:
+        oid = ObjectId(event_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID evento invalido")
+
+    event = await db.gym_events.find_one({"_id": oid})
+    if not event:
+        raise HTTPException(status_code=404, detail="Evento non trovato")
+
+    if event.get("owner_id") != current_user["_id"]:
+        raise HTTPException(status_code=403, detail="Solo il proprietario pu\u00f2 modificare lo stato")
+
+    new_status = body.get("status", "upcoming")
+    if new_status not in ["upcoming", "live", "completed"]:
+        raise HTTPException(status_code=400, detail="Stato non valido")
+
+    await db.gym_events.update_one({"_id": oid}, {"$set": {"status": new_status}})
+
+    return {"status": new_status, "event_id": event_id}
 
 
 app.include_router(api_router)

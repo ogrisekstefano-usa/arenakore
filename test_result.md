@@ -483,6 +483,96 @@ backend:
           agent: "testing"
           comment: "COMPREHENSIVE TEST PASSED: All 4 critical Founder Protocol scenarios working correctly - (1) New user registration returns is_founder=true, (2) Admin auth/me includes is_founder field, (3) Global leaderboard returns is_founder for all users, (4) Existing endpoints remain functional. Backend logs confirm '29 founders retroactively badged' on startup."
 
+  - task: "Gym Profile Management API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/gym/me - auto-creates gym for owner, PUT /api/gym/me - update gym profile (name, address, description)"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Gym auto-creation working correctly, profile updates functional. GET /api/gym/me returns proper structure with id, name, coaches_count, events_count. PUT /api/gym/me successfully updates gym name to 'ARENA ELITE GYM'"
+
+  - task: "Gym Coach Association API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/gym/coaches - list coaches with template counts, POST /api/gym/coaches - add coach by username, DELETE /api/gym/coaches/{id} - remove coach"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Coach association system working correctly. POST /api/gym/coaches successfully associates coach by username, GET /api/gym/coaches returns coaches list with templates_count field, DELETE /api/gym/coaches/{id} removes coach with status='removed'"
+
+  - task: "Gym Mass Event Creation API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "POST /api/gym/events - create mass event with QR Code generation (Cyan #00F2FF on Dark #050505), GET /api/gym/events - list gym events with QR base64"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Mass event creation working correctly. POST /api/gym/events creates event with 8-character event_code, generates valid QR base64 (5484 chars), returns proper structure. GET /api/gym/events lists events with QR base64 included"
+
+  - task: "Gym Event Detail & QR API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/gym/events/{id} - event detail with participants list, GET /api/gym/events/{id}/qr - get QR code for event"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Event detail API working correctly. GET /api/gym/events/{id} returns participants array (empty initially), qr_base64, join_url. GET /api/gym/events/{id}/qr returns all required QR fields (qr_base64, event_code, join_url, gym_name, exercise, difficulty)"
+
+  - task: "QR-Core Deep Linking System"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/gym/join/{event_code} - PUBLIC QR scan landing (no auth, returns event preview + deep links), POST /api/gym/join/{event_code}/enroll - enroll via QR event code"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: QR-Core deep linking working correctly. GET /api/gym/join/{event_code} (PUBLIC, no auth) returns event preview with title, gym.name, deep_link.ios/android/universal. POST /api/gym/join/{event_code}/enroll correctly returns 'already_enrolled' for duplicate enrollment"
+
+  - task: "Gym Event Join & Status Management API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "POST /api/gym/events/{id}/join - join event (auth required), PUT /api/gym/events/{id}/status - update event status (upcoming → live → completed)"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Event join and status management working correctly. POST /api/gym/events/{id}/join successfully joins user with status='joined', participants_count=1. PUT /api/gym/events/{id}/status updates status to 'live'. Completed event correctly rejects new joins with 'Evento già concluso' error"
+
 frontend:
   - task: "ARENAKORE Landing Page"
     implemented: true
@@ -615,3 +705,7 @@ agent_communication:
       message: "THE FOUNDER PROTOCOL + PRODUCTION CLEANUP IMPLEMENTED: (1) Registration now checks total_users < 100 and sets is_founder=true + founder_number for early adopters, (2) user_to_response includes is_founder field, (3) Leaderboard endpoint returns is_founder field for all users, (4) Retroactive migration in seed_data: first 100 existing users get is_founder=true on startup (confirmed: 29 founders badged). PLEASE TEST: (A) Register a new user → check if is_founder=true returned (since <100 users), (B) Login admin → GET /api/auth/me → check is_founder field, (C) GET /api/leaderboard → check is_founder in results, (D) Register user #101 later → verify is_founder=false. Base URL: https://coach-studio-pro.preview.emergentagent.com/api. Credentials: admin@arenadare.com / Admin2026!"
     - agent: "testing"
       message: "FOUNDER PROTOCOL TESTING COMPLETED: All 4 critical test scenarios passed successfully. ✅ New user registration returns is_founder=true (FounderTest_1774632367 registered with founder status) ✅ Admin auth/me endpoint includes is_founder=true field ✅ Global leaderboard returns is_founder field for all users (5/5 top users are founders) ✅ All existing endpoints working (sports categories, crews leaderboard, nexus session start, my crews). Founder Protocol implementation is production-ready. Backend logs show '29 founders retroactively badged' on startup, confirming retroactive migration working correctly."
+    - agent: "main"
+      message: "SPRINT 3: GYM HUB & QR-CORE ENGINE IMPLEMENTED. NEW ENDPOINTS: (1) GET /api/gym/me — auto-creates gym for owner, (2) PUT /api/gym/me — update gym profile, (3) GET /api/gym/coaches — list associated coaches with template counts, (4) POST /api/gym/coaches — add coach by username, (5) DELETE /api/gym/coaches/{id} — remove coach, (6) POST /api/gym/events — create mass event with QR Code generation (Cyan #00F2FF on Dark #050505), (7) GET /api/gym/events — list gym events with QR base64, (8) GET /api/gym/events/{id} — event detail with participants list, (9) GET /api/gym/events/{id}/qr — get QR code for event, (10) POST /api/gym/events/{id}/join — join event (auth required), (11) GET /api/gym/join/{event_code} — PUBLIC QR scan landing (no auth, returns event preview + deep links), (12) POST /api/gym/join/{event_code}/enroll — enroll via QR event code, (13) PUT /api/gym/events/{id}/status — update event status. TEST FLOW: (A) Login as admin → GET /api/gym/me → should auto-create gym, (B) PUT /api/gym/me with name update, (C) Register a new user → POST /api/gym/coaches with their username, (D) GET /api/gym/coaches → verify the new coach appears with template count, (E) POST /api/gym/events with title, exercise, date, time → verify QR base64 is returned, (F) GET /api/gym/events → verify event list, (G) GET /api/gym/events/{id}/qr → verify QR data, (H) GET /api/gym/join/{event_code} → PUBLIC endpoint no auth → verify event preview, (I) Login as new user → POST /api/gym/events/{id}/join → verify auto-association, (J) POST /api/gym/join/{event_code}/enroll → verify enrollment. Base URL: https://coach-studio-pro.preview.emergentagent.com/api. Credentials: admin@arenadare.com / Admin2026!"
+    - agent: "testing"
+      message: "COMPREHENSIVE GYM HUB & QR-CORE ENGINE TESTING COMPLETED: ALL 13 NEW ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test flow executed in exact order: ✅ Admin login with is_admin=true ✅ Gym auto-creation (ID: 69c6f4834a9e4dfe1ed6ac9b) ✅ Gym profile update to 'ARENA ELITE GYM' ✅ Coach user registration (coach_test_sprint3_1774646404) ✅ Coach association with status='associated' ✅ Coaches list with templates_count field ✅ Mass event creation with 8-char code (AC7R083A) and valid QR base64 (5484 chars) ✅ Events list with QR included ✅ Event detail with participants array and join_url ✅ Event QR endpoint with all required fields ✅ PUBLIC QR scan landing (no auth) with deep links ✅ Event join with participants_count=1 ✅ Enroll via event code returns 'already_enrolled' ✅ Coach removal with status='removed' ✅ Event status update to 'live' ✅ Completed event correctly rejects new joins with 'Evento già concluso'. All QR-Core deep linking, gym management, coach association, and event lifecycle features are production-ready. Total backend endpoints tested: 40/40 ✅"
