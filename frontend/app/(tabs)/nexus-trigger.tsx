@@ -17,6 +17,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { playAcceptPing, playRecordBroken, startBioScanHum, playBioMatchPing } from '../../utils/sounds';
 import { MotionAnalyzer, MotionState, ExerciseType, SkeletonPose } from '../../utils/MotionAnalyzer';
+import { profileDevice, DeviceProfile, DeviceTier, getTierLabel, getTrackingMode } from '../../utils/DeviceIntelligence';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -51,18 +52,28 @@ function CyberGrid({ intensity }: { intensity: number }) {
   );
 }
 
+// ========== NEON TRAIL SYSTEM (HIGH TIER ONLY) ==========
+// Stores recent positions of fists/feet for luminous afterglow trail
+const NEON_TRAIL_LENGTH = 8;
+let _neonTrail: Array<{ x: number; y: number; age: number }> = [];
+function pushNeonTrail(x: number, y: number) {
+  _neonTrail.unshift({ x, y, age: 0 });
+  _neonTrail = _neonTrail.slice(0, NEON_TRAIL_LENGTH).map(p => ({ ...p, age: p.age + 1 }));
+}
+
 // ========== DIGITAL SHADOW SKELETON ==========
-// Only animates when motion detected. Static "plastic pose" when athlete is still.
-function DigitalShadow({ pose, exercise, goldFlash, motionActive }: {
-  pose: SkeletonPose; exercise: ExerciseType; goldFlash: boolean; motionActive: boolean;
+// Tier-adaptive: HIGH=Full Biomech, STANDARD=Motion Anchored, LEGACY=Shadow Mode
+function DigitalShadow({ pose, exercise, goldFlash, motionActive, deviceTier }: {
+  pose: SkeletonPose; exercise: ExerciseType; goldFlash: boolean; motionActive: boolean; deviceTier: DeviceTier;
 }) {
   const cx = SW / 2, baseY = SH * 0.38;
-  // When no motion: skeleton stays in neutral idle pose
+  const isHigh = deviceTier === 'high';
+  const isLegacy = deviceTier === 'legacy';
   const active = motionActive ? 1 : 0;
-  const intensity = motionActive ? (0.4 + pose.intensity * 0.6) : 0.15;
+  const intensity = motionActive ? (0.4 + pose.intensity * 0.6) : (isLegacy ? 0.08 : 0.15);
   const col = goldFlash ? '#D4AF37' : '#00F2FF';
 
-  // Idle vs active poses - skeleton only moves with real motion
+  // Idle vs active poses
   const tilt = pose.torsoTilt * active;
   const knee = pose.kneeAngle * active;
   const arm = exercise === 'punch' ? pose.armExtension * active : 0;
@@ -78,54 +89,118 @@ function DigitalShadow({ pose, exercise, goldFlash, motionActive }: {
   const armY = shoulderY + (exercise === 'punch' ? 5 : 15);
 
   const joints = [
-    { x: cx, y: headY },
-    { x: cx, y: shoulderY },
-    { x: cx - 25 - sr, y: shoulderY },
-    { x: cx + 25 + sr, y: shoulderY },
-    { x: cx - 30 - armExt, y: armY },
-    { x: cx + 30 + armExt, y: armY },
-    { x: cx - 35 - armExt * 1.2, y: armY + 16 },
-    { x: cx + 35 + armExt * 1.2, y: armY + 16 },
-    { x: cx, y: hipY },
-    { x: cx - 16, y: hipY },
-    { x: cx + 16, y: hipY },
-    { x: cx - 20, y: kneeY },
-    { x: cx + 20, y: kneeY },
-    { x: cx - 22, y: footY },
-    { x: cx + 22, y: footY },
-    { x: cx - 40 - armExt * 1.3, y: armY + 26 },
-    { x: cx + 40 + armExt * 1.3, y: armY + 26 },
+    { x: cx, y: headY },                              // 0: head
+    { x: cx, y: shoulderY },                           // 1: neck
+    { x: cx - 25 - sr, y: shoulderY },                 // 2: L shoulder
+    { x: cx + 25 + sr, y: shoulderY },                 // 3: R shoulder
+    { x: cx - 30 - armExt, y: armY },                  // 4: L elbow
+    { x: cx + 30 + armExt, y: armY },                  // 5: R elbow
+    { x: cx - 35 - armExt * 1.2, y: armY + 16 },      // 6: L wrist
+    { x: cx + 35 + armExt * 1.2, y: armY + 16 },      // 7: R wrist
+    { x: cx, y: hipY },                                // 8: spine base
+    { x: cx - 16, y: hipY },                           // 9: L hip
+    { x: cx + 16, y: hipY },                           // 10: R hip
+    { x: cx - 20, y: kneeY },                          // 11: L knee
+    { x: cx + 20, y: kneeY },                          // 12: R knee
+    { x: cx - 22, y: footY },                          // 13: L ankle
+    { x: cx + 22, y: footY },                          // 14: R ankle
+    { x: cx - 40 - armExt * 1.3, y: armY + 26 },      // 15: L hand
+    { x: cx + 40 + armExt * 1.3, y: armY + 26 },      // 16: R hand
   ];
 
   const bones = [[0,1],[1,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,15],[7,16],[1,8],[8,9],[8,10],[9,11],[10,12],[11,13],[12,14]];
 
+  // HIGH tier: Track hand positions for Neon Trail
+  if (isHigh && motionActive && exercise === 'punch') {
+    pushNeonTrail(joints[15].x, joints[15].y);
+    pushNeonTrail(joints[16].x, joints[16].y);
+  } else if (!motionActive) {
+    _neonTrail = [];
+  }
+
+  // LEGACY tier: Render simplified skeleton (only major bones, no glow)
+  const legacyBones = [[0,1],[1,8],[2,6],[3,7],[9,13],[10,14]]; // Simplified 6-bone skeleton
+  const renderBones = isLegacy ? legacyBones : bones;
+  const renderJoints = isLegacy
+    ? [joints[0], joints[1], joints[6], joints[7], joints[8], joints[13], joints[14]] // 7 key joints
+    : joints;
+  const boneWidth = isHigh ? (motionActive ? 3.5 : 2.5) : (isLegacy ? 1.5 : (motionActive ? 3 : 2));
+  const jointBase = isHigh ? 6 : (isLegacy ? 3 : 5);
+
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       <Svg width={SW} height={SH}>
-        {/* Head glow */}
-        <Circle cx={joints[0].x} cy={joints[0].y} r={24} fill={col} opacity={intensity * 0.12} />
+        {/* HIGH TIER: Neon Trail — glowing afterimages of fists */}
+        {isHigh && _neonTrail.map((p, i) => (
+          <Circle key={`trail-${i}`} cx={p.x} cy={p.y}
+            r={14 - p.age * 1.2}
+            fill={goldFlash ? '#D4AF37' : '#00F2FF'}
+            opacity={Math.max(0, 0.4 - p.age * 0.05)}
+          />
+        ))}
+
+        {/* HIGH TIER: Biomechanical spine glow line */}
+        {isHigh && (
+          <Line x1={joints[0].x} y1={joints[0].y} x2={joints[8].x} y2={joints[8].y}
+            stroke={col} strokeWidth={1} opacity={intensity * 0.15} strokeDasharray="4,4"
+          />
+        )}
+
+        {/* Head glow — scaled by tier */}
+        {!isLegacy && (
+          <Circle cx={joints[0].x} cy={joints[0].y} r={isHigh ? 28 : 24} fill={col} opacity={intensity * (isHigh ? 0.15 : 0.12)} />
+        )}
+
         {/* Bones */}
-        {bones.map(([f, t], i) => (
+        {renderBones.map(([f, t], i) => (
           <Line key={i}
             x1={joints[f].x} y1={joints[f].y} x2={joints[t].x} y2={joints[t].y}
-            stroke={col} strokeWidth={motionActive ? 3 : 2} opacity={intensity}
+            stroke={col} strokeWidth={boneWidth} opacity={intensity}
             strokeLinecap="round"
           />
         ))}
+
         {/* Joints */}
-        {joints.map((j, i) => (
+        {(isLegacy ? renderJoints : joints).map((j, i) => (
           <G key={i}>
-            <Circle cx={j.x} cy={j.y} r={i === 0 ? 12 : 5} fill={col} opacity={intensity * 0.9} />
-            {motionActive && (
-              <Circle cx={j.x} cy={j.y} r={i === 0 ? 16 : 8} stroke={col} strokeWidth={1} fill="none" opacity={intensity * 0.3} />
+            <Circle cx={j.x} cy={j.y}
+              r={(!isLegacy && i === 0) ? 12 : jointBase}
+              fill={col} opacity={intensity * 0.9}
+            />
+            {/* HIGH TIER: Outer glow rings on all joints when active */}
+            {isHigh && motionActive && (
+              <Circle cx={j.x} cy={j.y}
+                r={(!isLegacy && i === 0) ? 18 : 10}
+                stroke={col} strokeWidth={1.5} fill="none"
+                opacity={intensity * 0.25}
+              />
+            )}
+            {/* STANDARD TIER: Subtle glow rings only when active */}
+            {!isHigh && !isLegacy && motionActive && (
+              <Circle cx={j.x} cy={j.y}
+                r={i === 0 ? 16 : 8}
+                stroke={col} strokeWidth={1} fill="none"
+                opacity={intensity * 0.3}
+              />
             )}
           </G>
         ))}
-        {/* Status text */}
-        <SvgText x={cx - 60} y={baseY - 130} fill={col} fontSize={8} fontWeight="bold" opacity={0.5}>
+
+        {/* HIGH TIER: Neon Trail glow haze for punches */}
+        {isHigh && motionActive && exercise === 'punch' && (
+          <>
+            <Circle cx={joints[15].x} cy={joints[15].y} r={20}
+              fill={col} opacity={intensity * 0.2} />
+            <Circle cx={joints[16].x} cy={joints[16].y} r={20}
+              fill={col} opacity={intensity * 0.2} />
+          </>
+        )}
+
+        {/* Status text with tier indicator */}
+        <SvgText x={cx - 80} y={baseY - 130} fill={col} fontSize={8} fontWeight="bold" opacity={0.5}>
           {motionActive
-            ? (goldFlash ? 'MOTION SYNC \u00b7 GOLD FLASH' : 'KEYPOINTS: 17 \u00b7 TRACKING')
-            : 'STANDBY \u00b7 AWAITING MOTION'}
+            ? (goldFlash ? `${getTierLabel(deviceTier)} \u00b7 GOLD FLASH` : `${getTrackingMode(deviceTier)}`)
+            : `${getTierLabel(deviceTier)} \u00b7 AWAITING MOTION`}
         </SvgText>
       </Svg>
     </View>
@@ -419,12 +494,23 @@ function Countdown({ onComplete }: { onComplete: () => void }) {
   );
 }
 
-// ========== PULSE TICKER ==========
-function PulseTicker() {
+// ========== PULSE TICKER (tier-aware: disabilita animazione su LEGACY) ==========
+function PulseTicker({ reduced }: { reduced?: boolean }) {
   const scrollX = useSharedValue(0);
   const TXT = '[LIVE FEED] LONDON: ALEX_K COMPLETED EXPLOSIVE PUNCH (98Q) \u2022 CHICAGO: MAYA_J JOINED CREW BULLS \u2022 TOKYO: NEW WORLD RECORD IN HALL OF KORE \u2022 BERLIN: 3 NEW FOUNDERS REGISTERED \u2022 MIAMI: CREW SHARKS VS WOLVES (LIVE DUEL) \u2022 ';
-  useEffect(() => { scrollX.value = withRepeat(withTiming(-SW * 3, { duration: 25000, easing: Easing.linear }), -1, false); }, []);
+  useEffect(() => {
+    if (!reduced) {
+      scrollX.value = withRepeat(withTiming(-SW * 3, { duration: 25000, easing: Easing.linear }), -1, false);
+    }
+  }, []);
   const s = useAnimatedStyle(() => ({ transform: [{ translateX: scrollX.value }] }));
+  if (reduced) {
+    return (
+      <View style={{ height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.06)', justifyContent: 'center' }}>
+        <Text numberOfLines={1} style={{ color: '#00F2FF', fontSize: 9, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.5, paddingHorizontal: 8 }}>[LIVE FEED] LONDON: ALEX_K PUNCH (98Q) {'\u2022'} TOKYO: WORLD RECORD</Text>
+      </View>
+    );
+  }
   return (
     <View style={{ height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.06)', justifyContent: 'center' }}>
       <Animated.View style={[{ flexDirection: 'row', width: SW * 6 }, s]}>
@@ -434,10 +520,11 @@ function PulseTicker() {
   );
 }
 
-// ========== BURGER MENU with GLASS + FOUNDER PRIDE ==========
-function BurgerMenu({ visible, onClose, user, onLogout }: { visible: boolean; onClose: () => void; user: any; onLogout: () => void }) {
+// ========== BURGER MENU with GLASS + FOUNDER PRIDE (tier-aware) ==========
+function BurgerMenu({ visible, onClose, user, onLogout, deviceTier }: { visible: boolean; onClose: () => void; user: any; onLogout: () => void; deviceTier: DeviceTier }) {
   if (!visible) return null;
   const isFounder = user?.is_founder || user?.is_admin;
+  const isLegacy = deviceTier === 'legacy';
   const items = [
     { icon: '\ud83e\uddec', label: 'Bio-Signature Scan', sub: 'Ricalibra i sensori' },
     { icon: '\u2699\ufe0f', label: 'Settings', sub: 'Configurazione NEXUS' },
@@ -446,14 +533,19 @@ function BurgerMenu({ visible, onClose, user, onLogout }: { visible: boolean; on
   ];
   return (
     <Modal transparent visible={visible} animationType="none" onRequestClose={onClose}>
-      {/* Intense backdrop blur — nebula Cyan */}
       <TouchableOpacity style={bm$.backdrop} activeOpacity={1} onPress={onClose}>
-        <View style={bm$.blurLayer} />
+        {/* LEGACY: simple dark overlay. HIGH/STANDARD: blur effect */}
+        <View style={isLegacy ? bm$.blurLayerLegacy : bm$.blurLayer} />
         <Animated.View entering={SlideInRight.duration(250)} exiting={SlideOutRight.duration(200)} style={bm$.panel}>
           <LinearGradient colors={['rgba(8,8,8,0.97)', 'rgba(5,5,5,0.99)']} style={bm$.panelInner}>
             <View style={bm$.header}>
               <Text style={bm$.headerTitle}>CONTROL CENTER</Text>
               <TouchableOpacity onPress={onClose}><Text style={bm$.closeX}>{'\u2715'}</Text></TouchableOpacity>
+            </View>
+            {/* Device Tier Badge */}
+            <View style={bm$.tierBadge}>
+              <Text style={bm$.tierLabel}>{getTierLabel(deviceTier)}</Text>
+              <Text style={bm$.tierSub}>{getTrackingMode(deviceTier)}</Text>
             </View>
             <ScrollView showsVerticalScrollIndicator={false}>
               {items.map((item, i) => (
@@ -477,7 +569,7 @@ function BurgerMenu({ visible, onClose, user, onLogout }: { visible: boolean; on
                 </View>
               </TouchableOpacity>
             </ScrollView>
-            <PulseTicker />
+            <PulseTicker reduced={isLegacy} />
             <Text style={bm$.footer}>ARENAKORE v2.1 {'\u00b7'} NEXUS SYNC</Text>
           </LinearGradient>
         </Animated.View>
@@ -492,11 +584,21 @@ const bm$ = StyleSheet.create({
     flex: 1, backgroundColor: 'rgba(0,18,25,0.65)',
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(18px) saturate(120%)', WebkitBackdropFilter: 'blur(18px) saturate(120%)' } as any : {}),
   },
+  blurLayerLegacy: {
+    flex: 1, backgroundColor: 'rgba(0,8,12,0.85)',
+  },
   panel: { width: SW * 0.72, height: '100%' },
   panelInner: { flex: 1, paddingTop: 60, borderLeftWidth: 1.5, borderLeftColor: 'rgba(0,242,255,0.1)' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 24 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 8 },
   headerTitle: { color: '#00F2FF', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
   closeX: { color: '#555', fontSize: 22 },
+  tierBadge: {
+    marginHorizontal: 20, marginBottom: 16, paddingVertical: 8, paddingHorizontal: 14,
+    backgroundColor: 'rgba(0,242,255,0.04)', borderRadius: 8,
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.08)', gap: 2,
+  },
+  tierLabel: { color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  tierSub: { color: '#555', fontSize: 8, fontWeight: '600', letterSpacing: 1 },
   item: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 16, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)' },
   itemIcon: { fontSize: 20, width: 32 },
   itemText: { flex: 1, gap: 2 },
@@ -660,6 +762,15 @@ export default function NexusTriggerScreen() {
   const [motionActive, setMotionActive] = useState(false);
   const [burgerOpen, setBurgerOpen] = useState(false);
 
+  // ===== DEVICE INTELLIGENCE LAYER =====
+  const [deviceProfile, setDeviceProfile] = useState<DeviceProfile | null>(null);
+  useEffect(() => {
+    const profile = profileDevice();
+    setDeviceProfile(profile);
+    console.log(`[ARENAKORE] Device Intelligence: ${profile.tier.toUpperCase()} | ${profile.model} | ${profile.cpuCores} cores | ${profile.ramGB}GB RAM`);
+  }, []);
+  const deviceTier: DeviceTier = deviceProfile?.tier || 'standard';
+
   const analyzerRef = useRef<MotionAnalyzer | null>(null);
   const accelSubRef = useRef<any>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -797,7 +908,7 @@ export default function NexusTriggerScreen() {
       <ScanLine active={phase === 'scanning'} />
 
       {phase === 'scanning' && motionState && (
-        <DigitalShadow pose={motionState.skeletonPose} exercise={exercise} goldFlash={goldFlash} motionActive={motionActive} />
+        <DigitalShadow pose={motionState.skeletonPose} exercise={exercise} goldFlash={goldFlash} motionActive={motionActive} deviceTier={deviceTier} />
       )}
 
       {/* Top HUD */}
@@ -834,7 +945,7 @@ export default function NexusTriggerScreen() {
       )}
 
       <CinemaResults visible={phase === 'results'} result={scanResult} user={user} onClose={handleResultClose} />
-      <BurgerMenu visible={burgerOpen} onClose={() => setBurgerOpen(false)} user={user} onLogout={() => { setBurgerOpen(false); stopSensors(); logout(); router.replace('/'); }} />
+      <BurgerMenu visible={burgerOpen} onClose={() => setBurgerOpen(false)} user={user} onLogout={() => { setBurgerOpen(false); stopSensors(); logout(); router.replace('/'); }} deviceTier={deviceTier} />
     </View>
   );
 }
