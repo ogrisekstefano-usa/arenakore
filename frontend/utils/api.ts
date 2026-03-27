@@ -83,7 +83,7 @@ export const api = {
 
   getChallengeHistory: (token: string) => request('/challenges/history', {}, token),
 
-  // Leaderboard / Glory Wall
+  // Leaderboard / Hall of KORE
   getLeaderboard: (type: string, token: string, category?: string, timeRange?: string) => {
     let path = `/leaderboard?type=${type}`;
     if (category) path += `&category=${encodeURIComponent(category)}`;

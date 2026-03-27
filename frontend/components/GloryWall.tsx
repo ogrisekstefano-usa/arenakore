@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, ImageBackground, RefreshControl,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,17 +12,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../utils/api';
 import { playAcceptPing } from '../utils/sounds';
-import { GLORY_WALL_BG } from '../utils/images';
+import { HALL_OF_KORE_BG } from '../utils/images';
 
 const MEDAL_COLORS = {
-  1: { bg: 'rgba(212,175,55,0.2)', border: 'rgba(212,175,55,0.5)', text: '#D4AF37', glow: '#D4AF37', emoji: '🥇' },
-  2: { bg: 'rgba(192,192,192,0.15)', border: 'rgba(192,192,192,0.4)', text: '#C0C0C0', glow: '#C0C0C0', emoji: '🥈' },
-  3: { bg: 'rgba(205,127,50,0.15)', border: 'rgba(205,127,50,0.4)', text: '#CD7F32', glow: '#CD7F32', emoji: '🥉' },
+  1: { bg: 'rgba(212,175,55,0.2)', border: 'rgba(212,175,55,0.5)', text: '#D4AF37', glow: '#D4AF37', emoji: '\ud83e\udd47' },
+  2: { bg: 'rgba(192,192,192,0.15)', border: 'rgba(192,192,192,0.4)', text: '#C0C0C0', glow: '#C0C0C0', emoji: '\ud83e\udd48' },
+  3: { bg: 'rgba(205,127,50,0.15)', border: 'rgba(205,127,50,0.4)', text: '#CD7F32', glow: '#CD7F32', emoji: '\ud83e\udd49' },
 };
 
 const SPORT_ICONS: Record<string, string> = {
-  atletica: '🏃', combat: '🥊', acqua: '🌊', team: '⚽',
-  fitness: '🏋️', outdoor: '🏔️', mind_body: '🧘', extreme: '🔥',
+  atletica: '\ud83c\udfc3', combat: '\ud83e\udd4a', acqua: '\ud83c\udf0a', team: '\u26bd',
+  fitness: '\ud83c\udfcb\ufe0f', outdoor: '\ud83c\udfd4\ufe0f', mind_body: '\ud83e\uddd8', extreme: '\ud83d\udd25',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -89,7 +89,7 @@ function GiantCard({ item, medal }: { item: any; medal: typeof MEDAL_COLORS[1] }
       </Animated.View>
       <ShimmerName name={item.username} color={medal.text} />
       <Text style={giant$.sport}>
-        {SPORT_ICONS[item.category] || '⚡'} {item.sport || '—'}
+        {SPORT_ICONS[item.category] || '\u26a1'} {item.sport || '\u2014'}
       </Text>
       <View style={[giant$.xpBadge, { backgroundColor: medal.bg }]}>
         <Text style={[giant$.xpText, { color: medal.text }]}>{item.xp?.toLocaleString()} XP</Text>
@@ -155,7 +155,7 @@ function LeaderRow({ item, index }: { item: any; index: number }) {
             )}
           </View>
           <Text style={row$.sport}>
-            {SPORT_ICONS[item.category] || '⚡'} {item.sport || '—'} · LVL {item.level}
+            {SPORT_ICONS[item.category] || '\u26a1'} {item.sport || '\u2014'} · LVL {item.level}
           </Text>
         </View>
         <Text style={row$.xp}>{item.xp?.toLocaleString()}</Text>
@@ -190,7 +190,7 @@ const row$ = StyleSheet.create({
 // ===========================
 function CrewRow({ item, index }: { item: any; index: number }) {
   const medal = (MEDAL_COLORS as any)[item.rank];
-  const catIcon = SPORT_ICONS[item.category] || '🛡️';
+  const catIcon = SPORT_ICONS[item.category] || '\ud83d\udee1\ufe0f';
 
   return (
     <Animated.View entering={FadeInDown.delay(index * 50).duration(250)}>
@@ -214,7 +214,7 @@ function CrewRow({ item, index }: { item: any; index: number }) {
         </View>
         <View style={cr$.right}>
           <Text style={cr$.xp}>{item.xp_total?.toLocaleString()}</Text>
-          <Text style={cr$.members}>{item.members_count} 👥</Text>
+          <Text style={cr$.members}>{item.members_count} \ud83d\udc65</Text>
         </View>
       </View>
     </Animated.View>
@@ -263,10 +263,10 @@ function MyStatusBar({ rankData }: { rankData: any }) {
   if (!rankData) return null;
 
   const motivText = rankData.next_username
-    ? `Rank #${rankData.rank} · Conquista ${rankData.xp_gap} XP per superare ${rankData.next_username}`
+    ? `Rank #${rankData.rank} \u00b7 Seize ${rankData.xp_gap} XP to enter the Hall of Kore Elite`
     : rankData.rank === 1
-      ? `Rank #1 · Sei il Re del KORE! 👑`
-      : `Rank #${rankData.rank} · ${rankData.xp} XP totali`;
+      ? `Rank #1 \u00b7 You reign the Hall of Kore \ud83d\udc51`
+      : `Rank #${rankData.rank} \u00b7 ${rankData.xp} XP \u00b7 Hall of Kore`;
 
   return (
     <Animated.View style={[status$.container, borderStyle]}>
@@ -324,9 +324,9 @@ const status$ = StyleSheet.create({
 });
 
 // ===========================
-// MAIN GLORY WALL COMPONENT
+// MAIN HALL OF KORE COMPONENT
 // ===========================
-export function GloryWall({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+export function HallOfKore() {
   const { user, token } = useAuth();
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<TabType>('global');
@@ -368,11 +368,9 @@ export function GloryWall({ visible, onClose }: { visible: boolean; onClose: () 
   }, [token, activeTab, selectedCategory]);
 
   useEffect(() => {
-    if (visible) {
-      hasPlayedTop10.current = false;
-      loadData();
-    }
-  }, [visible, loadData]);
+    hasPlayedTop10.current = false;
+    loadData();
+  }, [loadData]);
 
   const top3 = activeTab !== 'crews' ? leaderboard.slice(0, 3) : [];
   const rest = activeTab !== 'crews' ? leaderboard.slice(3) : leaderboard;
@@ -386,144 +384,138 @@ export function GloryWall({ visible, onClose }: { visible: boolean; onClose: () 
   const categories = Object.keys(CATEGORY_LABELS);
 
   return (
-    <Modal visible={visible} animationType="slide">
-      <ImageBackground
-        source={{ uri: GLORY_WALL_BG }}
-        style={gl$.container}
-        imageStyle={{ opacity: 0.4 }}
-        blurRadius={8}
+    <ImageBackground
+      source={{ uri: HALL_OF_KORE_BG }}
+      style={gl$.container}
+      imageStyle={{ opacity: 0.4 }}
+      blurRadius={8}
+    >
+      <LinearGradient
+        colors={['rgba(5,5,5,0.65)', 'rgba(5,5,5,0.88)', 'rgba(5,5,5,0.97)']}
+        locations={[0, 0.25, 0.5]}
+        style={gl$.overlay}
       >
-        <LinearGradient
-          colors={['rgba(5,5,5,0.65)', 'rgba(5,5,5,0.88)', 'rgba(5,5,5,0.97)']}
-          locations={[0, 0.25, 0.5]}
-          style={gl$.overlay}
-        >
-          {/* Header */}
-          <View style={[gl$.header, { paddingTop: insets.top + 8 }]}>
-            <TouchableOpacity onPress={onClose} style={gl$.backBtn}>
-              <Text style={gl$.backText}>← CHIUDI</Text>
-            </TouchableOpacity>
-            <View style={gl$.titleWrap}>
-              <Text style={gl$.titleIcon}>🏛️</Text>
-              <Text style={gl$.title}>GLORY WALL</Text>
-            </View>
-            <View style={{ width: 60 }} />
+        {/* Header */}
+        <View style={[gl$.header, { paddingTop: insets.top + 8 }]}>
+          <View style={gl$.titleWrap}>
+            <Text style={gl$.titleIcon}>{'\ud83c\udfc6'}</Text>
+            <Text style={gl$.title}>HALL OF KORE</Text>
           </View>
+        </View>
 
-          {/* Tab Switcher */}
-          <View style={gl$.tabRow}>
-            {tabs.map(t => (
+        {/* Tab Switcher */}
+        <View style={gl$.tabRow}>
+          {tabs.map(t => (
+            <TouchableOpacity
+              key={t.key}
+              style={[gl$.tab, activeTab === t.key && gl$.tabActive]}
+              onPress={() => { setActiveTab(t.key); setSelectedCategory(null); }}
+            >
+              <Text style={[gl$.tabText, activeTab === t.key && gl$.tabTextActive]}>
+                {t.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Category Filter (for SPORT tab) */}
+        {activeTab === 'sport' && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={gl$.catRow}
+          >
+            <TouchableOpacity
+              style={[gl$.catChip, !selectedCategory && gl$.catChipActive]}
+              onPress={() => setSelectedCategory(null)}
+            >
+              <Text style={[gl$.catChipText, !selectedCategory && gl$.catChipTextActive]}>
+                TUTTI
+              </Text>
+            </TouchableOpacity>
+            {categories.map(c => (
               <TouchableOpacity
-                key={t.key}
-                style={[gl$.tab, activeTab === t.key && gl$.tabActive]}
-                onPress={() => { setActiveTab(t.key); setSelectedCategory(null); }}
+                key={c}
+                style={[gl$.catChip, selectedCategory === c && gl$.catChipActive]}
+                onPress={() => setSelectedCategory(c)}
               >
-                <Text style={[gl$.tabText, activeTab === t.key && gl$.tabTextActive]}>
-                  {t.label}
+                <Text style={gl$.catIcon}>{SPORT_ICONS[c]}</Text>
+                <Text style={[gl$.catChipText, selectedCategory === c && gl$.catChipTextActive]}>
+                  {CATEGORY_LABELS[c]}
                 </Text>
               </TouchableOpacity>
             ))}
+          </ScrollView>
+        )}
+
+        {/* Content */}
+        {loading ? (
+          <View style={gl$.center}>
+            <ActivityIndicator color="#D4AF37" size="large" />
+            <Text style={gl$.loadingText}>Caricamento classifica...</Text>
           </View>
+        ) : leaderboard.length === 0 ? (
+          <View style={gl$.center}>
+            <Text style={gl$.emptyIcon}>{'\ud83c\udfdf\ufe0f'}</Text>
+            <Text style={gl$.emptyTitle}>Nessun atleta in classifica</Text>
+            <Text style={gl$.emptySub}>Completa l'onboarding per entrare nel KORE</Text>
+          </View>
+        ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => { setRefreshing(true); loadData(); }}
+                tintColor="#D4AF37"
+              />
+            }
+          >
+            {/* THE GIANTS (Top 3) - only for user leaderboards */}
+            {top3.length > 0 && (
+              <>
+                <Text style={gl$.sectionTitle}>{'\ud83d\udc51'}  THE GIANTS</Text>
+                <View style={gl$.giantsRow}>
+                  {top3.map((item, i) => {
+                    const medal = (MEDAL_COLORS as any)[item.rank];
+                    return medal ? (
+                      <GiantCard key={item.id} item={item} medal={medal} />
+                    ) : null;
+                  })}
+                </View>
+              </>
+            )}
 
-          {/* Category Filter (for SPORT tab) */}
-          {activeTab === 'sport' && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={gl$.catRow}
-            >
-              <TouchableOpacity
-                style={[gl$.catChip, !selectedCategory && gl$.catChipActive]}
-                onPress={() => setSelectedCategory(null)}
-              >
-                <Text style={[gl$.catChipText, !selectedCategory && gl$.catChipTextActive]}>
-                  TUTTI
-                </Text>
-              </TouchableOpacity>
-              {categories.map(c => (
-                <TouchableOpacity
-                  key={c}
-                  style={[gl$.catChip, selectedCategory === c && gl$.catChipActive]}
-                  onPress={() => setSelectedCategory(c)}
-                >
-                  <Text style={gl$.catIcon}>{SPORT_ICONS[c]}</Text>
-                  <Text style={[gl$.catChipText, selectedCategory === c && gl$.catChipTextActive]}>
-                    {CATEGORY_LABELS[c]}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
+            {/* Rest of leaderboard */}
+            {activeTab === 'crews' ? (
+              <>
+                <Text style={gl$.sectionTitle}>{'\ud83d\udee1\ufe0f'}  CREW RANKING</Text>
+                {rest.map((item, i) => (
+                  <CrewRow key={item.id} item={item} index={i} />
+                ))}
+              </>
+            ) : (
+              <>
+                {rest.length > 0 && (
+                  <Text style={gl$.sectionTitle}>{'\u2694\ufe0f'}  THE HUNT</Text>
+                )}
+                {rest.map((item, i) => (
+                  <LeaderRow key={item.id} item={item} index={i} />
+                ))}
+              </>
+            )}
+            <View style={{ height: 80 }} />
+          </ScrollView>
+        )}
 
-          {/* Content */}
-          {loading ? (
-            <View style={gl$.center}>
-              <ActivityIndicator color="#D4AF37" size="large" />
-              <Text style={gl$.loadingText}>Caricamento classifica...</Text>
-            </View>
-          ) : leaderboard.length === 0 ? (
-            <View style={gl$.center}>
-              <Text style={gl$.emptyIcon}>🏟️</Text>
-              <Text style={gl$.emptyTitle}>Nessun atleta in classifica</Text>
-              <Text style={gl$.emptySub}>Completa l'onboarding per entrare nel KORE</Text>
-            </View>
-          ) : (
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={() => { setRefreshing(true); loadData(); }}
-                  tintColor="#D4AF37"
-                />
-              }
-            >
-              {/* THE GIANTS (Top 3) - only for user leaderboards */}
-              {top3.length > 0 && (
-                <>
-                  <Text style={gl$.sectionTitle}>👑  THE GIANTS</Text>
-                  <View style={gl$.giantsRow}>
-                    {top3.map((item, i) => {
-                      const medal = (MEDAL_COLORS as any)[item.rank];
-                      return medal ? (
-                        <GiantCard key={item.id} item={item} medal={medal} />
-                      ) : null;
-                    })}
-                  </View>
-                </>
-              )}
-
-              {/* Rest of leaderboard */}
-              {activeTab === 'crews' ? (
-                <>
-                  <Text style={gl$.sectionTitle}>🛡️  CREW RANKING</Text>
-                  {rest.map((item, i) => (
-                    <CrewRow key={item.id} item={item} index={i} />
-                  ))}
-                </>
-              ) : (
-                <>
-                  {rest.length > 0 && (
-                    <Text style={gl$.sectionTitle}>⚔️  THE HUNT</Text>
-                  )}
-                  {rest.map((item, i) => (
-                    <LeaderRow key={item.id} item={item} index={i} />
-                  ))}
-                </>
-              )}
-              <View style={{ height: 80 }} />
-            </ScrollView>
-          )}
-
-          {/* MY STATUS BAR (Sticky Footer) */}
-          {activeTab !== 'crews' && myRank && (
-            <View style={{ paddingBottom: insets.bottom }}>
-              <MyStatusBar rankData={myRank} />
-            </View>
-          )}
-        </LinearGradient>
-      </ImageBackground>
-    </Modal>
+        {/* MY STATUS BAR (Sticky Footer) */}
+        {activeTab !== 'crews' && myRank && (
+          <View style={{ paddingBottom: insets.bottom }}>
+            <MyStatusBar rankData={myRank} />
+          </View>
+        )}
+      </LinearGradient>
+    </ImageBackground>
   );
 }
 
@@ -531,14 +523,12 @@ const gl$ = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
   overlay: { flex: 1 },
   header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
     paddingHorizontal: 16, paddingBottom: 10,
   },
-  backBtn: { padding: 8, width: 60 },
-  backText: { color: '#00F2FF', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  titleIcon: { fontSize: 18 },
-  title: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
+  titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  titleIcon: { fontSize: 22 },
+  title: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 3 },
 
   // Tabs
   tabRow: {

@@ -7,11 +7,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle, Easing,
 } from 'react-native-reanimated';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { Header } from '../../components/Header';
 import { getBattleImage } from '../../utils/images';
-import { GloryWall } from '../../components/GloryWall';
 
 function XPBar({ xp, level }: { xp: number; level: number }) {
   const xpForNext = level * 500;
@@ -182,10 +182,10 @@ const MEDALS = [
 
 export default function KoreTab() {
   const { user, token } = useAuth();
+  const router = useRouter();
   const [battles, setBattles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [showGloryWall, setShowGloryWall] = useState(false);
 
   const liveCount = battles.filter(b => b.status === 'live').length;
 
@@ -194,7 +194,7 @@ export default function KoreTab() {
     try {
       const data = await api.getBattles(token);
       setBattles(data);
-    } catch (e) { console.error(e); }
+    } catch (e) { /* silenced for production */ }
     finally { setLoading(false); setRefreshing(false); }
   };
 
@@ -219,26 +219,26 @@ export default function KoreTab() {
             />
           }
         >
-          {/* GLORY WALL BANNER */}
+          {/* HALL OF KORE BANNER */}
           <TouchableOpacity
-            testID="glory-wall-banner"
-            style={styles.gloryBanner}
-            onPress={() => setShowGloryWall(true)}
+            testID="hall-of-kore-banner"
+            style={styles.hallBanner}
+            onPress={() => router.push('/(tabs)/hall')}
             activeOpacity={0.85}
           >
             <LinearGradient
               colors={['rgba(212,175,55,0.12)', 'rgba(212,175,55,0.04)', 'transparent']}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-              style={styles.gloryGrad}
+              style={styles.hallGrad}
             >
-              <View style={styles.gloryLeft}>
-                <Text style={styles.gloryIcon}>🏛️</Text>
-                <View style={styles.gloryTextCol}>
-                  <Text style={styles.gloryTitle}>GLORY WALL</Text>
-                  <Text style={styles.glorySub}>Classifica Globale · Vedi il tuo Rank</Text>
+              <View style={styles.hallLeft}>
+                <Text style={styles.hallIcon}>{'\ud83c\udfc6'}</Text>
+                <View style={styles.hallTextCol}>
+                  <Text style={styles.hallTitle}>HALL OF KORE</Text>
+                  <Text style={styles.hallSub}>Classifica Globale {'\u00b7'} Vedi il tuo Rank</Text>
                 </View>
               </View>
-              <Text style={styles.gloryArrow}>→</Text>
+              <Text style={styles.hallArrow}>{'\u2192'}</Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -265,8 +265,6 @@ export default function KoreTab() {
           <View style={{ height: 24 }} />
         </ScrollView>
       )}
-
-      <GloryWall visible={showGloryWall} onClose={() => setShowGloryWall(false)} />
     </View>
   );
 }
@@ -275,21 +273,21 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
-  // Glory Wall Banner
-  gloryBanner: {
+  // Hall of KORE Banner
+  hallBanner: {
     marginHorizontal: 16, marginTop: 12, borderRadius: 14, overflow: 'hidden',
     borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)',
   },
-  gloryGrad: {
+  hallGrad: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 14,
   },
-  gloryLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  gloryIcon: { fontSize: 22 },
-  gloryTextCol: { gap: 1 },
-  gloryTitle: { color: '#D4AF37', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
-  glorySub: { color: '#888', fontSize: 10, fontWeight: '600' },
-  gloryArrow: { color: '#D4AF37', fontSize: 18, fontWeight: '300' },
+  hallLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  hallIcon: { fontSize: 22 },
+  hallTextCol: { gap: 1 },
+  hallTitle: { color: '#D4AF37', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  hallSub: { color: '#888', fontSize: 10, fontWeight: '600' },
+  hallArrow: { color: '#D4AF37', fontSize: 18, fontWeight: '300' },
 
   liveBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,

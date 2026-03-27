@@ -12,7 +12,7 @@ const TAB_CONFIG = [
   { name: 'crews', icon: 'people', label: 'CREWS' },
   { name: 'nexus-trigger', icon: 'add', label: '', isCenter: true },
   { name: 'dna', icon: 'analytics', label: 'DNA' },
-  { name: 'nexus-lib', icon: 'library', label: 'NEXUS LIB' },
+  { name: 'hall', icon: 'trophy', label: 'HALL' },
 ];
 
 function GoldButton({ onPress }: { onPress: () => void }) {
@@ -108,7 +108,8 @@ export default function TabsLayout() {
       <Tabs.Screen name="crews" />
       <Tabs.Screen name="nexus-trigger" />
       <Tabs.Screen name="dna" />
-      <Tabs.Screen name="nexus-lib" />
+      <Tabs.Screen name="hall" />
+      <Tabs.Screen name="nexus-lib" options={{ href: null }} />
     </Tabs>
   );
 }

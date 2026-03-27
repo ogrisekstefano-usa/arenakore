@@ -8,7 +8,7 @@
 ## 🏟️ OVERVIEW
 
 ARENAKORE è la piattaforma d'élite per atleti che vogliono dominare. Non è un'app fitness.
-È un ecosistema competitivo dove ogni ripetizione conta, ogni sessione ti avvicina alla GLORY WALL,
+È un ecosistema competitivo dove ogni ripetizione conta, ogni sessione ti avvicina alla HALL OF KORE,
 e i primi 100 membri portano il badge ORO dei Fondatori per sempre.
 
 **Estetica**: Chic-Tech / Cinema — Dark Mode (#050505), Cyan Neon (#00F2FF), Gold (#D4AF37)
@@ -37,7 +37,7 @@ Tracking biomeccanico in tempo reale.
 6 statistiche atletiche: Velocità, Forza, Resistenza, Agilità, Tecnica, Potenza.
 Aggiornate in tempo reale dopo ogni sessione Nexus e ogni Battle completata.
 
-### 🏛️ GLORY WALL (Hall of KORE)
+### 🏆 HALL OF KORE (Classifiche Globali)
 Classifica globale con 3 tab: GLOBAL, PER SPORT, CREWS.
 I Top 3 hanno carte giganti con animazione shimmer e glow pulsante.
 I Fondatori (primi 100 utenti) portano il badge ORO permanente.
@@ -48,7 +48,7 @@ I Fondatori (primi 100 utenti) portano il badge ORO permanente.
 
 I primi **100 utenti** registrati su ARENAKORE ricevono automaticamente:
 - Badge ORO permanente (`is_founder: true`)
-- Visibilità nella GLORY WALL con tag "FOUNDER"
+- Visibilità nella HALL OF KORE con tag "FOUNDER"
 - Numero di fondatore univoco (#1 - #100)
 
 *Questa è una feature esclusiva per il lancio Chicago. Non resettabile.*
@@ -150,7 +150,7 @@ Role:     Atleta
 | POST | `/api/auth/register` | Registrazione + Founder Protocol |
 | POST | `/api/auth/login` | Login JWT |
 | GET | `/api/auth/me` | Profilo utente corrente |
-| GET | `/api/leaderboard?type=global` | Glory Wall |
+| GET | `/api/leaderboard?type=global` | Hall of KORE |
 | POST | `/api/nexus/session/start` | Avvia sessione Nexus |
 | POST | `/api/nexus/session/{id}/complete` | Completa sessione con XP |
 | POST | `/api/crews/create` | Crea una Crew |

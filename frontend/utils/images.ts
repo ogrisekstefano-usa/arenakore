@@ -22,8 +22,8 @@ export const BATTLE_IMAGES: Record<string, string> = {
 // DNA hero background
 export const DNA_HERO_IMAGE = 'https://images.unsplash.com/photo-1634152557768-b5bb22302a56?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNzl8MHwxfHNlYXJjaHwyfHxhdGhsZXRlJTIwc2lsaG91ZXR0ZXxlbnwwfHx8YmxhY2t8MTc3NDYyMjUxMHww&ixlib=rb-4.1.0&q=85';
 
-// Glory Wall / Leaderboard background - empty stadium under spotlights
-export const GLORY_WALL_BG = 'https://images.unsplash.com/photo-1707898611072-bb5cbae75929?auto=compress&cs=tinysrgb&w=1200&q=60';
+// Hall of KORE / Leaderboard background - empty stadium under spotlights
+export const HALL_OF_KORE_BG = 'https://images.unsplash.com/photo-1707898611072-bb5cbae75929?auto=compress&cs=tinysrgb&w=1200&q=60';
 
 // Onboarding category images
 export const CATEGORY_IMAGES: Record<string, string> = {
