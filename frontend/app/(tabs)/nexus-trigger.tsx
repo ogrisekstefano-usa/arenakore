@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, TouchableOpacity,
-  Dimensions, Platform, Modal, ScrollView, ImageBackground,
+  Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming,
@@ -26,6 +26,14 @@ const FORGE_IMAGES = {
   personal: 'https://images.unsplash.com/photo-1710736460914-4a7f22d736c4?w=800&q=60',
   battle: 'https://images.unsplash.com/photo-1709315957145-a4bad1feef28?w=800&q=60',
   duel: 'https://images.pexels.com/photos/1075935/pexels-photo-1075935.jpeg?w=800&q=60',
+};
+
+// Console button dramatic images
+const CONSOLE_IMAGES = {
+  scan: 'https://images.unsplash.com/photo-1710736460914-4a7f22d736c4?w=800&q=60',
+  forge: 'https://images.unsplash.com/photo-1698788067684-2053c651bfed?w=800&q=60',
+  hall: 'https://images.unsplash.com/photo-1590285372176-c3ff4d8c9399?w=800&q=60',
+  dna: 'https://images.pexels.com/photos/7479526/pexels-photo-7479526.jpeg?w=800&q=60',
 };
 
 // ========== CYBER GRID (subtle holographic) ==========
@@ -322,6 +330,101 @@ const bio$ = StyleSheet.create({
   bV: { width: 2, height: 30, backgroundColor: '#00F2FF', opacity: 0.5 },
 });
 
+// ========== NEXUS CONSOLE — Cinematic Central Hub ==========
+function NexusConsole({ user, onScan, onForge, deviceTier }: {
+  user: any; onScan: () => void; onForge: () => void; deviceTier: DeviceTier;
+}) {
+  const router = useRouter();
+  const isFounder = user?.is_founder || user?.is_admin;
+  const founderShimmer = useSharedValue(0.7);
+
+  useEffect(() => {
+    founderShimmer.value = withRepeat(
+      withSequence(withTiming(1, { duration: 1500 }), withTiming(0.7, { duration: 1500 })), -1, false
+    );
+  }, []);
+
+  const shimmerStyle = useAnimatedStyle(() => ({ opacity: founderShimmer.value }));
+
+  const buttons = [
+    { key: 'scan', icon: '\ud83e\uddec', title: 'NEXUS SCAN', sub: 'BIO-SKELETON TRACKING', image: CONSOLE_IMAGES.scan, action: onScan },
+    { key: 'forge', icon: '\ud83d\udee0\ufe0f', title: 'THE FORGE', sub: 'CREA \u00b7 SELEZIONA \u00b7 SFIDA', image: CONSOLE_IMAGES.forge, action: onForge },
+    { key: 'hall', icon: '\ud83c\udfc6', title: 'HALL OF KORE', sub: 'LEADERBOARD GLOBALE', image: CONSOLE_IMAGES.hall, action: () => router.push('/(tabs)/hall') },
+    { key: 'dna', icon: '\ud83d\udcca', title: 'MY DNA', sub: 'STATS RADAR BIOMETRICO', image: CONSOLE_IMAGES.dna, action: () => router.push('/(tabs)/dna') },
+  ];
+
+  return (
+    <View style={cn$.container} testID="nexus-console">
+      <CyberGrid intensity={0.3} />
+      <SafeAreaView style={cn$.safe}>
+        <View style={cn$.header}>
+          <Text style={cn$.brandLabel}>ARENAKORE</Text>
+          <Text style={cn$.title}>NEXUS</Text>
+          <Text style={cn$.subtitle}>COMMAND CENTER</Text>
+          {isFounder && (
+            <Animated.View style={[cn$.founderBadge, shimmerStyle]}>
+              <Text style={cn$.founderText}>{'\u2605'} FOUNDER</Text>
+            </Animated.View>
+          )}
+          <View style={cn$.tierRow}>
+            <View style={cn$.tierDot} />
+            <Text style={cn$.tierText}>{getTierLabel(deviceTier)} ACTIVE</Text>
+          </View>
+        </View>
+        <ScrollView style={cn$.scroll} contentContainerStyle={cn$.scrollContent} showsVerticalScrollIndicator={false}>
+          <View style={cn$.grid}>
+            {buttons.map((btn) => (
+              <TouchableOpacity key={btn.key} style={cn$.card} activeOpacity={0.85} onPress={btn.action}>
+                <ImageBackground source={{ uri: btn.image }} style={cn$.cardBg} imageStyle={cn$.cardImage}>
+                  <LinearGradient colors={['rgba(5,5,5,0.15)', 'rgba(5,5,5,0.6)', 'rgba(5,5,5,0.97)']} locations={[0, 0.35, 0.85]} style={cn$.cardGradient}>
+                    <Text style={cn$.cardIcon}>{btn.icon}</Text>
+                    <View style={cn$.cardBottom}>
+                      <Text style={cn$.cardTitle}>{btn.title}</Text>
+                      <Text style={cn$.cardSub}>{btn.sub}</Text>
+                    </View>
+                  </LinearGradient>
+                </ImageBackground>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
+  );
+}
+
+const cn$ = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#050505' },
+  safe: { flex: 1 },
+  header: { alignItems: 'center', paddingTop: 16, paddingBottom: 8, gap: 2 },
+  brandLabel: { color: '#333', fontSize: 9, fontWeight: '800', letterSpacing: 4 },
+  title: { color: '#D4AF37', fontSize: 32, fontWeight: '900', letterSpacing: 8 },
+  subtitle: { color: '#00F2FF', fontSize: 11, fontWeight: '700', letterSpacing: 4, opacity: 0.7 },
+  founderBadge: {
+    marginTop: 6, paddingHorizontal: 14, paddingVertical: 4,
+    borderRadius: 12, borderWidth: 1, borderColor: '#D4AF37', backgroundColor: 'rgba(212,175,55,0.08)',
+  },
+  founderText: { color: '#D4AF37', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  tierRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
+  tierDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
+  tierText: { color: '#00F2FF', fontSize: 8, fontWeight: '800', letterSpacing: 2, opacity: 0.6 },
+  scroll: { flex: 1 },
+  scrollContent: { paddingHorizontal: 16, paddingBottom: 100 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 10 },
+  card: {
+    width: (SW - 44) / 2, height: (SW - 44) / 2 * 1.15, borderRadius: 16, overflow: 'hidden',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.08)',
+  },
+  cardBg: { flex: 1 },
+  cardImage: { borderRadius: 16 },
+  cardGradient: { flex: 1, justifyContent: 'space-between', padding: 16 },
+  cardIcon: { fontSize: 32 },
+  cardBottom: { gap: 4 },
+  cardTitle: { color: '#D4AF37', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
+  cardSub: { color: '#00F2FF', fontSize: 8, fontWeight: '700', letterSpacing: 1.5, opacity: 0.7 },
+});
+
+
 // ========== CHALLENGE FORGE — Nike Style ==========
 type ForgeMode = 'personal' | 'battle' | 'duel';
 
@@ -347,8 +450,14 @@ function ForgeCard({ mode, title, subtitle, image, iconEl, onPress }: {
   );
 }
 
-function ChallengeForge({ onSelect }: { onSelect: (mode: ForgeMode, exercise: ExerciseType) => void }) {
+function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exercise: ExerciseType) => void; user: any }) {
   const [mode, setMode] = useState<ForgeMode | null>(null);
+  const [showTemplateCreator, setShowTemplateCreator] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [templateExercise, setTemplateExercise] = useState<ExerciseType>('squat');
+  const [templateDuration, setTemplateDuration] = useState('60');
+  const [templateReps, setTemplateReps] = useState('10');
+  const isAdmin = user?.is_admin || user?.role === 'coach';
   const pulseDNA = useSharedValue(1);
   const flameFlicker = useSharedValue(0.6);
   const boltFlash = useSharedValue(0);
@@ -405,6 +514,46 @@ function ChallengeForge({ onSelect }: { onSelect: (mode: ForgeMode, exercise: Ex
           iconEl={<Animated.View style={boltS}><Text style={fg$.forgeIcon}>{'\u26a1\u26a1'}</Text></Animated.View>}
         />
       </View>
+      {/* GESTIONE TEMPLATE — Admin/Coach Premium only */}
+      {isAdmin && (
+        <View style={fg$.templateSection}>
+          <View style={fg$.templateDivider} />
+          <Text style={fg$.templateHeader}>GESTIONE TEMPLATE</Text>
+          <TouchableOpacity style={fg$.createTemplateBtn} onPress={() => setShowTemplateCreator(true)} activeOpacity={0.8}>
+            <Text style={fg$.createTemplatePlus}>+</Text>
+            <Text style={fg$.createTemplateText}>CREA NUOVO TEMPLATE SFIDA</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {/* Template Creator Modal */}
+      <Modal visible={showTemplateCreator} transparent animationType="slide">
+        <View style={fg$.modalOverlay}>
+          <View style={fg$.modalContent}>
+            <Text style={fg$.modalTitle}>{'\ud83d\udee0\ufe0f'} CREA TEMPLATE</Text>
+            <Text style={fg$.modalLabel}>NOME TEMPLATE</Text>
+            <TextInput style={fg$.modalInput} value={templateName} onChangeText={setTemplateName} placeholder="Es: Sprint Finale" placeholderTextColor="#555" />
+            <Text style={fg$.modalLabel}>ESERCIZIO</Text>
+            <View style={fg$.modalRow}>
+              <TouchableOpacity style={[fg$.modalChoice, templateExercise === 'squat' && fg$.modalChoiceActive]} onPress={() => setTemplateExercise('squat')}>
+                <Text style={fg$.modalChoiceText}>{'\ud83c\udfcb\ufe0f'} SQUAT</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[fg$.modalChoice, templateExercise === 'punch' && fg$.modalChoiceActive]} onPress={() => setTemplateExercise('punch')}>
+                <Text style={fg$.modalChoiceText}>{'\ud83e\udd4a'} PUNCH</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={fg$.modalLabel}>TEMPO (SEC)</Text>
+            <TextInput style={fg$.modalInput} value={templateDuration} onChangeText={setTemplateDuration} keyboardType="numeric" placeholderTextColor="#555" />
+            <Text style={fg$.modalLabel}>REPS TARGET</Text>
+            <TextInput style={fg$.modalInput} value={templateReps} onChangeText={setTemplateReps} keyboardType="numeric" placeholderTextColor="#555" />
+            <TouchableOpacity style={fg$.saveBtn} onPress={() => { setShowTemplateCreator(false); setTemplateName(''); }} activeOpacity={0.8}>
+              <Text style={fg$.saveBtnText}>SALVA TEMPLATE</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowTemplateCreator(false)} style={fg$.cancelBtn}>
+              <Text style={fg$.cancelText}>ANNULLA</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </Animated.View>
   );
 }
@@ -440,6 +589,31 @@ const fg$ = StyleSheet.create({
   exDesc: { color: '#555', fontSize: 9 },
   backBtn: { marginTop: 8 },
   backText: { color: '#555', fontSize: 11, fontWeight: '700' },
+  // Template Management
+  templateSection: { width: '100%', paddingHorizontal: 0, marginTop: 12 },
+  templateDivider: { height: 1, backgroundColor: 'rgba(212,175,55,0.1)', marginBottom: 12 },
+  templateHeader: { color: '#D4AF37', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 10, textAlign: 'center' },
+  createTemplateBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    paddingVertical: 14, borderRadius: 12, borderWidth: 1.5, borderColor: 'rgba(212,175,55,0.25)',
+    borderStyle: 'dashed' as any, backgroundColor: 'rgba(212,175,55,0.04)',
+  },
+  createTemplatePlus: { color: '#D4AF37', fontSize: 22, fontWeight: '300' },
+  createTemplateText: { color: '#D4AF37', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
+  // Template Creator Modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  modalContent: { width: '100%', backgroundColor: '#0A0A0A', borderRadius: 20, padding: 24, borderWidth: 1, borderColor: 'rgba(212,175,55,0.15)', gap: 12 },
+  modalTitle: { color: '#D4AF37', fontSize: 18, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
+  modalLabel: { color: '#00F2FF', fontSize: 9, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
+  modalInput: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: 12, color: '#FFF', fontSize: 14, fontWeight: '700', borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)' },
+  modalRow: { flexDirection: 'row', gap: 10 },
+  modalChoice: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.03)' },
+  modalChoiceActive: { borderColor: '#00F2FF', backgroundColor: 'rgba(0,242,255,0.08)' },
+  modalChoiceText: { color: '#FFF', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
+  saveBtn: { backgroundColor: '#D4AF37', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
+  saveBtnText: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  cancelBtn: { paddingVertical: 10, alignItems: 'center' },
+  cancelText: { color: '#555', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
 });
 
 // ========== MINI DNA RADAR ==========
@@ -750,7 +924,7 @@ export default function NexusTriggerScreen() {
   const router = useRouter();
   const { user, token, updateUser, logout } = useAuth();
 
-  const [phase, setPhase] = useState<'bioscan' | 'forge' | 'countdown' | 'scanning' | 'results'>('bioscan');
+  const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'countdown' | 'scanning' | 'results'>('console');
   const [exercise, setExercise] = useState<ExerciseType>('squat');
   const [forgeMode, setForgeMode] = useState<ForgeMode>('personal');
   const [motionState, setMotionState] = useState<MotionState | null>(null);
@@ -896,9 +1070,21 @@ export default function NexusTriggerScreen() {
     setPhase('results');
   };
 
-  const handleResultClose = () => { setPhase('bioscan'); setScanResult(null); setSessionId(null); setMotionState(null); setTimer(0); setMotionActive(false); };
+  const handleResultClose = () => { setPhase('console'); setScanResult(null); setSessionId(null); setMotionState(null); setTimer(0); setMotionActive(false); };
   useEffect(() => () => { stopSensors(); }, []);
   const fmt = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
+
+  // Console is the entry point
+  if (phase === 'console') {
+    return (
+      <NexusConsole
+        user={user}
+        onScan={() => setPhase('bioscan')}
+        onForge={() => setPhase('forge')}
+        deviceTier={deviceTier}
+      />
+    );
+  }
 
   return (
     <View style={st.container} testID="nexus-trigger-screen">
@@ -913,7 +1099,7 @@ export default function NexusTriggerScreen() {
 
       {/* Top HUD */}
       <View style={[st.topHud, { top: insets.top + 6 }]}>
-        <TouchableOpacity onPress={() => { stopSensors(); router.back(); }} style={st.hudBtn}><Text style={st.closeX}>{'\u2715'}</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => { stopSensors(); setPhase('console'); }} style={st.hudBtn}><Text style={st.closeX}>{'\u2715'}</Text></TouchableOpacity>
         <View style={st.livePill}>
           <View style={[st.liveDot, phase === 'scanning' && { backgroundColor: '#FF3B30' }]} />
           <Text style={st.liveText}>{phase === 'scanning' ? 'RECORDING' : phase === 'bioscan' ? 'INITIALIZING' : phase === 'forge' ? 'FORGE' : 'NEXUS'}</Text>
@@ -921,8 +1107,11 @@ export default function NexusTriggerScreen() {
         <TouchableOpacity onPress={() => setBurgerOpen(true)} style={st.hudBtn}><Text style={st.menuIcon}>{'\u2630'}</Text></TouchableOpacity>
       </View>
 
-      {phase === 'bioscan' && <BioScanTrigger user={user} onComplete={() => setPhase('forge')} />}
-      {phase === 'forge' && <View style={st.centerContent}><ChallengeForge onSelect={handleForgeSelect} /></View>}
+      {phase === 'bioscan' && <BioScanTrigger user={user} onComplete={() => {
+        // From NEXUS SCAN: go to quick exercise select then countdown
+        setPhase('forge');
+      }} />}
+      {phase === 'forge' && <View style={st.centerContent}><ChallengeForge onSelect={handleForgeSelect} user={user} /></View>}
       {phase === 'countdown' && <Countdown onComplete={handleCountdownDone} />}
 
       {phase === 'scanning' && motionState && (

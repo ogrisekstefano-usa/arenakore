@@ -8,7 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { playTabSwitch } from '../../utils/sounds';
 
 const TAB_CONFIG = [
-  { name: 'kore', icon: 'home', iconBold: 'home-sharp', label: 'KORE' },
+  { name: 'kore', icon: 'shield-outline', iconBold: 'shield', label: 'KORE' },
   { name: 'crews', icon: 'people', iconBold: 'people-sharp', label: 'CREWS' },
   { name: 'nexus-trigger', icon: 'flash', iconBold: 'flash-sharp', label: 'NEXUS', isCenter: true },
   { name: 'dna', icon: 'analytics', iconBold: 'analytics-sharp', label: 'DNA' },

@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar, TouchableOpacity,
   Modal, TextInput, ActivityIndicator, Alert, RefreshControl,
-  KeyboardAvoidingView, Platform,
+  KeyboardAvoidingView, Platform, ImageBackground, Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   FadeInDown, FadeInRight, SlideOutLeft,
-  Layout, Easing,
+  Layout, Easing, useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming,
 } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
@@ -24,6 +24,16 @@ const CATEGORIES_MAP: Record<string, { icon: string; color: string }> = {
   mind_body: { icon: '🧘', color: '#AF52DE' },
   extreme: { icon: '🔥', color: '#FF2D55' },
 };
+
+// WoW dramatic athlete group photos for immersive crew cards
+const CREW_PHOTOS = [
+  'https://images.unsplash.com/photo-1582086772405-6e2dcef428d4?w=800&q=60',
+  'https://images.unsplash.com/photo-1529478562208-d4c746edcb79?w=800&q=60',
+  'https://images.unsplash.com/photo-1710736460914-4a7f22d736c4?w=800&q=60',
+  'https://images.unsplash.com/photo-1698788067684-2053c651bfed?w=800&q=60',
+];
+
+const { width: CREW_SW } = Dimensions.get('window');
 
 // ===========================
 // COACH GOLD BADGE COMPONENT
@@ -614,35 +624,38 @@ export default function CrewsTab() {
           ) : (
             myCrews.map((crew, i) => {
               const cfg = crew.category ? CATEGORIES_MAP[crew.category] : null;
+              const bgImage = CREW_PHOTOS[i % CREW_PHOTOS.length];
               return (
                 <Animated.View key={crew.id} entering={FadeInDown.delay(i * 80)}>
                   <TouchableOpacity style={s.crewCard} onPress={() => setSelectedCrew(crew)} activeOpacity={0.85}>
-                    <LinearGradient
-                      colors={[cfg?.color ? `${cfg.color}12` : 'rgba(0,242,255,0.05)', 'transparent']}
-                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                      style={s.crewGrad}
-                    >
-                      <View style={s.crewHeader}>
-                        {cfg && (
-                          <View style={[s.crewCatBadge, { backgroundColor: `${cfg.color}20`, borderColor: `${cfg.color}40` }]}>
-                            <Text>{cfg.icon}</Text>
-                          </View>
-                        )}
-                        <View style={s.crewInfoCol}>
+                    <ImageBackground source={{ uri: bgImage }} style={s.crewCardBg} imageStyle={s.crewCardImage}>
+                      <LinearGradient
+                        colors={['rgba(5,5,5,0.1)', 'rgba(5,5,5,0.5)', 'rgba(5,5,5,0.95)']}
+                        locations={[0, 0.35, 0.85]}
+                        style={s.crewGrad}
+                      >
+                        <View style={s.crewHeader}>
+                          {cfg && (
+                            <View style={[s.crewCatBadge, { backgroundColor: `${cfg.color}20`, borderColor: `${cfg.color}40` }]}>
+                              <Text style={{ fontSize: 20 }}>{cfg.icon}</Text>
+                            </View>
+                          )}
+                          {crew.is_owner && (
+                            <View style={s.ownerBadge}>
+                              <Text style={s.ownerText}>{'\u2605'} FOUNDER</Text>
+                            </View>
+                          )}
+                        </View>
+                        <View style={s.crewBottom}>
                           <Text style={s.crewName}>{crew.name}</Text>
                           {crew.tagline ? <Text style={s.crewTagline}>{crew.tagline}</Text> : null}
-                        </View>
-                        {crew.is_owner && (
-                          <View style={s.ownerBadge}>
-                            <Text style={s.ownerText}>FOUNDER</Text>
+                          <View style={s.crewStats}>
+                            <Text style={s.crewStatText}>{'\ud83d\udc65'} {crew.members_count} MEMBRI</Text>
+                            <Text style={[s.crewStatText, { color: '#D4AF37' }]}>{'\u26a1'} {crew.xp_total} XP</Text>
                           </View>
-                        )}
-                      </View>
-                      <View style={s.crewStats}>
-                        <Text style={s.crewStatText}>👥 {crew.members_count} membri</Text>
-                        <Text style={[s.crewStatText, { color: '#D4AF37' }]}>⚡ {crew.xp_total} XP</Text>
-                      </View>
-                    </LinearGradient>
+                        </View>
+                      </LinearGradient>
+                    </ImageBackground>
                   </TouchableOpacity>
                 </Animated.View>
               );
@@ -712,27 +725,29 @@ const s = StyleSheet.create({
   emptyTitle: { color: '#555', fontSize: 16, fontWeight: '700' },
   emptySub: { color: '#444', fontSize: 13, textAlign: 'center' },
 
-  // Crew cards
+  // Crew cards — Immersive Nike-grade
   crewCard: {
-    marginHorizontal: 16, marginBottom: 10, borderRadius: 16, overflow: 'hidden',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    marginHorizontal: 16, marginBottom: 14, borderRadius: 18, overflow: 'hidden',
+    height: 180, borderWidth: 1, borderColor: 'rgba(0,242,255,0.08)',
   },
-  crewGrad: { padding: 16, gap: 10 },
-  crewHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  crewCardBg: { flex: 1 },
+  crewCardImage: { borderRadius: 18 },
+  crewGrad: { flex: 1, padding: 16, justifyContent: 'space-between' },
+  crewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   crewCatBadge: {
-    width: 40, height: 40, borderRadius: 20,
-    alignItems: 'center', justifyContent: 'center', borderWidth: 1,
+    width: 42, height: 42, borderRadius: 21,
+    alignItems: 'center', justifyContent: 'center', borderWidth: 1.5,
   },
-  crewInfoCol: { flex: 1, gap: 1 },
-  crewName: { color: '#FFFFFF', fontSize: 17, fontWeight: '900' },
-  crewTagline: { color: '#888', fontSize: 12, fontStyle: 'italic' },
+  crewBottom: { gap: 4 },
+  crewName: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
+  crewTagline: { color: 'rgba(255,255,255,0.6)', fontSize: 12, fontStyle: 'italic' },
   ownerBadge: {
-    backgroundColor: 'rgba(212,175,55,0.15)', borderRadius: 4,
-    paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(212,175,55,0.35)',
+    backgroundColor: 'rgba(212,175,55,0.2)', borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1.5, borderColor: '#D4AF37',
   },
-  ownerText: { color: '#D4AF37', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
-  crewStats: { flexDirection: 'row', gap: 16 },
-  crewStatText: { color: '#888', fontSize: 12, fontWeight: '600' },
+  ownerText: { color: '#D4AF37', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  crewStats: { flexDirection: 'row', gap: 16, marginTop: 4 },
+  crewStatText: { color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
 
   // FAB
   fab: {
