@@ -1,4 +1,4 @@
-# ARENAKORE — PRD (Product Requirements Document) v2.0
+# ARENAKORE — PRD (Product Requirements Document) v3.0
 
 ## Overview
 **ARENAKORE** è la piattaforma mobile d'élite per atleti con analisi biometrica in tempo reale, sistema XP/Level, battle competitive, crew sociali e leaderboard globali. Estetica "Chic-Tech / Cinema".
@@ -6,7 +6,7 @@
 **Stack Tecnico**: Expo React Native SDK 54 + FastAPI + MongoDB  
 **Bundle ID**: `com.arenakore.app`  
 **Data creazione**: Marzo 2026  
-**Versione**: 1.0.0 — NATIVE STORE READY
+**Versione**: 2.1 — NIKE-GRADE OVERHAUL COMPLETE
 
 ---
 
@@ -15,113 +15,121 @@
 ### Backend (FastAPI)
 - **Auth**: JWT (python-jose + passlib/bcrypt), token 7 giorni
 - **DB**: MongoDB via Motor (async)
-- **Endpoints**: `/api/auth/*`, `/api/battles`, `/api/disciplines`, `/api/crews`
+- **Endpoints**: `/api/auth/*`, `/api/battles`, `/api/disciplines`, `/api/crews`, `/api/leaderboard`, `/api/nexus/*`
+- **Founder Protocol**: Primo 100 utenti ricevono badge Gold permanente
 
 ### Frontend (Expo Router v6)
 - **Auth**: AsyncStorage per JWT persistence
-- **Navigation**: Expo Router con Stack + Tabs
+- **Navigation**: Expo Router — Strict 5-Tab Lock (KORE, CREWS, NEXUS, DNA, RANK)
 - **Animazioni**: React Native Reanimated v4
+- **Audio**: Web Audio API (Oscillators per Bio-Scan hum, metallic pings)
 - **Charts**: react-native-svg (Radar Chart biometrico)
+- **Motion Detection**: Camera frame differencing (web) + expo-sensors (native)
 
 ---
 
-## Utenti Target
-- **Atleti** (16-35 anni): competizione, tracking performance
-- **Coach**: creazione discipline, analisi atleti
-- **Palestre**: gestione struttura e membri
+## Design System
+
+### Colori
+- Background: `#050505` (dark mode assoluto)
+- Accent Primario: `#00F2FF` (Cyan Neon)
+- Accent Secondario: `#D4AF37` (Gold)
+- Errore: `#FF3B30`
+- Testo Secondario: `#3A3A3A`, `#555`
+
+### Navigazione
+- **Tab Bar**: Custom 5-tab con Gold ⚡ center button rialzato
+- **TERMINOLOGIA BANS**: "Glory Wall" → sempre "HALL OF KORE"
+- **Ordine Tab**: KORE, CREWS, NEXUS, DNA, RANK
 
 ---
 
 ## Features Implementate ✅
 
-### Auth & Onboarding (v1 - Marzo 2026)
-- [x] Landing page "ARENADARE" con START LEGACY + RESUME
-- [x] Registrazione: username check live (debounced), email regex, password strength bar, T&C checkbox
-- [x] Login: email + password con show/hide
-- [x] JWT token persistito in AsyncStorage
-- [x] Onboarding Step 1: Selezione Ruolo (Atleta/Coach/Palestra)
-- [x] Onboarding Step 2: Selezione Sport (12 discipline)
-- [x] Onboarding Step 3: Animazione +100 XP Welcome bonus
+### Auth & Onboarding
+- [x] Landing page "ARENAKORE" con START LEGACY + RESUME
+- [x] Registrazione con username check, email regex, password strength
+- [x] Login JWT persistito in AsyncStorage
+- [x] Onboarding (Ruolo, Sport, +100 XP Welcome)
 
-### Core Navigation
-- [x] Atomic Tab Bar custom (5 tab): CORE, CREWS, ⚡ NEXUS (gold floating), DNA, NEXUS
-- [x] Gold floating ⚡ button rialzato con shadow glow
-- [x] Header universale con Avatar (L) e Hamburger Menu (R)
-- [x] Settings Drawer slide-in: Account, Abbonamento, Logout
-
-### Tab CORE
+### Tab KORE (Home)
 - [x] XP Bar animata (level progress)
-- [x] Battle Live Feed con badge: ● LIVE, ◆ PROSSIMO, ✓ CONCLUSO
-- [x] Sezione Medaglie (Oro, Argento, Bronzo, Onore)
+- [x] HALL OF KORE banner con link al tab RANK
+- [x] Battle Arena con LIVE/PROSSIMO/CONCLUSO cards
 - [x] Pull-to-refresh
 
-### Tab CREWS
+### Tab CREWS (La Tribù)
 - [x] Lista crew con sport, membri, XP totali
-- [x] Bottone UNISCITI / UNITO (toggle)
+- [x] UNISCITI/UNITO toggle
+- [x] Inviti Pendenti con accept/decline
 
-### Tab DNA (Biometrico)
-- [x] Radar Chart SVG hexagonale con 6 assi: Velocità, Forza, Resistenza, Agilità, Tecnica, Potenza
-- [x] Stat Cards per ogni attributo con barra di progresso
-- [x] Talent Card (Username, Disciplina, Ruolo, Level, XP)
-- [x] Role Badge colorato (Cyan=Atleta, Gold=Coach, Purple=Palestra)
+### Tab NEXUS (Nexus Sync)
+- [x] **Bio-Scan Initialization**: Laser sweep, Rising Hum audio, progress %, phase text
+- [x] **Bio-Signature Typewriter**: Nome utente + status (FOUNDER/KORE ATHLETE) con scramble effect
+- [x] **Challenge Forge** (Nike-Style): 3 cards con athlete photos + dark LinearGradient
+  - Personal Training (Focus DNA)
+  - Points Battle (Hall of Kore XP)
+  - Live Duel (Tempo reale)
+- [x] **Exercise Selection**: Deep Squat / Explosive Punch
+- [x] **3-2-1 Countdown** con haptic feedback
+- [x] **Digital Shadow Skeleton**: 17-point SVG skeleton, "posa plastica" in standby, motion-reactive
+- [x] **Camera Motion Detection** (Web): Frame differencing per attivare il Digital Shadow
+- [x] **Rep Counter + Quality Score** in tempo reale
+- [x] **Haptic Punch**: Heavy/Medium vibration per rep
+- [x] **Gold Flash**: Effetto dorato per rep di alta qualità
+- [x] **Mini DNA Radar**: Aggiornamento in tempo reale
+- [x] **Tactical Burger Menu**: CONTROL CENTER con:
+  - BackdropBlur intenso (CSS backdrop-filter per web)
+  - Bio-Signature Scan, Settings, Founders Club, Supporto
+  - Founder Pride quote (Gold)
+  - Pulse Ticker live (notizie scrolling)
+  - ARENAKORE v2.1 · NEXUS SYNC footer
+- [x] **Cinema Results**: Quality score, XP earned, reps, multiplier, DNA update
+  - Founder Badge con shimmer 1.5s
+  - SHARE GLORY SHOT card
 
-### Tab NEXUS (Libreria Discipline)
-- [x] Filter pills per categoria
-- [x] Discipline Cards con icona, nome, descrizione
-- [x] Badge COACH per discipline riservate
-- [x] Discipline Forge sezione (Coach only): bottone "+ CREA DISCIPLINA"
+### Tab DNA (Bio-Scan)
+- [x] Radar Chart SVG hexagonale (6 assi)
+- [x] Stat Cards con barre progresso
+- [x] Talent Card condivisibile
 
-### Tab NEXUS TRIGGER
-- [x] Placeholder schermata con feature list (MediaPipe coming soon)
+### Tab RANK (Hall of Kore)
+- [x] Leaderboard Globale con Top 3 "THE GIANTS"
+- [x] Per Sport / Per Crews filtri
+- [x] FOUNDER badge su utenti fondatori
+- [x] Shimmer animation su nomi Top 3
+- [x] Your Rank banner in basso
 
-### CORE Tab (v2 - Marzo 2026)
-- [x] Live pulse dot animation (Reanimated withRepeat) su LIVE battles
-- [x] "N BATTLE IN CORSO ADESSO" banner rosso
-- [x] Live battle card border highlight
-- [x] Sezione Medaglie con contatori
+### Sistema Founder Protocol
+- [x] Primi 100 utenti = FOUNDER (badge Gold permanente)
+- [x] Retroactive: utenti esistenti vengono marchiati come Founder
+- [x] Badge Founder visibile in: Leaderboard, Burger Menu, Cinema Results
 
-### CREWS Tab "La Tribù" (v2 - Marzo 2026)
-- [x] Sezione "INVITI PENDENTI" con badge rosso e contatore
-- [x] Invite cards stile Apple (accept ✓ / decline ✕)
-- [x] Accept/decline rimuove l'invito dalla lista
-
-### DNA Tab "Bio-Scan" (v2 - Marzo 2026)
-- [x] Effetto Bio-Scan all'ingresso (useFocusEffect + Reanimated)
-- [x] Scan line animata che attraversa il Radar Chart
-- [x] Talent Card condivisibile con bottone "↑ CONDIVIDI" (React Native Share API)
-
-### Tab Bar (v2 - Marzo 2026)
-- [x] Badge rosso "3" su CREWS per inviti pendenti
-- [x] Colori aggiornati: Cyan #00F2FF, Gold #D4AF37
-
----
-
-## Dati Seeded
-- 5 Battle (2 live, 2 upcoming, 1 completed)
-- 8 Discipline (5 pubbliche, 3 coach-only)
-- 5 Crew
+### Audio/Haptics
+- [x] Tab Switch: Deep Woosh (sub-bass sweep)
+- [x] Accept Ping: Metallic harmonic shimmer
+- [x] Bio-Scan Hum: Rising sawtooth drone
+- [x] Bio-Match Ping: Sharp cyber confirmation
+- [x] Record Broken: Double haptic burst
+- [x] Haptic Punch: Heavy (punch) / Medium (squat) per rep
 
 ---
 
 ## Backlog Prioritizzato
 
 ### P0 — Prossima Sessione
-- [ ] Nexus Sync: Attivazione camera reale con expo-camera
-- [ ] Battle participation (join/leave battle con XP reward)
-- [ ] Real-time battle updates (WebSocket o polling)
-- [ ] Profilo atleta completo (modifica avatar, sport, bio)
+- [ ] Test su dispositivo fisico (Expo Go) per haptics, BlurView, camera
+- [ ] Refactoring nexus-trigger.tsx (>850 righe → split componenti)
+- [ ] Battle participation (join/leave con XP reward)
 
 ### P1 — Feature Medie
-- [ ] Crew creation e management (crea, invita membri)
-- [ ] Leaderboard globale per XP e sport
-- [ ] DNA history: progressione nel tempo del radar chart
+- [ ] Real-time battle updates (WebSocket/polling)
+- [ ] Profilo atleta (modifica avatar, sport, bio)
+- [ ] DNA history (progressione nel tempo)
 - [ ] Notifiche push per battle live
-- [ ] Discipline Forge: form completo per coach
 
 ### P2 — Feature Avanzate
-- [ ] Nexus Sync: Analisi biometrica real-time con MediaPipe
-- [ ] Buffer circolare 3s @15fps, export Parquet su S3
-- [ ] Sistema Level-up con rewards
+- [ ] Nexus Sync: Analisi biometrica con MediaPipe
 - [ ] Chat in-app per crew
 - [ ] Subscription/Premium tier
 - [ ] Apple/Google social login

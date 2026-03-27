@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Base URL for the API
-BASE_URL = "https://glory-wall-live.preview.emergentagent.com/api"
+BASE_URL = "https://nexus-sync-elite.preview.emergentagent.com/api"
 
 # Test credentials
 ADMIN_EMAIL = "admin@arenadare.com"
