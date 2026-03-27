@@ -14,7 +14,7 @@ import Svg, { Line, Rect, Circle, Text as SvgText, G, Polygon } from 'react-nati
 import * as Haptics from 'expo-haptics';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
-import { playAcceptPing, playRecordBroken } from '../../utils/sounds';
+import { playAcceptPing, playRecordBroken, startBioScanHum, playBioMatchPing } from '../../utils/sounds';
 import { MotionAnalyzer, MotionState, ExerciseType, SkeletonPose } from '../../utils/MotionAnalyzer';
 
 const { width: SW, height: SH } = Dimensions.get('window');
@@ -100,6 +100,9 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
     laserY.value = withRepeat(withTiming(SH, { duration: 1600, easing: Easing.inOut(Easing.ease) }), -1, true);
     laserGlow.value = withRepeat(withSequence(withTiming(1, { duration: 500 }), withTiming(0.3, { duration: 500 })), -1, false);
 
+    // THE VOICE OF KORE: Start electric hum
+    const stopHum = startBioScanHum();
+
     let p = 0;
     const pi = setInterval(() => {
       p += 2 + Math.random() * 3;
@@ -109,10 +112,10 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
       else if (p < 50) setScanPhase(1);
       else if (p < 75) setScanPhase(2);
       else setScanPhase(3);
-      if (p >= 100) { clearInterval(pi); startTypewriter(); }
+      if (p >= 100) { clearInterval(pi); if (stopHum) stopHum(); startTypewriter(); }
     }, 60);
 
-    return () => { clearInterval(pi); if (matchTimerRef.current) clearTimeout(matchTimerRef.current); };
+    return () => { clearInterval(pi); if (stopHum) stopHum(); if (matchTimerRef.current) clearTimeout(matchTimerRef.current); };
   }, []);
 
   const startTypewriter = () => {
@@ -129,6 +132,7 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
       if (idx >= fullMatch.length) {
         clearInterval(tw);
         setMatchText(fullMatch);
+        playBioMatchPing();
         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
         matchTimerRef.current = setTimeout(onComplete, 1200);
       }
@@ -381,13 +385,37 @@ function Countdown({ onComplete }: { onComplete: () => void }) {
   );
 }
 
+// ========== GLOBAL PULSE TICKER ==========
+function PulseTicker() {
+  const scrollX = useSharedValue(0);
+  const TICKER_TEXT = '[LIVE FEED] LONDON: ALEX_K COMPLETED EXPLOSIVE PUNCH CHALLENGE (98Q) \u2022 CHICAGO: MAYA_J JOINED CREW BULLS \u2022 TOKYO: NEW WORLD RECORD IN HALL OF KORE \u2022 BERLIN: 3 NEW FOUNDERS REGISTERED \u2022 MIAMI: CREW SHARKS VS CREW WOLVES (LIVE DUEL) \u2022 ';
+  useEffect(() => {
+    scrollX.value = withRepeat(withTiming(-SW * 3, { duration: 25000, easing: Easing.linear }), -1, false);
+  }, []);
+  const s = useAnimatedStyle(() => ({ transform: [{ translateX: scrollX.value }] }));
+  return (
+    <View style={ticker$.container}>
+      <Animated.View style={[ticker$.track, s]}>
+        <Text style={ticker$.text}>{TICKER_TEXT}{TICKER_TEXT}</Text>
+      </Animated.View>
+    </View>
+  );
+}
+
+const ticker$ = StyleSheet.create({
+  container: { height: 24, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.08)', justifyContent: 'center' },
+  track: { flexDirection: 'row', width: SW * 6 },
+  text: { color: '#00F2FF', fontSize: 9, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.7 },
+});
+
 // ========== TACTICAL BURGER MENU ==========
 function BurgerMenu({ visible, onClose, user }: { visible: boolean; onClose: () => void; user: any }) {
   if (!visible) return null;
+  const isFounder = user?.is_founder || user?.is_admin;
   const items = [
     { icon: '\ud83e\uddec', label: 'Bio-Signature Scan', sub: 'Ricalibra i sensori' },
     { icon: '\u2699\ufe0f', label: 'Settings', sub: 'Configurazione NEXUS' },
-    { icon: '\ud83d\udee1\ufe0f', label: 'Founders Club', sub: user?.is_founder ? `Founder #${user?.founder_number || '?'}` : 'Non ancora membro' },
+    { icon: '\ud83c\udfc6', label: 'Founders Club', sub: isFounder ? `Founder #${user?.founder_number || '?'}` : 'Non ancora membro' },
     { icon: '\ud83d\udcac', label: 'Supporto', sub: 'Contatta il team KORE' },
   ];
   return (
@@ -407,6 +435,19 @@ function BurgerMenu({ visible, onClose, user }: { visible: boolean; onClose: () 
               </View>
             </TouchableOpacity>
           ))}
+          {/* FOUNDER PRIDE */}
+          {isFounder && (
+            <View style={burger$.founderPride}>
+              <Text style={burger$.founderStar}>{'\u2605'}</Text>
+              <Text style={burger$.founderQuote}>
+                You are one of the first 100 to enter the Kore. Your legacy is permanent.
+              </Text>
+            </View>
+          )}
+          {/* GLOBAL PULSE TICKER */}
+          <View style={burger$.tickerWrap}>
+            <PulseTicker />
+          </View>
           <View style={burger$.footer}>
             <Text style={burger$.footerText}>ARENAKORE v2.1 {'\u00b7'} NEXUS SYNC</Text>
           </View>
@@ -430,7 +471,15 @@ const burger$ = StyleSheet.create({
   itemText: { flex: 1, gap: 2 },
   itemLabel: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   itemSub: { color: '#555', fontSize: 10 },
-  footer: { position: 'absolute', bottom: 40, left: 20 },
+  founderPride: {
+    marginTop: 24, backgroundColor: 'rgba(212,175,55,0.06)', borderRadius: 12,
+    padding: 16, borderWidth: 1, borderColor: 'rgba(212,175,55,0.15)',
+    alignItems: 'center', gap: 8,
+  },
+  founderStar: { color: '#D4AF37', fontSize: 20 },
+  founderQuote: { color: '#D4AF37', fontSize: 11, fontWeight: '600', fontStyle: 'italic', textAlign: 'center', lineHeight: 16, opacity: 0.85 },
+  tickerWrap: { position: 'absolute', bottom: 60, left: 0, right: 0 },
+  footer: { position: 'absolute', bottom: 36, left: 20 },
   footerText: { color: '#333', fontSize: 9, fontWeight: '600', letterSpacing: 1 },
 });
 
