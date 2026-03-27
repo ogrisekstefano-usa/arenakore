@@ -57,9 +57,10 @@ interface TalentCardProps {
   xpEarned?: number;
   recordsBroken?: string[];
   challengeTitle?: string;
+  isFounder?: boolean;
 }
 
-export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle }: TalentCardProps) {
+export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle, isFounder }: TalentCardProps) {
   const dna = user.dna;
   const qrData = `arenakore://athlete/${user.id}`;
   const avgStat = dna
@@ -67,6 +68,7 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle 
         (dna.velocita + dna.forza + dna.resistenza + dna.agilita + dna.tecnica + dna.potenza) / 6
       )
     : 0;
+  const showFounder = isFounder || user.is_admin;
 
   const handleShare = async () => {
     const statsText = dna
@@ -107,7 +109,14 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle 
           <Text style={styles.avatarText}>{user.username?.[0]?.toUpperCase() || '?'}</Text>
         </View>
         <View style={styles.profileInfo}>
-          <Text style={styles.username}>{user.username?.toUpperCase()}</Text>
+          <View style={styles.nameRow}>
+            <Text style={styles.username}>{user.username?.toUpperCase()}</Text>
+            {showFounder && (
+              <View style={styles.founderBadge}>
+                <Text style={styles.founderText}>FOUNDER</Text>
+              </View>
+            )}
+          </View>
           <Text style={styles.sport}>{user.sport?.toUpperCase() || 'ATLETA'}</Text>
           <View style={styles.levelRow}>
             <Text style={styles.levelBadge}>LVL {user.level}</Text>
@@ -216,7 +225,14 @@ const styles = StyleSheet.create({
   },
   avatarText: { color: '#050505', fontSize: 20, fontWeight: '900' },
   profileInfo: { flex: 1, gap: 2 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
   username: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
+  founderBadge: {
+    backgroundColor: 'rgba(212,175,55,0.15)',
+    borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2,
+    borderWidth: 1, borderColor: 'rgba(212,175,55,0.4)',
+  },
+  founderText: { color: '#D4AF37', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
   sport: { color: '#00F2FF', fontSize: 11, fontWeight: '700', letterSpacing: 2 },
   levelRow: { flexDirection: 'row', gap: 8, marginTop: 2 },
   levelBadge: { color: '#D4AF37', fontSize: 10, fontWeight: '800' },

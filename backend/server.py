@@ -339,6 +339,9 @@ async def search_sports(query: str):
                     "category_color": cat["color"],
                 })
     return results
+
+
+@api_router.get("/battles")
 async def get_battles(current_user: dict = Depends(get_current_user)):
     battles = await db.battles.find().sort("created_at", -1).to_list(20)
     return [

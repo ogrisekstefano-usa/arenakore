@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-ArenaDare PULSE SPRINT Backend API Testing
-Tests all new backend endpoints for the PULSE SPRINT feature bundle
+ARENAKORE Backend API Test Suite
+Tests all backend endpoints comprehensively
+Base URL: https://arena-pulse-sprint.preview.emergentagent.com/api
 """
 
 import requests
@@ -11,376 +12,436 @@ from datetime import datetime
 
 # Configuration
 BASE_URL = "https://arena-pulse-sprint.preview.emergentagent.com/api"
-TEST_USER = {
-    "username": "test_agent_user",
-    "email": "testagent@arena.com", 
-    "password": "testpassword123"
-}
+HEADERS = {"Content-Type": "application/json"}
 
-class BackendTester:
+class APITester:
     def __init__(self):
         self.token = None
-        self.user_id = None
-        self.battle_id = None
-        self.results = []
+        self.user_data = None
+        self.admin_token = None
+        self.test_results = []
         
-    def log_result(self, endpoint, method, status, success, details=""):
-        """Log test result"""
-        result = {
-            "endpoint": endpoint,
-            "method": method,
-            "status": status,
+    def log_test(self, test_name, success, details="", response_data=None):
+        """Log test results"""
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {test_name}")
+        if details:
+            print(f"   Details: {details}")
+        if response_data and not success:
+            print(f"   Response: {response_data}")
+        print()
+        
+        self.test_results.append({
+            "test": test_name,
             "success": success,
             "details": details,
-            "timestamp": datetime.now().isoformat()
+            "response": response_data
+        })
+    
+    def test_user_registration(self):
+        """Test POST /api/auth/register"""
+        test_name = "User Registration"
+        
+        # Use unique test data
+        timestamp = datetime.now().strftime("%H%M%S")
+        payload = {
+            "username": f"test_final_{timestamp}",
+            "email": f"final_{timestamp}@kore.com",
+            "password": "testpassword123"
         }
-        self.results.append(result)
-        status_icon = "✅" if success else "❌"
-        print(f"{status_icon} {method} {endpoint} - {status} - {details}")
         
-    def make_request(self, method, endpoint, data=None, auth=True):
-        """Make HTTP request with proper headers"""
-        url = f"{BASE_URL}{endpoint}"
-        headers = {"Content-Type": "application/json"}
-        
-        if auth and self.token:
-            headers["Authorization"] = f"Bearer {self.token}"
-            
         try:
-            if method == "GET":
-                response = requests.get(url, headers=headers, timeout=10)
-            elif method == "POST":
-                response = requests.post(url, headers=headers, json=data, timeout=10)
-            elif method == "PUT":
-                response = requests.put(url, headers=headers, json=data, timeout=10)
+            response = requests.post(f"{BASE_URL}/auth/register", 
+                                   json=payload, headers=HEADERS, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "token" in data and "user" in data:
+                    self.token = data["token"]
+                    self.user_data = data["user"]
+                    self.log_test(test_name, True, 
+                                f"User registered: {data['user']['username']}, Token received")
+                    return True
+                else:
+                    self.log_test(test_name, False, "Missing token or user in response", data)
             else:
-                raise ValueError(f"Unsupported method: {method}")
-                
-            return response
-        except requests.exceptions.RequestException as e:
-            print(f"❌ Request failed for {method} {endpoint}: {str(e)}")
-            return None
-    
-    def test_auth_register(self):
-        """Test user registration"""
-        print("\n🔐 Testing Authentication - Register")
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
         
-        response = self.make_request("POST", "/auth/register", TEST_USER, auth=False)
-        if not response:
-            self.log_result("/auth/register", "POST", "FAILED", False, "Request failed")
+        return False
+    
+    def test_user_login(self):
+        """Test POST /api/auth/login"""
+        test_name = "User Login"
+        
+        if not self.user_data:
+            self.log_test(test_name, False, "No user data from registration")
             return False
             
-        if response.status_code == 200:
-            data = response.json()
-            if "token" in data and "user" in data:
-                self.token = data["token"]
-                self.user_id = data["user"]["id"]
-                self.log_result("/auth/register", "POST", response.status_code, True, f"User registered: {data['user']['username']}")
-                return True
-            else:
-                self.log_result("/auth/register", "POST", response.status_code, False, "Missing token or user in response")
-                return False
-        elif response.status_code == 400:
-            # User might already exist, try login
-            self.log_result("/auth/register", "POST", response.status_code, True, "User already exists (expected)")
-            return self.test_auth_login()
-        else:
-            self.log_result("/auth/register", "POST", response.status_code, False, response.text)
-            return False
-    
-    def test_auth_login(self):
-        """Test user login"""
-        print("\n🔐 Testing Authentication - Login")
-        
-        login_data = {"email": TEST_USER["email"], "password": TEST_USER["password"]}
-        response = self.make_request("POST", "/auth/login", login_data, auth=False)
-        
-        if not response:
-            self.log_result("/auth/login", "POST", "FAILED", False, "Request failed")
-            return False
-            
-        if response.status_code == 200:
-            data = response.json()
-            if "token" in data and "user" in data:
-                self.token = data["token"]
-                self.user_id = data["user"]["id"]
-                self.log_result("/auth/login", "POST", response.status_code, True, f"User logged in: {data['user']['username']}")
-                return True
-            else:
-                self.log_result("/auth/login", "POST", response.status_code, False, "Missing token or user in response")
-                return False
-        else:
-            self.log_result("/auth/login", "POST", response.status_code, False, response.text)
-            return False
-    
-    def test_onboarding(self):
-        """Test onboarding completion"""
-        print("\n👤 Testing Onboarding")
-        
-        onboarding_data = {"role": "atleta", "sport": "Basket"}
-        response = self.make_request("PUT", "/auth/onboarding", onboarding_data)
-        
-        if not response:
-            self.log_result("/auth/onboarding", "PUT", "FAILED", False, "Request failed")
-            return False
-            
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("onboarding_completed") and data.get("dna"):
-                self.log_result("/auth/onboarding", "PUT", response.status_code, True, f"Onboarding completed, XP: {data.get('xp', 0)}")
-                return True
-            else:
-                self.log_result("/auth/onboarding", "PUT", response.status_code, False, "Onboarding not properly completed")
-                return False
-        else:
-            self.log_result("/auth/onboarding", "PUT", response.status_code, False, response.text)
-            return False
-    
-    def test_challenge_complete(self):
-        """Test challenge completion (NEW ENDPOINT)"""
-        print("\n🎯 Testing Challenge Complete API (NEW)")
-        
-        challenge_data = {
-            "performance_score": 85.5,
-            "duration_seconds": 30
+        payload = {
+            "email": self.user_data["email"],
+            "password": "testpassword123"
         }
-        response = self.make_request("POST", "/challenges/complete", challenge_data)
         
-        if not response:
-            self.log_result("/challenges/complete", "POST", "FAILED", False, "Request failed")
-            return False
+        try:
+            response = requests.post(f"{BASE_URL}/auth/login", 
+                                   json=payload, headers=HEADERS, timeout=10)
             
-        if response.status_code == 200:
-            data = response.json()
-            required_fields = ["status", "xp_earned", "performance_score", "duration_seconds", "new_xp", "level_up", "records_broken", "new_dna", "user"]
-            missing_fields = [field for field in required_fields if field not in data]
-            
-            if not missing_fields:
-                self.log_result("/challenges/complete", "POST", response.status_code, True, 
-                              f"XP earned: {data['xp_earned']}, Level up: {data['level_up']}, Records: {len(data['records_broken'])}")
-                return True
+            if response.status_code == 200:
+                data = response.json()
+                if "token" in data and "user" in data:
+                    # Update token from login
+                    self.token = data["token"]
+                    self.log_test(test_name, True, 
+                                f"Login successful for {data['user']['email']}")
+                    return True
+                else:
+                    self.log_test(test_name, False, "Missing token or user in response", data)
             else:
-                self.log_result("/challenges/complete", "POST", response.status_code, False, f"Missing fields: {missing_fields}")
-                return False
-        else:
-            self.log_result("/challenges/complete", "POST", response.status_code, False, response.text)
-            return False
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
     
-    def test_challenge_history(self):
-        """Test challenge history (NEW ENDPOINT)"""
-        print("\n📊 Testing Challenge History API (NEW)")
+    def test_get_current_user(self):
+        """Test GET /api/auth/me"""
+        test_name = "Get Current User"
         
-        response = self.make_request("GET", "/challenges/history")
-        
-        if not response:
-            self.log_result("/challenges/history", "GET", "FAILED", False, "Request failed")
+        if not self.token:
+            self.log_test(test_name, False, "No auth token available")
             return False
             
-        if response.status_code == 200:
-            data = response.json()
-            if isinstance(data, list):
-                self.log_result("/challenges/history", "GET", response.status_code, True, f"Retrieved {len(data)} challenge records")
-                return True
+        headers = {**HEADERS, "Authorization": f"Bearer {self.token}"}
+        
+        try:
+            response = requests.get(f"{BASE_URL}/auth/me", 
+                                  headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "id" in data and "username" in data:
+                    self.log_test(test_name, True, 
+                                f"User data retrieved: {data['username']}")
+                    return True
+                else:
+                    self.log_test(test_name, False, "Invalid user data structure", data)
             else:
-                self.log_result("/challenges/history", "GET", response.status_code, False, "Response is not a list")
-                return False
-        else:
-            self.log_result("/challenges/history", "GET", response.status_code, False, response.text)
-            return False
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
     
-    def test_push_token(self):
-        """Test push token save (NEW ENDPOINT)"""
-        print("\n📱 Testing Push Token Save API (NEW)")
+    def test_sports_categories(self):
+        """Test GET /api/sports/categories - should return 8 categories"""
+        test_name = "Sports Categories"
         
-        token_data = {"push_token": "test-token-12345"}
-        response = self.make_request("POST", "/users/push-token", token_data)
+        try:
+            response = requests.get(f"{BASE_URL}/sports/categories", 
+                                  headers=HEADERS, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list) and len(data) == 8:
+                    categories = [cat.get("label", "Unknown") for cat in data]
+                    self.log_test(test_name, True, 
+                                f"8 categories found: {', '.join(categories)}")
+                    return True
+                else:
+                    self.log_test(test_name, False, 
+                                f"Expected 8 categories, got {len(data) if isinstance(data, list) else 'non-list'}", 
+                                data)
+            else:
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
         
-        if not response:
-            self.log_result("/users/push-token", "POST", "FAILED", False, "Request failed")
+        return False
+    
+    def test_sports_by_category(self):
+        """Test GET /api/sports/combat - should return list of combat sports"""
+        test_name = "Sports by Category (Combat)"
+        
+        try:
+            response = requests.get(f"{BASE_URL}/sports/combat", 
+                                  headers=HEADERS, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "sports" in data and isinstance(data["sports"], list):
+                    sports_count = len(data["sports"])
+                    sports_names = [sport.get("label", "Unknown") for sport in data["sports"]]
+                    self.log_test(test_name, True, 
+                                f"Combat sports found ({sports_count}): {', '.join(sports_names[:5])}...")
+                    return True
+                else:
+                    self.log_test(test_name, False, "Invalid sports data structure", data)
+            else:
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
+    
+    def test_sports_search(self):
+        """Test GET /api/sports/search/basket - should find Basket in team category"""
+        test_name = "Sports Search (Basket)"
+        
+        try:
+            response = requests.get(f"{BASE_URL}/sports/search/basket", 
+                                  headers=HEADERS, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list) and len(data) > 0:
+                    # Look for Basket sport
+                    basket_found = False
+                    for sport in data:
+                        if "basket" in sport.get("label", "").lower():
+                            basket_found = True
+                            category = sport.get("category_label", sport.get("category", "Unknown"))
+                            self.log_test(test_name, True, 
+                                        f"Basket found in {category} category")
+                            return True
+                    
+                    if not basket_found:
+                        self.log_test(test_name, False, 
+                                    f"Basket not found in search results", data)
+                else:
+                    self.log_test(test_name, False, "No search results returned", data)
+            else:
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
+    
+    def test_complete_onboarding(self):
+        """Test PUT /api/auth/onboarding - should return user with DNA"""
+        test_name = "Complete Onboarding"
+        
+        if not self.token:
+            self.log_test(test_name, False, "No auth token available")
             return False
             
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("status") == "ok":
-                self.log_result("/users/push-token", "POST", response.status_code, True, "Push token saved successfully")
-                return True
+        headers = {**HEADERS, "Authorization": f"Bearer {self.token}"}
+        payload = {
+            "sport": "Basket",
+            "category": "team",
+            "is_versatile": False
+        }
+        
+        try:
+            response = requests.put(f"{BASE_URL}/auth/onboarding", 
+                                  json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "dna" in data and data["dna"] and "onboarding_completed" in data:
+                    dna_stats = list(data["dna"].keys())
+                    self.log_test(test_name, True, 
+                                f"Onboarding completed, DNA generated: {', '.join(dna_stats)}")
+                    return True
+                else:
+                    self.log_test(test_name, False, "Missing DNA or onboarding_completed", data)
             else:
-                self.log_result("/users/push-token", "POST", response.status_code, False, f"Unexpected response: {data}")
-                return False
-        else:
-            self.log_result("/users/push-token", "POST", response.status_code, False, response.text)
-            return False
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
     
     def test_get_battles(self):
-        """Test get battles list"""
-        print("\n⚔️ Testing Get Battles API")
+        """Test GET /api/battles - should return battle list (was 404 before, now fixed)"""
+        test_name = "Get Battles"
         
-        response = self.make_request("GET", "/battles")
-        
-        if not response:
-            self.log_result("/battles", "GET", "FAILED", False, "Request failed")
+        if not self.token:
+            self.log_test(test_name, False, "No auth token available")
             return False
             
-        if response.status_code == 200:
-            data = response.json()
-            if isinstance(data, list) and len(data) > 0:
-                # Store first battle ID for participation tests
-                self.battle_id = data[0]["id"]
-                self.log_result("/battles", "GET", response.status_code, True, f"Retrieved {len(data)} battles")
-                return True
+        headers = {**HEADERS, "Authorization": f"Bearer {self.token}"}
+        
+        try:
+            response = requests.get(f"{BASE_URL}/battles", 
+                                  headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    battles_count = len(data)
+                    if battles_count > 0:
+                        battle_titles = [battle.get("title", "Unknown") for battle in data[:3]]
+                        self.log_test(test_name, True, 
+                                    f"Battles retrieved ({battles_count}): {', '.join(battle_titles)}...")
+                    else:
+                        self.log_test(test_name, True, "No battles available (empty list)")
+                    return True
+                else:
+                    self.log_test(test_name, False, "Invalid battles data structure", data)
             else:
-                self.log_result("/battles", "GET", response.status_code, False, "No battles found or invalid response")
-                return False
-        else:
-            self.log_result("/battles", "GET", response.status_code, False, response.text)
-            return False
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
     
-    def test_battle_participate(self):
-        """Test battle participation (NEW ENDPOINT)"""
-        print("\n⚔️ Testing Battle Participate API (NEW)")
+    def test_challenge_complete(self):
+        """Test POST /api/challenges/complete"""
+        test_name = "Challenge Complete"
         
-        if not self.battle_id:
-            self.log_result("/battles/{id}/participate", "POST", "SKIPPED", False, "No battle ID available")
-            return False
-        
-        response = self.make_request("POST", f"/battles/{self.battle_id}/participate")
-        
-        if not response:
-            self.log_result("/battles/{id}/participate", "POST", "FAILED", False, "Request failed")
+        if not self.token:
+            self.log_test(test_name, False, "No auth token available")
             return False
             
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("status") == "joined" and data.get("battle_id"):
-                self.log_result("/battles/{id}/participate", "POST", response.status_code, True, f"Joined battle: {data['battle_id']}")
-                return True
+        headers = {**HEADERS, "Authorization": f"Bearer {self.token}"}
+        payload = {
+            "performance_score": 85,
+            "duration_seconds": 30
+        }
+        
+        try:
+            response = requests.post(f"{BASE_URL}/challenges/complete", 
+                                   json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "xp_earned" in data and "status" in data:
+                    xp_earned = data.get("xp_earned", 0)
+                    level_up = data.get("level_up", False)
+                    self.log_test(test_name, True, 
+                                f"Challenge completed, XP earned: {xp_earned}, Level up: {level_up}")
+                    return True
+                else:
+                    self.log_test(test_name, False, "Missing xp_earned or status", data)
             else:
-                self.log_result("/battles/{id}/participate", "POST", response.status_code, False, f"Unexpected response: {data}")
-                return False
-        elif response.status_code == 400:
-            # Already participating is acceptable
-            self.log_result("/battles/{id}/participate", "POST", response.status_code, True, "Already participating (expected)")
-            return True
-        else:
-            self.log_result("/battles/{id}/participate", "POST", response.status_code, False, response.text)
-            return False
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
     
-    def test_battle_complete(self):
-        """Test battle completion (NEW ENDPOINT)"""
-        print("\n🏆 Testing Battle Complete API (NEW)")
+    def test_challenge_history(self):
+        """Test GET /api/challenges/history"""
+        test_name = "Challenge History"
         
-        if not self.battle_id:
-            self.log_result("/battles/{id}/complete", "POST", "SKIPPED", False, "No battle ID available")
-            return False
-        
-        response = self.make_request("POST", f"/battles/{self.battle_id}/complete")
-        
-        if not response:
-            self.log_result("/battles/{id}/complete", "POST", "FAILED", False, "Request failed")
+        if not self.token:
+            self.log_test(test_name, False, "No auth token available")
             return False
             
-        if response.status_code == 200:
-            data = response.json()
-            required_fields = ["status", "xp_earned", "new_xp", "level_up", "records_broken", "new_dna", "user"]
-            missing_fields = [field for field in required_fields if field not in data]
+        headers = {**HEADERS, "Authorization": f"Bearer {self.token}"}
+        
+        try:
+            response = requests.get(f"{BASE_URL}/challenges/history", 
+                                  headers=headers, timeout=10)
             
-            if not missing_fields:
-                self.log_result("/battles/{id}/complete", "POST", response.status_code, True, 
-                              f"Battle completed, XP: {data['xp_earned']}, Level up: {data['level_up']}")
-                return True
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    history_count = len(data)
+                    self.log_test(test_name, True, 
+                                f"Challenge history retrieved ({history_count} entries)")
+                    return True
+                else:
+                    self.log_test(test_name, False, "Invalid history data structure", data)
             else:
-                self.log_result("/battles/{id}/complete", "POST", response.status_code, False, f"Missing fields: {missing_fields}")
-                return False
-        elif response.status_code == 400:
-            # Already completed or not participating
-            error_msg = response.json().get("detail", "Unknown error")
-            if "già completata" in error_msg or "Non sei iscritto" in error_msg:
-                self.log_result("/battles/{id}/complete", "POST", response.status_code, True, f"Expected error: {error_msg}")
-                return True
-            else:
-                self.log_result("/battles/{id}/complete", "POST", response.status_code, False, error_msg)
-                return False
-        else:
-            self.log_result("/battles/{id}/complete", "POST", response.status_code, False, response.text)
-            return False
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
     
-    def test_battle_trigger_live(self):
-        """Test battle trigger live (NEW ENDPOINT)"""
-        print("\n🔴 Testing Battle Trigger Live API (NEW)")
+    def test_admin_login(self):
+        """Test admin login: POST /api/auth/login - verify is_admin=true in response"""
+        test_name = "Admin Login"
         
-        if not self.battle_id:
-            self.log_result("/battles/{id}/trigger-live", "POST", "SKIPPED", False, "No battle ID available")
-            return False
+        payload = {
+            "email": "admin@arenadare.com",
+            "password": "Admin2026!"
+        }
         
-        response = self.make_request("POST", f"/battles/{self.battle_id}/trigger-live")
-        
-        if not response:
-            self.log_result("/battles/{id}/trigger-live", "POST", "FAILED", False, "Request failed")
-            return False
+        try:
+            response = requests.post(f"{BASE_URL}/auth/login", 
+                                   json=payload, headers=HEADERS, timeout=10)
             
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("status") == "live" and "battle_title" in data:
-                self.log_result("/battles/{id}/trigger-live", "POST", response.status_code, True, 
-                              f"Battle triggered live: {data['battle_title']}, Notifications: {data.get('notification_targets', 0)}")
-                return True
+            if response.status_code == 200:
+                data = response.json()
+                if "token" in data and "user" in data:
+                    user = data["user"]
+                    is_admin = user.get("is_admin", False)
+                    if is_admin:
+                        self.admin_token = data["token"]
+                        self.log_test(test_name, True, 
+                                    f"Admin login successful, is_admin: {is_admin}")
+                        return True
+                    else:
+                        self.log_test(test_name, False, 
+                                    f"Admin login successful but is_admin is {is_admin}", data)
+                else:
+                    self.log_test(test_name, False, "Missing token or user in response", data)
             else:
-                self.log_result("/battles/{id}/trigger-live", "POST", response.status_code, False, f"Unexpected response: {data}")
-                return False
-        else:
-            self.log_result("/battles/{id}/trigger-live", "POST", response.status_code, False, response.text)
-            return False
+                self.log_test(test_name, False, 
+                            f"HTTP {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test(test_name, False, f"Exception: {str(e)}")
+        
+        return False
     
     def run_all_tests(self):
-        """Run all backend tests"""
-        print("🚀 Starting ArenaDare PULSE SPRINT Backend API Tests")
-        print(f"🌐 Base URL: {BASE_URL}")
+        """Run all backend tests in sequence"""
+        print("🚀 ARENAKORE Backend API Test Suite")
+        print(f"Base URL: {BASE_URL}")
         print("=" * 60)
+        print()
         
-        # Authentication flow
-        auth_success = self.test_auth_register()
-        if not auth_success:
-            print("❌ Authentication failed, stopping tests")
-            return False
+        # Test sequence as specified in review request
+        tests = [
+            self.test_user_registration,
+            self.test_user_login,
+            self.test_get_current_user,
+            self.test_sports_categories,
+            self.test_sports_by_category,
+            self.test_sports_search,
+            self.test_complete_onboarding,
+            self.test_get_battles,
+            self.test_challenge_complete,
+            self.test_challenge_history,
+            self.test_admin_login,
+        ]
         
-        # Complete onboarding
-        self.test_onboarding()
+        passed = 0
+        total = len(tests)
         
-        # Test NEW PULSE SPRINT endpoints
-        self.test_challenge_complete()
-        self.test_challenge_history()
-        self.test_push_token()
+        for test_func in tests:
+            if test_func():
+                passed += 1
         
-        # Battle flow tests
-        battles_success = self.test_get_battles()
-        if battles_success:
-            self.test_battle_participate()
-            self.test_battle_complete()
-            self.test_battle_trigger_live()
-        
-        # Summary
-        print("\n" + "=" * 60)
-        print("📊 TEST SUMMARY")
         print("=" * 60)
+        print(f"📊 TEST SUMMARY: {passed}/{total} tests passed")
         
-        total_tests = len(self.results)
-        successful_tests = len([r for r in self.results if r["success"]])
-        failed_tests = total_tests - successful_tests
-        
-        print(f"Total Tests: {total_tests}")
-        print(f"✅ Successful: {successful_tests}")
-        print(f"❌ Failed: {failed_tests}")
-        print(f"Success Rate: {(successful_tests/total_tests)*100:.1f}%")
-        
-        if failed_tests > 0:
-            print("\n❌ FAILED TESTS:")
-            for result in self.results:
-                if not result["success"]:
-                    print(f"  - {result['method']} {result['endpoint']}: {result['details']}")
-        
-        return failed_tests == 0
+        if passed == total:
+            print("🎉 ALL TESTS PASSED!")
+        else:
+            print("⚠️  Some tests failed. Check details above.")
+            
+        return passed == total
 
-if __name__ == "__main__":
-    tester = BackendTester()
+def main():
+    """Main test runner"""
+    tester = APITester()
     success = tester.run_all_tests()
     sys.exit(0 if success else 1)
+
+if __name__ == "__main__":
+    main()

@@ -4,7 +4,7 @@ import {
   ActivityIndicator, StatusBar, TouchableOpacity,
 } from 'react-native';
 import Animated, {
-  useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle,
+  useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle, Easing,
 } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
@@ -58,13 +58,32 @@ const STATUS_CFG: Record<string, { label: string; color: string; bg: string; pul
 function BattleCard({ battle }: { battle: any }) {
   const s = STATUS_CFG[battle.status] || STATUS_CFG.upcoming;
   const pulseScale = useSharedValue(1);
+  const glowOpacity = useSharedValue(0);
+  const badgeScale = useSharedValue(1);
   
   useEffect(() => {
     if (battle.status === 'live') {
+      // Card heartbeat
       pulseScale.value = withRepeat(
         withSequence(
-          withTiming(1.02, { duration: 1000 }),
-          withTiming(1, { duration: 1000 })
+          withTiming(1.015, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1, false
+      );
+      // Glow pulse
+      glowOpacity.value = withRepeat(
+        withSequence(
+          withTiming(0.6, { duration: 900 }),
+          withTiming(0.15, { duration: 900 })
+        ),
+        -1, false
+      );
+      // LIVE badge heartbeat
+      badgeScale.value = withRepeat(
+        withSequence(
+          withTiming(1.08, { duration: 600 }),
+          withTiming(1, { duration: 600 })
         ),
         -1, false
       );
@@ -75,13 +94,21 @@ function BattleCard({ battle }: { battle: any }) {
     transform: [{ scale: pulseScale.value }],
   }));
 
+  const glowStyle = useAnimatedStyle(() => ({
+    shadowOpacity: glowOpacity.value,
+  }));
+
+  const badgeAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: badgeScale.value }],
+  }));
+
   return (
-    <Animated.View style={[bc$.card, battle.status === 'live' && bc$.cardLive, liveStyle]}>
+    <Animated.View style={[bc$.card, battle.status === 'live' && bc$.cardLive, liveStyle, battle.status === 'live' && glowStyle]}>
       <View style={bc$.row}>
-        <View style={[bc$.badge, { backgroundColor: s.bg }]}>
+        <Animated.View style={[bc$.badge, { backgroundColor: s.bg }, battle.status === 'live' && badgeAnimStyle]}>
           {s.pulse && <LiveDot />}
           <Text style={[bc$.badgeText, { color: s.color }]}>{s.label}</Text>
-        </View>
+        </Animated.View>
         <Text style={bc$.xp}>+{battle.xp_reward} XP</Text>
       </View>
       <Text style={bc$.title}>{battle.title}</Text>
@@ -100,7 +127,11 @@ const bc$ = StyleSheet.create({
     marginHorizontal: 16, marginBottom: 10,
     borderWidth: 1, borderColor: '#1E1E1E', gap: 8,
   },
-  cardLive: { borderColor: 'rgba(255,59,48,0.25)' },
+  cardLive: {
+    borderColor: 'rgba(255,59,48,0.25)',
+    shadowColor: '#FF3B30', shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 12, elevation: 8,
+  },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   badge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,

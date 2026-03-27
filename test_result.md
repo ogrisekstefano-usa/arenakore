@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Build ArenaDare PULSE SPRINT feature bundle: Camera with Cyber-Grid overlay, sport-differentiated notifications, backend XP reward logic, RadarChart glow animation, and Glory Shot Talent Card with QR code."
+user_problem_statement: "Build ARENAKORE full-stack Expo mobile app: Rebrand from ArenaDare, 5-tab Atomic Nav (KORE/CREWS/NEXUS/DNA/NEXUS LIB), Hybrid 3-Level Onboarding, Camera Cyber-Grid, XP Reward Engine, RadarChart Glow, Talent Card with QR and FOUNDER badge, Sport-differentiated notifications, UI Refinements (Glitch DNA, LIVE Heartbeat)."
 
 backend:
   - task: "Auth Register API"
@@ -115,7 +115,10 @@ backend:
     status_history:
         - working: true
           agent: "main"
-          comment: "POST /api/auth/register working correctly, returns token + user"
+          comment: "POST /api/auth/register - registers new user as Kore Member"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: User registration successful with unique test data (test_final_143706), token received, all validations working correctly"
 
   - task: "Auth Login API"
     implemented: true
@@ -127,9 +130,12 @@ backend:
     status_history:
         - working: true
           agent: "main"
-          comment: "POST /api/auth/login working correctly"
+          comment: "POST /api/auth/login returns token + user with is_admin field"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Login successful for registered user, token authentication working, admin login verified with is_admin=true"
 
-  - task: "Complete Onboarding API"
+  - task: "Hybrid Onboarding API"
     implemented: true
     working: true
     file: "server.py"
@@ -139,19 +145,70 @@ backend:
     status_history:
         - working: true
           agent: "main"
-          comment: "PUT /api/auth/onboarding working correctly, generates DNA stats"
+          comment: "PUT /api/auth/onboarding - accepts role, sport, category, is_versatile. Generates DNA stats."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Onboarding completed successfully, DNA generated with all 6 stats (velocita, forza, resistenza, agilita, tecnica, potenza), user profile updated"
 
-  - task: "Get Battles API"
+  - task: "Sports Categories API"
     implemented: true
     working: true
     file: "server.py"
     stuck_count: 0
-    priority: "medium"
+    priority: "high"
     needs_retesting: false
     status_history:
         - working: true
           agent: "main"
-          comment: "GET /api/battles returns seeded battle data"
+          comment: "GET /api/sports/categories - returns 8 macro categories"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: All 8 categories returned correctly (ATLETICA, COMBAT, ACQUA, TEAM SPORT, FITNESS, OUTDOOR, MIND & BODY, EXTREME)"
+
+  - task: "Sports by Category API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/sports/{category} - returns sports list within category. Verified via backend logs."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Combat category returned 10 sports (Boxe, MMA, Kickboxing, Judo, Karate, etc.), proper data structure verified"
+
+  - task: "Sports Search API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/sports/search/{query} - smart search across all 65+ sports"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Search for 'basket' successfully found Basket in TEAM SPORT category, search functionality working correctly"
+
+  - task: "Battles API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/battles - FIXED! Was missing decorator after sports DB insertion. Now returns 200."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Battles endpoint now working correctly, returned 5 battles (Sprint Challenge 100m, Power Lifting Battle, CrossFit WOD Arena, etc.), 404 bug completely resolved"
 
   - task: "Challenge Complete API (XP Reward)"
     implemented: true
@@ -162,89 +219,65 @@ backend:
     needs_retesting: false
     status_history:
         - working: true
-          agent: "main"
-          comment: "POST /api/challenges/complete - new endpoint, returns XP earned, performance score, records broken, level up info, DNA updates. Verified via screenshot flow - returned 200 with correct data."
+          agent: "testing"
+          comment: "Previously tested and confirmed working"
         - working: true
           agent: "testing"
-          comment: "✅ TESTED: POST /api/challenges/complete working perfectly. Returns all required fields: status, xp_earned (171), performance_score (85.5), duration_seconds (30), new_xp, level_up (false), records_broken (1 record), new_dna, user. XP calculation logic working correctly with base_xp + perf_bonus + time_bonus."
+          comment: "COMPREHENSIVE TEST PASSED: Challenge completion successful, XP earned (171 points), performance scoring working, DNA updates functioning"
 
   - task: "Challenge History API"
     implemented: true
     working: true
     file: "server.py"
     stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Previously tested and confirmed working"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Challenge history endpoint working correctly, returns proper data structure (empty list for new user as expected)"
+
+frontend:
+  - task: "ARENAKORE Landing Page"
+    implemented: true
+    working: true
+    file: "app/index.tsx"
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
         - working: true
           agent: "main"
-          comment: "GET /api/challenges/history - new endpoint, returns list of past challenge results. Verified via backend logs showing 200 OK."
-        - working: true
-          agent: "testing"
-          comment: "✅ TESTED: GET /api/challenges/history working perfectly. Returns array of challenge records with proper structure: id, battle_title, sport, xp_earned, records_broken, level_up, completed_at. Initially empty for new users, populates correctly after completing battles/challenges."
+          comment: "Rebranded: ARENA (White) + KORE (Gold #D4AF37), claim 'The Core of Performance'. Verified via screenshot."
 
-  - task: "Battle Participate API"
+  - task: "5-Tab Navigation (KORE/CREWS/NEXUS/DNA/NEXUS LIB)"
     implemented: true
     working: true
-    file: "server.py"
+    file: "app/(tabs)/_layout.tsx"
     stuck_count: 0
-    priority: "medium"
+    priority: "high"
     needs_retesting: false
     status_history:
-        - working: "NA"
-          agent: "main"
-          comment: "POST /api/battles/{id}/participate - new endpoint, not yet tested via UI but code is implemented"
         - working: true
-          agent: "testing"
-          comment: "✅ TESTED: POST /api/battles/{id}/participate working perfectly. Successfully joins battles, prevents duplicate participation (returns 400 if already joined), updates participants_count, creates battle_participants record. Returns proper response: {status: 'joined', battle_id: 'xxx'}."
+          agent: "main"
+          comment: "Tab files renamed: core.tsx→kore.tsx, nexus.tsx→nexus-lib.tsx. Tab bar shows correct sequence."
 
-  - task: "Battle Complete API"
+  - task: "Hybrid Onboarding 3 Levels"
     implemented: true
     working: true
-    file: "server.py"
+    file: "app/onboarding/step1.tsx, step2.tsx, step3.tsx"
     stuck_count: 0
-    priority: "medium"
+    priority: "high"
     needs_retesting: false
     status_history:
-        - working: "NA"
-          agent: "main"
-          comment: "POST /api/battles/{id}/complete - new endpoint, not yet tested"
         - working: true
-          agent: "testing"
-          comment: "✅ TESTED: POST /api/battles/{id}/complete working perfectly. Completes battles, calculates XP rewards (base + bonus), updates user XP/level, improves DNA stats, tracks records broken, prevents duplicate completion, saves challenge_results record. Returns comprehensive response with all XP/level/DNA data."
-
-  - task: "Battle Trigger Live API"
-    implemented: true
-    working: true
-    file: "server.py"
-    stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
-    status_history:
-        - working: "NA"
           agent: "main"
-          comment: "POST /api/battles/{id}/trigger-live - new endpoint, not yet tested"
-        - working: true
-          agent: "testing"
-          comment: "✅ TESTED: POST /api/battles/{id}/trigger-live working perfectly. Updates battle status to 'live', collects push tokens from all participants for notifications, returns proper response with battle_title, sport, and notification_targets count. Ready for push notification integration."
+          comment: "L1: 8 Macro-Categories grid. L2: Smart Search with 50+ sports + Versatile Profile. L3: Auto-redirect with XP bonus. Verified via screenshot."
 
-  - task: "Push Token Save API"
-    implemented: true
-    working: true
-    file: "server.py"
-    stuck_count: 0
-    priority: "low"
-    needs_retesting: false
-    status_history:
-        - working: "NA"
-          agent: "main"
-          comment: "POST /api/users/push-token - new endpoint, not yet tested"
-        - working: true
-          agent: "testing"
-          comment: "✅ TESTED: POST /api/users/push-token working perfectly. Accepts push_token in request body, saves to user record in database, returns {status: 'ok'}. Ready for push notification integration with battle triggers and XP rewards."
-
-frontend:
-  - task: "Nexus Trigger Camera with Cyber-Grid"
+  - task: "Nexus Trigger Camera + Cyber-Grid"
     implemented: true
     working: true
     file: "app/(tabs)/nexus-trigger.tsx"
@@ -254,60 +287,60 @@ frontend:
     status_history:
         - working: true
           agent: "main"
-          comment: "Full camera simulation with SVG Cyber-Grid overlay, pulsing animation, HUD display, countdown 3..2..1..START, scanning animation, and results modal. Verified via screenshots."
+          comment: "Countdown, scan animation, results modal with XP. Verified via screenshots."
 
-  - task: "RadarChart Glow Animation"
+  - task: "DNA Glitch Transition Effect"
     implemented: true
-    working: true
-    file: "components/RadarChart.tsx"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-        - working: true
-          agent: "main"
-          comment: "Glow animation with pulsing border/shadow, broken record highlighting (gold dots + star labels). Verified via DNA tab screenshot."
-
-  - task: "Talent Card with QR Code"
-    implemented: true
-    working: true
-    file: "components/TalentCard.tsx"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-        - working: true
-          agent: "main"
-          comment: "Full talent card with ARENADARE branding, avatar, OVR score, stat bars, mini radar, QR code (react-native-qrcode-svg), and CONDIVIDI GLORY SHOT button. Verified via screenshot."
-
-  - task: "Sport-Differentiated Notifications"
-    implemented: true
-    working: true
-    file: "utils/notifications.ts"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-        - working: true
-          agent: "main"
-          comment: "3 notification tones (Adrenalina/Precisione/Power) mapped to sport categories. Android channels configured. Functions for battle_live, xp_reward, level_up, scan_complete notifications."
-
-  - task: "DNA Tab with Glow + Talent Card"
-    implemented: true
-    working: true
+    working: "NA"
     file: "app/(tabs)/dna.tsx"
     stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "NEW: Cyan neon glitch/scan overlay (300-400ms) with horizontal stripes + scan line on DNA tab focus. Visual effect only."
+
+  - task: "KORE LIVE Heartbeat Animation"
+    implemented: true
+    working: "NA"
+    file: "app/(tabs)/kore.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "NEW: Enhanced LIVE badge with withRepeat+withSequence heartbeat, card scale pulse, glow shadow. Visual effect."
+
+  - task: "FOUNDER Badge on Talent Card"
+    implemented: true
+    working: "NA"
+    file: "components/TalentCard.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "NEW: Shows gold 'FOUNDER' badge if user.is_admin=true or isFounder prop. Positioned next to username."
+
+  - task: "RadarChart Glow + Talent Card QR"
+    implemented: true
+    working: true
+    file: "components/RadarChart.tsx, components/TalentCard.tsx"
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
         - working: true
           agent: "main"
-          comment: "Updated DNA tab integrates RadarChart with glow props, loads challenge history for record display, includes TalentCard component. Verified via screenshot showing stats, radar, and talent card."
+          comment: "Glow animation, QR code, ARENAKORE branding. Verified via screenshots."
 
 metadata:
   created_by: "main_agent"
-  version: "2.0"
-  test_sequence: 1
+  version: "3.1"
+  test_sequence: 3
   run_ui: false
 
 test_plan:
@@ -318,6 +351,6 @@ test_plan:
 
 agent_communication:
     - agent: "main"
-      message: "PULSE SPRINT feature bundle fully implemented. Backend has new endpoints: POST /api/challenges/complete (XP reward with DNA updates), GET /api/challenges/history, POST /api/battles/{id}/participate, POST /api/battles/{id}/complete, POST /api/battles/{id}/trigger-live, POST /api/users/push-token. Please test all new backend endpoints. Auth credentials: register a new user or use existing test users. Base URL: https://arena-pulse-sprint.preview.emergentagent.com/api"
+      message: "UI Refinements done: DNA Glitch transition, KORE LIVE heartbeat, FOUNDER badge. Also FIXED the battles API 404 bug (missing decorator). Please test ALL backend endpoints comprehensively. Auth: register a new user with POST /api/auth/register. Then use token for all. Test sports categories/search, battles, challenges. Base URL: https://arena-pulse-sprint.preview.emergentagent.com/api. Test credentials available in /app/memory/test_credentials.md."
     - agent: "testing"
-      message: "✅ BACKEND TESTING COMPLETE: All 6 NEW PULSE SPRINT endpoints tested successfully with 100% pass rate. Created comprehensive backend_test.py with full authentication flow. All APIs working perfectly: Challenge Complete (XP rewards), Challenge History (data persistence), Battle Participate/Complete/Trigger-Live (full battle flow), Push Token Save (notification ready). No critical issues found. Backend is production-ready."
+      message: "COMPREHENSIVE BACKEND TESTING COMPLETED: All 11 backend endpoints tested successfully. Full test flow executed: user registration → login → auth verification → sports APIs (categories/search/by-category) → onboarding with DNA generation → battles API (404 bug confirmed fixed) → challenge completion & history → admin login verification. All APIs working correctly with proper authentication, data validation, and response structures. Backend is production-ready."

@@ -6,7 +6,8 @@ import { RadarChart } from '../../components/RadarChart';
 import { TalentCard } from '../../components/TalentCard';
 import { useFocusEffect } from 'expo-router';
 import Animated, {
-  useSharedValue, withTiming, withSpring, useAnimatedStyle,
+  useSharedValue, withTiming, withSpring, withSequence,
+  withDelay, useAnimatedStyle, Easing,
 } from 'react-native-reanimated';
 import { api } from '../../utils/api';
 
@@ -18,6 +19,97 @@ const ATTRS = [
   { key: 'tecnica',    label: 'Tecnica',    icon: '🎯' },
   { key: 'potenza',    label: 'Potenza',    icon: '💥' },
 ];
+
+// GLITCH OVERLAY — Cyan neon scan effect on tab entry
+function GlitchOverlay({ active }: { active: boolean }) {
+  const glitchOpacity = useSharedValue(0);
+  const glitchTransX = useSharedValue(0);
+  const scanY = useSharedValue(0);
+  const stripesOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (active) {
+      // Rapid glitch flash sequence (300-400ms total)
+      glitchOpacity.value = withSequence(
+        withTiming(0.7, { duration: 50 }),
+        withTiming(0, { duration: 30 }),
+        withTiming(0.5, { duration: 40 }),
+        withTiming(0, { duration: 30 }),
+        withTiming(0.3, { duration: 60 }),
+        withTiming(0, { duration: 90 }),
+      );
+      glitchTransX.value = withSequence(
+        withTiming(-3, { duration: 40 }),
+        withTiming(4, { duration: 50 }),
+        withTiming(-2, { duration: 40 }),
+        withTiming(0, { duration: 60 }),
+      );
+      // Scan line sweeps top to bottom
+      scanY.value = 0;
+      scanY.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.ease) });
+      // Horizontal stripes flash
+      stripesOpacity.value = withSequence(
+        withTiming(0.6, { duration: 80 }),
+        withTiming(0, { duration: 120 }),
+        withTiming(0.3, { duration: 60 }),
+        withTiming(0, { duration: 100 }),
+      );
+    }
+  }, [active]);
+
+  const overlayStyle = useAnimatedStyle(() => ({
+    opacity: glitchOpacity.value,
+    transform: [{ translateX: glitchTransX.value }],
+  }));
+
+  const scanLineStyle = useAnimatedStyle(() => ({
+    top: `${scanY.value * 100}%` as any,
+    opacity: 1 - scanY.value * 0.8,
+  }));
+
+  const stripesStyle = useAnimatedStyle(() => ({
+    opacity: stripesOpacity.value,
+  }));
+
+  if (!active) return null;
+
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {/* Cyan tint flash */}
+      <Animated.View style={[glitchStyles.tint, overlayStyle]} />
+      {/* Scan line */}
+      <Animated.View style={[glitchStyles.scanLine, scanLineStyle]} />
+      {/* Horizontal glitch stripes */}
+      <Animated.View style={[glitchStyles.stripes, stripesStyle]}>
+        {[0.15, 0.32, 0.48, 0.65, 0.78, 0.91].map((pos, i) => (
+          <View key={i} style={[glitchStyles.stripe, { top: `${pos * 100}%` as any, height: i % 2 === 0 ? 2 : 1 }]} />
+        ))}
+      </Animated.View>
+    </View>
+  );
+}
+
+const glitchStyles = StyleSheet.create({
+  tint: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,242,255,0.08)',
+    zIndex: 50,
+  },
+  scanLine: {
+    position: 'absolute', left: 0, right: 0, height: 2,
+    backgroundColor: '#00F2FF',
+    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9, shadowRadius: 12, elevation: 10,
+    zIndex: 51,
+  },
+  stripes: {
+    ...StyleSheet.absoluteFillObject, zIndex: 50,
+  },
+  stripe: {
+    position: 'absolute', left: 0, right: 0,
+    backgroundColor: 'rgba(0,242,255,0.12)',
+  },
+});
 
 function getRoleColor(role?: string) {
   if (role === 'coach') return '#D4AF37';
@@ -33,6 +125,7 @@ export default function DNATab() {
   const [lastRecords, setLastRecords] = useState<string[]>([]);
   const [isGlowing, setIsGlowing] = useState(false);
   const [lastChallenge, setLastChallenge] = useState<any>(null);
+  const [showGlitch, setShowGlitch] = useState(false);
 
   // Bio-Scan entrance animation
   const scanOpacity = useSharedValue(0);
@@ -41,6 +134,11 @@ export default function DNATab() {
 
   useFocusEffect(
     useCallback(() => {
+      // Trigger glitch on every focus
+      setShowGlitch(false);
+      setTimeout(() => setShowGlitch(true), 50);
+      setTimeout(() => setShowGlitch(false), 450);
+
       scanOpacity.value = 0;
       scanScale.value = 0.88;
       scanLine.value = 0;
@@ -86,6 +184,7 @@ export default function DNATab() {
     <View style={styles.container} testID="dna-tab">
       <StatusBar barStyle="light-content" />
       <Header title="DNA" />
+      <GlitchOverlay active={showGlitch} />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.dnaHeader}>
