@@ -82,4 +82,18 @@ export const api = {
     request('/challenges/complete', { method: 'POST', body: JSON.stringify(data) }, token),
 
   getChallengeHistory: (token: string) => request('/challenges/history', {}, token),
+
+  // Leaderboard / Glory Wall
+  getLeaderboard: (type: string, token: string, category?: string, timeRange?: string) => {
+    let path = `/leaderboard?type=${type}`;
+    if (category) path += `&category=${encodeURIComponent(category)}`;
+    if (timeRange) path += `&time_range=${timeRange}`;
+    return request(path, {}, token);
+  },
+
+  getMyRank: (token: string, category?: string) => {
+    let path = '/leaderboard/my-rank';
+    if (category) path += `?category=${encodeURIComponent(category)}`;
+    return request(path, {}, token);
+  },
 };

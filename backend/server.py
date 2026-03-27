@@ -918,6 +918,156 @@ async def search_users(query: str, current_user: dict = Depends(get_current_user
     ]
 
 
+# ====================================
+# LEADERBOARD / GLORY WALL ENGINE
+# ====================================
+# Simple in-memory cache with TTL
+_leaderboard_cache: dict = {}
+CACHE_TTL_SECONDS = 60  # 1 minute TTL
+
+
+def _cache_key(type_: str, category: str, time_range: str) -> str:
+    return f"lb:{type_}:{category}:{time_range}"
+
+
+def _is_cache_valid(key: str) -> bool:
+    if key not in _leaderboard_cache:
+        return False
+    cached_at = _leaderboard_cache[key].get("cached_at")
+    if not cached_at:
+        return False
+    return (datetime.now(timezone.utc) - cached_at).total_seconds() < CACHE_TTL_SECONDS
+
+
+@api_router.get("/leaderboard")
+async def get_leaderboard(
+    type: str = "global",
+    category: Optional[str] = None,
+    time_range: str = "all",
+    limit: int = 50,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Get leaderboard data.
+    type: global | sport | crews
+    category: optional category filter for sport type
+    time_range: all | weekly
+    """
+    cache_key = _cache_key(type, category or "all", time_range)
+
+    if _is_cache_valid(cache_key):
+        return _leaderboard_cache[cache_key]["data"]
+
+    result = []
+
+    if type == "crews":
+        # Crew leaderboard by total XP
+        crews = await db.crews_v2.find().sort("xp_total", -1).to_list(limit)
+        for rank, crew in enumerate(crews, 1):
+            # Get members for weighted average
+            members_data = []
+            for mid in crew.get("members", []):
+                u = await db.users.find_one({"_id": mid})
+                if u:
+                    members_data.append({"xp": u.get("xp", 0), "dna": u.get("dna")})
+
+            crew_dna = calculate_crew_weighted_average(members_data)
+
+            result.append({
+                "rank": rank,
+                "id": str(crew["_id"]),
+                "name": crew["name"],
+                "category": crew.get("category"),
+                "members_count": crew.get("members_count", 0),
+                "xp_total": crew.get("xp_total", 0),
+                "tagline": crew.get("tagline", ""),
+                "weighted_dna": crew_dna,
+            })
+    else:
+        # User leaderboard
+        query_filter: dict = {}
+        if type == "sport" and category:
+            query_filter["category"] = category
+
+        if time_range == "weekly":
+            one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+            # For weekly, still rank by XP but only include recently active users
+            query_filter["$or"] = [
+                {"created_at": {"$gte": one_week_ago}},
+                {"last_active": {"$gte": one_week_ago}},
+                {}  # Fallback: include all if no activity tracking yet
+            ]
+
+        users = await db.users.find(
+            {"onboarding_completed": True, **{k: v for k, v in query_filter.items() if k != "$or"}},
+        ).sort("xp", -1).to_list(limit)
+
+        for rank, u in enumerate(users, 1):
+            result.append({
+                "rank": rank,
+                "id": str(u["_id"]),
+                "username": u["username"],
+                "avatar_color": u.get("avatar_color", "#00F2FF"),
+                "sport": u.get("sport"),
+                "category": u.get("category"),
+                "xp": u.get("xp", 0),
+                "level": u.get("level", 1),
+                "is_admin": u.get("is_admin", False),
+            })
+
+    # Cache the result
+    _leaderboard_cache[cache_key] = {
+        "data": result,
+        "cached_at": datetime.now(timezone.utc),
+    }
+
+    return result
+
+
+@api_router.get("/leaderboard/my-rank")
+async def get_my_rank(
+    category: Optional[str] = None,
+    current_user: dict = Depends(get_current_user),
+):
+    """Get the current user's rank and info about the user above them"""
+    query_filter: dict = {"onboarding_completed": True}
+    if category:
+        query_filter["category"] = category
+
+    my_xp = current_user.get("xp", 0)
+
+    # Count users with more XP = rank - 1
+    users_above = await db.users.count_documents({
+        **query_filter,
+        "xp": {"$gt": my_xp},
+    })
+    my_rank = users_above + 1
+
+    total_users = await db.users.count_documents(query_filter)
+
+    # Find the user directly above (to show "overtake" message)
+    next_user = None
+    xp_gap = 0
+    if users_above > 0:
+        above = await db.users.find({
+            **query_filter,
+            "xp": {"$gt": my_xp},
+        }).sort("xp", 1).to_list(1)
+        if above:
+            next_user = above[0]["username"]
+            xp_gap = above[0].get("xp", 0) - my_xp
+
+    return {
+        "rank": my_rank,
+        "total": total_users,
+        "xp": my_xp,
+        "next_username": next_user,
+        "xp_gap": xp_gap,
+        "is_top_10": my_rank <= 10,
+        "category": category,
+    }
+
+
 def calculate_crew_weighted_average(members: list) -> dict:
     """Calculate weighted average DNA for a crew based on member XP weights"""
     if not members:

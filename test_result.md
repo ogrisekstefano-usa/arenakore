@@ -345,6 +345,81 @@ backend:
           agent: "testing"
           comment: "COMPREHENSIVE TEST PASSED: User search working correctly, finds users by username pattern, excludes current user from results"
 
+  - task: "Global Leaderboard API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/leaderboard?type=global - returns users sorted by XP descending with rank, id, username, avatar_color, sport, category, xp, level, is_admin"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Global leaderboard working correctly, ArenaBoss rank 1 with 9999 XP and is_admin=true, all required fields present"
+
+  - task: "Sport Leaderboard API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/leaderboard?type=sport&category=combat - returns only users from specified category"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Sport leaderboard filtering working correctly, returned 7 combat users only"
+
+  - task: "Crews Leaderboard API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/leaderboard?type=crews - returns crews with rank, name, category, members_count, xp_total, weighted_dna (6 DNA keys)"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Crews leaderboard working correctly, 6 crews returned with weighted DNA containing all 6 keys (velocita, forza, resistenza, agilita, tecnica, potenza)"
+
+  - task: "My Rank API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "GET /api/leaderboard/my-rank - returns user's rank, total, xp, next_username, xp_gap, is_top_10. Supports category filtering"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: My rank API working correctly, admin shows rank=1 with next_username=null and xp_gap=0, new users show rank>1 with next_username populated, category filtering working"
+
+  - task: "Leaderboard Caching System"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "In-memory caching with 60s TTL for leaderboard endpoints to improve performance"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Caching system working correctly, identical responses returned for consecutive calls within TTL window"
+
 frontend:
   - task: "ARENAKORE Landing Page"
     implemented: true
@@ -462,4 +537,10 @@ agent_communication:
     - agent: "main"
       message: "NEW CREW MANAGEMENT ENDPOINTS IMPLEMENTED: (1) POST /api/crews/create - creates crew with owner_id, (2) POST /api/crews/{crew_id}/invite - invites user by username, (3) GET /api/crews/my-crews - lists user's crews, (4) GET /api/crews/invites - pending invites, (5) POST /api/crews/invites/{id}/accept - accept invite (adds to crew + feed), (6) POST /api/crews/invites/{id}/decline, (7) GET /api/crews/{crew_id} - detail with members (includes is_coach=true for owner, role='Coach'), (8) GET /api/crews/{crew_id}/feed - activity feed, (9) GET /api/crews/{crew_id}/battle-stats - weighted average DNA, (10) GET /api/users/search/{query} - search users. PLEASE TEST ALL CREW endpoints with full flow: register 2 users → user1 creates crew → user1 invites user2 → user2 accepts → verify crew detail shows Coach badge → verify weighted average. Base URL: https://arena-crews.preview.emergentagent.com/api. Credentials in /app/memory/test_credentials.md."
     - agent: "testing"
+      message: "COMPREHENSIVE BACKEND TESTING COMPLETED: All 18 backend endpoints tested. Crew management (create, invite, accept, decline, detail, feed, battle-stats, search) fully functional. Coach role assignment, weighted average DNA, and duplicate prevention all working correctly."
+    - agent: "main"
+      message: "LEADERBOARD / GLORY WALL ENDPOINTS IMPLEMENTED: (1) GET /api/leaderboard?type=global - global user ranking by XP, (2) GET /api/leaderboard?type=sport&category=combat - sport-filtered ranking, (3) GET /api/leaderboard?type=crews - crew ranking with weighted DNA, (4) GET /api/leaderboard/my-rank - user's current position + next user info + XP gap. Includes in-memory caching with 60s TTL. TEST FLOW: login as admin → GET /api/leaderboard (global, should return sorted users) → GET /api/leaderboard?type=sport&category=combat → GET /api/leaderboard?type=crews → GET /api/leaderboard/my-rank (should return rank=1 for admin with 9999 XP). Base URL: https://arena-crews.preview.emergentagent.com/api. Credentials: admin@arenadare.com / Admin2026!"
+    - agent: "testing"
       message: "COMPREHENSIVE CREW MANAGEMENT TESTING COMPLETED: All 7 crew management endpoints tested successfully with full flow execution. Test results: ✅ Crew creation with owner role ✅ User invitation system with duplicate prevention ✅ Accept/decline invite flow ✅ Crew detail with coach roles (is_coach=true, role='Coach') ✅ Activity feed with crew_created/member_joined entries ✅ Weighted average DNA calculation with all 6 keys ✅ User search functionality. Edge cases tested: duplicate pending invite prevention, existing member invite prevention, decline and re-invite flow. All crew management features are production-ready. Previously tested auth, sports, and battle endpoints remain fully functional."
+    - agent: "testing"
+      message: "COMPREHENSIVE LEADERBOARD TESTING COMPLETED: All 5 new leaderboard endpoints tested successfully with full flow execution. Test results: ✅ Global leaderboard (ArenaBoss rank 1 with 9999 XP, is_admin=true) ✅ Sport-filtered leaderboard (7 combat users returned) ✅ Crews leaderboard (6 crews with weighted DNA containing all 6 keys) ✅ My rank API (admin rank=1, new users rank>1 with next_username populated) ✅ Category-specific ranking ✅ Caching system (60s TTL working correctly) ✅ New user registration and rank verification. All leaderboard features are production-ready. Previously tested auth, sports, battles, challenges, and crew endpoints remain fully functional. Total backend endpoints tested: 23/23 ✅"
