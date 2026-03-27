@@ -98,6 +98,7 @@ def user_to_response(user: dict) -> dict:
         "onboarding_completed": user.get("onboarding_completed", False),
         "dna": user.get("dna"),
         "avatar_color": user.get("avatar_color", "#00E5FF"),
+        "is_admin": user.get("is_admin", False),
     }
 
 

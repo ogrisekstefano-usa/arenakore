@@ -24,6 +24,7 @@ export interface User {
   onboarding_completed: boolean;
   dna?: DNAStats;
   avatar_color: string;
+  is_admin?: boolean;
 }
 
 interface AuthContextType {
