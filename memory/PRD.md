@@ -1,10 +1,12 @@
-# ArenaDare — PRD (Product Requirements Document)
+# ARENAKORE — PRD (Product Requirements Document) v2.0
 
 ## Overview
-**ArenaDare** è una piattaforma mobile di performance sportiva con analisi biometrica, sistema XP/Level, battle competitive e crew sociali.
+**ARENAKORE** è la piattaforma mobile d'élite per atleti con analisi biometrica in tempo reale, sistema XP/Level, battle competitive, crew sociali e leaderboard globali. Estetica "Chic-Tech / Cinema".
 
-**Stack Tecnico**: Expo React Native + FastAPI + MongoDB  
-**Data creazione**: Marzo 2026
+**Stack Tecnico**: Expo React Native SDK 54 + FastAPI + MongoDB  
+**Bundle ID**: `com.arenakore.app`  
+**Data creazione**: Marzo 2026  
+**Versione**: 1.0.0 — NATIVE STORE READY
 
 ---
 
