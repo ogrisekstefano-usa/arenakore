@@ -105,4 +105,19 @@ export const api = {
     request(`/nexus/session/${sessionId}/complete`, { method: 'POST', body: JSON.stringify(data) }, token),
 
   getNexusSessions: (token: string) => request('/nexus/sessions', {}, token),
+
+  // ========== COACH STUDIO — TEMPLATE ENGINE ==========
+  createTemplate: (data: { name: string; exercise: string; target_time: number; target_reps: number; xp_reward: number; difficulty: string; description?: string }, token: string) =>
+    request('/templates', { method: 'POST', body: JSON.stringify(data) }, token),
+
+  getTemplates: (token: string) => request('/templates', {}, token),
+
+  deleteTemplate: (templateId: string, token: string) =>
+    request(`/templates/${templateId}`, { method: 'DELETE' }, token),
+
+  pushTemplateToCrew: (templateId: string, crewId: string, token: string) =>
+    request(`/templates/${templateId}/push`, { method: 'POST', body: JSON.stringify({ crew_id: crewId }) }, token),
+
+  getCrewChallenges: (crewId: string, token: string) =>
+    request(`/templates/pushed/${crewId}`, {}, token),
 };

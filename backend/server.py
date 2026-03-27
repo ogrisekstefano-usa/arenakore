@@ -1298,6 +1298,158 @@ def crew_to_response(crew: dict, current_user: dict = None) -> dict:
     }
 
 
+# ========== COACH STUDIO — TEMPLATE ENGINE ==========
+
+class TemplateCreate(BaseModel):
+    name: str
+    exercise: str  # 'squat' or 'punch'
+    target_time: int = 60  # seconds
+    target_reps: int = 10
+    xp_reward: int = 50
+    difficulty: str = 'medium'  # easy, medium, hard, extreme
+    description: Optional[str] = None
+
+
+class TemplatePush(BaseModel):
+    crew_id: str
+
+
+@api_router.post("/templates")
+async def create_template(body: TemplateCreate, user: dict = Depends(get_current_user)):
+    """Coach creates a custom challenge template"""
+    template = {
+        "name": body.name,
+        "exercise": body.exercise,
+        "target_time": body.target_time,
+        "target_reps": body.target_reps,
+        "xp_reward": body.xp_reward,
+        "difficulty": body.difficulty,
+        "description": body.description or "",
+        "coach_id": user["_id"],
+        "coach_name": user.get("username", "Coach"),
+        "created_at": datetime.now(timezone.utc),
+        "uses_count": 0,
+        "pushed_to": [],
+    }
+    result = await db.templates.insert_one(template)
+    template["_id"] = result.inserted_id
+    return template_to_response(template)
+
+
+@api_router.get("/templates")
+async def list_templates(user: dict = Depends(get_current_user)):
+    """Get coach's private template library"""
+    templates = await db.templates.find({"coach_id": user["_id"]}).sort("created_at", -1).to_list(100)
+    return [template_to_response(t) for t in templates]
+
+
+@api_router.delete("/templates/{template_id}")
+async def delete_template(template_id: str, user: dict = Depends(get_current_user)):
+    """Delete a template from the library"""
+    try:
+        oid = ObjectId(template_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID template invalido")
+    result = await db.templates.delete_one({"_id": oid, "coach_id": user["_id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Template non trovato")
+    return {"status": "deleted"}
+
+
+@api_router.post("/templates/{template_id}/push")
+async def push_template_to_crew(template_id: str, body: TemplatePush, user: dict = Depends(get_current_user)):
+    """Push a challenge template to a crew — all members receive it"""
+    try:
+        t_oid = ObjectId(template_id)
+        c_oid = ObjectId(body.crew_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID invalido")
+
+    template = await db.templates.find_one({"_id": t_oid, "coach_id": user["_id"]})
+    if not template:
+        raise HTTPException(status_code=404, detail="Template non trovato")
+
+    crew = await db.crews.find_one({"_id": c_oid})
+    if not crew:
+        raise HTTPException(status_code=404, detail="Crew non trovata")
+
+    # Create a challenge push record
+    push = {
+        "template_id": t_oid,
+        "template_name": template["name"],
+        "exercise": template["exercise"],
+        "target_time": template["target_time"],
+        "target_reps": template["target_reps"],
+        "xp_reward": template["xp_reward"],
+        "difficulty": template["difficulty"],
+        "crew_id": c_oid,
+        "crew_name": crew["name"],
+        "coach_id": user["_id"],
+        "coach_name": user.get("username", "Coach"),
+        "pushed_at": datetime.now(timezone.utc),
+        "status": "active",
+        "completions": [],
+    }
+    await db.challenge_pushes.insert_one(push)
+
+    # Update template usage
+    await db.templates.update_one(
+        {"_id": t_oid},
+        {"$inc": {"uses_count": 1}, "$push": {"pushed_to": str(c_oid)}}
+    )
+
+    return {
+        "status": "pushed",
+        "template": template["name"],
+        "crew": crew["name"],
+        "members_reached": crew.get("members_count", len(crew.get("members", []))),
+    }
+
+
+@api_router.get("/templates/pushed/{crew_id}")
+async def get_crew_challenges(crew_id: str, user: dict = Depends(get_current_user)):
+    """Get active challenges pushed to a crew"""
+    try:
+        c_oid = ObjectId(crew_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID crew invalido")
+
+    pushes = await db.challenge_pushes.find(
+        {"crew_id": c_oid, "status": "active"}
+    ).sort("pushed_at", -1).to_list(50)
+
+    return [{
+        "id": str(p["_id"]),
+        "template_name": p["template_name"],
+        "exercise": p["exercise"],
+        "target_time": p["target_time"],
+        "target_reps": p["target_reps"],
+        "xp_reward": p["xp_reward"],
+        "difficulty": p["difficulty"],
+        "coach_name": p["coach_name"],
+        "crew_name": p["crew_name"],
+        "pushed_at": p["pushed_at"].isoformat() if p.get("pushed_at") else None,
+        "completions_count": len(p.get("completions", [])),
+    } for p in pushes]
+
+
+def template_to_response(t: dict) -> dict:
+    return {
+        "id": str(t["_id"]),
+        "name": t["name"],
+        "exercise": t["exercise"],
+        "target_time": t["target_time"],
+        "target_reps": t["target_reps"],
+        "xp_reward": t["xp_reward"],
+        "difficulty": t["difficulty"],
+        "description": t.get("description", ""),
+        "coach_name": t.get("coach_name", ""),
+        "uses_count": t.get("uses_count", 0),
+        "created_at": t["created_at"].isoformat() if t.get("created_at") else None,
+    }
+
+
+
 app.include_router(api_router)
 
 app.add_middleware(
