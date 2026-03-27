@@ -36,4 +36,21 @@ export const api = {
   getDisciplines: (token: string) => request('/disciplines', {}, token),
 
   getCrews: (token: string) => request('/crews', {}, token),
+
+  savePushToken: (pushToken: string, token: string) =>
+    request('/users/push-token', { method: 'POST', body: JSON.stringify({ push_token: pushToken }) }, token),
+
+  participateBattle: (battleId: string, token: string) =>
+    request(`/battles/${battleId}/participate`, { method: 'POST' }, token),
+
+  completeBattle: (battleId: string, token: string) =>
+    request(`/battles/${battleId}/complete`, { method: 'POST' }, token),
+
+  triggerLiveBattle: (battleId: string, token: string) =>
+    request(`/battles/${battleId}/trigger-live`, { method: 'POST' }, token),
+
+  completeChallenge: (data: { performance_score?: number; duration_seconds?: number }, token: string) =>
+    request('/challenges/complete', { method: 'POST', body: JSON.stringify(data) }, token),
+
+  getChallengeHistory: (token: string) => request('/challenges/history', {}, token),
 };

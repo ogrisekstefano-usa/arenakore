@@ -76,6 +76,16 @@ class OnboardingUpdate(BaseModel):
     sport: str
 
 
+class PushTokenData(BaseModel):
+    push_token: str
+
+
+class ChallengeComplete(BaseModel):
+    battle_id: Optional[str] = None
+    performance_score: Optional[float] = None  # 0-100
+    duration_seconds: Optional[int] = None
+
+
 def user_to_response(user: dict) -> dict:
     return {
         "id": str(user["_id"]),
@@ -180,6 +190,237 @@ async def get_battles(current_user: dict = Depends(get_current_user)):
             "participants_count": b.get("participants_count", 0),
         }
         for b in battles
+    ]
+
+
+@api_router.post("/users/push-token")
+async def save_push_token(data: PushTokenData, current_user: dict = Depends(get_current_user)):
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": {"push_token": data.push_token}}
+    )
+    return {"status": "ok"}
+
+
+@api_router.post("/battles/{battle_id}/participate")
+async def participate_battle(battle_id: str, current_user: dict = Depends(get_current_user)):
+    battle = await db.battles.find_one({"_id": ObjectId(battle_id)})
+    if not battle:
+        raise HTTPException(status_code=404, detail="Battle non trovata")
+
+    # Check if already participating
+    existing = await db.battle_participants.find_one({
+        "battle_id": ObjectId(battle_id),
+        "user_id": current_user["_id"]
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Già iscritto a questa battle")
+
+    await db.battle_participants.insert_one({
+        "battle_id": ObjectId(battle_id),
+        "user_id": current_user["_id"],
+        "joined_at": datetime.now(timezone.utc),
+        "completed": False,
+        "score": None,
+    })
+    await db.battles.update_one(
+        {"_id": ObjectId(battle_id)},
+        {"$inc": {"participants_count": 1}}
+    )
+    return {"status": "joined", "battle_id": battle_id}
+
+
+@api_router.post("/battles/{battle_id}/complete")
+async def complete_battle(battle_id: str, current_user: dict = Depends(get_current_user)):
+    battle = await db.battles.find_one({"_id": ObjectId(battle_id)})
+    if not battle:
+        raise HTTPException(status_code=404, detail="Battle non trovata")
+
+    participant = await db.battle_participants.find_one({
+        "battle_id": ObjectId(battle_id),
+        "user_id": current_user["_id"]
+    })
+    if not participant:
+        raise HTTPException(status_code=400, detail="Non sei iscritto a questa battle")
+    if participant.get("completed"):
+        raise HTTPException(status_code=400, detail="Battle già completata")
+
+    # Calculate XP: base + performance bonus
+    base_xp = battle.get("xp_reward", 100)
+    bonus_xp = random.randint(10, 50)
+    total_xp = base_xp + bonus_xp
+
+    # Update participant
+    await db.battle_participants.update_one(
+        {"_id": participant["_id"]},
+        {"$set": {"completed": True, "completed_at": datetime.now(timezone.utc), "score": random.randint(70, 100)}}
+    )
+
+    # Update user XP
+    old_xp = current_user.get("xp", 0)
+    new_xp = old_xp + total_xp
+    old_level = current_user.get("level", 1)
+    new_level = max(1, new_xp // 500 + 1)
+    level_up = new_level > old_level
+
+    # Update DNA stats (simulate improvement from battle)
+    old_dna = current_user.get("dna") or {
+        "velocita": 50, "forza": 50, "resistenza": 50,
+        "agilita": 50, "tecnica": 50, "potenza": 50
+    }
+    new_dna = {}
+    records_broken = []
+    for key in ["velocita", "forza", "resistenza", "agilita", "tecnica", "potenza"]:
+        old_val = old_dna.get(key, 50)
+        boost = random.randint(0, 5)
+        new_val = min(100, old_val + boost)
+        new_dna[key] = new_val
+        if new_val > old_val and boost >= 3:
+            records_broken.append(key)
+
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": {"xp": new_xp, "level": new_level, "dna": new_dna}}
+    )
+
+    # Save challenge result
+    await db.challenge_results.insert_one({
+        "user_id": current_user["_id"],
+        "battle_id": ObjectId(battle_id),
+        "battle_title": battle.get("title", "Challenge"),
+        "sport": battle.get("sport", "Unknown"),
+        "xp_earned": total_xp,
+        "base_xp": base_xp,
+        "bonus_xp": bonus_xp,
+        "records_broken": records_broken,
+        "level_up": level_up,
+        "old_level": old_level,
+        "new_level": new_level,
+        "new_dna": new_dna,
+        "completed_at": datetime.now(timezone.utc),
+    })
+
+    updated = await db.users.find_one({"_id": current_user["_id"]})
+
+    return {
+        "status": "completed",
+        "xp_earned": total_xp,
+        "base_xp": base_xp,
+        "bonus_xp": bonus_xp,
+        "new_xp": new_xp,
+        "level_up": level_up,
+        "old_level": old_level,
+        "new_level": new_level,
+        "records_broken": records_broken,
+        "new_dna": new_dna,
+        "user": user_to_response(updated),
+    }
+
+
+@api_router.post("/battles/{battle_id}/trigger-live")
+async def trigger_live_battle(battle_id: str, current_user: dict = Depends(get_current_user)):
+    battle = await db.battles.find_one({"_id": ObjectId(battle_id)})
+    if not battle:
+        raise HTTPException(status_code=404, detail="Battle non trovata")
+
+    await db.battles.update_one(
+        {"_id": ObjectId(battle_id)},
+        {"$set": {"status": "live"}}
+    )
+
+    # Get all participants' push tokens for notification
+    participants = await db.battle_participants.find(
+        {"battle_id": ObjectId(battle_id)}
+    ).to_list(100)
+
+    tokens = []
+    for p in participants:
+        u = await db.users.find_one({"_id": p["user_id"]})
+        if u and u.get("push_token"):
+            tokens.append(u["push_token"])
+
+    return {
+        "status": "live",
+        "battle_title": battle.get("title"),
+        "sport": battle.get("sport"),
+        "notification_targets": len(tokens),
+    }
+
+
+@api_router.post("/challenges/complete")
+async def complete_challenge(data: ChallengeComplete, current_user: dict = Depends(get_current_user)):
+    """Complete a nexus trigger challenge (scan-based) without a specific battle"""
+    performance = data.performance_score or random.uniform(65, 98)
+    duration = data.duration_seconds or random.randint(15, 60)
+
+    # Calculate XP based on performance
+    base_xp = 75
+    perf_bonus = int(performance * 0.5)
+    time_bonus = max(0, 30 - (duration // 10)) * 2
+    total_xp = base_xp + perf_bonus + time_bonus
+
+    old_xp = current_user.get("xp", 0)
+    new_xp = old_xp + total_xp
+    old_level = current_user.get("level", 1)
+    new_level = max(1, new_xp // 500 + 1)
+    level_up = new_level > old_level
+
+    old_dna = current_user.get("dna") or {
+        "velocita": 50, "forza": 50, "resistenza": 50,
+        "agilita": 50, "tecnica": 50, "potenza": 50
+    }
+    new_dna = {}
+    records_broken = []
+    for key in ["velocita", "forza", "resistenza", "agilita", "tecnica", "potenza"]:
+        old_val = old_dna.get(key, 50)
+        boost = random.randint(0, 4)
+        new_val = min(100, old_val + boost)
+        new_dna[key] = new_val
+        if new_val > old_val and boost >= 3:
+            records_broken.append(key)
+
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": {"xp": new_xp, "level": new_level, "dna": new_dna}}
+    )
+
+    updated = await db.users.find_one({"_id": current_user["_id"]})
+
+    return {
+        "status": "completed",
+        "performance_score": round(performance, 1),
+        "duration_seconds": duration,
+        "xp_earned": total_xp,
+        "base_xp": base_xp,
+        "perf_bonus": perf_bonus,
+        "time_bonus": time_bonus,
+        "new_xp": new_xp,
+        "level_up": level_up,
+        "old_level": old_level,
+        "new_level": new_level,
+        "records_broken": records_broken,
+        "new_dna": new_dna,
+        "user": user_to_response(updated),
+    }
+
+
+@api_router.get("/challenges/history")
+async def get_challenge_history(current_user: dict = Depends(get_current_user)):
+    results = await db.challenge_results.find(
+        {"user_id": current_user["_id"]}
+    ).sort("completed_at", -1).to_list(20)
+
+    return [
+        {
+            "id": str(r["_id"]),
+            "battle_title": r.get("battle_title", "Nexus Scan"),
+            "sport": r.get("sport", "General"),
+            "xp_earned": r.get("xp_earned", 0),
+            "records_broken": r.get("records_broken", []),
+            "level_up": r.get("level_up", False),
+            "completed_at": r.get("completed_at", "").isoformat() if r.get("completed_at") else None,
+        }
+        for r in results
     ]
 
 
