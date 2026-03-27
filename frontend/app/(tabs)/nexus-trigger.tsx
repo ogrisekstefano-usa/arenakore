@@ -1,3 +1,8 @@
+/**
+ * ARENAKORE — NEXUS TRIGGER TAB v3.0 (Refactored)
+ * Nike Elite Aesthetic — Motion tracking, Bio-scan, Challenge Forge
+ * Heavy sub-components extracted to /components/nexus/
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, TouchableOpacity,
@@ -8,10 +13,10 @@ import { useRouter } from 'expo-router';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming,
   useAnimatedStyle, withSpring, withDelay, Easing, interpolate,
-  FadeIn, FadeInDown, SlideInRight, SlideOutRight,
+  FadeIn, FadeInDown,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Line, Circle, Text as SvgText, G, Polygon } from 'react-native-svg';
+import Svg, { Circle, Text as SvgText, Polygon } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth, UserRole, ROLE_CONFIG } from '../../contexts/AuthContext';
@@ -19,6 +24,11 @@ import { api } from '../../utils/api';
 import { playAcceptPing, playRecordBroken, startBioScanHum, playBioMatchPing } from '../../utils/sounds';
 import { MotionAnalyzer, MotionState, ExerciseType, SkeletonPose } from '../../utils/MotionAnalyzer';
 import { profileDevice, DeviceProfile, DeviceTier, getTierLabel, getTrackingMode } from '../../utils/DeviceIntelligence';
+
+// Extracted sub-components
+import { CyberGrid, DigitalShadow, ScanLine } from '../../components/nexus/NexusVisuals';
+import { BurgerMenu } from '../../components/nexus/NexusBurgerMenu';
+import { CinemaResults } from '../../components/nexus/NexusCinemaResults';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -29,192 +39,12 @@ const FORGE_IMAGES = {
   duel: 'https://images.pexels.com/photos/1075935/pexels-photo-1075935.jpeg?w=800&q=60',
 };
 
-// Console button dramatic images
 const CONSOLE_IMAGES = {
   scan: 'https://images.unsplash.com/photo-1710736460914-4a7f22d736c4?w=800&q=60',
   forge: 'https://images.unsplash.com/photo-1698788067684-2053c651bfed?w=800&q=60',
   hall: 'https://images.unsplash.com/photo-1590285372176-c3ff4d8c9399?w=800&q=60',
   dna: 'https://images.pexels.com/photos/7479526/pexels-photo-7479526.jpeg?w=800&q=60',
 };
-
-// ========== CYBER GRID (subtle holographic) ==========
-function CyberGrid({ intensity }: { intensity: number }) {
-  const G = 45;
-  const cols = Math.ceil(SW / G) + 1;
-  const rows = Math.ceil(SH / G) + 1;
-  const op = 0.08 + intensity * 0.15;
-  return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Svg width={SW} height={SH}>
-        {Array.from({ length: cols }).map((_, i) => (
-          <Line key={`v${i}`} x1={i * G} y1={0} x2={i * G} y2={SH} stroke="#00F2FF" strokeWidth={0.3} opacity={op * 0.6} />
-        ))}
-        {Array.from({ length: rows }).map((_, i) => (
-          <Line key={`h${i}`} x1={0} y1={i * G} x2={SW} y2={i * G} stroke="#00F2FF" strokeWidth={0.3} opacity={op * 0.6} />
-        ))}
-        <Circle cx={SW / 2} cy={SH * 0.4} r={55} stroke="#00F2FF" strokeWidth={1} fill="none" opacity={op} />
-        <Circle cx={SW / 2} cy={SH * 0.4} r={85} stroke="#00F2FF" strokeWidth={0.6} fill="none" opacity={op * 0.5} strokeDasharray="6,5" />
-        <SvgText x={20} y={68} fill="#00F2FF" fontSize={8} fontWeight="bold" opacity={0.4}>ARENAKORE v2.1</SvgText>
-        <SvgText x={SW - 110} y={68} fill="#00F2FF" fontSize={8} fontWeight="bold" opacity={0.4}>NEXUS SYNC</SvgText>
-      </Svg>
-    </View>
-  );
-}
-
-// ========== NEON TRAIL SYSTEM (HIGH TIER ONLY) ==========
-// Stores recent positions of fists/feet for luminous afterglow trail
-const NEON_TRAIL_LENGTH = 8;
-let _neonTrail: Array<{ x: number; y: number; age: number }> = [];
-function pushNeonTrail(x: number, y: number) {
-  _neonTrail.unshift({ x, y, age: 0 });
-  _neonTrail = _neonTrail.slice(0, NEON_TRAIL_LENGTH).map(p => ({ ...p, age: p.age + 1 }));
-}
-
-// ========== DIGITAL SHADOW SKELETON ==========
-// Tier-adaptive: HIGH=Full Biomech, STANDARD=Motion Anchored, LEGACY=Shadow Mode
-function DigitalShadow({ pose, exercise, goldFlash, motionActive, deviceTier }: {
-  pose: SkeletonPose; exercise: ExerciseType; goldFlash: boolean; motionActive: boolean; deviceTier: DeviceTier;
-}) {
-  const cx = SW / 2, baseY = SH * 0.38;
-  const isHigh = deviceTier === 'high';
-  const isLegacy = deviceTier === 'legacy';
-  const active = motionActive ? 1 : 0;
-  const intensity = motionActive ? (0.4 + pose.intensity * 0.6) : (isLegacy ? 0.08 : 0.15);
-  const col = goldFlash ? '#D4AF37' : '#00F2FF';
-
-  // Idle vs active poses
-  const tilt = pose.torsoTilt * active;
-  const knee = pose.kneeAngle * active;
-  const arm = exercise === 'punch' ? pose.armExtension * active : 0;
-  const hip = pose.hipDrop * active;
-  const sr = exercise === 'punch' ? pose.shoulderRotation * active * 10 : 0;
-  const armExt = exercise === 'punch' ? arm * 50 : 15 * active;
-
-  const headY = baseY - 48 + tilt * 5;
-  const shoulderY = baseY - 18 + tilt * 8;
-  const hipY = baseY + 32 + hip * 15;
-  const kneeY = hipY + 38 + knee * 15;
-  const footY = kneeY + 32;
-  const armY = shoulderY + (exercise === 'punch' ? 5 : 15);
-
-  const joints = [
-    { x: cx, y: headY },                              // 0: head
-    { x: cx, y: shoulderY },                           // 1: neck
-    { x: cx - 25 - sr, y: shoulderY },                 // 2: L shoulder
-    { x: cx + 25 + sr, y: shoulderY },                 // 3: R shoulder
-    { x: cx - 30 - armExt, y: armY },                  // 4: L elbow
-    { x: cx + 30 + armExt, y: armY },                  // 5: R elbow
-    { x: cx - 35 - armExt * 1.2, y: armY + 16 },      // 6: L wrist
-    { x: cx + 35 + armExt * 1.2, y: armY + 16 },      // 7: R wrist
-    { x: cx, y: hipY },                                // 8: spine base
-    { x: cx - 16, y: hipY },                           // 9: L hip
-    { x: cx + 16, y: hipY },                           // 10: R hip
-    { x: cx - 20, y: kneeY },                          // 11: L knee
-    { x: cx + 20, y: kneeY },                          // 12: R knee
-    { x: cx - 22, y: footY },                          // 13: L ankle
-    { x: cx + 22, y: footY },                          // 14: R ankle
-    { x: cx - 40 - armExt * 1.3, y: armY + 26 },      // 15: L hand
-    { x: cx + 40 + armExt * 1.3, y: armY + 26 },      // 16: R hand
-  ];
-
-  const bones = [[0,1],[1,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,15],[7,16],[1,8],[8,9],[8,10],[9,11],[10,12],[11,13],[12,14]];
-
-  // HIGH tier: Track hand positions for Neon Trail
-  if (isHigh && motionActive && exercise === 'punch') {
-    pushNeonTrail(joints[15].x, joints[15].y);
-    pushNeonTrail(joints[16].x, joints[16].y);
-  } else if (!motionActive) {
-    _neonTrail = [];
-  }
-
-  // LEGACY tier: Render simplified skeleton (only major bones, no glow)
-  const legacyBones = [[0,1],[1,8],[2,6],[3,7],[9,13],[10,14]]; // Simplified 6-bone skeleton
-  const renderBones = isLegacy ? legacyBones : bones;
-  const renderJoints = isLegacy
-    ? [joints[0], joints[1], joints[6], joints[7], joints[8], joints[13], joints[14]] // 7 key joints
-    : joints;
-  const boneWidth = isHigh ? (motionActive ? 3.5 : 2.5) : (isLegacy ? 1.5 : (motionActive ? 3 : 2));
-  const jointBase = isHigh ? 6 : (isLegacy ? 3 : 5);
-
-  return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Svg width={SW} height={SH}>
-        {/* HIGH TIER: Neon Trail — glowing afterimages of fists */}
-        {isHigh && _neonTrail.map((p, i) => (
-          <Circle key={`trail-${i}`} cx={p.x} cy={p.y}
-            r={14 - p.age * 1.2}
-            fill={goldFlash ? '#D4AF37' : '#00F2FF'}
-            opacity={Math.max(0, 0.4 - p.age * 0.05)}
-          />
-        ))}
-
-        {/* HIGH TIER: Biomechanical spine glow line */}
-        {isHigh && (
-          <Line x1={joints[0].x} y1={joints[0].y} x2={joints[8].x} y2={joints[8].y}
-            stroke={col} strokeWidth={1} opacity={intensity * 0.15} strokeDasharray="4,4"
-          />
-        )}
-
-        {/* Head glow — scaled by tier */}
-        {!isLegacy && (
-          <Circle cx={joints[0].x} cy={joints[0].y} r={isHigh ? 28 : 24} fill={col} opacity={intensity * (isHigh ? 0.15 : 0.12)} />
-        )}
-
-        {/* Bones */}
-        {renderBones.map(([f, t], i) => (
-          <Line key={i}
-            x1={joints[f].x} y1={joints[f].y} x2={joints[t].x} y2={joints[t].y}
-            stroke={col} strokeWidth={boneWidth} opacity={intensity}
-            strokeLinecap="round"
-          />
-        ))}
-
-        {/* Joints */}
-        {(isLegacy ? renderJoints : joints).map((j, i) => (
-          <G key={i}>
-            <Circle cx={j.x} cy={j.y}
-              r={(!isLegacy && i === 0) ? 12 : jointBase}
-              fill={col} opacity={intensity * 0.9}
-            />
-            {/* HIGH TIER: Outer glow rings on all joints when active */}
-            {isHigh && motionActive && (
-              <Circle cx={j.x} cy={j.y}
-                r={(!isLegacy && i === 0) ? 18 : 10}
-                stroke={col} strokeWidth={1.5} fill="none"
-                opacity={intensity * 0.25}
-              />
-            )}
-            {/* STANDARD TIER: Subtle glow rings only when active */}
-            {!isHigh && !isLegacy && motionActive && (
-              <Circle cx={j.x} cy={j.y}
-                r={i === 0 ? 16 : 8}
-                stroke={col} strokeWidth={1} fill="none"
-                opacity={intensity * 0.3}
-              />
-            )}
-          </G>
-        ))}
-
-        {/* HIGH TIER: Neon Trail glow haze for punches */}
-        {isHigh && motionActive && exercise === 'punch' && (
-          <>
-            <Circle cx={joints[15].x} cy={joints[15].y} r={20}
-              fill={col} opacity={intensity * 0.2} />
-            <Circle cx={joints[16].x} cy={joints[16].y} r={20}
-              fill={col} opacity={intensity * 0.2} />
-          </>
-        )}
-
-        {/* Status text with tier indicator */}
-        <SvgText x={cx - 80} y={baseY - 130} fill={col} fontSize={8} fontWeight="bold" opacity={0.5}>
-          {motionActive
-            ? (goldFlash ? `${getTierLabel(deviceTier)} \u00b7 GOLD FLASH` : `${getTrackingMode(deviceTier)}`)
-            : `${getTierLabel(deviceTier)} \u00b7 AWAITING MOTION`}
-        </SvgText>
-      </Svg>
-    </View>
-  );
-}
 
 // ========== BIO-SCAN TRIGGER ==========
 function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => void }) {
@@ -298,7 +128,6 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
           </>
         )}
       </View>
-      {/* Corner brackets */}
       <View style={[bio$.bracket, { top: 60, left: 20 }]}><View style={bio$.bH} /><View style={bio$.bV} /></View>
       <View style={[bio$.bracket, { top: 60, right: 20, transform: [{ scaleX: -1 }] }]}><View style={bio$.bH} /><View style={bio$.bV} /></View>
       <View style={[bio$.bracket, { bottom: 100, left: 20, transform: [{ scaleY: -1 }] }]}><View style={bio$.bH} /><View style={bio$.bV} /></View>
@@ -331,29 +160,20 @@ const bio$ = StyleSheet.create({
   bV: { width: 2, height: 30, backgroundColor: '#00F2FF', opacity: 0.5 },
 });
 
-// ========== NEXUS CONSOLE — Cinematic Central Hub ==========
+// ========== NEXUS CONSOLE ==========
 function NexusConsole({ user, onScan, onForge, deviceTier }: {
   user: any; onScan: () => void; onForge: () => void; deviceTier: DeviceTier;
 }) {
   const router = useRouter();
   const isFounder = user?.is_founder || user?.is_admin;
   const founderShimmer = useSharedValue(0.7);
-
-  useEffect(() => {
-    founderShimmer.value = withRepeat(
-      withSequence(withTiming(1, { duration: 1500 }), withTiming(0.7, { duration: 1500 })), -1, false
-    );
-  }, []);
-
+  useEffect(() => { founderShimmer.value = withRepeat(withSequence(withTiming(1, { duration: 1500 }), withTiming(0.7, { duration: 1500 })), -1, false); }, []);
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: founderShimmer.value }));
 
   const CONSOLE_ICONS: Record<string, { ionName: keyof typeof Ionicons.glyphMap; color: string }> = {
-    scan: { ionName: 'scan', color: '#00F2FF' },
-    forge: { ionName: 'construct', color: '#D4AF37' },
-    hall: { ionName: 'trophy', color: '#D4AF37' },
-    dna: { ionName: 'analytics', color: '#00F2FF' },
+    scan: { ionName: 'scan', color: '#00F2FF' }, forge: { ionName: 'construct', color: '#D4AF37' },
+    hall: { ionName: 'trophy', color: '#D4AF37' }, dna: { ionName: 'analytics', color: '#00F2FF' },
   };
-
   const buttons = [
     { key: 'scan', title: 'NEXUS SCAN', sub: 'BIO-SKELETON TRACKING', image: CONSOLE_IMAGES.scan, action: onScan },
     { key: 'forge', title: 'THE FORGE', sub: 'CREA \u00b7 SELEZIONA \u00b7 SFIDA', image: CONSOLE_IMAGES.forge, action: onForge },
@@ -371,16 +191,10 @@ function NexusConsole({ user, onScan, onForge, deviceTier }: {
           <Text style={cn$.subtitle}>COMMAND CENTER</Text>
           {isFounder && (
             <Animated.View style={[cn$.founderBadge, shimmerStyle]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Ionicons name="star" size={10} color="#D4AF37" />
-                <Text style={cn$.founderText}>FOUNDER</Text>
-              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Ionicons name="star" size={10} color="#D4AF37" /><Text style={cn$.founderText}>FOUNDER</Text></View>
             </Animated.View>
           )}
-          <View style={cn$.tierRow}>
-            <View style={cn$.tierDot} />
-            <Text style={cn$.tierText}>{getTierLabel(deviceTier)} ACTIVE</Text>
-          </View>
+          <View style={cn$.tierRow}><View style={cn$.tierDot} /><Text style={cn$.tierText}>{getTierLabel(deviceTier)} ACTIVE</Text></View>
         </View>
         <ScrollView style={cn$.scroll} contentContainerStyle={cn$.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={cn$.grid}>
@@ -389,10 +203,7 @@ function NexusConsole({ user, onScan, onForge, deviceTier }: {
                 <ImageBackground source={{ uri: btn.image }} style={cn$.cardBg} imageStyle={cn$.cardImage}>
                   <LinearGradient colors={['rgba(5,5,5,0.15)', 'rgba(5,5,5,0.6)', 'rgba(5,5,5,0.97)']} locations={[0, 0.35, 0.85]} style={cn$.cardGradient}>
                     <Ionicons name={CONSOLE_ICONS[btn.key].ionName} size={32} color={CONSOLE_ICONS[btn.key].color} />
-                    <View style={cn$.cardBottom}>
-                      <Text style={cn$.cardTitle}>{btn.title}</Text>
-                      <Text style={cn$.cardSub}>{btn.sub}</Text>
-                    </View>
+                    <View style={cn$.cardBottom}><Text style={cn$.cardTitle}>{btn.title}</Text><Text style={cn$.cardSub}>{btn.sub}</Text></View>
                   </LinearGradient>
                 </ImageBackground>
               </TouchableOpacity>
@@ -411,10 +222,7 @@ const cn$ = StyleSheet.create({
   brandLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 9, fontWeight: '800', letterSpacing: 4 },
   title: { color: '#D4AF37', fontSize: 32, fontWeight: '900', letterSpacing: 8 },
   subtitle: { color: '#00F2FF', fontSize: 11, fontWeight: '700', letterSpacing: 4, opacity: 0.85 },
-  founderBadge: {
-    marginTop: 6, paddingHorizontal: 14, paddingVertical: 4,
-    borderRadius: 12, borderWidth: 1, borderColor: '#D4AF37', backgroundColor: 'rgba(212,175,55,0.08)',
-  },
+  founderBadge: { marginTop: 6, paddingHorizontal: 14, paddingVertical: 4, borderRadius: 12, borderWidth: 1, borderColor: '#D4AF37', backgroundColor: 'rgba(212,175,55,0.08)' },
   founderText: { color: '#D4AF37', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   tierRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
   tierDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
@@ -422,39 +230,27 @@ const cn$ = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingBottom: 100 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 10 },
-  card: {
-    width: (SW - 44) / 2, height: (SW - 44) / 2 * 1.15, borderRadius: 16, overflow: 'hidden',
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.08)',
-  },
+  card: { width: (SW - 44) / 2, height: (SW - 44) / 2 * 1.15, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(0,242,255,0.08)' },
   cardBg: { flex: 1 },
   cardImage: { borderRadius: 16 },
   cardGradient: { flex: 1, justifyContent: 'space-between', padding: 16 },
-  cardIcon: { fontSize: 32 },
   cardBottom: { gap: 4 },
   cardTitle: { color: '#D4AF37', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   cardSub: { color: '#00F2FF', fontSize: 8, fontWeight: '700', letterSpacing: 1.5, opacity: 0.7 },
 });
 
-
-// ========== CHALLENGE FORGE — Nike Style ==========
+// ========== CHALLENGE FORGE ==========
 type ForgeMode = 'personal' | 'battle' | 'duel';
 
-function ForgeCard({ mode, title, subtitle, image, iconEl, onPress }: {
-  mode: string; title: string; subtitle: string; image: string; iconEl: React.ReactNode; onPress: () => void;
+function ForgeCard({ title, subtitle, image, iconEl, onPress }: {
+  title: string; subtitle: string; image: string; iconEl: React.ReactNode; onPress: () => void;
 }) {
   return (
     <TouchableOpacity style={fg$.card} onPress={onPress} activeOpacity={0.85}>
       <ImageBackground source={{ uri: image }} style={fg$.imageBg} imageStyle={fg$.imageStyle}>
-        <LinearGradient
-          colors={['rgba(5,5,5,0.1)', 'rgba(5,5,5,0.55)', 'rgba(5,5,5,0.95)']}
-          locations={[0, 0.3, 0.78]}
-          style={fg$.gradient}
-        >
+        <LinearGradient colors={['rgba(5,5,5,0.1)', 'rgba(5,5,5,0.55)', 'rgba(5,5,5,0.95)']} locations={[0, 0.3, 0.78]} style={fg$.gradient}>
           <View style={fg$.cardTop}>{iconEl}</View>
-          <View style={fg$.cardBottom}>
-            <Text style={fg$.cardTitle}>{title}</Text>
-            <Text style={fg$.cardSub}>{subtitle}</Text>
-          </View>
+          <View style={fg$.cardBottom}><Text style={fg$.cardTitle}>{title}</Text><Text style={fg$.cardSub}>{subtitle}</Text></View>
         </LinearGradient>
       </ImageBackground>
     </TouchableOpacity>
@@ -463,12 +259,6 @@ function ForgeCard({ mode, title, subtitle, image, iconEl, onPress }: {
 
 function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exercise: ExerciseType) => void; user: any }) {
   const [mode, setMode] = useState<ForgeMode | null>(null);
-  const [showTemplateCreator, setShowTemplateCreator] = useState(false);
-  const [templateName, setTemplateName] = useState('');
-  const [templateExercise, setTemplateExercise] = useState<ExerciseType>('squat');
-  const [templateDuration, setTemplateDuration] = useState('60');
-  const [templateReps, setTemplateReps] = useState('10');
-  const isAdmin = user?.is_admin || user?.role === 'coach';
   const pulseDNA = useSharedValue(1);
   const flameFlicker = useSharedValue(0.6);
   const boltFlash = useSharedValue(0);
@@ -512,62 +302,19 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
       <Text style={fg$.title}>CHALLENGE FORGE</Text>
       <Text style={fg$.sub}>Scegli la tua sfida</Text>
       <View style={fg$.cardsCol}>
-        <ForgeCard mode="personal" title="PERSONAL TRAINING" subtitle={"Focus DNA \u00b7 Migliora le tue stats atletiche"}
+        <ForgeCard title="PERSONAL TRAINING" subtitle={"Focus DNA \u00b7 Migliora le tue stats atletiche"}
           image={FORGE_IMAGES.personal} onPress={() => setMode('personal')}
           iconEl={<Animated.View style={dnaS}><Ionicons name="analytics" size={24} color="#00F2FF" /></Animated.View>}
         />
-        <ForgeCard mode="battle" title="POINTS BATTLE" subtitle={"Hall of Kore \u00b7 XP massimo per scalare il Rank"}
+        <ForgeCard title="POINTS BATTLE" subtitle={"Hall of Kore \u00b7 XP massimo per scalare il Rank"}
           image={FORGE_IMAGES.battle} onPress={() => setMode('battle')}
           iconEl={<View style={fg$.iconRow}><Ionicons name="trophy" size={24} color="#D4AF37" /><Animated.View style={flameS}><Ionicons name="flame" size={14} color="#FF3B30" style={{ marginLeft: -4, marginTop: -6 }} /></Animated.View></View>}
         />
-        <ForgeCard mode="duel" title="LIVE DUEL" subtitle={"Tempo reale \u00b7 Sfida un avversario"}
+        <ForgeCard title="LIVE DUEL" subtitle={"Tempo reale \u00b7 Sfida un avversario"}
           image={FORGE_IMAGES.duel} onPress={() => setMode('duel')}
           iconEl={<Animated.View style={boltS}><Ionicons name="flash" size={24} color="#00F2FF" /></Animated.View>}
         />
       </View>
-      {/* GESTIONE TEMPLATE — Admin/Coach Premium only */}
-      {isAdmin && (
-        <View style={fg$.templateSection}>
-          <View style={fg$.templateDivider} />
-          <Text style={fg$.templateHeader}>GESTIONE TEMPLATE</Text>
-          <TouchableOpacity style={fg$.createTemplateBtn} onPress={() => setShowTemplateCreator(true)} activeOpacity={0.8}>
-            <Text style={fg$.createTemplatePlus}>+</Text>
-            <Text style={fg$.createTemplateText}>CREA NUOVO TEMPLATE SFIDA</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      {/* Template Creator Modal */}
-      <Modal visible={showTemplateCreator} transparent animationType="slide">
-        <View style={fg$.modalOverlay}>
-          <View style={fg$.modalContent}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <Ionicons name="construct" size={18} color="#D4AF37" />
-              <Text style={fg$.modalTitle}>CREA TEMPLATE</Text>
-            </View>
-            <Text style={fg$.modalLabel}>NOME TEMPLATE</Text>
-            <TextInput style={fg$.modalInput} value={templateName} onChangeText={setTemplateName} placeholder="Es: Sprint Finale" placeholderTextColor="#555" />
-            <Text style={fg$.modalLabel}>ESERCIZIO</Text>
-            <View style={fg$.modalRow}>
-              <TouchableOpacity style={[fg$.modalChoice, templateExercise === 'squat' && fg$.modalChoiceActive]} onPress={() => setTemplateExercise('squat')}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Ionicons name="barbell" size={14} color="#00F2FF" /><Text style={fg$.modalChoiceText}>SQUAT</Text></View>
-              </TouchableOpacity>
-              <TouchableOpacity style={[fg$.modalChoice, templateExercise === 'punch' && fg$.modalChoiceActive]} onPress={() => setTemplateExercise('punch')}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Ionicons name="hand-left" size={14} color="#00F2FF" /><Text style={fg$.modalChoiceText}>PUNCH</Text></View>
-              </TouchableOpacity>
-            </View>
-            <Text style={fg$.modalLabel}>TEMPO (SEC)</Text>
-            <TextInput style={fg$.modalInput} value={templateDuration} onChangeText={setTemplateDuration} keyboardType="numeric" placeholderTextColor="#555" />
-            <Text style={fg$.modalLabel}>REPS TARGET</Text>
-            <TextInput style={fg$.modalInput} value={templateReps} onChangeText={setTemplateReps} keyboardType="numeric" placeholderTextColor="#555" />
-            <TouchableOpacity style={fg$.saveBtn} onPress={() => { setShowTemplateCreator(false); setTemplateName(''); }} activeOpacity={0.8}>
-              <Text style={fg$.saveBtnText}>SALVA TEMPLATE</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setShowTemplateCreator(false)} style={fg$.cancelBtn}>
-              <Text style={fg$.cancelText}>ANNULLA</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </Animated.View>
   );
 }
@@ -585,49 +332,19 @@ const fg$ = StyleSheet.create({
   cardBottom: { gap: 2 },
   cardTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   cardSub: { color: 'rgba(255,255,255,0.6)', fontSize: 11 },
-  forgeIcon: { fontSize: 24 },
-  flameSmall: { fontSize: 14, marginLeft: -4, marginTop: -6 },
   iconRow: { flexDirection: 'row', alignItems: 'flex-start' },
-  // Exercise select
   selectWrap: { alignItems: 'center', gap: 14, paddingHorizontal: 20, width: '100%' },
   selectTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
   selectSub: { color: 'rgba(255,255,255,0.55)', fontSize: 11, textAlign: 'center' },
   exRow: { flexDirection: 'row', gap: 12, width: '100%' },
   exCard: {
     flex: 1, alignItems: 'center', gap: 8, paddingVertical: 28,
-    backgroundColor: 'rgba(0,242,255,0.03)', borderRadius: 16,
-    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.12)',
+    backgroundColor: 'rgba(0,242,255,0.03)', borderRadius: 16, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.12)',
   },
-  exIcon: { fontSize: 36 },
   exName: { color: '#00F2FF', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
   exDesc: { color: 'rgba(255,255,255,0.5)', fontSize: 9 },
   backBtn: { marginTop: 8 },
   backText: { color: '#555', fontSize: 11, fontWeight: '700' },
-  // Template Management
-  templateSection: { width: '100%', paddingHorizontal: 0, marginTop: 12 },
-  templateDivider: { height: 1, backgroundColor: 'rgba(212,175,55,0.1)', marginBottom: 12 },
-  templateHeader: { color: '#D4AF37', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 10, textAlign: 'center' },
-  createTemplateBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    paddingVertical: 14, borderRadius: 12, borderWidth: 1.5, borderColor: 'rgba(212,175,55,0.25)',
-    borderStyle: 'dashed' as any, backgroundColor: 'rgba(212,175,55,0.04)',
-  },
-  createTemplatePlus: { color: '#D4AF37', fontSize: 22, fontWeight: '300' },
-  createTemplateText: { color: '#D4AF37', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
-  // Template Creator Modal
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', padding: 24 },
-  modalContent: { width: '100%', backgroundColor: '#0A0A0A', borderRadius: 20, padding: 24, borderWidth: 1, borderColor: 'rgba(212,175,55,0.15)', gap: 12 },
-  modalTitle: { color: '#D4AF37', fontSize: 18, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
-  modalLabel: { color: '#00F2FF', fontSize: 9, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
-  modalInput: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: 12, color: '#FFF', fontSize: 14, fontWeight: '700', borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)' },
-  modalRow: { flexDirection: 'row', gap: 10 },
-  modalChoice: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.03)' },
-  modalChoiceActive: { borderColor: '#00F2FF', backgroundColor: 'rgba(0,242,255,0.08)' },
-  modalChoiceText: { color: '#FFF', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
-  saveBtn: { backgroundColor: '#D4AF37', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
-  saveBtnText: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
-  cancelBtn: { paddingVertical: 10, alignItems: 'center' },
-  cancelText: { color: '#555', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
 });
 
 // ========== MINI DNA RADAR ==========
@@ -682,421 +399,42 @@ function Countdown({ onComplete }: { onComplete: () => void }) {
   );
 }
 
-// ========== PULSE TICKER (tier-aware: disabilita animazione su LEGACY) ==========
-function PulseTicker({ reduced }: { reduced?: boolean }) {
-  const scrollX = useSharedValue(0);
-  const TXT = '[LIVE FEED] LONDON: ALEX_K COMPLETED EXPLOSIVE PUNCH (98Q) \u2022 CHICAGO: MAYA_J JOINED CREW BULLS \u2022 TOKYO: NEW WORLD RECORD IN HALL OF KORE \u2022 BERLIN: 3 NEW FOUNDERS REGISTERED \u2022 MIAMI: CREW SHARKS VS WOLVES (LIVE DUEL) \u2022 ';
-  useEffect(() => {
-    if (!reduced) {
-      scrollX.value = withRepeat(withTiming(-SW * 3, { duration: 25000, easing: Easing.linear }), -1, false);
-    }
-  }, []);
-  const s = useAnimatedStyle(() => ({ transform: [{ translateX: scrollX.value }] }));
-  if (reduced) {
-    return (
-      <View style={{ height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.06)', justifyContent: 'center' }}>
-        <Text numberOfLines={1} style={{ color: '#00F2FF', fontSize: 9, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.5, paddingHorizontal: 8 }}>[LIVE FEED] LONDON: ALEX_K PUNCH (98Q) {'\u2022'} TOKYO: WORLD RECORD</Text>
-      </View>
-    );
-  }
-  return (
-    <View style={{ height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.06)', justifyContent: 'center' }}>
-      <Animated.View style={[{ flexDirection: 'row', width: SW * 6 }, s]}>
-        <Text style={{ color: '#00F2FF', fontSize: 9, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.7 }}>{TXT}{TXT}</Text>
-      </Animated.View>
-    </View>
-  );
-}
-
-// ========== BURGER MENU with ADMIN PRIVILEGES + GHOSTING ==========
-function BurgerMenu({ visible, onClose, user, onLogout, deviceTier, activeRole, onRoleSwitch }: {
-  visible: boolean; onClose: () => void; user: any; onLogout: () => void; deviceTier: DeviceTier;
-  activeRole: UserRole; onRoleSwitch: (role: UserRole) => void;
-}) {
-  if (!visible) return null;
-  const isFounder = user?.is_founder || user?.is_admin;
-  const isAdmin = user?.is_admin;
-  const isLegacy = deviceTier === 'legacy';
-  const ROLES: UserRole[] = ['ADMIN', 'GYM_OWNER', 'COACH', 'ATHLETE'];
-
-  const items: { iconName: keyof typeof Ionicons.glyphMap; iconColor: string; label: string; sub: string }[] = [
-    { iconName: 'scan', iconColor: '#00F2FF', label: 'Bio-Signature Scan', sub: 'Ricalibra i sensori' },
-    { iconName: 'settings-sharp', iconColor: '#FFFFFF', label: 'Settings', sub: 'Configurazione NEXUS' },
-    { iconName: 'trophy', iconColor: '#D4AF37', label: 'Founders Club', sub: isFounder ? `Founder #${user?.founder_number || '?'}` : 'Non ancora membro' },
-    { iconName: 'chatbubble-ellipses', iconColor: '#FFFFFF', label: 'Supporto', sub: 'Contatta il team KORE' },
-  ];
-
-  // GYM HUB (visible for GYM_OWNER role)
-  const gymItems: { iconName: keyof typeof Ionicons.glyphMap; iconColor: string; label: string; sub: string }[] = [
-    { iconName: 'business', iconColor: '#D4AF37', label: 'GYM HUB', sub: 'Gestione Coach & Eventi' },
-    { iconName: 'bar-chart', iconColor: '#00F2FF', label: 'Analytics Palestra', sub: 'Iscrizioni, Revenue, Attivit\u00e0' },
-  ];
-
-  return (
-    <Modal transparent visible={visible} animationType="none" onRequestClose={onClose}>
-      <TouchableOpacity style={bm$.backdrop} activeOpacity={1} onPress={onClose}>
-        <View style={isLegacy ? bm$.blurLayerLegacy : bm$.blurLayer} />
-        <Animated.View entering={SlideInRight.duration(250)} exiting={SlideOutRight.duration(200)} style={bm$.panel}>
-          <LinearGradient colors={['rgba(8,8,8,0.97)', 'rgba(5,5,5,0.99)']} style={bm$.panelInner}>
-            <View style={bm$.header}>
-              <Text style={bm$.headerTitle}>CONTROL CENTER</Text>
-              <TouchableOpacity onPress={onClose}><Text style={bm$.closeX}>{'\u2715'}</Text></TouchableOpacity>
-            </View>
-            {/* Device Tier Badge */}
-            <View style={bm$.tierBadge}>
-              <Text style={bm$.tierLabel}>{getTierLabel(deviceTier)}</Text>
-              <Text style={bm$.tierSub}>{getTrackingMode(deviceTier)}</Text>
-            </View>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {items.map((item, i) => (
-                <TouchableOpacity key={i} style={bm$.item} activeOpacity={0.7}>
-                  <Ionicons name={item.iconName} size={18} color={item.iconColor} />
-                  <View style={bm$.itemText}><Text style={bm$.itemLabel}>{item.label}</Text><Text style={bm$.itemSub}>{item.sub}</Text></View>
-                </TouchableOpacity>
-              ))}
-
-              {/* GYM HUB — Visible when ghosting as GYM_OWNER */}
-              {activeRole === 'GYM_OWNER' && (
-                <View style={bm$.gymSection}>
-                  <View style={bm$.sectionDivider} />
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 }}>
-                    <Ionicons name="business" size={16} color="#D4AF37" />
-                    <Text style={bm$.sectionTitle}>GYM HUB</Text>
-                  </View>
-                  {gymItems.map((item, i) => (
-                    <TouchableOpacity key={`gym-${i}`} style={bm$.item} activeOpacity={0.7}>
-                      <Ionicons name={item.iconName} size={18} color={item.iconColor} />
-                      <View style={bm$.itemText}><Text style={[bm$.itemLabel, { color: '#D4AF37' }]}>{item.label}</Text><Text style={bm$.itemSub}>{item.sub}</Text></View>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-
-              {isFounder && (
-                <View style={bm$.founderPride}>
-                  <Ionicons name="star" size={16} color="#D4AF37" />
-                  <Text style={bm$.founderQuote}>You are one of the first 100 to enter the Kore. Your legacy is permanent.</Text>
-                </View>
-              )}
-
-              {/* ========== ADMIN PRIVILEGES — GHOSTING SWITCHER ========== */}
-              {isAdmin && (
-                <View style={bm$.adminSection}>
-                  <View style={bm$.sectionDivider} />
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Ionicons name="shield-checkmark" size={16} color="#FF453A" />
-                    <Text style={bm$.adminTitle}>ADMIN PRIVILEGES</Text>
-                  </View>
-                  <Text style={bm$.adminSub}>GHOSTING MODE {'\u2014'} Cambia ruolo istantaneamente</Text>
-                  <View style={bm$.roleGrid}>
-                    {ROLES.map((role) => {
-                      const cfg = ROLE_CONFIG[role];
-                      const isActive = activeRole === role;
-                      const roleIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
-                        ADMIN: 'shield-checkmark', GYM_OWNER: 'business', COACH: 'fitness', ATHLETE: 'person',
-                      };
-                      return (
-                        <TouchableOpacity
-                          key={role}
-                          style={[bm$.roleBtn, isActive && { borderColor: cfg.color, backgroundColor: `${cfg.color}15` }]}
-                          onPress={() => onRoleSwitch(role)}
-                          activeOpacity={0.7}
-                        >
-                          <Ionicons name={roleIcons[role]} size={18} color={isActive ? cfg.color : 'rgba(255,255,255,0.4)'} />
-                          <Text style={[bm$.roleLabel, isActive && { color: cfg.color }]}>{cfg.label}</Text>
-                          {isActive && <View style={[bm$.roleDot, { backgroundColor: cfg.color }]} />}
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                  <View style={bm$.activeRoleBar}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Ionicons name={({ ADMIN: 'shield-checkmark', GYM_OWNER: 'business', COACH: 'fitness', ATHLETE: 'person' } as Record<string, any>)[activeRole]} size={14} color={ROLE_CONFIG[activeRole].color} />
-                      <Text style={[bm$.activeRoleText, { color: ROLE_CONFIG[activeRole].color }]}>
-                        GHOSTING: {ROLE_CONFIG[activeRole].label}
-                      </Text>
-                    </View>
-                    <Text style={bm$.activeRoleDesc}>{ROLE_CONFIG[activeRole].description}</Text>
-                  </View>
-                </View>
-              )}
-
-              {/* LOGOUT — Red opaque */}
-              <TouchableOpacity style={bm$.logoutBtn} activeOpacity={0.7} onPress={onLogout}>
-                <Ionicons name="log-out-outline" size={18} color="#FF453A" />
-                <View style={bm$.itemText}>
-                  <Text style={bm$.logoutLabel}>LOGOUT</Text>
-                  <Text style={bm$.logoutSub}>Esci dal tuo Legacy</Text>
-                </View>
-              </TouchableOpacity>
-            </ScrollView>
-            <PulseTicker reduced={isLegacy} />
-            <Text style={bm$.footer}>ARENAKORE v2.1 {'\u00b7'} NEXUS SYNC</Text>
-          </LinearGradient>
-        </Animated.View>
-      </TouchableOpacity>
-    </Modal>
-  );
-}
-
-const bm$ = StyleSheet.create({
-  backdrop: { flex: 1, flexDirection: 'row' },
-  blurLayer: {
-    flex: 1, backgroundColor: 'rgba(0,18,25,0.65)',
-    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(18px) saturate(120%)', WebkitBackdropFilter: 'blur(18px) saturate(120%)' } as any : {}),
-  },
-  blurLayerLegacy: {
-    flex: 1, backgroundColor: 'rgba(0,8,12,0.85)',
-  },
-  panel: { width: SW * 0.72, height: '100%' },
-  panelInner: { flex: 1, paddingTop: 60, borderLeftWidth: 1.5, borderLeftColor: 'rgba(0,242,255,0.1)' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 8 },
-  headerTitle: { color: '#00F2FF', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
-  closeX: { color: '#555', fontSize: 22 },
-  tierBadge: {
-    marginHorizontal: 20, marginBottom: 16, paddingVertical: 8, paddingHorizontal: 14,
-    backgroundColor: 'rgba(0,242,255,0.04)', borderRadius: 8,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.08)', gap: 2,
-  },
-  tierLabel: { color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
-  tierSub: { color: '#555', fontSize: 8, fontWeight: '600', letterSpacing: 1 },
-  item: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 16, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)' },
-  itemIcon: { fontSize: 20, width: 32 },
-  itemText: { flex: 1, gap: 2 },
-  itemLabel: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-  itemSub: { color: '#555', fontSize: 10 },
-  founderPride: {
-    margin: 20, backgroundColor: 'rgba(212,175,55,0.05)', borderRadius: 14,
-    padding: 18, borderWidth: 1, borderColor: 'rgba(212,175,55,0.12)', alignItems: 'center', gap: 10,
-  },
-  founderStar: { color: '#D4AF37', fontSize: 22 },
-  founderQuote: { color: '#D4AF37', fontSize: 11, fontWeight: '600', fontStyle: 'italic', textAlign: 'center', lineHeight: 17, opacity: 0.85 },
-  logoutBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 16,
-    paddingHorizontal: 20, marginTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(255,59,48,0.08)',
-  },
-  logoutIcon: { fontSize: 20, width: 32 },
-  logoutLabel: { color: 'rgba(255,59,48,0.7)', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
-  logoutSub: { color: 'rgba(255,59,48,0.35)', fontSize: 10 },
-  // Admin Privileges + Ghosting
-  adminSection: { marginTop: 8, paddingHorizontal: 20 },
-  sectionDivider: { height: 1, backgroundColor: 'rgba(255,59,48,0.08)', marginBottom: 12 },
-  sectionTitle: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
-  adminTitle: { color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 4 },
-  adminSub: { color: '#555', fontSize: 8, fontWeight: '700', letterSpacing: 1, marginBottom: 12 },
-  roleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  roleBtn: {
-    width: '47%' as any, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)',
-    alignItems: 'center', gap: 4, position: 'relative' as any,
-  },
-  roleIcon: { fontSize: 18 },
-  roleLabel: { color: '#888', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
-  roleDot: { position: 'absolute' as any, top: 6, right: 6, width: 6, height: 6, borderRadius: 3 },
-  activeRoleBar: {
-    marginTop: 12, padding: 10, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.02)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', alignItems: 'center', gap: 2,
-  },
-  activeRoleText: { fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  activeRoleDesc: { color: '#555', fontSize: 8, fontWeight: '600' },
-  // GYM Hub section
-  gymSection: { marginTop: 4 },
-  footer: { color: '#333', fontSize: 9, fontWeight: '600', letterSpacing: 1, paddingHorizontal: 20, paddingBottom: 30 },
-});
-
-// ========== CINEMA RESULTS ==========
-function CinemaResults({ visible, result, user, onClose }: { visible: boolean; result: any; user: any; onClose: () => void }) {
-  const slideY = useSharedValue(300);
-  const fadeIn = useSharedValue(0);
-  const [displayXP, setDisplayXP] = useState(0);
-  const founderShimmer = useSharedValue(-1);
-  const [showShare, setShowShare] = useState(false);
-
-  useEffect(() => {
-    if (visible && result) {
-      slideY.value = withSpring(0, { damping: 15, stiffness: 100 });
-      fadeIn.value = withTiming(1, { duration: 400 });
-      const target = result.xp_earned || 0;
-      let cur = 0; const step = Math.max(1, Math.ceil(target / 30));
-      const iv = setInterval(() => { cur += step; if (cur >= target) { cur = target; clearInterval(iv); } setDisplayXP(cur); }, 40);
-      // Founder shimmer every 1.5s
-      founderShimmer.value = withRepeat(withSequence(withTiming(1, { duration: 600, easing: Easing.inOut(Easing.ease) }), withDelay(900, withTiming(-1, { duration: 0 }))), -1, false);
-      return () => clearInterval(iv);
-    }
-  }, [visible, result]);
-
-  const cs = useAnimatedStyle(() => ({ transform: [{ translateY: slideY.value }], opacity: fadeIn.value }));
-  const ss = useAnimatedStyle(() => ({ opacity: 0.35 + Math.max(0, 1 - Math.abs(founderShimmer.value)) * 0.65 }));
-
-  if (!visible || !result) return null;
-  const isFounder = user?.is_founder || user?.is_admin;
-
-  return (
-    <Modal transparent visible={visible} animationType="none">
-      <View style={cin$.backdrop}>
-        <Animated.View style={[cin$.card, cs]}>
-          <ScrollView contentContainerStyle={cin$.scroll} showsVerticalScrollIndicator={false}>
-            <View style={cin$.titleRow}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Ionicons name="flash" size={18} color="#00F2FF" />
-                <Text style={cin$.title}>SESSIONE COMPLETATA</Text>
-              </View>
-              {isFounder && <Animated.View style={[cin$.founderBadge, ss]}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Ionicons name="star" size={10} color="#D4AF37" /><Text style={cin$.founderText}>FOUNDER</Text></View></Animated.View>}
-            </View>
-            <Text style={cin$.username}>{user?.username || 'Atleta'}</Text>
-            <View style={cin$.scoreCircle}><Text style={cin$.scoreVal}>{result.quality_score || '\u2014'}</Text><Text style={cin$.scoreLabel}>QUALIT{'\u00c0'}</Text></View>
-            <View style={cin$.xpWrap}><Text style={cin$.xpPlus}>+</Text><Text style={cin$.xpVal}>{displayXP}</Text><Text style={cin$.xpUnit}>XP</Text></View>
-            <View style={cin$.statsRow}>
-              <View style={cin$.stat}><Text style={cin$.statVal}>{result.reps_completed}</Text><Text style={cin$.statLabel}>REPS</Text></View>
-              <View style={cin$.stat}><Text style={[cin$.statVal, { color: '#D4AF37' }]}>x{result.quality_multiplier}</Text><Text style={cin$.statLabel}>MULTI</Text></View>
-              <View style={cin$.stat}><Text style={cin$.statVal}>{result.base_xp}</Text><Text style={cin$.statLabel}>BASE</Text></View>
-            </View>
-            {result.records_broken?.length > 0 && (
-              <View style={cin$.record}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}><Ionicons name="trophy" size={16} color="#D4AF37" /><Text style={cin$.recordTitle}>RECORD INFRANTI!</Text></View><Text style={cin$.recordList}>{result.records_broken.join(' \u00b7 ')}</Text></View>
-            )}
-            {result.level_up && <View style={cin$.level}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}><Ionicons name="sparkles" size={16} color="#D4AF37" /><Text style={cin$.levelText}>LEVEL UP! {'\u2192'} LVL {result.new_level}</Text></View></View>}
-            {result.dna && (
-              <View style={cin$.dnaRow}>{Object.entries(result.dna).map(([k, v]: [string, any]) => (
-                <View key={k} style={cin$.dnaItem}><Text style={cin$.dnaVal}>{Math.round(v)}</Text><Text style={cin$.dnaLabel}>{k.slice(0, 3).toUpperCase()}</Text></View>
-              ))}</View>
-            )}
-            <TouchableOpacity style={cin$.shareBtn} onPress={() => setShowShare(!showShare)} activeOpacity={0.85}>
-              <Text style={cin$.shareBtnText}>{'\u2191'} SHARE GLORY SHOT</Text>
-            </TouchableOpacity>
-            {showShare && (
-              <Animated.View entering={FadeInDown.duration(300)} style={cin$.shareCard}>
-                <Text style={cin$.shareLogo}>ARENAKORE</Text>
-                <Text style={cin$.shareTag}>Hall of Kore</Text>
-                <View style={cin$.shareLine} />
-                <Text style={cin$.shareScore}>Quality: {result.quality_score} {'\u00b7'} +{result.xp_earned} XP {'\u00b7'} {result.reps_completed} Reps</Text>
-                <Text style={cin$.shareFounder}>
-                  {isFounder ? `Founder #${user?.founder_number || '?'}` : user?.username} {'\u2014'} Performance Logged in Chicago
-                </Text>
-              </Animated.View>
-            )}
-            <TouchableOpacity style={cin$.closeBtn} onPress={onClose}><Text style={cin$.closeBtnText}>CHIUDI</Text></TouchableOpacity>
-          </ScrollView>
-        </Animated.View>
-      </View>
-    </Modal>
-  );
-}
-
-const cin$ = StyleSheet.create({
-  backdrop: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(5,5,5,0.96)' },
-  card: { width: SW * 0.9, maxHeight: SH * 0.85, backgroundColor: '#0A0A0A', borderRadius: 20, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.2)', shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.12, shadowRadius: 25 },
-  scroll: { padding: 24, alignItems: 'center' },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 },
-  title: { color: '#00F2FF', fontSize: 11, fontWeight: '800', letterSpacing: 4 },
-  founderBadge: { backgroundColor: 'rgba(212,175,55,0.2)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: '#D4AF37' },
-  founderText: { color: '#D4AF37', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
-  username: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1, marginBottom: 12 },
-  scoreCircle: { width: 100, height: 100, borderRadius: 50, backgroundColor: 'rgba(0,242,255,0.06)', borderWidth: 3, borderColor: '#00F2FF', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  scoreVal: { color: '#FFFFFF', fontSize: 36, fontWeight: '900' },
-  scoreLabel: { color: '#00F2FF', fontSize: 7, fontWeight: '700', letterSpacing: 2 },
-  xpWrap: { flexDirection: 'row', alignItems: 'baseline', gap: 2, marginBottom: 14 },
-  xpPlus: { color: '#D4AF37', fontSize: 22, fontWeight: '300' },
-  xpVal: { color: '#D4AF37', fontSize: 42, fontWeight: '900', fontVariant: ['tabular-nums'] },
-  xpUnit: { color: '#8A7020', fontSize: 14, fontWeight: '800', letterSpacing: 2, marginLeft: 4 },
-  statsRow: { flexDirection: 'row', width: '100%', justifyContent: 'space-around', marginBottom: 10 },
-  stat: { alignItems: 'center', gap: 3 },
-  statVal: { color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
-  statLabel: { color: '#555', fontSize: 8, fontWeight: '700', letterSpacing: 1 },
-  record: { width: '100%', backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: 10, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(212,175,55,0.3)', marginBottom: 8, gap: 3 },
-  recordTitle: { color: '#D4AF37', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
-  recordList: { color: '#D4AF37', fontSize: 10 },
-  level: { width: '100%', backgroundColor: 'rgba(0,242,255,0.08)', borderRadius: 10, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)', marginBottom: 8 },
-  levelText: { color: '#00F2FF', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
-  dnaRow: { flexDirection: 'row', gap: 10, marginVertical: 8 },
-  dnaItem: { alignItems: 'center', gap: 1 },
-  dnaVal: { color: '#00F2FF', fontSize: 14, fontWeight: '900' },
-  dnaLabel: { color: '#555', fontSize: 7, fontWeight: '700' },
-  shareBtn: { width: '100%', backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 6, borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)' },
-  shareBtnText: { color: '#D4AF37', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
-  shareCard: { width: '100%', backgroundColor: 'rgba(212,175,55,0.05)', borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 8, borderWidth: 1, borderColor: 'rgba(212,175,55,0.15)', gap: 4 },
-  shareLogo: { color: '#D4AF37', fontSize: 16, fontWeight: '900', letterSpacing: 4 },
-  shareTag: { color: '#888', fontSize: 9, fontWeight: '600', letterSpacing: 2 },
-  shareLine: { width: 40, height: 1, backgroundColor: 'rgba(212,175,55,0.3)', marginVertical: 6 },
-  shareScore: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
-  shareFounder: { color: '#D4AF37', fontSize: 10, fontWeight: '600', fontStyle: 'italic', textAlign: 'center' },
-  closeBtn: { width: '100%', backgroundColor: '#00F2FF', borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: 10 },
-  closeBtnText: { color: '#050505', fontSize: 14, fontWeight: '800', letterSpacing: 2 },
-});
-
-// ========== SCAN LINE ==========
-function ScanLine({ active }: { active: boolean }) {
-  const ty = useSharedValue(0);
-  useEffect(() => { if (active) ty.value = withRepeat(withTiming(SH - 200, { duration: 2000, easing: Easing.inOut(Easing.ease) }), -1, true); }, [active]);
-  const s = useAnimatedStyle(() => ({ transform: [{ translateY: ty.value }], opacity: active ? 0.6 : 0 }));
-  return <Animated.View style={[{ position: 'absolute', left: 0, right: 0, height: 3, zIndex: 10 }, s]} pointerEvents="none"><View style={{ flex: 1, backgroundColor: '#00F2FF' }} /></Animated.View>;
-}
-
 // ========== MAIN SCREEN ==========
 export default function NexusTriggerScreen() {
-  const insets = useSafeAreaInsets();
+  const { user, token, logout, activeRole, setActiveRole, updateUser } = useAuth();
   const router = useRouter();
-  const { user, token, updateUser, logout, activeRole, setActiveRole } = useAuth();
-
+  const insets = useSafeAreaInsets();
   const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'countdown' | 'scanning' | 'results'>('console');
   const [exercise, setExercise] = useState<ExerciseType>('squat');
   const [forgeMode, setForgeMode] = useState<ForgeMode>('personal');
   const [motionState, setMotionState] = useState<MotionState | null>(null);
+  const [motionActive, setMotionActive] = useState(false);
+  const [goldFlash, setGoldFlash] = useState(false);
+  const [timer, setTimer] = useState(0);
   const [scanResult, setScanResult] = useState<any>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [timer, setTimer] = useState(0);
-  const [goldFlash, setGoldFlash] = useState(false);
-  const [isExplosive, setIsExplosive] = useState(false);
-  const [motionActive, setMotionActive] = useState(false);
-  const [burgerOpen, setBurgerOpen] = useState(false);
-
-  // ===== DEVICE INTELLIGENCE LAYER =====
-  const [deviceProfile, setDeviceProfile] = useState<DeviceProfile | null>(null);
-  useEffect(() => {
-    const profile = profileDevice();
-    setDeviceProfile(profile);
-    console.log(`[ARENAKORE] Device Intelligence: ${profile.tier.toUpperCase()} | ${profile.model} | ${profile.cpuCores} cores | ${profile.ramGB}GB RAM`);
-  }, []);
-  const deviceTier: DeviceTier = deviceProfile?.tier || 'standard';
+  const [showMenu, setShowMenu] = useState(false);
+  const [deviceTier, setDeviceTier] = useState<DeviceTier>('standard');
 
   const analyzerRef = useRef<MotionAnalyzer | null>(null);
-  const accelSubRef = useRef<any>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const startTimeRef = useRef<number>(0);
+  const startTimeRef = useRef(0);
+  const timerRef = useRef<any>(null);
   const lastRepRef = useRef(0);
+  const accelSubRef = useRef<any>(null);
   const motionTimeoutRef = useRef<any>(null);
 
-  // Haptic Punch
-  useEffect(() => {
-    if (!motionState || motionState.reps === 0 || motionState.reps === lastRepRef.current) return;
-    lastRepRef.current = motionState.reps;
-    if (Platform.OS !== 'web') Haptics.impactAsync(exercise === 'punch' ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Medium);
-    setGoldFlash(true); setTimeout(() => setGoldFlash(false), 350);
-  }, [motionState?.reps]);
+  useEffect(() => { const dp = profileDevice(); setDeviceTier(dp.tier); }, []);
 
-  // Explosive detection + motion-active state for skeleton
+  // Web camera & motion detection
   useEffect(() => {
-    if (!motionState) return;
-    const mag = motionState.peakAcceleration || 0;
-    if (motionState.currentPhase !== 'idle' && mag > 1) {
-      setMotionActive(true);
-      if (motionTimeoutRef.current) clearTimeout(motionTimeoutRef.current);
-      motionTimeoutRef.current = setTimeout(() => setMotionActive(false), 600);
-    }
-    if (mag > 3.5 && motionState.currentPhase === 'strike') {
-      setIsExplosive(true); setTimeout(() => setIsExplosive(false), 500);
-    }
-  }, [motionState?.currentPhase, motionState?.peakAcceleration]);
-
-  // Web camera motion detection
-  useEffect(() => {
-    if (Platform.OS !== 'web' || phase !== 'scanning') return;
-    let stream: any, videoEl: any, motionIv: any, prevFrame: any;
+    if (phase !== 'scanning' || Platform.OS !== 'web') return;
+    let stream: any; let videoEl: any; let motionIv: any; let prevFrame: any;
     (async () => {
       try {
-        stream = await (navigator as any).mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } });
+        stream = await (navigator as any).mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 320, height: 240 } });
         videoEl = document.createElement('video');
-        videoEl.srcObject = stream; videoEl.autoplay = true; videoEl.muted = true; videoEl.playsInline = true;
-        videoEl.style.cssText = 'width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;opacity:0.15;z-index:0;transform:scaleX(-1);';
+        videoEl.srcObject = stream; videoEl.muted = true; videoEl.playsInline = true;
+        videoEl.style.cssText = 'position:fixed;top:0;left:0;width:160px;height:120px;opacity:0;z-index:-1;';
         const c = document.getElementById('nexus-cam'); if (c) c.appendChild(videoEl);
         await videoEl.play();
         const cv = document.createElement('canvas'); cv.width = 160; cv.height = 120; const ctx = cv.getContext('2d');
@@ -1187,100 +525,83 @@ export default function NexusTriggerScreen() {
   useEffect(() => () => { stopSensors(); }, []);
   const fmt = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
-  // Console is the entry point
   if (phase === 'console') {
+    return <NexusConsole user={user} onScan={() => setPhase('bioscan')} onForge={() => setPhase('forge')} deviceTier={deviceTier} />;
+  }
+
+  if (phase === 'forge') {
     return (
-      <NexusConsole
-        user={user}
-        onScan={() => setPhase('bioscan')}
-        onForge={() => setPhase('forge')}
-        deviceTier={deviceTier}
-      />
+      <View style={main$.container}>
+        <CyberGrid intensity={0.2} />
+        <SafeAreaView style={{ flex: 1, justifyContent: 'center' }}>
+          <ChallengeForge onSelect={handleForgeSelect} user={user} />
+          <TouchableOpacity onPress={() => setPhase('console')} style={main$.cancelWrap}><Text style={main$.cancelText}>{'\u2190'} TORNA AL NEXUS</Text></TouchableOpacity>
+        </SafeAreaView>
+      </View>
     );
   }
 
+  // Scanning / Countdown / BioScan / Results
+  const skeleton: SkeletonPose = motionState?.skeletonPose || { torsoTilt: 0, kneeAngle: 0, armExtension: 0, shoulderRotation: 0, hipDrop: 0, intensity: 0.15 };
+
   return (
-    <View style={st.container} testID="nexus-trigger-screen">
+    <View style={main$.container}>
       <StatusBar barStyle="light-content" />
-      <View style={st.camBg} nativeID="nexus-cam" />
-      <CyberGrid intensity={phase === 'scanning' ? 1 : 0.3} />
+      <LinearGradient colors={['#050505', '#080808', '#050505']} style={StyleSheet.absoluteFill} />
+      <CyberGrid intensity={motionActive ? 0.6 : 0.3} />
+      <DigitalShadow pose={skeleton} exercise={exercise} goldFlash={goldFlash} motionActive={motionActive} deviceTier={deviceTier} />
       <ScanLine active={phase === 'scanning'} />
-
-      {phase === 'scanning' && motionState && (
-        <DigitalShadow pose={motionState.skeletonPose} exercise={exercise} goldFlash={goldFlash} motionActive={motionActive} deviceTier={deviceTier} />
-      )}
-
-      {/* Top HUD */}
-      <View style={[st.topHud, { top: insets.top + 6 }]}>
-        <TouchableOpacity onPress={() => { stopSensors(); setPhase('console'); }} style={st.hudBtn}><Text style={st.closeX}>{'\u2715'}</Text></TouchableOpacity>
-        <View style={st.livePill}>
-          <View style={[st.liveDot, phase === 'scanning' && { backgroundColor: '#FF3B30' }]} />
-          <Text style={st.liveText}>{phase === 'scanning' ? 'RECORDING' : phase === 'bioscan' ? 'INITIALIZING' : phase === 'forge' ? 'FORGE' : 'NEXUS'}</Text>
-        </View>
-        <TouchableOpacity onPress={() => setBurgerOpen(true)} style={st.hudBtn}><Ionicons name="menu" size={20} color="#00F2FF" /></TouchableOpacity>
-      </View>
-
-      {phase === 'bioscan' && <BioScanTrigger user={user} onComplete={() => {
-        // From NEXUS SCAN: go to quick exercise select then countdown
-        setPhase('forge');
-      }} />}
-      {phase === 'forge' && <View style={st.centerContent}><ChallengeForge onSelect={handleForgeSelect} user={user} /></View>}
+      {phase === 'scanning' && <MiniDNARadar dna={user?.dna} explosive={motionActive} />}
+      {phase === 'bioscan' && <BioScanTrigger user={user} onComplete={() => setPhase('forge')} />}
       {phase === 'countdown' && <Countdown onComplete={handleCountdownDone} />}
 
-      {phase === 'scanning' && motionState && (
-        <>
-          <View style={st.repWrap}><Text style={st.repVal}>{motionState.reps}</Text><Text style={st.repLabel}>REPS</Text></View>
-          <View style={st.timerWrap}><Text style={st.timerText}>{fmt(timer)}</Text></View>
-          <View style={st.qualBar}>
-            <View style={st.qualTrack}><View style={[st.qualFill, { height: `${motionState.quality}%` as any }]} /></View>
-            <Text style={st.qualVal}>{motionState.quality}</Text><Text style={st.qualLabel}>Q</Text>
+      {/* Scanning HUD */}
+      {phase === 'scanning' && (
+        <SafeAreaView style={main$.scanHud}>
+          <View nativeID="nexus-cam" />
+          <View style={main$.hudTop}>
+            <Text style={main$.hudTimer}>{fmt(timer)}</Text>
+            <Text style={main$.hudEx}>{exercise === 'squat' ? 'DEEP SQUAT' : 'EXPLOSIVE PUNCH'}</Text>
           </View>
-          {motionState.lastRepQuality > 0 && <View style={st.lastRep}><Text style={st.lastRepText}>{motionState.lastRepQuality >= 80 ? 'GOLD' : motionState.lastRepQuality >= 60 ? 'BUONO' : 'OK'}</Text></View>}
-          <View style={st.xpAcc}><Text style={st.xpAccVal}>+{motionState.reps * 5} XP</Text></View>
-          <MiniDNARadar dna={user?.dna} explosive={isExplosive} />
-          <View style={st.exLabel}><Text style={st.exLabelText}>{exercise === 'squat' ? 'DEEP SQUAT' : 'EXPLOSIVE PUNCH'}{forgeMode !== 'personal' ? ` \u00b7 ${forgeMode === 'battle' ? 'POINTS BATTLE' : 'LIVE DUEL'}` : ''}</Text></View>
-          <TouchableOpacity testID="nexus-stop-btn" style={[st.stopBtn, { bottom: insets.bottom + 16 }]} onPress={handleStop}>
-            <View style={st.stopInner}><View style={st.stopSq} /></View>
-            <Text style={st.stopLabel}>TERMINA SESSIONE</Text>
+          <View style={main$.hudCenter}>
+            <View style={main$.repBlock}><Text style={main$.repVal}>{motionState?.reps || 0}</Text><Text style={main$.repLabel}>REPS</Text></View>
+            <View style={main$.repBlock}><Text style={[main$.repVal, { color: '#D4AF37' }]}>{motionState?.quality || 0}</Text><Text style={main$.repLabel}>QUALITY</Text></View>
+          </View>
+          {motionState?.lastRepQuality ? (
+            <Animated.View entering={FadeInDown.duration(200)} key={motionState.reps} style={main$.lastRep}>
+              <Ionicons name="checkmark-circle" size={14} color={motionState.lastRepQuality >= 80 ? '#D4AF37' : '#00F2FF'} />
+              <Text style={[main$.lastRepText, motionState.lastRepQuality >= 80 && { color: '#D4AF37' }]}>REP #{motionState.reps} {'\u2014'} Q{motionState.lastRepQuality}</Text>
+            </Animated.View>
+          ) : null}
+          <TouchableOpacity style={main$.stopBtn} onPress={handleStop} activeOpacity={0.85}>
+            <Text style={main$.stopText}>STOP SESSION</Text>
           </TouchableOpacity>
-        </>
+        </SafeAreaView>
       )}
 
       <CinemaResults visible={phase === 'results'} result={scanResult} user={user} onClose={handleResultClose} />
-      <BurgerMenu visible={burgerOpen} onClose={() => setBurgerOpen(false)} user={user} onLogout={() => { setBurgerOpen(false); stopSensors(); logout(); router.replace('/'); }} deviceTier={deviceTier} activeRole={activeRole} onRoleSwitch={(role) => { setActiveRole(role); }} />
+      <BurgerMenu visible={showMenu} onClose={() => setShowMenu(false)} user={user} onLogout={logout} deviceTier={deviceTier} activeRole={activeRole} onRoleSwitch={setActiveRole} />
     </View>
   );
 }
 
-const st = StyleSheet.create({
+const main$ = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
-  camBg: { ...StyleSheet.absoluteFillObject, backgroundColor: '#060606' },
-  topHud: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, zIndex: 20 },
-  hudBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  closeX: { color: '#888', fontSize: 22, fontWeight: '300' },
-  menuIcon: { color: '#00F2FF', fontSize: 20, fontWeight: '700' },
-  livePill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 5 },
-  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
-  liveText: { color: '#00F2FF', fontSize: 10, fontWeight: '800', letterSpacing: 2 },
-  centerContent: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 15, paddingHorizontal: 4 },
-  repWrap: { position: 'absolute', top: 100, left: 0, right: 0, alignItems: 'center', zIndex: 30 },
-  repVal: { color: '#D4AF37', fontSize: 72, fontWeight: '900', letterSpacing: -3 },
-  repLabel: { color: '#D4AF37', fontSize: 10, fontWeight: '700', letterSpacing: 4, marginTop: -8 },
-  timerWrap: { position: 'absolute', top: 80, left: 20, zIndex: 30 },
-  timerText: { color: '#00F2FF', fontSize: 14, fontWeight: '700', fontVariant: ['tabular-nums'] },
-  qualBar: { position: 'absolute', right: 16, top: SH * 0.25, alignItems: 'center', gap: 4, zIndex: 30 },
-  qualTrack: { width: 6, height: 120, backgroundColor: 'rgba(0,242,255,0.1)', borderRadius: 3, overflow: 'hidden', justifyContent: 'flex-end' },
-  qualFill: { width: '100%', backgroundColor: '#00F2FF', borderRadius: 3 },
-  qualVal: { color: '#00F2FF', fontSize: 16, fontWeight: '900' },
-  qualLabel: { color: '#555', fontSize: 8, fontWeight: '700' },
-  lastRep: { position: 'absolute', top: 200, left: 0, right: 0, alignItems: 'center', zIndex: 30 },
-  lastRepText: { color: '#D4AF37', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
-  xpAcc: { position: 'absolute', top: 80, right: 16, zIndex: 30 },
-  xpAccVal: { color: '#D4AF37', fontSize: 14, fontWeight: '800' },
-  exLabel: { position: 'absolute', top: SH * 0.65, left: 0, right: 0, alignItems: 'center', zIndex: 30 },
-  exLabelText: { color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
-  stopBtn: { position: 'absolute', left: 0, right: 0, alignItems: 'center', zIndex: 30 },
-  stopInner: { width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(255,59,48,0.12)', borderWidth: 3, borderColor: '#FF3B30', alignItems: 'center', justifyContent: 'center' },
-  stopSq: { width: 20, height: 20, borderRadius: 4, backgroundColor: '#FF3B30' },
-  stopLabel: { color: '#FF3B30', fontSize: 9, fontWeight: '700', letterSpacing: 2, marginTop: 6 },
+  cancelWrap: { alignItems: 'center', marginTop: 20 },
+  cancelText: { color: '#555', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  scanHud: { flex: 1, justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 20, zIndex: 20 },
+  hudTop: { alignItems: 'center', paddingTop: 20, gap: 2 },
+  hudTimer: { color: '#00F2FF', fontSize: 32, fontWeight: '900', fontVariant: ['tabular-nums'], letterSpacing: 4 },
+  hudEx: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '800', letterSpacing: 3 },
+  hudCenter: { flexDirection: 'row', justifyContent: 'center', gap: 40 },
+  repBlock: { alignItems: 'center', gap: 4 },
+  repVal: { color: '#00F2FF', fontSize: 48, fontWeight: '900', fontVariant: ['tabular-nums'] },
+  repLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '800', letterSpacing: 3 },
+  lastRep: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 6 },
+  lastRepText: { color: '#00F2FF', fontSize: 12, fontWeight: '700', letterSpacing: 2 },
+  stopBtn: {
+    backgroundColor: 'rgba(255,59,48,0.15)', borderRadius: 16, paddingVertical: 18,
+    alignItems: 'center', borderWidth: 1.5, borderColor: 'rgba(255,59,48,0.4)',
+  },
+  stopText: { color: '#FF453A', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
 });

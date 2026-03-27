@@ -143,22 +143,42 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
                   </View>
                   <Text style={st.adminSub}>GHOSTING MODE</Text>
 
-                  {/* Segmented Control */}
-                  <View style={st.segmented}>
+                  {/* Ghosting Roles — Vertical Selection List */}
+                  <View style={{ gap: 6, marginBottom: 12 }}>
                     {ROLES.map((role) => {
                       const rc = ROLE_ICONS[role];
                       const isActive = activeRole === role;
+                      const roleLabel = role === 'GYM_OWNER' ? 'GYM HUB' : role;
+                      const roleSub: Record<string, string> = {
+                        ADMIN: 'Full system access',
+                        GYM_OWNER: 'Gestione Coach & Eventi',
+                        COACH: 'Studio & Template control',
+                        ATHLETE: 'Standard experience',
+                      };
                       return (
                         <TouchableOpacity
                           key={role}
-                          style={[st.segBtn, isActive && { backgroundColor: `${rc.color}18`, borderColor: rc.color }]}
                           onPress={() => setActiveRole(role)}
                           activeOpacity={0.7}
+                          style={{
+                            flexDirection: 'row', alignItems: 'center', gap: 10,
+                            paddingVertical: 14, paddingHorizontal: 14, borderRadius: 12,
+                            borderWidth: isActive ? 1.5 : 1,
+                            borderColor: isActive ? rc.color : 'rgba(255,255,255,0.25)',
+                            backgroundColor: isActive ? `${rc.color}20` : 'rgba(255,255,255,0.08)',
+                          }}
                         >
-                          <Ionicons name={rc.icon} size={16} color={isActive ? rc.color : 'rgba(255,255,255,0.25)'} />
-                          <Text style={[st.segLabel, isActive && { color: rc.color, opacity: 1 }]}>
-                            {role === 'GYM_OWNER' ? 'GYM' : role}
-                          </Text>
+                          <Ionicons name={rc.icon} size={20} color={isActive ? rc.color : 'rgba(255,255,255,0.7)'} />
+                          <View style={{ flex: 1 }}>
+                            <Text style={{
+                              color: isActive ? rc.color : '#FFFFFF',
+                              fontSize: 12, fontWeight: '900', letterSpacing: 1.5,
+                            }}>{roleLabel}</Text>
+                            <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '600' }}>
+                              {roleSub[role]}
+                            </Text>
+                          </View>
+                          {isActive && <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: rc.color }} />}
                         </TouchableOpacity>
                       );
                     })}
@@ -231,12 +251,12 @@ const st = StyleSheet.create({
   adminHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
   adminTitle: { color: '#FF453A', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
   adminSub: { color: DIM, fontSize: 8, fontWeight: '700', letterSpacing: 1.5, marginBottom: 12 },
-  segmented: { flexDirection: 'row', gap: 6, marginBottom: 12 },
+  segmented: { flexDirection: 'row', gap: 5, marginBottom: 12, width: '100%' },
   segBtn: {
-    flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10, borderRadius: 10,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)',
+    width: '23%', alignItems: 'center', gap: 3, paddingVertical: 12, borderRadius: 10,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)',
   },
-  segLabel: { fontSize: 7, fontWeight: '900', letterSpacing: 1.5, color: 'rgba(255,255,255,0.25)', opacity: 0.6 },
+  segLabel: { fontSize: 8, fontWeight: '900', letterSpacing: 1, color: 'rgba(255,255,255,0.55)' },
   activeBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     paddingVertical: 8, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.02)',

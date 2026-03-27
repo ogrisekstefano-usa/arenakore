@@ -120,4 +120,44 @@ export const api = {
 
   getCrewChallenges: (crewId: string, token: string) =>
     request(`/templates/pushed/${crewId}`, {}, token),
+
+  // ========== GYM HUB — ENTERPRISE ENGINE ==========
+  getMyGym: (token: string) => request('/gym/me', {}, token),
+
+  updateMyGym: (data: { name?: string; address?: string; description?: string }, token: string) =>
+    request('/gym/me', { method: 'PUT', body: JSON.stringify(data) }, token),
+
+  getGymCoaches: (token: string) => request('/gym/coaches', {}, token),
+
+  addGymCoach: (username: string, token: string) =>
+    request('/gym/coaches', { method: 'POST', body: JSON.stringify({ username }) }, token),
+
+  removeGymCoach: (coachId: string, token: string) =>
+    request(`/gym/coaches/${coachId}`, { method: 'DELETE' }, token),
+
+  createGymEvent: (data: {
+    title: string; description?: string; exercise: string; difficulty: string;
+    event_date: string; event_time: string; max_participants: number; xp_reward: number;
+  }, token: string) =>
+    request('/gym/events', { method: 'POST', body: JSON.stringify(data) }, token),
+
+  getGymEvents: (token: string) => request('/gym/events', {}, token),
+
+  getGymEventDetail: (eventId: string, token: string) =>
+    request(`/gym/events/${eventId}`, {}, token),
+
+  getEventQR: (eventId: string, token: string) =>
+    request(`/gym/events/${eventId}/qr`, {}, token),
+
+  joinGymEvent: (eventId: string, token: string) =>
+    request(`/gym/events/${eventId}/join`, { method: 'POST' }, token),
+
+  enrollViaEventCode: (eventCode: string, token: string) =>
+    request(`/gym/join/${eventCode}/enroll`, { method: 'POST' }, token),
+
+  getEventPreview: (eventCode: string) =>
+    request(`/gym/join/${eventCode}`),
+
+  updateEventStatus: (eventId: string, status: string, token: string) =>
+    request(`/gym/events/${eventId}/status`, { method: 'PUT', body: JSON.stringify({ status }) }, token),
 };

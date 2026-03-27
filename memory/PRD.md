@@ -118,8 +118,11 @@
 ## Backlog Prioritizzato
 
 ### P0 — Prossima Sessione
+- [x] Deep-Link QR-Core Implementation (expo-linking, /join/[code].tsx)
+- [x] GymHub Visual Upgrade (LinearGradient immersive cards)
+- [x] Refactoring nexus-trigger.tsx (1287 → ~400 lines + sub-components)
+- [x] Refactoring crews.tsx (971 → ~200 lines + sub-components)
 - [ ] Test su dispositivo fisico (Expo Go) per haptics, BlurView, camera
-- [ ] Refactoring nexus-trigger.tsx (>850 righe → split componenti)
 - [ ] Battle participation (join/leave con XP reward)
 
 ### P1 — Feature Medie

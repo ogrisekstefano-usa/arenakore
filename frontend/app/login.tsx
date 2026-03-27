@@ -5,8 +5,11 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AnimatedButton } from '../components/AnimatedButton';
 import { useAuth } from '../contexts/AuthContext';
+
+const PENDING_EVENT_KEY = '@arenakore_pending_event';
 
 export default function Login() {
   const router = useRouter();
@@ -24,7 +27,13 @@ export default function Login() {
     setError('');
     try {
       const result = await login(email, password);
-      if (result.onboarding_completed) {
+
+      // Check for pending event enrollment from QR scan
+      const pendingCode = await AsyncStorage.getItem(PENDING_EVENT_KEY);
+      if (pendingCode) {
+        // Redirect to join screen for auto-enrollment
+        router.replace(`/join/${pendingCode}`);
+      } else if (result.onboarding_completed) {
         router.replace('/(tabs)/kore');
       } else {
         router.replace('/onboarding/step1');
