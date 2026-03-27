@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View, Text, StyleSheet, StatusBar, TouchableOpacity,
+  Dimensions, ImageBackground, ScrollView,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, {
-  useSharedValue, withSpring, withTiming, useAnimatedStyle,
-  FadeIn, FadeInDown,
-} from 'react-native-reanimated';
-import { api } from '../../utils/api';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { CATEGORY_IMAGES } from '../../utils/images';
 
 const { width: SCREEN_W } = Dimensions.get('window');
-const CARD_W = (SCREEN_W - 56) / 2;
 
 const MACRO_CATEGORIES = [
-  { id: 'atletica', label: 'ATLETICA', icon: '🏃', color: '#FF6B00', desc: 'Track & Field' },
-  { id: 'combat', label: 'COMBAT', icon: '🥊', color: '#FF3B30', desc: 'Arti Marziali' },
-  { id: 'acqua', label: 'ACQUA', icon: '🌊', color: '#007AFF', desc: 'Sport Acquatici' },
-  { id: 'team', label: 'TEAM SPORT', icon: '⚽', color: '#34C759', desc: 'Sport di Squadra' },
-  { id: 'fitness', label: 'FITNESS', icon: '🏋️', color: '#D4AF37', desc: 'Forza & Conditioning' },
-  { id: 'outdoor', label: 'OUTDOOR', icon: '🏔️', color: '#30B0C7', desc: 'Natura & Endurance' },
-  { id: 'mind_body', label: 'MIND & BODY', icon: '🧘', color: '#AF52DE', desc: 'Corpo & Mente' },
-  { id: 'extreme', label: 'EXTREME', icon: '🔥', color: '#FF2D55', desc: 'Oltre il Limite' },
+  { id: 'atletica', label: 'ATLETICA', icon: '🏃', desc: 'Track & Field', color: '#FF6B00' },
+  { id: 'combat', label: 'COMBAT', icon: '🥊', desc: 'Arti Marziali', color: '#FF3B30' },
+  { id: 'acqua', label: 'ACQUA', icon: '🌊', desc: 'Sport Acquatici', color: '#007AFF' },
+  { id: 'team', label: 'TEAM SPORT', icon: '⚽', desc: 'Sport di Squadra', color: '#34C759' },
+  { id: 'fitness', label: 'FITNESS', icon: '🏋️', desc: 'Forza & Conditioning', color: '#D4AF37' },
+  { id: 'outdoor', label: 'OUTDOOR', icon: '🏔️', desc: 'Natura & Endurance', color: '#30B0C7' },
+  { id: 'mind_body', label: 'MIND & BODY', icon: '🧘', desc: 'Corpo & Mente', color: '#AF52DE' },
+  { id: 'extreme', label: 'EXTREME', icon: '🔥', desc: 'Oltre il Limite', color: '#FF2D55' },
 ];
 
 export default function Step1() {
@@ -28,7 +28,7 @@ export default function Step1() {
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 16 }]}>
+    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
       <StatusBar barStyle="light-content" />
       <View style={styles.header}>
         <View style={styles.brandRow}>
@@ -39,11 +39,14 @@ export default function Step1() {
         <View style={styles.progressBar}>
           <View style={[styles.progressFill, { width: '33%' }]} />
         </View>
-        <Text style={styles.title}>LA TUA{`\n`}ARENA</Text>
+        <Text style={styles.title}>LA TUA{'\n'}ARENA</Text>
         <Text style={styles.subtitle}>Scegli la tua macro-categoria</Text>
       </View>
 
-      <View style={styles.grid}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.grid}
+      >
         {MACRO_CATEGORIES.map((cat, i) => (
           <Animated.View
             key={cat.id}
@@ -54,23 +57,41 @@ export default function Step1() {
               testID={`cat-${cat.id}-btn`}
               onPress={() => setSelected(cat.id)}
               style={[
-                styles.card,
-                selected === cat.id && { borderColor: cat.color, backgroundColor: `${cat.color}08` },
+                styles.cardOuter,
+                selected === cat.id && { borderColor: cat.color, borderWidth: 2.5 },
               ]}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
             >
-              <Text style={styles.cardIcon}>{cat.icon}</Text>
-              <Text style={[
-                styles.cardLabel,
-                selected === cat.id && { color: cat.color },
-              ]}>{cat.label}</Text>
-              <Text style={styles.cardDesc}>{cat.desc}</Text>
+              <ImageBackground
+                source={{ uri: CATEGORY_IMAGES[cat.id] }}
+                style={styles.cardImage}
+                imageStyle={styles.cardImageStyle}
+              >
+                <LinearGradient
+                  colors={['transparent', 'rgba(5,5,5,0.7)', 'rgba(5,5,5,0.95)']}
+                  locations={[0, 0.4, 0.9]}
+                  style={styles.cardGradient}
+                >
+                  <View style={styles.cardContent}>
+                    <Text style={styles.cardIcon}>{cat.icon}</Text>
+                    <Text style={[
+                      styles.cardLabel,
+                      selected === cat.id && { color: cat.color },
+                    ]}>{cat.label}</Text>
+                    <Text style={styles.cardDesc}>{cat.desc}</Text>
+                  </View>
+                  {selected === cat.id && (
+                    <View style={[styles.selectedDot, { backgroundColor: cat.color }]} />
+                  )}
+                </LinearGradient>
+              </ImageBackground>
             </TouchableOpacity>
           </Animated.View>
         ))}
-      </View>
+        <View style={{ height: 100 }} />
+      </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
         <TouchableOpacity
           testID="step1-continue-btn"
           onPress={() => selected && router.push({ pathname: '/onboarding/step2', params: { category: selected } })}
@@ -85,33 +106,47 @@ export default function Step1() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505', paddingHorizontal: 20 },
-  header: { marginBottom: 16 },
-  brandRow: { flexDirection: 'row', gap: 4, marginBottom: 16 },
+  container: { flex: 1, backgroundColor: '#050505' },
+  header: { paddingHorizontal: 20, marginBottom: 8 },
+  brandRow: { flexDirection: 'row', gap: 4, marginBottom: 12 },
   brandA: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: -0.5 },
   brandK: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: -0.5 },
   stepLabel: { color: '#00F2FF', fontSize: 10, fontWeight: '700', letterSpacing: 3, marginBottom: 8 },
-  progressBar: { height: 2, backgroundColor: '#1E1E1E', borderRadius: 2, marginBottom: 16 },
+  progressBar: { height: 2, backgroundColor: '#1E1E1E', borderRadius: 2, marginBottom: 14 },
   progressFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
-  title: { color: '#FFFFFF', fontSize: 36, fontWeight: '900', letterSpacing: -1.5, lineHeight: 40 },
-  subtitle: { color: '#555', fontSize: 13, marginTop: 6 },
+  title: { color: '#FFFFFF', fontSize: 32, fontWeight: '900', letterSpacing: -1.5, lineHeight: 36 },
+  subtitle: { color: '#555', fontSize: 13, marginTop: 4 },
   grid: {
-    flex: 1, flexDirection: 'row', flexWrap: 'wrap',
-    justifyContent: 'space-between', paddingTop: 8,
-    paddingHorizontal: 4,
+    flexDirection: 'row', flexWrap: 'wrap',
+    justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 8,
   },
   cardWrapper: { width: '48%', marginBottom: 10 },
-  card: {
-    backgroundColor: '#111111',
-    borderRadius: 14, padding: 16, gap: 4,
-    borderWidth: 1.5, borderColor: '#1E1E1E',
+  cardOuter: {
+    borderRadius: 16, overflow: 'hidden',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
   },
-  cardIcon: { fontSize: 28 },
-  cardLabel: { color: '#888', fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
-  cardDesc: { color: '#444', fontSize: 10, fontWeight: '500' },
-  footer: { paddingTop: 12 },
+  cardImage: { width: '100%', height: 130 },
+  cardImageStyle: { borderRadius: 15, opacity: 0.75 },
+  cardGradient: {
+    flex: 1, justifyContent: 'flex-end', padding: 12, borderRadius: 15,
+  },
+  cardContent: { gap: 1 },
+  cardIcon: { fontSize: 22 },
+  cardLabel: { color: '#FFFFFF', fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
+  cardDesc: { color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: '500' },
+  selectedDot: {
+    position: 'absolute', top: 10, right: 10,
+    width: 10, height: 10, borderRadius: 5,
+  },
+  footer: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    paddingHorizontal: 20, paddingTop: 12,
+    backgroundColor: 'rgba(5,5,5,0.95)',
+  },
   continueButton: {
-    backgroundColor: '#00F2FF', borderRadius: 8,
+    backgroundColor: '#00F2FF', borderRadius: 12,
     paddingVertical: 16, alignItems: 'center',
   },
   continueButtonDisabled: { opacity: 0.3 },

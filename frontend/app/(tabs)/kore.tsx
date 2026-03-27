@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, RefreshControl,
-  ActivityIndicator, StatusBar, TouchableOpacity,
+  ActivityIndicator, StatusBar, TouchableOpacity, ImageBackground,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle, Easing,
 } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { Header } from '../../components/Header';
+import { getBattleImage } from '../../utils/images';
 
 function XPBar({ xp, level }: { xp: number; level: number }) {
   const xpForNext = level * 500;
@@ -50,9 +52,9 @@ function LiveDot() {
 }
 
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string; pulse?: boolean }> = {
-  live:      { label: 'LIVE',     color: '#FF3B30', bg: 'rgba(255,59,48,0.12)', pulse: true },
-  upcoming:  { label: 'PROSSIMO', color: '#D4AF37', bg: 'rgba(212,175,55,0.1)' },
-  completed: { label: 'CONCLUSO', color: '#3A3A3A', bg: 'rgba(58,58,58,0.2)' },
+  live:      { label: 'LIVE',     color: '#FF3B30', bg: 'rgba(255,59,48,0.25)', pulse: true },
+  upcoming:  { label: 'PROSSIMO', color: '#D4AF37', bg: 'rgba(212,175,55,0.2)' },
+  completed: { label: 'CONCLUSO', color: '#888888', bg: 'rgba(136,136,136,0.2)' },
 };
 
 function BattleCard({ battle }: { battle: any }) {
@@ -60,32 +62,26 @@ function BattleCard({ battle }: { battle: any }) {
   const pulseScale = useSharedValue(1);
   const glowOpacity = useSharedValue(0);
   const badgeScale = useSharedValue(1);
-  
+
   useEffect(() => {
     if (battle.status === 'live') {
-      // Card heartbeat
       pulseScale.value = withRepeat(
         withSequence(
           withTiming(1.015, { duration: 800, easing: Easing.inOut(Easing.ease) }),
           withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) })
-        ),
-        -1, false
+        ), -1, false
       );
-      // Glow pulse
       glowOpacity.value = withRepeat(
         withSequence(
           withTiming(0.6, { duration: 900 }),
           withTiming(0.15, { duration: 900 })
-        ),
-        -1, false
+        ), -1, false
       );
-      // LIVE badge heartbeat
       badgeScale.value = withRepeat(
         withSequence(
           withTiming(1.08, { duration: 600 }),
           withTiming(1, { duration: 600 })
-        ),
-        -1, false
+        ), -1, false
       );
     }
   }, [battle.status]);
@@ -93,65 +89,94 @@ function BattleCard({ battle }: { battle: any }) {
   const liveStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulseScale.value }],
   }));
-
   const glowStyle = useAnimatedStyle(() => ({
     shadowOpacity: glowOpacity.value,
   }));
-
   const badgeAnimStyle = useAnimatedStyle(() => ({
     transform: [{ scale: badgeScale.value }],
   }));
 
+  const imageUri = getBattleImage(battle.sport);
+
   return (
-    <Animated.View style={[bc$.card, battle.status === 'live' && bc$.cardLive, liveStyle, battle.status === 'live' && glowStyle]}>
-      <View style={bc$.row}>
-        <Animated.View style={[bc$.badge, { backgroundColor: s.bg }, battle.status === 'live' && badgeAnimStyle]}>
-          {s.pulse && <LiveDot />}
-          <Text style={[bc$.badgeText, { color: s.color }]}>{s.label}</Text>
-        </Animated.View>
-        <Text style={bc$.xp}>+{battle.xp_reward} XP</Text>
-      </View>
-      <Text style={bc$.title}>{battle.title}</Text>
-      <Text style={bc$.desc}>{battle.description}</Text>
-      <View style={bc$.footer}>
-        <Text style={bc$.sport}>{battle.sport}</Text>
-        <Text style={bc$.participants}>👥 {battle.participants_count} atleti</Text>
-      </View>
+    <Animated.View style={[
+      bc$.card,
+      battle.status === 'live' && bc$.cardLive,
+      liveStyle,
+      battle.status === 'live' && glowStyle,
+    ]}>
+      <ImageBackground
+        source={{ uri: imageUri }}
+        style={bc$.imageBg}
+        imageStyle={bc$.imageStyle}
+      >
+        <LinearGradient
+          colors={['transparent', 'rgba(5,5,5,0.65)', 'rgba(5,5,5,0.95)']}
+          locations={[0, 0.35, 0.85]}
+          style={bc$.gradient}
+        >
+          <View style={bc$.row}>
+            <Animated.View style={[bc$.badge, { backgroundColor: s.bg }, battle.status === 'live' && badgeAnimStyle]}>
+              {s.pulse && <LiveDot />}
+              <Text style={[bc$.badgeText, { color: s.color }]}>{s.label}</Text>
+            </Animated.View>
+            <View style={bc$.xpBadge}>
+              <Text style={bc$.xp}>+{battle.xp_reward} XP</Text>
+            </View>
+          </View>
+          <View style={bc$.textContent}>
+            <Text style={bc$.title}>{battle.title}</Text>
+            <Text style={bc$.desc} numberOfLines={2}>{battle.description}</Text>
+            <View style={bc$.footer}>
+              <Text style={bc$.sport}>{battle.sport}</Text>
+              <Text style={bc$.participants}>{battle.participants_count} atleti</Text>
+            </View>
+          </View>
+        </LinearGradient>
+      </ImageBackground>
     </Animated.View>
   );
 }
 
 const bc$ = StyleSheet.create({
   card: {
-    backgroundColor: '#111111', borderRadius: 14, padding: 16,
-    marginHorizontal: 16, marginBottom: 10,
-    borderWidth: 1, borderColor: '#1E1E1E', gap: 8,
+    marginHorizontal: 16, marginBottom: 12,
+    borderRadius: 16, overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4, shadowRadius: 16, elevation: 10,
   },
   cardLive: {
-    borderColor: 'rgba(255,59,48,0.25)',
-    shadowColor: '#FF3B30', shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 12, elevation: 8,
+    shadowColor: '#FF3B30', shadowRadius: 20, elevation: 12,
   },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  imageBg: { width: '100%', height: 200 },
+  imageStyle: { borderRadius: 16, opacity: 0.85 },
+  gradient: { flex: 1, justifyContent: 'space-between', padding: 16, borderRadius: 16 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   badge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderRadius: 5, paddingHorizontal: 10, paddingVertical: 4,
+    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
+    backdropFilter: 'blur(10px)',
   },
   liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#FF3B30' },
-  badgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 1 },
-  xp: { color: '#D4AF37', fontSize: 13, fontWeight: '800' },
-  title: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
-  desc: { color: '#555555', fontSize: 13, lineHeight: 18 },
-  footer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 },
-  sport: { color: '#00F2FF', fontSize: 12, fontWeight: '600' },
-  participants: { color: '#444', fontSize: 12 },
+  badgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5 },
+  xpBadge: {
+    backgroundColor: 'rgba(212,175,55,0.2)',
+    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
+  },
+  xp: { color: '#D4AF37', fontSize: 12, fontWeight: '800' },
+  textContent: { gap: 4 },
+  title: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: -0.3 },
+  desc: { color: 'rgba(255,255,255,0.65)', fontSize: 13, lineHeight: 18 },
+  footer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+  sport: { color: '#00F2FF', fontSize: 12, fontWeight: '700' },
+  participants: { color: 'rgba(255,255,255,0.45)', fontSize: 12 },
 });
 
 const MEDALS = [
-  { emoji: '🥇', label: 'Oro', count: 2 },
-  { emoji: '🥈', label: 'Argento', count: 5 },
-  { emoji: '🥉', label: 'Bronzo', count: 3 },
-  { emoji: '🎖️', label: 'Onore', count: 8 },
+  { emoji: '\ud83e\udd47', label: 'Oro', count: 2 },
+  { emoji: '\ud83e\udd48', label: 'Argento', count: 5 },
+  { emoji: '\ud83e\udd49', label: 'Bronzo', count: 3 },
+  { emoji: '\ud83c\udf96\ufe0f', label: 'Onore', count: 8 },
 ];
 
 export default function KoreTab() {
@@ -195,14 +220,14 @@ export default function KoreTab() {
           {liveCount > 0 && (
             <View style={styles.liveBanner} testID="live-banner">
               <LiveDot />
-              <Text style={styles.liveBannerText}>{liveCount} BATTLE IN CORSO ADESSO</Text>
+              <Text style={styles.liveBannerText}>{liveCount} BATTLE LIVE</Text>
             </View>
           )}
 
-          <Text style={styles.sectionTitle}>⚔️  BATTLE LIVE</Text>
+          <Text style={styles.sectionTitle}>\u2694\ufe0f  BATTLE ARENA</Text>
           {battles.map(b => <BattleCard key={b.id} battle={b} />)}
 
-          <Text style={styles.sectionTitle}>🏅  MEDAGLIE</Text>
+          <Text style={styles.sectionTitle}>\ud83c\udfc5  PALMAR\u00c8S</Text>
           <View style={styles.medalsRow}>
             {MEDALS.map((m, i) => (
               <View key={i} style={styles.medalCard}>
@@ -224,10 +249,10 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   liveBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    margin: 16, marginBottom: 0,
-    backgroundColor: 'rgba(255,59,48,0.08)',
-    borderRadius: 8, padding: 10,
-    borderWidth: 1, borderColor: 'rgba(255,59,48,0.25)',
+    marginHorizontal: 16, marginTop: 12, marginBottom: 4,
+    backgroundColor: 'rgba(255,59,48,0.06)',
+    borderRadius: 12, padding: 12,
+    borderWidth: 1, borderColor: 'rgba(255,59,48,0.15)',
   },
   liveBannerText: { color: '#FF3B30', fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
   sectionTitle: {
@@ -237,8 +262,9 @@ const styles = StyleSheet.create({
   },
   medalsRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 8 },
   medalCard: {
-    flex: 1, backgroundColor: '#111111', borderRadius: 10, padding: 14,
-    alignItems: 'center', borderWidth: 1, borderColor: '#1E1E1E', gap: 3,
+    flex: 1, backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 14, padding: 14,
+    alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', gap: 3,
   },
   medalEmoji: { fontSize: 24 },
   medalCount: { color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
