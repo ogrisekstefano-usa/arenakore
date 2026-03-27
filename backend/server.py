@@ -382,6 +382,10 @@ async def get_battles(current_user: dict = Depends(get_current_user)):
             "status": b["status"],
             "xp_reward": b["xp_reward"],
             "participants_count": b.get("participants_count", 0),
+            "exercise": b.get("exercise", "squat"),
+            "forge_mode": b.get("forge_mode", "personal"),
+            "pro_level": b.get("pro_level", False),
+            "dna_requirements": b.get("dna_requirements"),
         }
         for b in battles
     ]
@@ -667,11 +671,14 @@ async def seed_data():
 
     if await db.battles.count_documents({}) == 0:
         battles = [
-            {"title": "Sprint Challenge 100m", "description": "Chi è il più veloce? Sfida aperta a tutti gli atleti della piattaforma.", "sport": "Atletica", "status": "live", "xp_reward": 150, "participants_count": 24, "created_at": datetime.now(timezone.utc)},
-            {"title": "Power Lifting Battle", "description": "Massima potenza, minimo peso. Il rapporto perfetto tra forza e corpo.", "sport": "Powerlifting", "status": "live", "xp_reward": 200, "participants_count": 12, "created_at": datetime.now(timezone.utc)},
-            {"title": "CrossFit WOD Arena", "description": "WOD della settimana: 21-15-9 Thruster + Pull-up. Cronometro.", "sport": "CrossFit", "status": "upcoming", "xp_reward": 100, "participants_count": 45, "created_at": datetime.now(timezone.utc)},
-            {"title": "Boxe Tecnica Libera", "description": "Dimostra la tua tecnica. I Coach valutano il gesto atletico.", "sport": "Boxe", "status": "completed", "xp_reward": 120, "participants_count": 8, "created_at": datetime.now(timezone.utc)},
-            {"title": "Nuoto 50m Stile Libero", "description": "La vasca è il tuo ring. Fai il tuo miglior tempo.", "sport": "Nuoto", "status": "upcoming", "xp_reward": 180, "participants_count": 30, "created_at": datetime.now(timezone.utc)},
+            {"title": "Sprint Challenge 100m", "description": "Chi è il più veloce? Sfida aperta a tutti gli atleti della piattaforma.", "sport": "Atletica", "status": "live", "xp_reward": 150, "participants_count": 24, "created_at": datetime.now(timezone.utc), "exercise": "squat", "forge_mode": "battle", "pro_level": False, "dna_requirements": None},
+            {"title": "Power Lifting Battle", "description": "Massima potenza, minimo peso. Il rapporto perfetto tra forza e corpo.", "sport": "Powerlifting", "status": "live", "xp_reward": 200, "participants_count": 12, "created_at": datetime.now(timezone.utc), "exercise": "squat", "forge_mode": "battle", "pro_level": False, "dna_requirements": None},
+            {"title": "CrossFit WOD Arena", "description": "WOD della settimana: 21-15-9 Thruster + Pull-up. Cronometro.", "sport": "CrossFit", "status": "upcoming", "xp_reward": 100, "participants_count": 45, "created_at": datetime.now(timezone.utc), "exercise": "squat", "forge_mode": "personal", "pro_level": False, "dna_requirements": None},
+            {"title": "Boxe Tecnica Libera", "description": "Dimostra la tua tecnica. I Coach valutano il gesto atletico.", "sport": "Boxe", "status": "completed", "xp_reward": 120, "participants_count": 8, "created_at": datetime.now(timezone.utc), "exercise": "punch", "forge_mode": "personal", "pro_level": False, "dna_requirements": None},
+            {"title": "Nuoto 50m Stile Libero", "description": "La vasca è il tuo ring. Fai il tuo miglior tempo.", "sport": "Nuoto", "status": "upcoming", "xp_reward": 180, "participants_count": 30, "created_at": datetime.now(timezone.utc), "exercise": "squat", "forge_mode": "battle", "pro_level": False, "dna_requirements": None},
+            {"title": "ELITE PUNCH PROTOCOL", "description": "Accesso riservato. Solo atleti con DNA esplosivo certificato. Punch d'élite a velocità massima.", "sport": "Combat Elite", "status": "live", "xp_reward": 500, "participants_count": 3, "created_at": datetime.now(timezone.utc), "exercise": "punch", "forge_mode": "battle", "pro_level": True, "dna_requirements": {"velocita": 70, "potenza": 75}},
+            {"title": "LEGENDARY SQUAT ARENA", "description": "Solo i più forti. Forza e resistenza devono essere al top per entrare.", "sport": "Strength Elite", "status": "upcoming", "xp_reward": 750, "participants_count": 1, "created_at": datetime.now(timezone.utc), "exercise": "squat", "forge_mode": "duel", "pro_level": True, "dna_requirements": {"forza": 80, "resistenza": 65}},
+            {"title": "APEX PREDATOR DUEL", "description": "Il duello finale. Richiede DNA completo sopra soglia critica. Nessun margine d'errore.", "sport": "Apex Division", "status": "upcoming", "xp_reward": 1000, "participants_count": 0, "created_at": datetime.now(timezone.utc), "exercise": "punch", "forge_mode": "duel", "pro_level": True, "dna_requirements": {"velocita": 80, "forza": 80, "agilita": 75, "potenza": 85}},
         ]
         await db.battles.insert_many(battles)
 
