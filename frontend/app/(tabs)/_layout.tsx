@@ -12,7 +12,7 @@ const TAB_CONFIG = [
   { name: 'crews', icon: 'people', label: 'CREWS' },
   { name: 'nexus-trigger', icon: 'add', label: '', isCenter: true },
   { name: 'dna', icon: 'analytics', label: 'DNA' },
-  { name: 'hall', icon: 'trophy', label: 'HALL' },
+  { name: 'hall', icon: 'trophy', label: 'RANK' },
 ];
 
 function GoldButton({ onPress }: { onPress: () => void }) {

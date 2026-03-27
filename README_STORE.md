@@ -172,6 +172,21 @@ Role:     Atleta
 
 ## 🇮🇹 LAUNCH: CHICAGO, 2026
 
+### 📱 Locandina WhatsApp — Elite Copy
+
+> **ARENAKORE**
+> *"Benvenuto nell'Élite. La tua eredità inizia ora."*
+>
+> 🏆 Hall of Kore — Classifica Globale
+> ⚡ Nexus Sync — Tracking Biomeccanico Real-Time
+> 🧬 DNA Atletico — 6 Stats, 1 Radar
+> 🛡️ Crews — La Tribù dei Campioni
+>
+> I primi 100 portano il Badge Oro per sempre.
+> Scarica ARENAKORE. Diventa Leggenda.
+
+---
+
 *ARENAKORE — Dove gli atleti diventano leggende.*
 
 ---
