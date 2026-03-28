@@ -150,10 +150,10 @@ export default function HeroIndex() {
     <View style={s.root}>
       <StatusBar barStyle="light-content" />
 
-      {/* ── ATHLETE BACKGROUND — B&W hooded athlete, top-aligned, fades to black ── */}
+      {/* ── ATHLETE BACKGROUND — shifted up, hood slightly cropped at top edge ── */}
       <Image
         source={{ uri: ATHLETE_BG }}
-        style={[StyleSheet.absoluteFill, { opacity: 0.75 }]}
+        style={[{ position: 'absolute', top: -40, left: 0, right: 0, bottom: 0, opacity: 0.75 }]}
         blurRadius={3}
         resizeMode="cover"
       />
