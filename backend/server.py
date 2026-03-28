@@ -3319,7 +3319,59 @@ async def nexus_scanner_page():
 
     // ── LOW-PASS FILTER: smooths landmark jitter (The Butter)
     var prevSmoothed = null;
-    var SMOOTH_ALPHA = 0.55;  // 0=max smooth, 1=raw
+    var SMOOTH_ALPHA = 0.55;
+
+    // ── NEXUS VISION ENGINE
+    var brightnessFrameCount = 0;
+    var currentBrightFilter  = 'contrast(1.3) brightness(1.05) saturate(0.7)';
+    var skinData             = null;  // cached pixel data for skin segmentation
+    var skinFrameCount       = 0;
+    var MAX_VELOCITY         = 0.18; // max landmark movement per frame (teleportation guard)
+
+    // AUTO-GAIN: analyze 64x64 sample to compute adaptive filter
+    function computeAdaptiveFilter() {
+      try {
+        var sample = smallCtx.getImageData(96, 96, 64, 64);  // center crop
+        var bright = 0, count = 0;
+        for (var i = 0; i < sample.data.length; i += 16) {
+          bright += (sample.data[i] + sample.data[i+1] + sample.data[i+2]) / 3;
+          count++;
+        }
+        var avg = bright / Math.max(count, 1);
+        if (avg > 170)      { currentBrightFilter = 'contrast(1.7) brightness(0.75) saturate(0.55)'; }  // blazing outdoor
+        else if (avg > 140) { currentBrightFilter = 'contrast(1.45) brightness(0.88) saturate(0.65)'; } // bright
+        else if (avg > 100) { currentBrightFilter = 'contrast(1.3)  brightness(1.00) saturate(0.70)'; } // normal
+        else if (avg > 60)  { currentBrightFilter = 'contrast(1.2)  brightness(1.15) saturate(0.80)'; } // dim
+        else                { currentBrightFilter = 'contrast(1.15) brightness(1.35) saturate(0.90)'; } // dark/night
+      } catch(_e) {}
+    }
+
+    // MOTION PREDICTION: reject teleportation (ghost sudden jump)
+    function motionFilter(curr, prev) {
+      if (!prev || prev.length !== curr.length) return curr;
+      return curr.map(function(lm, i) {
+        var p = prev[i];
+        if (!lm || !p) return lm;
+        var dist = Math.sqrt((lm.x-p.x)*(lm.x-p.x) + (lm.y-p.y)*(lm.y-p.y));
+        if (dist > MAX_VELOCITY) {
+          // Teleportation detected — blend 15% new + 85% old (reject ghost jump)
+          return { x: p.x*0.85 + lm.x*0.15, y: p.y*0.85 + lm.y*0.15, visibility: lm.visibility*0.4 };
+        }
+        return lm;
+      });
+    }
+
+    // SKIN MASK: check if pixel at landmark position has skin-like hue
+    // Skin: warm reddish-brownish (R>G>B, R>80, no strong blue)
+    function isSkinPixel(nx, ny) {
+      if (!skinData) return true;  // no data yet — assume skin (don't penalize)
+      var px = Math.round(nx * (skinData.width - 1));
+      var py = Math.round(ny * (skinData.height - 1));
+      var idx = (py * skinData.width + px) * 4;
+      if (idx < 0 || idx >= skinData.data.length) return true;
+      var r = skinData.data[idx], g = skinData.data[idx+1], b = skinData.data[idx+2];
+      return (r > 70 && g > 35 && b > 10 && r > g && r > b && (r-b) > 15);
+    }
 
     function lpf(curr, prev, alpha) {
       if (!prev || prev.length !== curr.length) return curr;
@@ -3627,15 +3679,27 @@ async def nexus_scanner_page():
 
       // Z-Depth check DISABLED — restored smooth demo feeling
 
-      // ── LOW-PASS FILTER: smooth the raw landmarks before drawing
-      var smoothed = lpf(mp_lm, prevSmoothed, SMOOTH_ALPHA);
-      prevSmoothed = smoothed;
+      // ── NEXUS VISION: motion prediction → skin boost → LPF
+      // Step 1: Motion prediction (reject teleportation ghosts)
+      var motionFiltered = motionFilter(mp_lm, prevSmoothed);
 
-      // ── DYNAMIC CONFIDENCE: thicker lines + more smoothing in bright/noisy conditions
-      var dynamicAlpha = (avgConf < 0.50) ? 0.35 : SMOOTH_ALPHA;
-      if (dynamicAlpha !== SMOOTH_ALPHA) {
-        smoothed = lpf(smoothed, prevSmoothed, dynamicAlpha);
-      }
+      // Step 2: Skin confidence boost — landmarks on skin pixels get higher priority
+      var skinBoosted = motionFiltered.map(function(lm, i) {
+        if (!lm) return null;
+        // Only check face + hands + feet (most exposed skin)
+        var checkSkin = (i===0||i===1||i===2||i===7||i===8||i===15||i===16||i===17||i===18||i===19||i===20||i===21||i===22||i===27||i===28);
+        if (checkSkin) {
+          // Scale normalized [0,1] coords to 64x64 skin sample space
+          var skinConf = isSkinPixel(lm.x * 256/64, lm.y * 256/64) ? 1.0 : 0.5;
+          return { x: lm.x, y: lm.y, visibility: lm.visibility * skinConf };
+        }
+        return lm;
+      });
+
+      // Step 3: Low-Pass Filter (smooth remaining jitter)
+      var dynamicAlpha = (avgConf < 0.50) ? 0.38 : SMOOTH_ALPHA;
+      var smoothed = lpf(skinBoosted, prevSmoothed, dynamicAlpha);
+      prevSmoothed = smoothed;
 
       var coco17 = drawSkeleton(smoothed);
       // Count only CENTRAL points
@@ -3674,7 +3738,7 @@ async def nexus_scanner_page():
 
     // ── Init Pose
     var pose = new Pose({ locateFile: function(f){ return '/api/static/mediapipe/' + f; } });
-    pose.setOptions({ modelComplexity:0, smoothLandmarks:true, enableSegmentation:false, minDetectionConfidence:0.45, minTrackingConfidence:0.45 });
+    pose.setOptions({ modelComplexity:0, smoothLandmarks:true, enableSegmentation:false, minDetectionConfidence:0.40, minTrackingConfidence:0.72 });
     pose.onResults(onResults);
 
     // ── OOM / WASM abort parachute
@@ -3728,12 +3792,24 @@ async def nexus_scanner_page():
           if (frameSkip > 0 && (frameCounter % (frameSkip + 1)) !== 0) return;
           if (video.readyState < 2 || video.videoWidth === 0) return;
 
-          // ── M2 KEY FIX + AUTO-CONTRASTO: draw 256x256 with contrast boost
-          // Contrast separates athlete from background (helps in bright daylight)
+          // ── BRIGHTNESS NORMALIZER: adaptive filter computed every 15 frames
           smallCtx.clearRect(0, 0, 256, 256);
-          smallCtx.filter = 'contrast(1.3) brightness(1.05) saturate(0.8)';
+          // First draw raw (for brightness analysis), then redraw with adaptive filter
+          if (brightnessFrameCount % 15 === 0) {
+            smallCtx.filter = 'none';
+            smallCtx.drawImage(video, 0, 0, 256, 256);
+            computeAdaptiveFilter();
+          }
+          smallCtx.filter = currentBrightFilter;
           smallCtx.drawImage(video, 0, 0, 256, 256);
           smallCtx.filter = 'none';
+          brightnessFrameCount++;
+          // ── SKIN MASK: cache pixel data every 5 frames for landmark validation
+          if (skinFrameCount % 5 === 0) {
+            try { skinData = smallCtx.getImageData(0, 0, 64, 64); } catch(_e) {}
+            // Re-scale skin coords to 64x64 space
+          }
+          skinFrameCount++;
 
           sendPending = true;
           sendStart = performance.now();
