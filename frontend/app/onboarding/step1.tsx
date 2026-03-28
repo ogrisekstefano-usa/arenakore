@@ -16,6 +16,7 @@ import Animated, {
   useAnimatedStyle, FadeInDown, Easing,
 } from 'react-native-reanimated';
 import * as Speech from 'expo-speech';
+import { Audio } from 'expo-av';
 import { VoiceController } from '../../utils/VoiceController';
 
 // ===================================================================
