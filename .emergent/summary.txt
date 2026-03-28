@@ -1,121 +1,127 @@
-<analysis>**original_problem_statement**: Build ARENAKORE, an elite, high-performance athletics mobile app with a Chic-Tech / Cinema aesthetic. Core modules include KORE, CREWS, NEXUS SYNC, DNA, and RANK. SPRINT 3 requires the implementation of a GYM HUB (Gym Management) and a Mass Event Generator (QR-Core Logic) where scanning a unique event QR code deep-links users into the app, associates them with the Gym, and enrolls them in the event.
+<analysis>**original_problem_statement**: Build ARENAKORE, an elite, high-performance athletics mobile app. The ongoing requirements involved executing SPRINT 7 (Bio-Evolution tracking & PRO unlocking), SPRINT 9 (Monthly Re-Scan & Notification Engine), SPRINT 10 (TalosFit Partner Gateway), and finally, an Aesthetic Overhaul to ensure a strict Nike-Grade Chic-Tech/Cinema design (monochromatic icons, high luminosity, segmented admin console, bold fonts, and zero emojis).
 
-**User's preferred language**: **Italian** (You MUST automatically detect the user's primary language from their messages inside the <trajectory> tag and INSTRUCT next agent to respond in the user's preferred language only. All UI text and conversation must be in Italian).
+**User's preferred language**: **Italian** (INSTRUCT next agent: You MUST respond and provide all UI copy/interactions in Italian).
 
 **what currently exists?** 
-A highly polished, production-ready MVP (Expo + FastAPI + MongoDB). The app recently underwent a rigorous Aesthetic Refoundation — **ALL emojis were eradicated** and replaced with monochromatic Ionicons (White, Cyan , Gold ), paired with bold Sans-Serif fonts. The Sprint 3 Backend API for Gym Hub (Gyms, Coaches, Events, and QR code generation) is fully built and tested. The Frontend component () has been created and integrated into the app, but deep-linking routing is pending.
+A highly polished, feature-rich MVP (Expo + FastAPI + MongoDB). Sprints 3, 5, 6, 7, 9, and 10 are completely functional. The app has active biometric scanning logic, cooldowns for re-scans (48h/30d), a notification engine driven by APScheduler, DNA history tracking with multi-layered radar charts, dynamic partner banners, and PRO challenge gating. The app is currently undergoing a strict UI refactoring to enforce a monochromatic, Nike Elite aesthetic.
 
 **Last working item**:
-- **Last item agent was working**: Visual verification and layout stabilization of the  and . The agent was fixing Web Preview layout bugs regarding the Ghosting Switcher (changed from a segmented row to a vertical list for visibility) and taking screenshots of the newly integrated  tab.
+- **Last item agent was working**: Total Aesthetic Overhaul (Rifondazione estetica totale). The agent had just updated  to adjust tab icon opacities/colors and was actively modifying  to replace the 2x2 grid with a professional Segmented Control for Admin roles, while increasing global luminosity.
 - **Status**: IN PROGRESS
-- **Agent Testing Done**: Y (Via Screenshot tool, but session ended before analyzing the final screenshot).
-- **Which testing method agent to use?** Frontend screenshot tool to verify the  UI.
+- **Agent Testing Done**: N
+- **Which testing method agent to use?**: Frontend screenshot tool (visual verification is critical for UI/aesthetic overhauls).
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
-Issue 1: Frontend Deep-Linking Logic for QR-Core 🔴 P0
-- Attempted fixes: Backend API () and QR code generation are done. Frontend  rendering is done. However, the app does not currently intercept deep links.
-- Next debug checklist: Implement  inside  or a dedicated route to catch . Handle logic: if user logged in -> call join API; if not -> redirect to onboarding/login then join.
-- Why fix this issue and what will be achieved with the fix? This is the core requirement of SPRINT 3. Without it, the generated QR codes are useless.
-- Status: NOT STARTED
-- Is recurring issue? N
-- Should Test frontend/backend/both after fix? frontend
-- Blocked on other issue: None
+  - Issue 1: Complete the Nike-Grade Aesthetic Overhaul (P0)
+     - Attempted fixes: Agent updated  and , but stopped before verifying and extending the changes to the Side Menu and global font definitions.
+     - Next debug checklist: Check  rendering via screenshot. Review the side menus (e.g., ,  or similar) to strip out ALL emojis and ensure ONLY monochromatic icons (White, Cyan , Gold ) and bold Sans-Serif fonts are used.
+     - Why fix this issue and what will be achieved with the fix?: Fulfills the user's explicit request to eliminate childish/standard UI elements and create an elite, highly luminous, sports-marketing-level interface.
+     - Status: IN PROGRESS
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix?: Frontend (Screenshot tool)
+     - Blocked on other issue: None
 
 **In progress Task List**:
-Task 1: Verify and Polish GymHub.tsx UI 🔴 P0
-- Where to resume: . Review the final screenshot taken before the session ended. 
-- What will be achieved with this? Ensure the new Gym Owner dashboard strictly adheres to the Nike Elite aesthetic (Zero emojis, monochromatic Ionicons, high contrast).
-- Status: IN PROGRESS
-- Should Test frontend/backend/both after fix? frontend
-- Blocked on something: None
+  - Task 1: Overhaul Admin Console and Side Menu UI (P0)
+     - Where to resume: Verify the edits in  (Segmented control). Next, locate the side menu components and apply the monochromatic/luminosity rules. Remove any remaining emojis across the app.
+     - What will be achieved with this?: Completion of the user's latest prompt.
+     - Status: IN PROGRESS
+     - Should Test frontend/backend/both after fix?: Frontend
+     - Blocked on something: None
 
-**Upcoming and Future Tasks**
-Upcoming Tasks:
-- P1: Refactor  and . These files are massive (>1200 lines). Break them down into smaller components.
-- P2: Cleanup dead styles. Remove unused  definitions left over from the massive emoji-purge refactoring.
+**Upcoming and Future Tasks**:
+    Upcoming Tasks:
+    - P1: Test on physical device (Expo Go) for haptics, BlurView, and real camera feed interactions.
+    - P2: Battle participation mechanics (join/leave with XP reward and live leaderboards).
+    
+    Future Tasks:
+    - P3: Athlete profile management (modify avatar, sport, bio).
+    - P3: Real-time battle updates (WebSocket/polling).
+    - P4: In-app chat for crews.
+    - P4: Add Analytics for TalosFit banner clicks (Suggested by agent: implement ).
 
-**Completed work in this session**
-- AESTHETIC REFOUNDATION (100% Emoji Purge across all files, replaced with ) (DONE)
-- Re-styled  ghosting menu to a highly visible vertical list (DONE)
-- Sprint 3 Backend: , ,  schemas and APIs (DONE)
-- Sprint 3 Backend: QR code base64 generator via  python library (DONE)
-- Backend Deep Testing: 40/40 endpoints tested successfully (DONE)
-- Sprint 3 Frontend:  updated with gym endpoints (DONE)
-- Sprint 3 Frontend:  created and mapped to GYM_OWNER ghosting role (DONE)
+**Completed work in this session**:
+- SPRINT 7: BIO-EVOLUTION ENGINE (Re-scan 48h/30d cooldown logic, , , Expanding Radar animations) (DONE)
+- SPRINT 9: NOTIFICATION ENGINE & MONTHLY RE-SCAN ( implementation, , , DNA History tracking with ) (DONE)
+- SPRINT 10: PARTNER GATEWAY (TalosFit deep-linking banner in DNA tab based on DNA score logic) (DONE)
 
-**Earlier issues found/mentioned but not fixed**
-Issue 1: Minor Dependency Warning
-- Debug checklist:  was installed at  but Expo expected . 
-- Why to solve this issue and what will be achieved with this? Prevents potential compatibility warnings, though it currently compiles fine.
-- Should Test frontend/backend/both after fix: frontend
-- Is recurring issue? N
+**Earlier issues found/mentioned but not fixed**:
+   - Issue 1: Missing testIDs on new UI components
+     - Debug checklist: Add  to the Bell TouchableOpacity and History toggle in .
+     - Why to solve this issue and what will be achieved with this?: Testing agent noted this as a low-priority improvement for better E2E test automation.
+     - Should Test frontend/backend/both after fix: Frontend
+     - Is recurring issue? N
 
-**Known issue recurrence from previous fork**
-- Issue recurrence in previous fork: Web Preview  horizontal flex issues. 
-- Recurrence count: 1 (Agent encountered this while trying to make a horizontal segmented control in ).
-- Status: RESOLVED (Agent bypassed it by using a vertical layout).
-- Note: Avoid unbounded horizontal flex containers inside ScrollViews when testing via Web Preview.
+**Known issue recurrence from previous fork**:
+  - Issue recurrence in previous fork: Modals containing dynamic content easily overflow the screen on smaller devices.
+  - Recurrence count: 1
+  - Status: RESOLVED (Addressed by wrapping dynamic modal content in ScrollViews with maxHeight limits).
 
-**Code Architecture**
+**Code Architecture**:
 
 
-**Key Technical Concepts**
-React Native Expo, Expo Router, FastAPI, MongoDB,  (Python), , JWT Auth, Multi-Role Ghosting.
+**Key Technical Concepts**:
+React Native Expo, Expo Router (File-based), FastAPI, MongoDB,  (for backend background cron jobs), React Native Reanimated (Animations/Radar expansions).
 
-**key DB schema**
-- : {is_admin, is_founder, xp, level, avatar_color}
--  (NEW): {owner_id, name, location, created_at}
--  (NEW): {gym_id, title, challenge_type, event_date, max_participants, participants, qr_code}
+**key DB schema**:
+  - : {..., dna: {...}, pro_unlocked: bool}
+  - : {user_id, title, message, read, created_at}
+  - : {..., pro_level: bool}
 
-**changes in tech stack**
-- Added Python  library for backend QR generation.
-- Added  and  to frontend.
+**changes in tech stack**:
+  - Installed and implemented  in the FastAPI backend to run background tasks (6-hour interval check) for the SPRINT 9 Notification Engine.
 
-**All files of reference**
--  (New feature UI)
--  (Heavily modified layout for ghosting)
--  (Added massive Gym/Event API block)
--  (Conditionally renders GymHub based on role)
+**All files of reference**:
+-  (Contains new Scheduler and endpoints)
+-  (Major updates: Eligibility, History, TalosFit banner, Notifications)
+-  (Currently being overhauled for aesthetics)
+-  (New)
+-  (New)
+-  (Tab bar aesthetic updates)
 
-**Areas that need refactoring**
--  and  (Due to file length >1000 lines).
+**Areas that need refactoring**:
+- Side Menus and any auxiliary Modals must be checked immediately to ensure they comply with the new No Emoji / Monochromatic rule defined in the latest prompt.
 
-**key api endpoints**
+**key api endpoints**:
 - 
 - 
 - 
 - 
 
-**Critical Info for New Agent**
-- **Language Policy**: **Italian**.
-- **AESTHETIC RULES (DO OR DIE)**: The app is now strictly Nike Elite. **ZERO EMOJIS ARE ALLOWED**. You MUST use  (White for general, Cyan  for tech/bio, Gold  for status). Fonts MUST be Sans-Serif, BOLD, and highly luminous against the dark background. Do not regress this aesthetic.
-- The next crucial step is implementing the Deep Linking frontend logic () so that when the generated QR code is scanned, the app actually intercepts  and performs the enrollment.
+**Critical Info for New Agent**:
+- **Language**: Italian strictly.
+- **Aesthetic Rules (DO OR DIE)**: ZERO EMOJIS. Icons must be strictly monochromatic (White, Cyan , Gold ). Typography must rely heavily on Bold Sans-Serif (All-Caps for titles). Backgrounds stay dark but luminosity/contrast must be bumped up (Nike Lab Look).
+- **Backend Background Tasks**:  is currently running within the FastAPI event loop ().
 
-**documents and test reports created in this job**
--  (Updated with 40/40 passing backend tests)
--  (Updated with Aesthetic overhaul notes)
+**documents and test reports created in this job**:
+  - 
+  - 
+  - 
 
-**Last 10 User Messages and any pending HUMAN messages**
-- *Latest*: Prompt for SPRINT 3: GYM HUB & QR-CORE. Strict instructions to build the backend logic for Gym associations, Mass Event creation, and QR code generation with deep-linking payload. Reiterated the Nike Elite aesthetic rules for the frontend.
-- *Previous*: Prompt for Rifondazione estetica totale. Explicitly commanded the removal of all colored emojis and the implementation of bold fonts and monochromatic icons.
+**Last 10 User Messages and any pending HUMAN messages**:
+1. (Sprint 7 Prompt) - Execute Bio-Evolution tracking, 48h/30d rescan logic, and PRO Unlock Modal. (Done)
+2. (Sprint 9 Prompt) - Execute Notification Engine, APScheduler, Monthly Lock, and History Log. (Done)
+3. (Sprint 10 Prompt) - Insert TalosFit Partner Banner into the DNA tab. (Done)
+4. *(Latest)* - Rifondazione estetica totale (Aesthetic Overhaul). Remove emojis, use monochromatic icons, change fonts to Bold Sans-Serif, boost luminosity, and change Admin Console to a Segmented Control. (IN PROGRESS)
 
 **Project Health Check:**
-- Broken: Deep-link frontend interception logic (not yet implemented).
-- Mocked: None.
+- Broken: None.
+- Mocked: Web camera tracking uses mock intervals to simulate reps. Test triggers bypass actual time passage for notifications.
 
-**3rd Party Integrations**
-None added.
+**3rd Party Integrations**:
+- TalosFit — requires basic deep linking (), no API keys or Emergent LLM keys needed.
 
-**Testing status**
-- Testing agent used after significant changes: YES (Backend testing agent verified all new API routes).
-- Troubleshoot agent used after agent stuck in loop: NO
-- Test files created: None
-- Known regressions: None
+**Testing status**:
+  - Testing agent used after significant changes: YES (Backend & Frontend perfectly passed for Sprints 7, 9, 10).
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created: None
+  - Known regressions: None
 
 **Credentials to test flow:**
-Available in :
-- Admin/Founder:  / 
+Available in . 
+- Admin/Full DNA:  or 
+- Empty DNA: 
 
-**What agent forgot to execute**
-The agent perfectly built the Backend API for creating events and returning a base64 QR code, and built the Frontend UI to generate/display them. However, it did not implement the *Frontend Deep Link Interception logic* (using ) to actually process the scan event and route the user to . This must be addressed immediately.</analysis>
+**What agent forgot to execute**:
+The agent successfully started editing files for the Aesthetic Overhaul but did not finish verifying the UI (screenshots) or completely stripping emojis from side menus before the context ended. You MUST pick up immediately by verifying the  changes and overhauling the remaining menus.</analysis>

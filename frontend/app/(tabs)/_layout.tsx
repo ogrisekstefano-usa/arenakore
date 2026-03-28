@@ -10,8 +10,8 @@ import { playTabSwitch } from '../../utils/sounds';
 // Dynamic tab config based on active role
 function getTabConfig(activeRole: UserRole) {
   return [
+    { name: 'arena', icon: 'map-outline', iconBold: 'map', label: 'ARENA' },
     { name: 'kore', icon: 'shield-outline', iconBold: 'shield', label: 'KORE' },
-    { name: 'crews', icon: activeRole === 'COACH' ? 'easel' : 'people', iconBold: activeRole === 'COACH' ? 'easel-sharp' : 'people-sharp', label: activeRole === 'COACH' ? 'MY STUDIO' : 'CREWS' },
     { name: 'nexus-trigger', icon: 'flash', iconBold: 'flash-sharp', label: 'NEXUS', isCenter: true },
     { name: 'dna', icon: 'analytics', iconBold: 'analytics-sharp', label: 'DNA' },
     { name: 'hall', icon: 'trophy', iconBold: 'trophy-sharp', label: 'RANK' },
@@ -112,8 +112,8 @@ export default function TabsLayout() {
 
   return (
     <Tabs tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false }}>
+      <Tabs.Screen name="arena" />
       <Tabs.Screen name="kore" />
-      <Tabs.Screen name="crews" />
       <Tabs.Screen name="nexus-trigger" />
       <Tabs.Screen name="dna" />
       <Tabs.Screen name="hall" />
@@ -123,48 +123,49 @@ export default function TabsLayout() {
 
 const $ = StyleSheet.create({
   bar: {
-    flexDirection: 'row', backgroundColor: '#0A0A0A',
-    borderTopWidth: 1.5, borderTopColor: 'rgba(0,242,255,0.06)',
+    flexDirection: 'row', backgroundColor: '#070707',
+    borderTopWidth: 1.5, borderTopColor: 'rgba(0,242,255,0.1)',
     height: 76, alignItems: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.5, shadowRadius: 12, elevation: 15,
+    shadowOpacity: 0.6, shadowRadius: 16, elevation: 20,
   },
   tabItem: {
-    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, position: 'relative',
+    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4, position: 'relative',
+    paddingTop: 6,
   },
   glowDot: {
-    position: 'absolute', top: -2, width: 4, height: 4, borderRadius: 2,
+    position: 'absolute', top: -2, width: 5, height: 5, borderRadius: 2.5,
     backgroundColor: '#00F2FF',
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8, shadowRadius: 6, elevation: 5,
+    shadowOpacity: 1, shadowRadius: 8, elevation: 8,
   },
   label: {
-    color: '#3A3A3A', fontSize: 9, fontWeight: '800',
+    color: 'rgba(255,255,255,0.28)', fontSize: 9, fontWeight: '900',
     letterSpacing: 1.5, textTransform: 'uppercase',
   },
   labelActive: {
     color: '#00F2FF',
-    textShadowColor: 'rgba(0,242,255,0.4)',
+    textShadowColor: 'rgba(0,242,255,0.5)',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 6,
+    textShadowRadius: 8,
   },
   centerWrap: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
   },
   centerLabel: {
-    color: '#3A3A3A', fontSize: 9, fontWeight: '800',
+    color: 'rgba(255,255,255,0.28)', fontSize: 9, fontWeight: '900',
     letterSpacing: 1.5, marginTop: 38,
   },
   nexusWrap: {
-    position: 'absolute', top: -26, alignSelf: 'center',
+    position: 'absolute', top: -28, alignSelf: 'center',
     shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 16, elevation: 12,
+    shadowRadius: 20, elevation: 16,
   },
   goldBtn: {
-    width: 62, height: 62, borderRadius: 31,
+    width: 64, height: 64, borderRadius: 32,
     backgroundColor: '#D4AF37', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 3, borderColor: '#0A0A0A',
+    borderWidth: 3, borderColor: '#070707',
     shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6, shadowRadius: 12, elevation: 10,
+    shadowOpacity: 0.7, shadowRadius: 16, elevation: 12,
   },
 });

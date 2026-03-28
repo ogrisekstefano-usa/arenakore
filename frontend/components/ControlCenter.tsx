@@ -19,16 +19,24 @@ import { profileDevice, getTierLabel, getTrackingMode } from '../utils/DeviceInt
 
 const { width: SW } = Dimensions.get('window');
 const CYAN = '#00F2FF';
-const GOLD = '#FFD700';
+const GOLD = '#D4AF37';
 const WHITE = '#FFFFFF';
-const DIM = 'rgba(255,255,255,0.4)';
+const DIM = 'rgba(255,255,255,0.55)';
+const DIM2 = 'rgba(255,255,255,0.3)';
 
-// Monochromatic icon mapping — no emoji anywhere
-const ROLE_ICONS: Record<UserRole, { icon: keyof typeof Ionicons.glyphMap; color: string }> = {
-  ADMIN: { icon: 'shield-checkmark', color: '#FF453A' },
-  GYM_OWNER: { icon: 'business', color: GOLD },
-  COACH: { icon: 'fitness', color: CYAN },
-  ATHLETE: { icon: 'person', color: '#32D74B' },
+// MONOCHROMATIC role icons — all WHITE, accent only on ACTIVE
+const ROLE_ICONS: Record<UserRole, keyof typeof Ionicons.glyphMap> = {
+  ADMIN: 'shield-checkmark',
+  GYM_OWNER: 'business',
+  COACH: 'fitness',
+  ATHLETE: 'person',
+};
+
+const ROLE_LABELS: Record<UserRole, string> = {
+  ADMIN: 'ADMIN',
+  GYM_OWNER: 'GYM',
+  COACH: 'COACH',
+  ATHLETE: 'ATHLETE',
 };
 
 // ========== PULSE TICKER ==========
@@ -61,10 +69,10 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
   if (!visible) return null;
 
   const menuItems: { icon: keyof typeof Ionicons.glyphMap; label: string; sub: string; color: string }[] = [
-    { icon: 'scan', label: 'BIO-SCAN', sub: 'Ricalibra sensori', color: CYAN },
-    { icon: 'settings-sharp', label: 'SETTINGS', sub: 'Configurazione NEXUS', color: WHITE },
-    { icon: 'trophy', label: 'FOUNDERS CLUB', sub: isFounder ? `Founder #${user?.founder_number || '—'}` : 'Non membro', color: GOLD },
-    { icon: 'chatbubble-ellipses', label: 'SUPPORTO', sub: 'Contatta il team', color: WHITE },
+    { icon: 'scan',                label: 'BIO-SCAN',      sub: 'Ricalibra sensori',        color: CYAN },
+    { icon: 'settings-sharp',      label: 'SETTINGS',      sub: 'Configurazione NEXUS',     color: WHITE },
+    { icon: 'trophy',              label: 'FOUNDERS CLUB', sub: isFounder ? `Founder #${user?.founder_number || '—'}` : 'Non membro', color: GOLD },
+    { icon: 'chatbubble-ellipses', label: 'SUPPORTO',      sub: 'Contatta il team',         color: WHITE },
   ];
 
   const handleLogout = () => { onClose(); logout(); router.replace('/'); };
@@ -74,111 +82,105 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
       <TouchableOpacity style={st.backdrop} activeOpacity={1} onPress={onClose}>
         <View style={st.blurLayer} />
         <Animated.View entering={SlideInRight.duration(250)} exiting={SlideOutRight.duration(200)} style={st.panel}>
-          <LinearGradient colors={['#080808', '#050505']} style={st.panelInner}>
-            {/* Header */}
+          <LinearGradient colors={['#0A0A0A', '#060606']} style={st.panelInner}>
+
+            {/* ── HEADER ── */}
             <View style={st.header}>
-              <Text style={st.headerTitle}>CONTROL CENTER</Text>
+              <View style={st.headerLeft}>
+                <Text style={st.headerTitle}>CONTROL CENTER</Text>
+                {user?.username && (
+                  <Text style={st.headerSub}>{user.username.toUpperCase()}</Text>
+                )}
+              </View>
               <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                <Ionicons name="close" size={22} color={DIM} />
+                <Ionicons name="close" size={22} color="rgba(255,255,255,0.45)" />
               </TouchableOpacity>
             </View>
 
-            {/* Tier Badge */}
+            {/* ── DEVICE TIER BADGE ── */}
             <View style={st.tierBadge}>
               <Ionicons name="hardware-chip" size={14} color={CYAN} />
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text style={st.tierLabel}>{getTierLabel(profile.tier)}</Text>
                 <Text style={st.tierSub}>{getTrackingMode(profile.tier)}</Text>
               </View>
+              <View style={st.tierLiveDot} />
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 30 }}>
-              {/* Menu Items — Monochromatic */}
+
+              {/* ── MENU ITEMS ── */}
               {menuItems.map((item, i) => (
-                <TouchableOpacity key={i} style={st.item} activeOpacity={0.7}>
-                  <View style={st.iconWrap}>
+                <TouchableOpacity key={i} style={st.item} activeOpacity={0.75}>
+                  <View style={[st.iconWrap, { borderColor: item.color + '22' }]}>
                     <Ionicons name={item.icon} size={18} color={item.color} />
                   </View>
                   <View style={st.itemText}>
                     <Text style={st.itemLabel}>{item.label}</Text>
                     <Text style={st.itemSub}>{item.sub}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.15)" />
+                  <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.2)" />
                 </TouchableOpacity>
               ))}
 
-              {/* GYM HUB — GYM_OWNER */}
+              {/* ── GYM HUB (GYM_OWNER only) ── */}
               {activeRole === 'GYM_OWNER' && (
                 <View style={st.section}>
                   <View style={st.divider} />
                   <Text style={st.sectionTitle}>GYM HUB</Text>
-                  <TouchableOpacity style={st.item} activeOpacity={0.7}>
-                    <View style={st.iconWrap}><Ionicons name="people" size={18} color={GOLD} /></View>
+                  <TouchableOpacity style={st.item} activeOpacity={0.75}>
+                    <View style={[st.iconWrap, { borderColor: GOLD + '22' }]}><Ionicons name="people" size={18} color={GOLD} /></View>
                     <View style={st.itemText}><Text style={st.itemLabel}>GESTIONE COACH</Text><Text style={st.itemSub}>Assegna ruoli e permessi</Text></View>
-                    <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.15)" />
+                    <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.2)" />
                   </TouchableOpacity>
-                  <TouchableOpacity style={st.item} activeOpacity={0.7}>
-                    <View style={st.iconWrap}><Ionicons name="calendar" size={18} color={GOLD} /></View>
+                  <TouchableOpacity style={st.item} activeOpacity={0.75}>
+                    <View style={[st.iconWrap, { borderColor: GOLD + '22' }]}><Ionicons name="calendar" size={18} color={GOLD} /></View>
                     <View style={st.itemText}><Text style={st.itemLabel}>EVENTI</Text><Text style={st.itemSub}>Calendario e competizioni</Text></View>
-                    <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.15)" />
+                    <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.2)" />
                   </TouchableOpacity>
                 </View>
               )}
 
-              {/* Founder Pride */}
+              {/* ── FOUNDER PRIDE ── */}
               {isFounder && (
                 <View style={st.founderPride}>
-                  <Ionicons name="star" size={18} color={GOLD} />
-                  <Text style={st.founderQuote}>YOU ARE ONE OF THE FIRST 100. YOUR LEGACY IS PERMANENT.</Text>
+                  <Ionicons name="star" size={16} color={GOLD} />
+                  <Text style={st.founderQuote}>YOU ARE ONE OF THE FIRST 100.{'\n'}YOUR LEGACY IS PERMANENT.</Text>
                 </View>
               )}
 
-              {/* ===== ADMIN PRIVILEGES — SEGMENTED GHOSTING ===== */}
+              {/* ══════════════════════════════════════════
+                  ADMIN PRIVILEGES — SEGMENTED GHOSTING
+                  ══════════════════════════════════════════ */}
               {isAdmin && (
                 <View style={st.adminSection}>
                   <View style={st.divider} />
                   <View style={st.adminHeader}>
-                    <Ionicons name="shield-checkmark" size={14} color="#FF453A" />
-                    <Text style={st.adminTitle}>ADMIN PRIVILEGES</Text>
+                    <Ionicons name="shield-checkmark" size={13} color={CYAN} />
+                    <Text style={st.adminTitle}>GHOSTING MODE</Text>
                   </View>
-                  <Text style={st.adminSub}>GHOSTING MODE</Text>
+                  <Text style={st.adminSub}>Scegli la prospettiva di visualizzazione</Text>
 
-                  {/* Ghosting Roles — Vertical Selection List */}
-                  <View style={{ gap: 6, marginBottom: 12 }}>
+                  {/* ── SEGMENTED CONTROL 2×2 ── */}
+                  <View style={st.segGrid}>
                     {ROLES.map((role) => {
-                      const rc = ROLE_ICONS[role];
                       const isActive = activeRole === role;
-                      const roleLabel = role === 'GYM_OWNER' ? 'GYM HUB' : role;
-                      const roleSub: Record<string, string> = {
-                        ADMIN: 'Full system access',
-                        GYM_OWNER: 'Gestione Coach & Eventi',
-                        COACH: 'Studio & Template control',
-                        ATHLETE: 'Standard experience',
-                      };
                       return (
                         <TouchableOpacity
                           key={role}
                           onPress={() => setActiveRole(role)}
-                          activeOpacity={0.7}
-                          style={{
-                            flexDirection: 'row', alignItems: 'center', gap: 10,
-                            paddingVertical: 14, paddingHorizontal: 14, borderRadius: 12,
-                            borderWidth: isActive ? 1.5 : 1,
-                            borderColor: isActive ? rc.color : 'rgba(255,255,255,0.25)',
-                            backgroundColor: isActive ? `${rc.color}20` : 'rgba(255,255,255,0.08)',
-                          }}
+                          style={[st.segBtn, isActive && st.segBtnActive]}
+                          activeOpacity={0.8}
                         >
-                          <Ionicons name={rc.icon} size={20} color={isActive ? rc.color : 'rgba(255,255,255,0.7)'} />
-                          <View style={{ flex: 1 }}>
-                            <Text style={{
-                              color: isActive ? rc.color : '#FFFFFF',
-                              fontSize: 12, fontWeight: '900', letterSpacing: 1.5,
-                            }}>{roleLabel}</Text>
-                            <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '600' }}>
-                              {roleSub[role]}
-                            </Text>
-                          </View>
-                          {isActive && <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: rc.color }} />}
+                          <Ionicons
+                            name={ROLE_ICONS[role]}
+                            size={22}
+                            color={isActive ? GOLD : 'rgba(255,255,255,0.35)'}
+                          />
+                          <Text style={[st.segLabel, isActive && st.segLabelActive]}>
+                            {ROLE_LABELS[role]}
+                          </Text>
+                          {isActive && <View style={st.segActiveDot} />}
                         </TouchableOpacity>
                       );
                     })}
@@ -186,29 +188,28 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
 
                   {/* Active Role Indicator */}
                   <View style={st.activeBar}>
-                    <Ionicons name={ROLE_ICONS[activeRole].icon} size={12} color={ROLE_ICONS[activeRole].color} />
-                    <Text style={[st.activeText, { color: ROLE_ICONS[activeRole].color }]}>
-                      GHOSTING: {ROLE_CONFIG[activeRole].label}
-                    </Text>
+                    <Ionicons name={ROLE_ICONS[activeRole]} size={12} color={GOLD} />
+                    <Text style={st.activeText}>GHOSTING: {ROLE_CONFIG[activeRole].label.toUpperCase()}</Text>
                   </View>
                 </View>
               )}
 
-              {/* LOGOUT */}
+              {/* ── LOGOUT ── */}
               <View style={st.divider} />
-              <TouchableOpacity style={st.logoutItem} activeOpacity={0.7} onPress={handleLogout}>
-                <View style={[st.iconWrap, { backgroundColor: 'rgba(255,69,58,0.06)' }]}>
-                  <Ionicons name="log-out-outline" size={18} color="rgba(255,69,58,0.6)" />
+              <TouchableOpacity style={st.logoutItem} activeOpacity={0.75} onPress={handleLogout}>
+                <View style={[st.iconWrap, { backgroundColor: 'rgba(255,69,58,0.05)', borderColor: 'rgba(255,69,58,0.15)' }]}>
+                  <Ionicons name="log-out-outline" size={18} color="rgba(255,69,58,0.7)" />
                 </View>
                 <View style={st.itemText}>
                   <Text style={st.logoutLabel}>LOGOUT</Text>
                   <Text style={st.logoutSub}>Esci dal tuo Legacy</Text>
                 </View>
               </TouchableOpacity>
+
             </ScrollView>
 
             <PulseTicker />
-            <Text style={st.footer}>ARENAKORE v2.1</Text>
+            <Text style={st.footer}>ARENAKORE v3.0 · BUILD 2026</Text>
           </LinearGradient>
         </Animated.View>
       </TouchableOpacity>
@@ -225,7 +226,9 @@ const st = StyleSheet.create({
   panel: { width: SW * 0.78, height: '100%' },
   panelInner: { flex: 1, paddingTop: 60, borderLeftWidth: 1.5, borderLeftColor: 'rgba(0,242,255,0.06)' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 22, marginBottom: 16 },
+  headerLeft: { flex: 1, gap: 2 },
   headerTitle: { color: WHITE, fontSize: 13, fontWeight: '800', letterSpacing: 4 },
+  headerSub: { color: DIM2, fontSize: 9, fontWeight: '600', letterSpacing: 2, marginTop: 1 },
   tierBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 22, marginBottom: 20,
     paddingVertical: 10, paddingHorizontal: 14, backgroundColor: 'rgba(0,242,255,0.03)',
@@ -233,6 +236,10 @@ const st = StyleSheet.create({
   },
   tierLabel: { color: CYAN, fontSize: 11, fontWeight: '800', letterSpacing: 2 },
   tierSub: { color: DIM, fontSize: 7, fontWeight: '600', letterSpacing: 1 },
+  tierLiveDot: {
+    width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF',
+    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4,
+  },
   item: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 15, paddingHorizontal: 22 },
   iconWrap: { width: 34, height: 34, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.04)', alignItems: 'center', justifyContent: 'center' },
   itemText: { flex: 1, gap: 2 },
@@ -251,18 +258,26 @@ const st = StyleSheet.create({
   adminHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
   adminTitle: { color: '#FF453A', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
   adminSub: { color: DIM, fontSize: 8, fontWeight: '700', letterSpacing: 1.5, marginBottom: 12 },
-  segmented: { flexDirection: 'row', gap: 5, marginBottom: 12, width: '100%' },
+  segGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12, width: '100%' },
   segBtn: {
-    width: '23%', alignItems: 'center', gap: 3, paddingVertical: 12, borderRadius: 10,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)',
+    width: '46%', alignItems: 'center', gap: 4, paddingVertical: 14, borderRadius: 12,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.12)', backgroundColor: 'rgba(255,255,255,0.04)',
   },
-  segLabel: { fontSize: 8, fontWeight: '900', letterSpacing: 1, color: 'rgba(255,255,255,0.55)' },
+  segBtnActive: {
+    borderColor: GOLD, backgroundColor: 'rgba(212,175,55,0.08)',
+  },
+  segLabel: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5, color: 'rgba(255,255,255,0.45)' },
+  segLabelActive: { color: GOLD },
+  segActiveDot: {
+    width: 4, height: 4, borderRadius: 2, backgroundColor: GOLD,
+    shadowColor: GOLD, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4,
+  },
   activeBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: 8, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.02)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)',
+    paddingVertical: 8, borderRadius: 8, backgroundColor: 'rgba(212,175,55,0.04)',
+    borderWidth: 1, borderColor: 'rgba(212,175,55,0.1)', marginBottom: 8,
   },
-  activeText: { fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  activeText: { fontSize: 9, fontWeight: '900', letterSpacing: 2, color: GOLD },
   logoutItem: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 15, paddingHorizontal: 22, marginTop: 4 },
   logoutLabel: { color: 'rgba(255,69,58,0.6)', fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
   logoutSub: { color: 'rgba(255,69,58,0.3)', fontSize: 10 },

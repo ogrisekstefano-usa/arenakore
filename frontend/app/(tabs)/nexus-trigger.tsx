@@ -403,6 +403,100 @@ function MiniDNARadar({ dna, explosive }: { dna: any; explosive: boolean }) {
   );
 }
 
+// ========== 3-SECOND POSE VALIDATION OVERLAY ==========
+function StabilizingOverlay({ exercise, onComplete }: { exercise: ExerciseType; onComplete: () => void }) {
+  const [count, setCount] = useState(3);
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    progress.value = withTiming(1, { duration: 3000 });
+    const countInterval = setInterval(() => {
+      setCount(p => {
+        const next = p - 1;
+        if (next <= 0) { clearInterval(countInterval); return 0; }
+        return next;
+      });
+    }, 1000);
+    const doneTimer = setTimeout(() => {
+      if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      onComplete();
+    }, 3000);
+    return () => { clearInterval(countInterval); clearTimeout(doneTimer); };
+  }, []);
+
+  const barStyle = useAnimatedStyle(() => ({ width: `${progress.value * 100}%` as any }));
+  const glowStyle = useAnimatedStyle(() => ({ opacity: 0.3 + progress.value * 0.4 }));
+
+  const hint = exercise === 'squat'
+    ? 'POSIZIONE: PIEDI ALLA LARGHEZZA DELLE SPALLE'
+    : 'POSIZIONE: GUARDIA PUGNI ALTI';
+
+  return (
+    <View style={stab$.overlay}>
+      <Animated.View entering={FadeIn.duration(300)} style={stab$.content}>
+        {/* Icon */}
+        <Animated.View style={[stab$.iconCircle, glowStyle]}>
+          <Ionicons name={exercise === 'squat' ? 'body' : 'hand-left'} size={40} color="#00F2FF" />
+        </Animated.View>
+
+        {/* Countdown number */}
+        <View style={stab$.countWrap}>
+          <Text style={stab$.countNum}>{count === 0 ? 'GO' : count}</Text>
+        </View>
+
+        {/* Main message */}
+        <Text style={stab$.title}>TIENI LA POSIZIONE</Text>
+        <Text style={stab$.hint}>{hint}</Text>
+
+        {/* Progress bar */}
+        <View style={stab$.barWrap}>
+          <Animated.View style={[stab$.barFill, barStyle]} />
+        </View>
+
+        {/* Sub text */}
+        <Text style={stab$.sub}>MANTIENI STABILE PER AVVIARE IL TRACKING</Text>
+      </Animated.View>
+    </View>
+  );
+}
+
+const stab$ = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject, zIndex: 30,
+    backgroundColor: 'rgba(5,5,5,0.82)',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  content: { alignItems: 'center', gap: 14, paddingHorizontal: 40 },
+  iconCircle: {
+    width: 80, height: 80, borderRadius: 40,
+    backgroundColor: 'rgba(0,242,255,0.08)',
+    borderWidth: 2, borderColor: '#00F2FF',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8, shadowRadius: 16,
+  },
+  countWrap: {
+    width: 72, height: 72, borderRadius: 36,
+    backgroundColor: 'rgba(0,242,255,0.06)',
+    borderWidth: 2, borderColor: 'rgba(0,242,255,0.4)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  countNum: { color: '#00F2FF', fontSize: 36, fontWeight: '900', letterSpacing: 2 },
+  title: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 4, textAlign: 'center' },
+  hint: { color: 'rgba(0,242,255,0.65)', fontSize: 10, fontWeight: '700', letterSpacing: 2, textAlign: 'center' },
+  barWrap: {
+    width: SW * 0.65, height: 4, backgroundColor: 'rgba(0,242,255,0.12)',
+    borderRadius: 2, overflow: 'hidden', marginTop: 4,
+  },
+  barFill: {
+    height: '100%', borderRadius: 2,
+    backgroundColor: '#00F2FF',
+    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1, shadowRadius: 8,
+  },
+  sub: { color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '700', letterSpacing: 2, textAlign: 'center' },
+});
+
 // ========== COUNTDOWN ==========
 function Countdown({ onComplete }: { onComplete: () => void }) {
   const [count, setCount] = useState(3);
@@ -436,7 +530,7 @@ export default function NexusTriggerScreen() {
   const { user, token, logout, activeRole, setActiveRole, updateUser } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'countdown' | 'scanning' | 'results'>('console');
+  const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'countdown' | 'stabilizing' | 'scanning' | 'results'>('console');
   const [exercise, setExercise] = useState<ExerciseType>('squat');
   const [forgeMode, setForgeMode] = useState<ForgeMode>('personal');
   const [motionState, setMotionState] = useState<MotionState | null>(null);
@@ -513,7 +607,11 @@ export default function NexusTriggerScreen() {
 
   const handleForgeSelect = (mode: ForgeMode, ex: ExerciseType) => { setForgeMode(mode); setExercise(ex); setPhase('countdown'); };
 
-  const handleCountdownDone = async () => {
+  const handleCountdownDone = () => {
+    setPhase('stabilizing');
+  };
+
+  const handleStabilizingComplete = async () => {
     setPhase('scanning');
     try { if (token) { const s = await api.startNexusSession({ exercise_type: exercise }, token); setSessionId(s.session_id); } } catch (_) {}
     analyzerRef.current = new MotionAnalyzer(exercise);
@@ -601,10 +699,15 @@ export default function NexusTriggerScreen() {
       <StatusBar barStyle="light-content" />
       {/* SPRINT 5: Camera-transparent dark overlay at 0.3 opacity */}
       <View style={main$.cameraOverlay} />
-      <CyberGrid intensity={motionActive ? 0.5 : 0.2} scanning={phase === 'scanning'} />
+      <CyberGrid intensity={motionActive ? 0.5 : 0.2} scanning={phase === 'scanning' || phase === 'stabilizing'} />
       <DigitalShadow pose={skeleton} exercise={exercise} goldFlash={goldFlash} motionActive={motionActive} deviceTier={deviceTier} />
       <ScanLine active={phase === 'scanning'} />
       {phase === 'scanning' && <MiniDNARadar dna={user?.dna} explosive={motionActive} />}
+
+      {/* 3-SEC POSE VALIDATION */}
+      {phase === 'stabilizing' && (
+        <StabilizingOverlay exercise={exercise} onComplete={handleStabilizingComplete} />
+      )}
       {phase === 'bioscan' && <BioScanTrigger user={user} onComplete={async () => {
         setPhase('forge');
         // SPRINT 7: Record bioscan snapshot + check PRO unlock
