@@ -1,4 +1,4 @@
-# ARENAKORE — PRD (Product Requirements Document) v7.0
+# ARENAKORE — PRD (Product Requirements Document) v8.0
 
 ## Overview
 **ARENAKORE** è la piattaforma mobile d'élite per atleti con analisi biometrica in tempo reale, sistema XP/Level, battle competitive, crew sociali e leaderboard globali. Estetica "Nike Elite / Chic-Tech / Cinema".
@@ -6,16 +6,17 @@
 **Stack Tecnico**: Expo React Native SDK 54 + FastAPI + MongoDB  
 **Bundle ID**: `com.arenakore.app`  
 **Data aggiornamento**: Marzo 2026  
-**Versione**: 7.0 — SPRINT 13: WALLET ENGINE + PUPPET-MOTION-DECK
+**Versione**: 8.0 — SPRINT 14: SECURITY AUDIT + ID RECOVERY
 
 ---
 
 ## Architettura
 
 ### Backend (FastAPI)
-- **Auth**: JWT (python-jose + passlib/bcrypt), token 7 giorni
-- **DB**: MongoDB via Motor (async)
-- **Endpoints**: `/api/auth/*`, `/api/battles`, `/api/disciplines`, `/api/crews`, `/api/leaderboard`, `/api/nexus/*`, `/api/notifications`, `/api/dna/history`, `/api/wallet/apple-pass`, `/api/wallet/google-pass`
+- **Auth**: JWT (python-jose + passlib/bcrypt), token 7 giorni. **BCRYPT CONFIRMED. MD5 BANNED.**
+- **DB**: MongoDB via Motor (async). Collection `password_resets` per OTP recovery.
+- **Endpoints**: `/api/auth/*`, `/api/battles`, `/api/disciplines`, `/api/crews`, `/api/leaderboard`, `/api/nexus/*`, `/api/notifications`, `/api/dna/history`, `/api/wallet/apple-pass`, `/api/wallet/google-pass`, `/api/auth/forgot-password`, `/api/auth/verify-otp`, `/api/auth/reset-password`
+- **ID Recovery**: OTP 6 cifre, SHA256-hashed in DB, 10min expiry → reset_token JWT 15min → bcrypt new hash
 - **Founder Protocol**: Primo 100 utenti ricevono badge Gold permanente
 - **APScheduler**: Background job ogni 6h per notification engine
 - **Wallet Engine**: GET /api/wallet/apple-pass (mock .pkpass ZIP+base64), GET /api/wallet/google-pass (mock JWT + Google save URL)
@@ -23,6 +24,7 @@
 ### Frontend (Expo Router v6)
 - **Auth**: AsyncStorage per JWT persistence
 - **Navigation**: Expo Router — Strict 5-Tab Lock (ARENA, KORE, NEXUS, DNA, RANK)
+- **ID Recovery**: /recover — 4-step flow (email → 6-box OTP → new password → ACCESSO RIPRISTINATO). Neon cyan boxes, gold ARENAKORE brand.
 - **Animazioni**: React Native Reanimated v4
 - **Audio**: Web Audio API (Oscillators per Bio-Scan hum, metallic pings)
 - **Charts**: react-native-svg (Radar Chart biometrico, ArenaGO Radar Map con sweep animato)
