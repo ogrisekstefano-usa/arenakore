@@ -31,65 +31,7 @@ const BG   = '#050505';
 // =====================================================================
 // ATHLETE BACKGROUND — blurred photo with deep vignette
 // =====================================================================
-// ── Biometric skeleton keypoints/connections (COCO 17-pt)
-const COCO_CONNS = [[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
-
-function mkPts(cx: number, W: number, H: number): [number,number][] {
-  const s = W * 0.062;
-  return [
-    [cx, H*0.09],[cx-s*0.28,H*0.085],[cx+s*0.28,H*0.085],
-    [cx-s*0.55,H*0.095],[cx+s*0.55,H*0.095],
-    [cx-s*0.88,H*0.20],[cx+s*0.88,H*0.20],
-    [cx-s*1.35,H*0.31],[cx+s*1.35,H*0.31],
-    [cx-s*1.48,H*0.42],[cx+s*1.48,H*0.42],
-    [cx-s*0.65,H*0.49],[cx+s*0.65,H*0.49],
-    [cx-s*0.70,H*0.64],[cx+s*0.70,H*0.64],
-    [cx-s*0.70,H*0.79],[cx+s*0.70,H*0.79],
-  ] as [number,number][];
-}
-
-function BioScanOverlay() {
-  const { width: W, height: H } = useWindowDimensions();
-  const sweep = useSharedValue(-40);
-  useEffect(() => {
-    sweep.value = withRepeat(withTiming(H + 40, { duration: 5500, easing: Easing.linear }), -1, false);
-  }, [H]);
-  const sweepStyle = useAnimatedStyle(() => ({ transform: [{ translateY: sweep.value }] }));
-
-  const f1 = mkPts(W * 0.31, W, H);
-  const f2 = mkPts(W * 0.69, W, H);
-
-  return (
-    <View style={[StyleSheet.absoluteFill, { zIndex: 3 }]} pointerEvents="none">
-      <Svg width={W} height={H} style={StyleSheet.absoluteFill}>
-        {[f1, f2].map((pts, fi) => (
-          <G key={fi}>
-            {COCO_CONNS.map(([a, b], i) => (
-              <Line key={i}
-                x1={pts[a][0]} y1={pts[a][1]} x2={pts[b][0]} y2={pts[b][1]}
-                stroke="#D4AF37" strokeWidth={1.2} opacity={0.35}
-              />
-            ))}
-            {pts.map(([x, y], i) => (
-              <G key={i}>
-                <Circle cx={x} cy={y} r={i < 5 ? 5 : 4} fill="#00F2FF" opacity={0.18} />
-                <Circle cx={x} cy={y} r={i < 5 ? 2.5 : 2} fill="#00F2FF" opacity={0.65} />
-                <Circle cx={x} cy={y} r={0.8} fill="#FFFFFF" opacity={0.9} />
-              </G>
-            ))}
-          </G>
-        ))}
-      </Svg>
-      {/* Gold sweep line */}
-      <Animated.View style={[{ position: 'absolute', left: 0, right: 0 }, sweepStyle]}>
-        <View style={{ height: 1.5, backgroundColor: 'rgba(212,175,55,0.5)' }} />
-        <View style={{ height: 28, backgroundColor: 'rgba(212,175,55,0.06)', marginTop: -1 }} />
-      </Animated.View>
-    </View>
-  );
-}
-
-const ATHLETE_BG = 'https://images.pexels.com/photos/14139779/pexels-photo-14139779.jpeg?auto=compress&cs=tinysrgb&h=1200&w=800';
+const ATHLETE_BG = 'https://images.pexels.com/photos/4401809/pexels-photo-4401809.jpeg?auto=compress&cs=tinysrgb&h=1200&w=800';
 function ScanLine() {
   const { height } = useWindowDimensions();
   const y = useSharedValue(-100);
@@ -208,15 +150,15 @@ export default function HeroIndex() {
     <View style={s.root}>
       <StatusBar barStyle="light-content" />
 
-      {/* ── ATHLETE BACKGROUND — less blur, more visible ── */}
+      {/* ── ATHLETE BACKGROUND — two boxers, dim ring, real sport ── */}
       <Image
         source={{ uri: ATHLETE_BG }}
-        style={[StyleSheet.absoluteFill, { opacity: 0.45 }]}
-        blurRadius={5}
+        style={[StyleSheet.absoluteFill, { opacity: 0.5 }]}
+        blurRadius={4}
         resizeMode="cover"
       />
 
-      {/* ── GRADIENT OVERLAY — softer at top (athletes visible), pure black at bottom ── */}
+      {/* ── GRADIENT OVERLAY — softer at top, pure black at bottom ── */}
       <LinearGradient
         colors={[
           'rgba(5,5,5,0.05)',
@@ -230,8 +172,8 @@ export default function HeroIndex() {
         pointerEvents="none"
       />
 
-      {/* ── BIOSCANNER DOT OVERLAY on athletes ── */}
-      <BioScanOverlay />
+      {/* ── SCAN LINE ANIMATION (gold sweep) ── */}
+      <ScanLine />
 
       {/* ── SCROLLABLE CONTENT ── */}
       <ScrollView
