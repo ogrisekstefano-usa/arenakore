@@ -860,10 +860,19 @@ async def seed_data():
         await db.crews.insert_many(crews)
 
     # ── CHICAGO CITY RANKING — Seed athletes + Migrate Stefano
-    # Set Stefano (is_admin) to CHICAGO if city not already configured
+    # UNCONDITIONAL: Always ensure Stefano (founder/admin) is in CHICAGO with
+    # the correct DNA + XP to be guaranteed rank #1 in Chicago.
     await db.users.update_one(
-        {"is_admin": True, "$or": [{"city": {"$exists": False}}, {"city": None}, {"city": ""}]},
-        {"$set": {"city": "CHICAGO"}}
+        {"is_admin": True},
+        {"$set": {
+            "city": "CHICAGO",
+            "xp": 9999,
+            "level": 20,
+            "dna": {
+                "velocita": 87.0, "forza": 83.0, "resistenza": 91.0,
+                "tecnica": 88.0, "mentalita": 94.0, "flessibilita": 79.0,
+            },
+        }}
     )
 
     chicago_seed_exists = await db.users.count_documents({"city": "CHICAGO", "is_seed": True})
