@@ -3282,109 +3282,35 @@ async def nexus_scanner_page():
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
-    #video  { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
-    #canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
-    #brand  { position: absolute; top: 14px; left: 14px; z-index: 30; pointer-events: none; display: flex; }
-    .arena  { color: #FFF; font-family: -apple-system, Helvetica, sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 2px; }
-    .kore   { color: #00F2FF; font-family: -apple-system, Helvetica, sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 2px; text-shadow: 0 0 12px rgba(0,242,255,.9); }
+    /* Canvas fills screen — draws both video AND skeleton */
+    #canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+    /* Video is hidden — used only as MediaPipe input source */
+    #video  { display: none; }
+    #brand  { position: fixed; top: 14px; left: 14px; z-index: 30; pointer-events: none; display: flex; }
+    .arena  { color: #FFF; font-family: -apple-system, sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 2px; }
+    .kore   { color: #00F2FF; font-family: -apple-system, sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 2px; text-shadow: 0 0 12px rgba(0,242,255,.9); }
   </style>
 </head>
 <body>
-  <video id="video" autoplay playsinline muted></video>
   <canvas id="canvas"></canvas>
+  <video id="video" autoplay playsinline muted></video>
   <div id="brand"><span class="arena">ARENA</span><span class="kore">KORE</span></div>
-  <!-- ONLY pose.js — direct getUserMedia, no camera_utils -->
+
   <script src="/api/static/mediapipe/pose.js" crossorigin="anonymous"></script>
   <script>
-    var video        = document.getElementById('video');
-    var canvas       = document.getElementById('canvas');
-    var ctx          = canvas.getContext('2d');
+    var canvas   = document.getElementById('canvas');
+    var video    = document.getElementById('video');
+    var ctx      = canvas.getContext('2d');
 
-    // ── M2 MEMORY OPTIMIZATION: 256x256 input canvas for MediaPipe
-    // Reduces GPU/RAM usage by ~87% vs raw 480x640 video
-    var small        = document.createElement('canvas');
-    small.width      = 256;
-    small.height     = 256;
-    var smallCtx     = small.getContext('2d');
-
-    // ── State
-    var lastFrameTime   = 0;
-    var personFirstSeen = null;
-    var STABLE_MS       = 2000;
-    var poseReady       = false;
-    var frameSkip       = 0;   // 0=every frame, 1=every 2nd, 2=every 3rd
-    var frameCounter    = 0;
-    var sendStart       = 0;
-    var sendPending     = false;
-
-    // ── LOW-PASS FILTER: smooths landmark jitter (The Butter)
-    var prevSmoothed = null;
-    var SMOOTH_ALPHA = 0.55;
-
-    // ── NEXUS VISION ENGINE
-    var brightnessFrameCount = 0;
-    var currentBrightFilter  = 'contrast(1.3) brightness(1.05) saturate(0.7)';
-    var skinData             = null;  // cached pixel data for skin segmentation
-    var skinFrameCount       = 0;
-    var MAX_VELOCITY         = 0.18; // max landmark movement per frame (teleportation guard)
-
-    // AUTO-GAIN: analyze 64x64 sample to compute adaptive filter
-    function computeAdaptiveFilter() {
-      try {
-        var sample = smallCtx.getImageData(96, 96, 64, 64);  // center crop
-        var bright = 0, count = 0;
-        for (var i = 0; i < sample.data.length; i += 16) {
-          bright += (sample.data[i] + sample.data[i+1] + sample.data[i+2]) / 3;
-          count++;
-        }
-        var avg = bright / Math.max(count, 1);
-        if (avg > 170)      { currentBrightFilter = 'contrast(1.7) brightness(0.75) saturate(0.55)'; }  // blazing outdoor
-        else if (avg > 140) { currentBrightFilter = 'contrast(1.45) brightness(0.88) saturate(0.65)'; } // bright
-        else if (avg > 100) { currentBrightFilter = 'contrast(1.3)  brightness(1.00) saturate(0.70)'; } // normal
-        else if (avg > 60)  { currentBrightFilter = 'contrast(1.2)  brightness(1.15) saturate(0.80)'; } // dim
-        else                { currentBrightFilter = 'contrast(1.15) brightness(1.35) saturate(0.90)'; } // dark/night
-      } catch(_e) {}
+    // Resize canvas to screen
+    function resize() {
+      canvas.width  = window.innerWidth  || screen.width  || 390;
+      canvas.height = window.innerHeight || screen.height || 844;
     }
+    window.addEventListener('resize', resize);
+    resize();
 
-    // MOTION PREDICTION: reject teleportation (ghost sudden jump)
-    function motionFilter(curr, prev) {
-      if (!prev || prev.length !== curr.length) return curr;
-      return curr.map(function(lm, i) {
-        var p = prev[i];
-        if (!lm || !p) return lm;
-        var dist = Math.sqrt((lm.x-p.x)*(lm.x-p.x) + (lm.y-p.y)*(lm.y-p.y));
-        if (dist > MAX_VELOCITY) {
-          // Teleportation detected — blend 15% new + 85% old (reject ghost jump)
-          return { x: p.x*0.85 + lm.x*0.15, y: p.y*0.85 + lm.y*0.15, visibility: lm.visibility };  // keep vis!
-        }
-        return lm;
-      });
-    }
-
-    // SKIN MASK: check if pixel at landmark position has skin-like hue
-    // Skin: warm reddish-brownish (R>G>B, R>80, no strong blue)
-    function isSkinPixel(nx, ny) {
-      if (!skinData) return true;  // no data yet — assume skin (don't penalize)
-      var px = Math.round(nx * (skinData.width - 1));
-      var py = Math.round(ny * (skinData.height - 1));
-      var idx = (py * skinData.width + px) * 4;
-      if (idx < 0 || idx >= skinData.data.length) return true;
-      var r = skinData.data[idx], g = skinData.data[idx+1], b = skinData.data[idx+2];
-      return (r > 70 && g > 35 && b > 10 && r > g && r > b && (r-b) > 15);
-    }
-
-    function lpf(curr, prev, alpha) {
-      if (!prev || prev.length !== curr.length) return curr;
-      return curr.map(function(lm, i) {
-        var p = prev[i];
-        if (!lm) return null;
-        if (!p) return lm;
-        return { x: alpha*lm.x + (1-alpha)*p.x, y: alpha*lm.y + (1-alpha)*p.y,
-                 visibility: lm.visibility, z: lm.z||0 };
-      });
-    }
-
-
+    // ── Post to React Native
     function post(data) {
       try {
         var msg = JSON.stringify(data);
@@ -3393,331 +3319,160 @@ async def nexus_scanner_page():
       } catch(e) {}
     }
 
-    // ── Canvas sizing
-    function resizeCanvas() {
-      var W = window.innerWidth  || screen.width  || 390;
-      var H = window.innerHeight || screen.height || 844;
-      canvas.width  = W;
-      canvas.height = H;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-    // Diagnostic: draw a cyan dot at center so we know canvas is overlaying video
-    setTimeout(function() {
-      resizeCanvas();
-      var W = canvas.width, H = canvas.height;
-      ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = 'rgba(0,242,255,0.7)';
-      ctx.beginPath(); ctx.arc(W/2, H/2, 20, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#FFF'; ctx.font='900 11px monospace'; ctx.textAlign='center';
-      ctx.fillText('NEXUS READY', W/2, H/2 + 35);
-    }, 500);
-
-    // ── Coord mapping: direct [0,1] → screen pixels
-    // 256x256 input and screen both stretch the video the same way →
-    // normalized coords map directly to screen. No scale math needed.
-    function toScreen(lm_x, lm_y) {
-      return {
-        x: (1 - lm_x) * canvas.width,   // mirror x (front camera)
-        y: lm_y * canvas.height
-      };
-    }
-
+    // ── MP → COCO 17
     var MP_TO_COCO = {0:0,2:1,5:2,7:3,8:4,11:5,12:6,13:7,14:8,15:9,16:10,23:11,24:12,25:13,26:14,27:15,28:16};
     var COCO_CONN  = [[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
 
-    function showStatus(txt, color) {
-      ctx.save();
-      ctx.clearRect(0, canvas.height/2 - 40, canvas.width, 80);
-      ctx.fillStyle = color || 'rgba(0,242,255,0.6)';
-      ctx.font      = '900 13px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(txt, canvas.width / 2, canvas.height / 2);
-      ctx.restore();
-    }
-
-    function clearAndWait() {
-      prevSmoothed = null;
-      var W = window.innerWidth||390, H = window.innerHeight||844;
-      if (canvas.width!==W) canvas.width=W;
-      if (canvas.height!==H) canvas.height=H;
-      ctx.clearRect(0, 0, W, H);
-      showStatus('AWAITING ATHLETE');
-    }
-
-    function drawSkeleton(mp_lm) {
-      // ── RESIZE canvas every frame (fixes 0x0 canvas bug after WebView init)
-      var W = window.innerWidth  || 390;
-      var H = window.innerHeight || 844;
-      if (canvas.width  !== W) canvas.width  = W;
-      if (canvas.height !== H) canvas.height = H;
-      // ── CLEAR before drawing
-      ctx.clearRect(0, 0, W, H);
-      var coco17 = new Array(17).fill(null);
-      for (var k in MP_TO_COCO) {
-        var mpIdx = parseInt(k);
-        var lm = mp_lm[mpIdx];
-        // EXTREMITY HEURISTIC: ankles (27,28) near frame bottom get lenient threshold
-        var visThresh = 0.75;
-        if ((mpIdx === 27 || mpIdx === 28) && lm && lm.y > 0.82) {
-          visThresh = 0.30;  // extremity near edge — accept lower confidence
-        }
-        if (lm && (lm.visibility || 0) >= visThresh) {
-          var sc = toScreen(lm.x, lm.y);
-          coco17[MP_TO_COCO[k]] = { x: sc.x, y: sc.y, v: lm.visibility, ext: false };
-        }
-      }
-
-      // ── ANKLE RECOVERY: multi-strategy shin projection
-      // Strategy priority: 1) heel/toe (best) 2) knee-only extension 3) hip→knee vector
-      function recoverAnkle(mpHip, mpKnee, mpAnkle, mpHeel, mpToe, cocoAnkleIdx) {
-        if (coco17[cocoAnkleIdx]) return;  // already have it
-
-        var hip   = mp_lm[mpHip],   knee  = mp_lm[mpKnee];
-        var ankle = mp_lm[mpAnkle], heel  = mp_lm[mpHeel];
-        var toe   = mp_lm[mpToe];
-
-        var px, py;
-
-        // Strategy A: average of heel + toe (most accurate)
-        if (heel && toe && (heel.visibility||0) > 0.25 && (toe.visibility||0) > 0.25) {
-          px = (heel.x + toe.x) / 2;
-          py = (heel.y + toe.y) / 2;
-
-        // Strategy B: use visible knee-only — extend shin segment (hip→knee × 1.0)
-        } else if (knee && (knee.visibility||0) >= 0.55) {
-          if (hip && (hip.visibility||0) >= 0.50) {
-            var dx = knee.x - hip.x, dy = knee.y - hip.y;
-            px = knee.x + dx;    // project same vector below knee
-            py = knee.y + dy;
-          } else {
-            // No hip: extend straight down from knee by estimated shin fraction
-            px = knee.x;
-            py = knee.y + 0.22;  // ~22% of frame height ≈ shin length
-          }
-
-        } else { return; }  // not enough data to recover
-
-        if (py > 0 && py <= 1.25 && px >= 0.05 && px <= 0.95) {
-          var sc = toScreen(Math.min(px, 1), Math.min(py, 1));
-          coco17[cocoAnkleIdx] = { x: sc.x, y: Math.min(sc.y, canvas.height - 2), v: 0.20, ext: true };
-        }
-      }
-      // Left leg:  hip[23] knee[25] ankle[27→COCO15] heel[29] toe[31]
-      recoverAnkle(23, 25, 27, 29, 31, 15);
-      // Right leg: hip[24] knee[26] ankle[28→COCO16] heel[30] toe[32]
-      recoverAnkle(24, 26, 28, 30, 32, 16);
-      // STATUS GLOW: high confidence → gold aura
-      ctx.shadowColor = (avgConf > 0.82) ? '#D4AF37' : 'transparent';
-      ctx.shadowBlur  = (avgConf > 0.82) ? 16 : 0;
-      ctx.strokeStyle = '#D4AF37';
-      ctx.lineWidth   = (avgConf > 0.82) ? 4.0 : 2.5;
-      ctx.globalAlpha = 0.9;
-      COCO_CONN.forEach(function(p) {
-        var a = coco17[p[0]], b = coco17[p[1]];
-        if (a && b) { ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
+    // ── LPF smoothing
+    var prevSmoothed = null;
+    var ALPHA = 0.55;
+    function lpf(curr, prev) {
+      if (!prev || prev.length !== curr.length) return curr;
+      return curr.map(function(lm, i) {
+        var p = prev[i];
+        if (!lm || !p) return lm;
+        return { x: ALPHA*lm.x + (1-ALPHA)*p.x, y: ALPHA*lm.y + (1-ALPHA)*p.y, visibility: lm.visibility };
       });
-      coco17.forEach(function(pt, i) {
-        if (!pt) return;
-        if (pt.x < -20 || pt.x > canvas.width + 20 || pt.y < -20 || pt.y > canvas.height + 20) return;
-        var r = i < 5 ? 9 : 7;
-        var isExt = !!pt.ext;  // extrapolated ankle (gold dashed ring)
-        if (isExt) {
-          // Extrapolated: gold dashed ring (estimated position)
-          ctx.strokeStyle = '#D4AF37'; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.55;
-          ctx.setLineDash([5, 4]);
-          ctx.beginPath(); ctx.arc(pt.x, pt.y, r + 3, 0, Math.PI * 2); ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.globalAlpha = 0.5;
-          ctx.fillStyle = '#D4AF37';
-          ctx.beginPath(); ctx.arc(pt.x, pt.y, 3.5, 0, Math.PI * 2); ctx.fill();
-        } else {
-          ctx.fillStyle = '#00F2FF'; ctx.globalAlpha = 0.25;
-          ctx.beginPath(); ctx.arc(pt.x,pt.y,r*2.2,0,Math.PI*2); ctx.fill();
-          ctx.globalAlpha = 1.0;
-          ctx.beginPath(); ctx.arc(pt.x,pt.y,r,0,Math.PI*2); ctx.fill();
-          ctx.fillStyle = '#FFF';
-          ctx.beginPath(); ctx.arc(pt.x,pt.y,3,0,Math.PI*2); ctx.fill();
-          ctx.fillStyle = '#00F2FF';
-        }
-      });
-      ctx.globalAlpha = 1;
-      return coco17;
     }
+
+    var personFirstSeen = null;
+    var STABLE_MS = 2000;
+    var lastTime  = 0;
+    var sendPending = false;
+    var frameSkip = 0, frameCount = 0;
 
     function onResults(results) {
-      if (!poseReady) { poseReady = true; }
       sendPending = false;
+      var W = canvas.width, H = canvas.height;
 
-      var elapsed = performance.now() - sendStart;
-      if (elapsed > 150 && frameSkip < 2) frameSkip++;
-      else if (elapsed < 80 && frameSkip > 0) frameSkip--;
+      // ── 1. Draw mirrored video frame onto canvas
+      ctx.save();
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, -W, 0, W, H);
+      ctx.restore();
 
       if (!results.poseLandmarks || !results.poseLandmarks.length) {
         personFirstSeen = null;
         prevSmoothed = null;
-        clearAndWait();
+        // Show waiting text
+        ctx.fillStyle = 'rgba(0,242,255,0.5)';
+        ctx.font = '900 14px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('AWAITING ATHLETE', W/2, H/2);
         post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
         return;
       }
 
-      // DRAW IMMEDIATELY — no confidence/centrality filters
       var mp_lm = results.poseLandmarks;
-      var smoothed = lpf(motionFilter(mp_lm, prevSmoothed), prevSmoothed, SMOOTH_ALPHA);
+      var smoothed = lpf(mp_lm, prevSmoothed);
       prevSmoothed = smoothed;
 
-      var coco17 = drawSkeleton(smoothed);
-      recoverAnkle(23, 25, 27, 29, 31, 15);
-      recoverAnkle(24, 26, 28, 30, 32, 16);
+      // ── 2. Build COCO17 in screen coords
+      var coco17 = new Array(17).fill(null);
+      for (var k in MP_TO_COCO) {
+        var lm = smoothed[parseInt(k)];
+        if (lm && (lm.visibility || 0) > 0.3) {
+          // Mirror x (front camera)
+          coco17[MP_TO_COCO[k]] = { x: (1 - lm.x) * W, y: lm.y * H, v: lm.visibility };
+        }
+      }
 
+      // ── 3. Draw gold connections
+      ctx.strokeStyle = '#D4AF37'; ctx.lineWidth = 3; ctx.globalAlpha = 0.85;
+      ctx.shadowColor = '#D4AF37'; ctx.shadowBlur = 8;
+      COCO_CONN.forEach(function(p) {
+        var a = coco17[p[0]], b = coco17[p[1]];
+        if (a && b) {
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
+      });
+      ctx.shadowBlur = 0;
+
+      // ── 4. Draw cyan keypoints
+      coco17.forEach(function(pt, i) {
+        if (!pt) return;
+        var r = i < 5 ? 9 : 7;
+        ctx.fillStyle = '#00F2FF'; ctx.globalAlpha = 0.25;
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, r*2, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 1.0;
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, r, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, 3, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#00F2FF';
+      });
+      ctx.globalAlpha = 1;
+
+      var vc = coco17.filter(function(p){return p!==null;}).length;
       var noseX = mp_lm[0] ? mp_lm[0].x : 0.5;
       var centered = (noseX >= 0.25 && noseX <= 0.75);
-      var vc = coco17.filter(function(p){ return p !== null; }).length;
       var now = Date.now();
       if (!personFirstSeen) personFirstSeen = now;
       var stable = (now - personFirstSeen) >= STABLE_MS && vc >= 5;
 
-      var kneesOk  = !!(coco17[13] || coco17[14]);
-      var anklesOk = !!(coco17[15] && !coco17[15].ext && coco17[16] && !coco17[16].ext);
-
-      var W = canvas.width, H = canvas.height;
       var norm = stable ? coco17.map(function(p) {
-        return p ? { x: p.x / W, y: p.y / H, v: p.v || 1 } : null;
+        return p ? { x:p.x/W, y:p.y/H, v:p.v||1 } : null;
       }) : [];
 
-      post({
-        type: 'pose',
-        landmarks: norm,
-        person_detected: stable,
-        visible_count: vc,
-        centered: centered,
-        feet_visible: anklesOk,
-        feet_guidance: kneesOk && !anklesOk,
-        fps: Math.round(1000 / Math.max(elapsed, 1))
-      });
+      post({ type:'pose', landmarks:norm, person_detected:stable, visible_count:vc,
+             centered:centered, feet_visible:!!(coco17[15]&&coco17[16]),
+             feet_guidance:!!(coco17[13]&&!coco17[15]), fps:30 });
     }
 
-    // ── Init Pose
+    // ── Init MediaPipe
     var pose = new Pose({ locateFile: function(f){ return '/api/static/mediapipe/' + f; } });
-    pose.setOptions({ modelComplexity:0, smoothLandmarks:true, enableSegmentation:false, minDetectionConfidence:0.40, minTrackingConfidence:0.72 });
+    pose.setOptions({ modelComplexity:0, smoothLandmarks:true, enableSegmentation:false,
+                      minDetectionConfidence:0.45, minTrackingConfidence:0.45 });
     pose.onResults(onResults);
 
-    // ── OOM / WASM abort parachute
-    window.addEventListener('error', function(e) {
-      var msg = (e.message || '') + ' ' + (e.error ? e.error.toString() : '');
-      if (/memory|wasm|abort|oom/i.test(msg)) {
-        post({ type:'oom', message: msg });
-      }
-    });
-    window.onerror = function(msg) {
-      if (/memory|wasm|abort|oom/i.test(String(msg))) {
-        post({ type:'oom', message: String(msg) });
-      }
-      return true;
-    };
-
-    // ── Start camera
+    // ── Start camera (direct getUserMedia)
     function startCamera() {
-      showStatus('MEDIAPIPE LOADING...');
-      navigator.mediaDevices.getUserMedia({
-        video: { facingMode:'user', width:{ideal:320}, height:{ideal:240} }
-      })
+      ctx.fillStyle = 'rgba(0,242,255,0.5)';
+      ctx.font = '900 13px monospace'; ctx.textAlign = 'center';
+      ctx.fillText('MEDIAPIPE LOADING...', canvas.width/2, canvas.height/2);
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode:'user', width:{ideal:480}, height:{ideal:640} } })
       .then(function(stream) {
         video.srcObject = stream;
         return video.play();
       })
       .then(function() {
         post({ type:'ready' });
-        showStatus('CAMERA ON — AWAITING ATHLETE');
-
-        // 5s timeout: if AI never fires
-        setTimeout(function() {
-          if (!poseReady) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#FF3B30'; ctx.font = '900 16px monospace'; ctx.textAlign = 'center';
-            ctx.fillText('ERRORE MOTORE AI', canvas.width/2, canvas.height/2 - 16);
-            ctx.font = '700 11px monospace';
-            ctx.fillText('RIAVVIA SCAN', canvas.width/2, canvas.height/2 + 10);
-            post({ type:'error', message:'AI timeout — model not responding' });
-          }
-        }, 5000);
-
-        // Inference loop
+        // Inference loop — draws video + skeleton every frame
         var lastFrameReceived = performance.now();
-
-        // ── FIX 2: CAMERA RECOVERY HANG — 2s watchdog
-        // If MediaPipe stops getting frames, auto-reset camera
-        var cameraWatchdog = setInterval(function() {
-          if (!poseReady) return;
-          if (performance.now() - lastFrameReceived > 2000) {
-            clearInterval(cameraWatchdog);
-            // WATCHDOG FLASH: show "Optimizing Vision..." for 500ms
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'rgba(0,242,255,0.9)';
-            ctx.font = '900 18px monospace';
-            ctx.textAlign = 'center';
-            ctx.shadowColor = '#00F2FF';
-            ctx.shadowBlur = 12;
-            ctx.fillText('OPTIMIZING VISION...', canvas.width/2, canvas.height/2);
-            ctx.shadowBlur = 0;
+        var watchdog = setInterval(function() {
+          if (performance.now() - lastFrameReceived > 3000) {
+            clearInterval(watchdog);
             post({ type:'error', message:'camera_hang' });
-            if (video.srcObject) {
-              video.srcObject.getTracks().forEach(function(t){ t.stop(); });
-            }
-            video.srcObject = null;
-            personFirstSeen = null;
-            prevSmoothed = null;
-            setTimeout(startCamera, 600);  // full restart after 600ms
+            if (video.srcObject) video.srcObject.getTracks().forEach(function(t){t.stop();});
+            setTimeout(startCamera, 600);
           }
-        }, 2000);
-
+        }, 3000);
         function loop() {
           requestAnimationFrame(loop);
           var now = performance.now();
-          if (now - lastFrameTime < 40) return;  // cap at 25fps
-          lastFrameTime = now;
-          if (sendPending) return;  // don't pile up frames
-          frameCounter++;
-          if (frameSkip > 0 && (frameCounter % (frameSkip + 1)) !== 0) return;
-          if (video.readyState < 2 || video.videoWidth === 0) return;
-          lastFrameReceived = performance.now();  // reset watchdog
-
-          // ── BRIGHTNESS NORMALIZER: adaptive filter computed every 15 frames
-          smallCtx.clearRect(0, 0, 256, 256);
-          // First draw raw (for brightness analysis), then redraw with adaptive filter
-          if (brightnessFrameCount % 15 === 0) {
-            smallCtx.filter = 'none';
-            smallCtx.drawImage(video, 0, 0, 256, 256);
-            computeAdaptiveFilter();
-          }
-          smallCtx.filter = currentBrightFilter;
-          smallCtx.drawImage(video, 0, 0, 256, 256);
-          smallCtx.filter = 'none';
-          brightnessFrameCount++;
-          // ── SKIN MASK: cache pixel data every 5 frames for landmark validation
-          if (skinFrameCount % 5 === 0) {
-            try { skinData = smallCtx.getImageData(0, 0, 64, 64); } catch(_e) {}
-            // Re-scale skin coords to 64x64 space
-          }
-          skinFrameCount++;
-
+          if (now - lastTime < 40) return;
+          lastTime = now;
+          if (sendPending) return;
+          frameCount++;
+          if (frameSkip > 0 && frameCount % (frameSkip+1) !== 0) return;
+          if (video.readyState < 2 || !video.videoWidth) return;
+          lastFrameReceived = now;
           sendPending = true;
-          sendStart = performance.now();
-          pose.send({ image: small }).catch(function(e) {
-            sendPending = false;
-            if (!poseReady) showStatus('AI ERROR: ' + (e && e.message || 'pose.send failed'), '#FF9500');
-          });
+          pose.send({ image: video }).catch(function(){ sendPending = false; });
         }
         loop();
       })
       .catch(function(err) {
-        var denied = /NotAllowed|Permission/i.test(err.name || '');
-        post({ type: denied ? 'camera_denied' : 'error', message: err.message || err.name });
+        var denied = /NotAllowed|Permission/i.test(err.name||'');
+        post({ type: denied ? 'camera_denied' : 'error', message: err.message });
         ctx.fillStyle = denied ? '#FF3B30' : '#FF9500';
         ctx.font = '700 12px monospace'; ctx.textAlign = 'center';
-        ctx.fillText(denied ? 'CAMERA DENIED' : 'CAMERA ERROR: ' + (err.name || ''), canvas.width/2, canvas.height/2);
+        ctx.fillText(denied ? 'CAMERA DENIED' : 'ERROR: '+(err.name||''), canvas.width/2, canvas.height/2);
       });
     }
+
+    setTimeout(function() { if (typeof Pose === 'undefined') post({ type:'timeout' }); }, 12000);
+    window.onerror = function(msg) { post({ type:'error', message:'JS:'+msg }); return true; };
 
     startCamera();
   </script>
