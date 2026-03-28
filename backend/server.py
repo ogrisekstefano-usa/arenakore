@@ -3477,7 +3477,7 @@ async def nexus_scanner_page():
         return s + (mp_lm[i] ? (mp_lm[i].visibility || 0) : 0);
       }, 0) / KEY_LM.length;
 
-      if (avgConf < 0.70) {  // AGGRESSIVE: real athletes avg 80-95%
+      if (avgConf < 0.55) {  // RELAXED: 55% avg confidence required
         // GHOST PURGE: confidence too low — real reflections can't reach 60%
         personFirstSeen = null;
         clearAndWait();
@@ -3500,7 +3500,7 @@ async def nexus_scanner_page():
         if (mp_lm[ki] && (mp_lm[ki].visibility || 0) >= 0.75) hiConfCount++;
       }
       // Need at least 12 high-confidence landmarks for a clean skeleton
-      if (hiConfCount < 14) {  // Need 14 high-confidence landmarks (was 12)
+      if (hiConfCount < 10) {  // RELAXED: 10 high-confidence landmarks
         personFirstSeen = null;
         clearAndWait();
         post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
@@ -3523,7 +3523,7 @@ async def nexus_scanner_page():
         var boxArea = boxW * boxH;
 
         // ── RULE 1: BOX MAGNITUDE
-        if (boxArea < 0.12) {
+        if (boxArea < 0.08) {  // SOFT: allow athlete farther from camera
           personFirstSeen = null; clearAndWait();
           post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
           return;  // TOO SMALL
@@ -3601,7 +3601,7 @@ async def nexus_scanner_page():
         var wLm = results.poseWorldLandmarks;
         var wShZ = (((wLm[5]||{}).z||0) + ((wLm[6]||{}).z||0)) / 2;
         var wHiZ = (((wLm[23]||{}).z||0) + ((wLm[24]||{}).z||0)) / 2;
-        if (Math.abs(wShZ - wHiZ) > 0.8) {
+        if (Math.abs(wShZ - wHiZ) > 1.2) {  // RELAXED: 1.2m depth tolerance
           // Extreme z-axis inconsistency — 3D structure invalid (ghost reflection)
           personFirstSeen = null;
           clearAndWait();
@@ -3647,7 +3647,7 @@ async def nexus_scanner_page():
 
     // ── Init Pose
     var pose = new Pose({ locateFile: function(f){ return '/api/static/mediapipe/' + f; } });
-    pose.setOptions({ modelComplexity:0, smoothLandmarks:true, enableSegmentation:false, minDetectionConfidence:0.55, minTrackingConfidence:0.5 });
+    pose.setOptions({ modelComplexity:0, smoothLandmarks:true, enableSegmentation:false, minDetectionConfidence:0.60, minTrackingConfidence:0.55 });
     pose.onResults(onResults);
 
     // ── OOM / WASM abort parachute

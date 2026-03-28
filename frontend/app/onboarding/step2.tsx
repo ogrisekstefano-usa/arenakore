@@ -361,7 +361,7 @@ export default function NexusBioScan() {
   // Consecutive frames with proportion deviation > 15%
   const cheatConsecutiveRef   = useRef(0);
   const CHEAT_THRESHOLD       = 0.15;  // 15% max deviation
-  const CHEAT_FRAMES_TRIGGER  = 6;     // 6 bad frames (~250ms at 25fps)
+  const CHEAT_FRAMES_TRIGGER  = 3;     // 3 bad frames (~120ms at 25fps) — FAST LOCK
 
   const [poseTimeout, setPoseTimeout]       = useState(false);
   const [koScore, setKoScore]               = useState(0);
