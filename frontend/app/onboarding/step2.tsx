@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, useWindowDimensions, Platform,
-  ActivityIndicator,
+  ActivityIndicator, TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -723,13 +723,13 @@ export default function NexusBioScan() {
     setTimeout(() => setIsScanning(true), 500);
   }, []);
 
-  // Web fallback: simulate camera ready after delay in positioning
+  // Web fallback: simulate camera ready — FAST (1.5s) so testing is not blocked
   useEffect(() => {
     if (phase !== 'positioning' || !isWeb) return;
     const t = setTimeout(() => {
       setCameraReady(true);
       setIsScanning(true);
-    }, 3000);
+    }, 1500); // reduced from 3000 — unblocks testing quickly
     return () => clearTimeout(t);
   }, [phase, isWeb]);
 
@@ -791,8 +791,8 @@ export default function NexusBioScan() {
           </View>
         )}
 
-        {/* Dark overlay for contrast */}
-        <View style={[StyleSheet.absoluteFill, s.darkOverlay]} />
+        {/* Dark overlay for contrast — pointer-events none to never block touches */}
+        <View style={[StyleSheet.absoluteFill, s.darkOverlay]} pointerEvents="none" />
 
         {/* NEXUS HUD Frame (corners) */}
         <View style={[s.cornerTL, s.corner]} />
@@ -965,6 +965,15 @@ export default function NexusBioScan() {
                 </Animated.View>
                 <Text style={s.statusLabel}>POSIZIONATI DAVANTI ALLA CAMERA</Text>
                 <Text style={s.detectNote}>IN ATTESA RILEVAMENTO UMANO</Text>
+                {/* ── DEBUG BYPASS: visible when camera gate is blocking ── */}
+                <TouchableOpacity
+                  style={dbg$.btn}
+                  onPress={() => { setCameraReady(true); setIsScanning(true); }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="flash" size={11} color="#FF453A" />
+                  <Text style={dbg$.txt}>DEBUG: FORCE SCAN</Text>
+                </TouchableOpacity>
               </>
             ) : (
               /* ── SCANNING ACTIVE: 17-point progressive detection ── */
@@ -1194,5 +1203,19 @@ const s = StyleSheet.create({
   approvedSub: {
     color: '#FFFFFF', fontSize: 20, fontWeight: '900',
     letterSpacing: 6, textAlign: 'center',
+  },
+});
+
+// ── DEBUG BYPASS BUTTON styles (isolated to avoid polluting main StyleSheet)
+const dbg$ = StyleSheet.create({
+  btn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderWidth: 1, borderColor: 'rgba(255,69,58,0.35)',
+    borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8,
+    backgroundColor: 'rgba(255,69,58,0.06)',
+    marginTop: 8,
+  },
+  txt: {
+    color: '#FF453A', fontSize: 10, fontWeight: '900', letterSpacing: 3,
   },
 });

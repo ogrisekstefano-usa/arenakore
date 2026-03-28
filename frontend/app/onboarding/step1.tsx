@@ -29,74 +29,69 @@ function useVoiceEngine(onActivated: () => void) {
   const [state, setState] = useState<VoiceState>('idle');
   const [transcript, setTranscript] = useState('');
   const [micPermission, setMicPermission] = useState<'granted' | 'denied' | 'unknown'>('unknown');
-  const recognitionRef = useRef<any>(null);
-  const stateRef = useRef<VoiceState>('idle');
-  const lockedRef = useRef(false); // prevents double-trigger
+  const recognitionRef  = useRef<any>(null);
+  const stateRef        = useRef<VoiceState>('idle');
+  const navigatedRef    = useRef(false);          // single-use navigation guard
+  const safetyTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { stateRef.current = state; }, [state]);
 
-  // ── CORE: Speak then navigate. Navigation ONLY after onDone.
-  const speakThenNavigate = useCallback(() => {
-    if (lockedRef.current) return;
-    lockedRef.current = true;
+  // ── SAFE NAVIGATE: can only fire once, no matter how many triggers
+  const safeNavigate = useCallback(() => {
+    if (navigatedRef.current) return;
+    navigatedRef.current = true;
+    if (safetyTimerRef.current) {
+      clearTimeout(safetyTimerRef.current);
+      safetyTimerRef.current = null;
+    }
+    setState('navigating');
+    onActivated();
+  }, [onActivated]);
+
+  // ── ACTIVATE: fires TTS (best-effort) + 2s safety timeout — ALWAYS navigates
+  const activate = useCallback(() => {
+    if (navigatedRef.current || stateRef.current === 'navigating') return;
+
+    // Stop any previous recognition / speech
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch (_e) {}
+    }
+    try { Speech.stop(); } catch (_e) {}
+
+    setState('heard');
+
+    // SAFETY TIMEOUT: navigate after 2s regardless of TTS outcome
+    if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
+    safetyTimerRef.current = setTimeout(safeNavigate, 2000);
 
     setState('speaking');
 
+    // Best-effort TTS (non-blocking)
     Speech.speak(TTS_RESPONSE, {
       language: 'en-US',
       pitch: 0.9,
       rate: 0.95,
-      onDone: () => {
-        // ONLY HERE: navigate after TTS finishes
-        setState('navigating');
-        onActivated();
-      },
-      onError: () => {
-        // TTS failed — still navigate but with small delay
-        setState('navigating');
-        setTimeout(() => onActivated(), 500);
-      },
+      onDone:  safeNavigate,
+      onError: safeNavigate,
     });
-  }, [onActivated]);
+  }, [safeNavigate]);
 
-  // ── KEYWORD DETECTED (from Web Speech API)
+  // manualTrigger = activate from any state (mic button + CTA button)
+  const manualTrigger = useCallback(() => { activate(); }, [activate]);
+
+  // ── KEYWORD DETECTED (Web Speech API)
   const handleKeywordDetected = useCallback(() => {
-    if (lockedRef.current || stateRef.current !== 'listening') return;
+    if (navigatedRef.current) return;
     setState('heard');
-
-    // Stop recognition
     if (recognitionRef.current) {
       try { recognitionRef.current.stop(); } catch (_e) {}
     }
-
-    // Brief visual pause, then speak
-    setTimeout(() => speakThenNavigate(), 400);
-  }, [speakThenNavigate]);
-
-  // ── MANUAL TRIGGER (Mic button tap)
-  // On Expo (simulated): simulate 1.5s "hearing", THEN speak, THEN navigate
-  // On Web: same as keyword detected
-  const manualTrigger = useCallback(() => {
-    if (lockedRef.current) return;
-    if (stateRef.current !== 'listening' && stateRef.current !== 'idle') return;
-
-    if (Platform.OS !== 'web') {
-      // EXPO: Simulate "hearing" phase — wait 1.5s before speaking
-      lockedRef.current = true;
-      setState('heard');
-      setTimeout(() => {
-        speakThenNavigate();
-      }, 1500);
-    } else {
-      // WEB: Immediate keyword detected flow
-      handleKeywordDetected();
-    }
-  }, [handleKeywordDetected, speakThenNavigate]);
+    setTimeout(() => activate(), 300);
+  }, [activate]);
 
   // ── Initialize Speech Recognition (Web Speech API only)
   const initRecognition = useCallback(() => {
     if (Platform.OS !== 'web') {
-      // Mobile: set to listening (voice sim ready). Mic tap required.
       setMicPermission('granted');
       setState('listening');
       return;
@@ -106,6 +101,7 @@ function useVoiceEngine(onActivated: () => void) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (!SpeechRecognition) {
         setMicPermission('denied');
+        setState('listening');
         return;
       }
 
@@ -159,21 +155,24 @@ function useVoiceEngine(onActivated: () => void) {
       try { recognition.start(); } catch (_e) {}
     } catch (_e) {
       setMicPermission('denied');
+      setState('listening');
     }
   }, [handleKeywordDetected]);
 
-  // ── Mount: init recognition
+  // ── Mount
   useEffect(() => {
     const timer = setTimeout(initRecognition, 500);
     return () => {
       clearTimeout(timer);
+      if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
       if (recognitionRef.current) {
         try { recognitionRef.current.stop(); } catch (_e) {}
       }
+      try { Speech.stop(); } catch (_e) {}
     };
   }, [initRecognition]);
 
-  // ── Fallback: force listening after 2s if still idle
+  // Fallback: force listening state after 2s if still idle
   useEffect(() => {
     const t = setTimeout(() => {
       if (stateRef.current === 'idle') {
@@ -183,9 +182,6 @@ function useVoiceEngine(onActivated: () => void) {
     }, 2000);
     return () => clearTimeout(t);
   }, []);
-
-  // ── Cleanup
-  useEffect(() => { return () => { Speech.stop(); }; }, []);
 
   return { state, transcript, micPermission, manualTrigger };
 }
@@ -400,7 +396,7 @@ export default function LegacyStep1() {
             style={[s.cta, displayVoiceState === 'navigating' && s.ctaGold]}
             onPress={manualTrigger}
             activeOpacity={0.85}
-            disabled={displayVoiceState === 'speaking' || displayVoiceState === 'navigating'}
+            disabled={displayVoiceState === 'navigating'}
           >
             <Ionicons
               name="scan"
