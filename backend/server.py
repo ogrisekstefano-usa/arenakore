@@ -2672,6 +2672,225 @@ async def generate_google_pass(current_user: dict = Depends(get_current_user)):
     }
 
 
+# =====================================================================
+# KORE SOCIAL PASSPORT — City Rank + Affiliations + Action Center
+# =====================================================================
+
+class UpdateAffiliations(BaseModel):
+    school: Optional[str] = None
+    university: Optional[str] = None
+
+
+@api_router.get("/kore/city-rank")
+async def get_city_rank(city: str = "MILANO", current_user: dict = Depends(get_current_user)):
+    """
+    Get user's rank within a selected city context.
+    Returns global rank + city rank + dominance percentile for both.
+    Currently: city rank is simulated with deterministic seeded variation.
+    Production: use user.city field + geolocation-based filtering.
+    """
+    my_xp = current_user.get("xp", 0)
+    user_id = str(current_user["_id"])
+
+    # Global Rank (real)
+    query_global = {"onboarding_completed": True}
+    global_above = await db.users.count_documents({**query_global, "xp": {"$gt": my_xp}})
+    global_rank = global_above + 1
+    global_total = await db.users.count_documents(query_global)
+    # Percentile = % of athletes you dominate. Rank 1 = 100% dominance.
+    global_percentile = round(((max(global_total, 1) - global_rank) / max(global_total - 1, 1)) * 100, 1) if global_total > 1 else 100.0
+
+    # City Rank — deterministic mock based on city name hash + user XP
+    # This creates a consistent but different ranking per city
+    import hashlib as _hl
+    city_seed = int(_hl.md5(f"{city}:{user_id}".encode()).hexdigest()[:8], 16)
+    # Simulate city population (50-500 athletes per city)
+    city_population = 50 + (int(_hl.md5(city.encode()).hexdigest()[:4], 16) % 450)
+    # City rank: derived from global rank + city-specific offset
+    city_rank_raw = max(1, int(global_rank * (0.3 + (city_seed % 70) / 100)))
+    city_rank = min(city_rank_raw, city_population)
+    city_percentile = round(((city_population - city_rank) / max(city_population, 1)) * 100, 1)
+
+    # Next user in city (mock)
+    mock_names = ["ALEX_K", "MAYA_J", "TORO_94", "SASHA_V", "KIRA_M", "NERO_X", "LUNA_R", "TITAN_7"]
+    next_city_user = mock_names[city_seed % len(mock_names)]
+    city_xp_gap = 10 + (city_seed % 200)
+
+    # Global next user
+    global_next = None
+    global_xp_gap = 0
+    if global_above > 0:
+        above = await db.users.find({**query_global, "xp": {"$gt": my_xp}}).sort("xp", 1).to_list(1)
+        if above:
+            global_next = above[0]["username"]
+            global_xp_gap = above[0].get("xp", 0) - my_xp
+
+    return {
+        "global_rank": global_rank,
+        "global_total": global_total,
+        "global_percentile": global_percentile,
+        "global_next_username": global_next,
+        "global_xp_gap": global_xp_gap,
+        "global_is_top_10": global_rank <= 10,
+        "city": city,
+        "city_rank": city_rank,
+        "city_total": city_population,
+        "city_percentile": city_percentile,
+        "city_next_username": next_city_user,
+        "city_xp_gap": city_xp_gap,
+        "city_is_top_10": city_rank <= 10,
+    }
+
+
+@api_router.get("/kore/affiliations")
+async def get_affiliations(current_user: dict = Depends(get_current_user)):
+    """Get user's affiliations: school/university + crews"""
+    user_id = current_user["_id"]
+    school = current_user.get("school", None)
+    university = current_user.get("university", None)
+
+    # Crews the user belongs to
+    crews = await db.crews_v2.find({"members": user_id}).to_list(10)
+    crew_list = []
+    for c in crews:
+        crew_list.append({
+            "id": str(c["_id"]),
+            "name": c.get("name", ""),
+            "tagline": c.get("tagline", ""),
+            "category": c.get("category"),
+            "members_count": c.get("members_count", 0),
+            "xp_total": c.get("xp_total", 0),
+            "is_owner": c.get("owner_id") == user_id,
+        })
+
+    return {
+        "school": school,
+        "university": university,
+        "crews": crew_list,
+        "crews_count": len(crew_list),
+    }
+
+
+@api_router.put("/kore/affiliations")
+async def update_affiliations(data: UpdateAffiliations, current_user: dict = Depends(get_current_user)):
+    """Update user's school/university"""
+    update_fields = {}
+    if data.school is not None:
+        update_fields["school"] = data.school
+    if data.university is not None:
+        update_fields["university"] = data.university
+    if update_fields:
+        await db.users.update_one({"_id": current_user["_id"]}, {"$set": update_fields})
+    return {"status": "updated", **update_fields}
+
+
+@api_router.get("/kore/action-center")
+async def get_action_center(current_user: dict = Depends(get_current_user)):
+    """
+    Action Center: HOT (created by user) + PENDING (received by user).
+    HOT = active battles/challenges the user started or is participating in.
+    PENDING = crew invites + challenges pushed to user's crews.
+    """
+    user_id = current_user["_id"]
+    user_id_str = str(user_id)
+
+    # === HOT: Active participations ===
+    hot_items = []
+
+    # User's active battle participations
+    participations = await db.battle_participants.find({
+        "user_id": user_id,
+        "completed": False,
+    }).to_list(10)
+
+    for p in participations:
+        battle = await db.battles.find_one({"_id": p.get("battle_id")})
+        if battle and battle.get("status") in ("live", "upcoming"):
+            hot_items.append({
+                "id": str(battle["_id"]),
+                "type": "battle",
+                "title": battle.get("title", "CHALLENGE"),
+                "sport": battle.get("sport", ""),
+                "status": battle.get("status", "live"),
+                "xp_reward": battle.get("xp_reward", 0),
+                "participants_count": battle.get("participants_count", 0),
+                "joined_at": p.get("joined_at", "").isoformat() if p.get("joined_at") else None,
+            })
+
+    # User's gym events they joined (upcoming/live)
+    gym_events = await db.gym_events.find({
+        "participants": user_id,
+        "status": {"$in": ["upcoming", "live"]},
+    }).to_list(5)
+
+    for ev in gym_events:
+        hot_items.append({
+            "id": str(ev["_id"]),
+            "type": "gym_event",
+            "title": ev.get("title", "EVENT"),
+            "sport": ev.get("exercise", "").upper(),
+            "status": ev.get("status", "upcoming"),
+            "xp_reward": ev.get("xp_reward", 0),
+            "participants_count": ev.get("participants_count", 0),
+            "gym_name": ev.get("gym_name", ""),
+            "event_date": ev.get("event_date", ""),
+            "event_time": ev.get("event_time", ""),
+        })
+
+    # === PENDING: Received invites + pushed challenges ===
+    pending_items = []
+
+    # Crew invites
+    crew_invites = await db.crew_invites.find({
+        "to_user_id": user_id,
+        "status": "pending",
+    }).to_list(10)
+
+    for inv in crew_invites:
+        crew = await db.crews_v2.find_one({"_id": inv.get("crew_id")})
+        from_user = await db.users.find_one({"_id": inv.get("from_user_id")})
+        pending_items.append({
+            "id": str(inv["_id"]),
+            "type": "crew_invite",
+            "title": f"INVITO CREW: {crew.get('name', '???') if crew else '???'}",
+            "from_username": from_user.get("username", "???") if from_user else "???",
+            "crew_name": crew.get("name", "") if crew else "",
+            "crew_id": str(inv.get("crew_id", "")),
+            "created_at": inv.get("created_at", "").isoformat() if inv.get("created_at") else None,
+        })
+
+    # Pushed challenges to user's crews
+    user_crews = await db.crews_v2.find({"members": user_id}).to_list(10)
+    crew_ids = [c["_id"] for c in user_crews]
+    if crew_ids:
+        pushed = await db.pushed_challenges.find({
+            "crew_id": {"$in": crew_ids},
+            "status": "active",
+        }).sort("pushed_at", -1).to_list(5)
+
+        for pc in pushed:
+            template = await db.templates.find_one({"_id": pc.get("template_id")})
+            crew = next((c for c in user_crews if c["_id"] == pc.get("crew_id")), None)
+            if template:
+                pending_items.append({
+                    "id": str(pc["_id"]),
+                    "type": "crew_challenge",
+                    "title": template.get("name", "CHALLENGE"),
+                    "exercise": template.get("exercise", ""),
+                    "xp_reward": template.get("xp_reward", 0),
+                    "difficulty": template.get("difficulty", "medium"),
+                    "crew_name": crew.get("name", "") if crew else "",
+                    "pushed_at": pc.get("pushed_at", "").isoformat() if pc.get("pushed_at") else None,
+                })
+
+    return {
+        "hot": hot_items,
+        "hot_count": len(hot_items),
+        "pending": pending_items,
+        "pending_count": len(pending_items),
+    }
+
+
 # Register all routes (must be AFTER all @api_router decorators)
 app.include_router(api_router)
 

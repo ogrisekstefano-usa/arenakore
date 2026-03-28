@@ -173,6 +173,17 @@ export const api = {
   updateEventStatus: (eventId: string, status: string, token: string) =>
     request(`/gym/events/${eventId}/status`, { method: 'PUT', body: JSON.stringify({ status }) }, token),
 
+  // ========== KORE SOCIAL PASSPORT ==========
+  getCityRank: (city: string, token: string) =>
+    request(`/kore/city-rank?city=${encodeURIComponent(city)}`, {}, token),
+
+  getAffiliations: (token: string) => request('/kore/affiliations', {}, token),
+
+  updateAffiliations: (data: { school?: string; university?: string }, token: string) =>
+    request('/kore/affiliations', { method: 'PUT', body: JSON.stringify(data) }, token),
+
+  getActionCenter: (token: string) => request('/kore/action-center', {}, token),
+
   // ========== WALLET ENGINE — APPLE + GOOGLE ==========
   generateApplePass: (token: string) => request('/wallet/apple-pass', {}, token),
   generateGooglePass: (token: string) => request('/wallet/google-pass', {}, token),
