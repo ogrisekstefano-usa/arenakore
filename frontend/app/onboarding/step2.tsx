@@ -18,8 +18,10 @@ import Animated, {
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api } from '../../utils/api';
+import * as Speech from 'expo-speech';
 import * as Haptics from 'expo-haptics';
+import { api } from '../../utils/api';
+import { NexusPoseEngine, type PoseData, type LandmarkPoint } from '../../components/NexusPoseEngine';
 
 // ===================================================================
 // PUPPET-MOTION-DECK: 17-POINT COCO SKELETON
@@ -332,6 +334,13 @@ export default function NexusBioScan() {
   const [isScanning, setIsScanning] = useState(false);        // true = camera active, detection enabled
   const [cameraReady, setCameraReady] = useState(false);      // true = CameraView onCameraReady fired
 
+  // ── REAL MEDIAPIPE STATE
+  const [realLandmarks, setRealLandmarks] = useState<Array<LandmarkPoint | null> | null>(null);
+  const [liveFps, setLiveFps] = useState(0);
+  const [centeringWarning, setCenteringWarning] = useState(false);
+  const [poseEngineReady, setPoseEngineReady] = useState(false);
+  const lastCenterAlertRef = useRef(0);
+
   // Skeleton state
   const ptsRef = useRef<[number, number][]>(
     POSE_NEUTRAL.map(([px, py]) => [
@@ -353,6 +362,70 @@ export default function NexusBioScan() {
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   // Keep isScanningRef in sync
   useEffect(() => { isScanningRef.current = isScanning; }, [isScanning]);
+
+  // ===================================================================
+  // REAL POSE DATA HANDLER — drives skeleton from MediaPipe landmarks
+  // ===================================================================
+  const handlePoseData = useCallback((data: PoseData) => {
+    if (data.type === 'ready') {
+      setPoseEngineReady(true);
+      setCameraReady(true);
+      setIsScanning(true);  // Engine ready → biometric gate opens
+      return;
+    }
+    if (data.type === 'error') {
+      // Engine error → fall back to simulated mode
+      setCameraReady(true);
+      setIsScanning(true);
+      return;
+    }
+    if (data.type !== 'pose') return;
+
+    const { landmarks, fps: newFps, centered, person_detected, visible_count } = data;
+
+    if (newFps && newFps > 0) setLiveFps(newFps);
+
+    if (!landmarks || landmarks.length === 0 || !person_detected) {
+      return; // No person — stay in current phase, don't drive detection
+    }
+
+    // ── Update real landmark coordinates (used by SVG override)
+    setRealLandmarks(landmarks);
+
+    // ── Drive detection progress (visible_count → detectedPoints)
+    const newCount = Math.min(17, visible_count ?? 0);
+    if (phaseRef.current === 'positioning') {
+      setDetectedPoints(prev => Math.max(prev, newCount));
+      // Update visible mask based on MediaPipe confidence
+      setVisibleMask(landmarks.map(l => l !== null && (l.v ?? 0) > 0.4));
+    }
+
+    // ── Centering check — TTS + gold warning
+    if (!centered && person_detected) {
+      const now = Date.now();
+      if (now - lastCenterAlertRef.current > 4500) {
+        lastCenterAlertRef.current = now;
+        try {
+          Speech.speak("Centrati nell'Arena", { language: 'it-IT', rate: 0.88, pitch: 1.0 });
+        } catch (_e) {}
+        setCenteringWarning(true);
+        setTimeout(() => setCenteringWarning(false), 3000);
+      }
+    }
+  }, []); // stable — no deps needed
+
+  // ── Real-to-screen coordinates (MediaPipe normalized → screen pixels)
+  const realPts = useMemo<[number, number][] | null>(() => {
+    if (!realLandmarks || realLandmarks.length !== 17) return null;
+    return realLandmarks.map(l => {
+      if (!l) return [SCAN_W / 2, SCAN_H / 2] as [number, number];
+      // Front camera: MediaPipe x=0 = left of frame = right of user
+      // We mirror horizontally so skeleton matches the video (which is already CSS-flipped in WebView)
+      const screenX = (1 - l.x) * SCAN_W;
+      const screenY = l.y * SCAN_H;
+      return [screenX, screenY] as [number, number];
+    });
+  }, [realLandmarks, SCAN_W, SCAN_H]);
 
   // Animations
   const flashOpacity = useSharedValue(0);
@@ -829,22 +902,36 @@ export default function NexusBioScan() {
 
       {/* ── CAMERA + SKELETON AREA ── */}
       <View style={[s.scanArea, { width: SCAN_W, height: SCAN_H }]}>
-        {/* Camera Background */}
-        {!isWeb && permission?.granted ? (
-          <CameraView
-            style={StyleSheet.absoluteFill}
-            facing="front"
-            onCameraReady={handleCameraReady}
-          />
-        ) : (
-          <View style={[StyleSheet.absoluteFill, s.webCamFallback]}>
-            {/* Dark tech-grid background for web preview */}
+
+        {/* ── MEDIAPIPE POSE ENGINE (replaces static CameraView) ── */}
+        {!showPrivacyConsent && (
+          <NexusPoseEngine onPoseData={handlePoseData} enabled />
+        )}
+
+        {/* Fallback dark grid when engine not yet started or permission denied */}
+        {(showPrivacyConsent || (!poseEngineReady && !cameraPermDenied)) && (
+          <View style={[StyleSheet.absoluteFill, s.webCamFallback]} pointerEvents="none">
             <View style={s.gridOverlay} />
           </View>
         )}
 
         {/* Dark overlay for contrast — pointer-events none to never block touches */}
         <View style={[StyleSheet.absoluteFill, s.darkOverlay]} pointerEvents="none" />
+
+        {/* ── CENTRATI NELL'ARENA warning (gold, TTS triggered) ── */}
+        {centeringWarning && (
+          <Animated.View entering={FadeIn} style={cw$.container} pointerEvents="none">
+            <Ionicons name="scan-circle-outline" size={22} color="#D4AF37" />
+            <Text style={cw$.txt}>CENTRATI NELL'ARENA</Text>
+          </Animated.View>
+        )}
+
+        {/* ── LIVE FPS badge (top-left of scan area) ── */}
+        {liveFps > 0 && (
+          <View style={fps$.badge} pointerEvents="none">
+            <Text style={[fps$.txt, liveFps < 20 && fps$.low]}>{liveFps} FPS</Text>
+          </View>
+        )}
 
         {/* NEXUS HUD Frame (corners) */}
         <View style={[s.cornerTL, s.corner]} />
@@ -867,52 +954,63 @@ export default function NexusBioScan() {
               stroke="rgba(0,242,255,0.04)" strokeWidth={0.5} />
           ))}
 
-          {/* Skeleton Connections — only show if both endpoints detected */}
-          {CONNECTIONS.map(([a, b], i) => {
-            if (isPositioning && (!visibleMask[a] || !visibleMask[b])) return null;
-            return (
-              <Line
-                key={`conn-${i}`}
-                x1={pts[a]?.[0] ?? 0} y1={pts[a]?.[1] ?? 0}
-                x2={pts[b]?.[0] ?? 0} y2={pts[b]?.[1] ?? 0}
-                stroke={skelColor} strokeWidth={2} opacity={skelOpacity * 0.6}
-              />
-            );
-          })}
+          {/* ── Use REAL MediaPipe coords when available, simulated otherwise ── */}
+          {(() => {
+            const displayPts: [number, number][] = realPts
+              ? realPts.map((rp, i) => rp ? rp : pts[i] ?? [SCAN_W/2, SCAN_H/2])
+              : pts;
 
-          {/* Keypoints — only show detected ones during positioning */}
-          {pts.map(([x, y], i) => {
-            if (isPositioning && !visibleMask[i]) return null;
             return (
-              <G key={`pt-${i}`}>
-                {/* Outer glow */}
-                <Circle cx={x} cy={y} r={i < 5 ? 10 : 8}
-                  fill={skelColor} opacity={skelOpacity * 0.08} />
-                {/* Point */}
-                <Circle cx={x} cy={y} r={i < 5 ? 5 : 4}
-                  fill={skelColor} opacity={skelOpacity} />
-                {/* Inner bright */}
-                <Circle cx={x} cy={y} r={1.5}
-                  fill="#FFFFFF" opacity={skelOpacity * 0.9} />
-              </G>
-            );
-          })}
+              <>
+                {/* Skeleton Connections */}
+                {CONNECTIONS.map(([a, b], i) => {
+                  if (isPositioning && (!visibleMask[a] || !visibleMask[b])) return null;
+                  return (
+                    <Line
+                      key={`conn-${i}`}
+                      x1={displayPts[a]?.[0] ?? 0} y1={displayPts[a]?.[1] ?? 0}
+                      x2={displayPts[b]?.[0] ?? 0} y2={displayPts[b]?.[1] ?? 0}
+                      stroke={skelColor} strokeWidth={realPts ? 2.5 : 2} opacity={skelOpacity * 0.65}
+                    />
+                  );
+                })}
 
-          {/* Body outline silhouette (torso trapezoid) — only when all detected */}
-          {!isPositioning && (
-            <>
-              <Line
-                x1={pts[5]?.[0]} y1={pts[5]?.[1]}
-                x2={pts[11]?.[0]} y2={pts[11]?.[1]}
-                stroke={skelColor} strokeWidth={1} opacity={skelOpacity * 0.15} strokeDasharray="4,4"
-              />
-              <Line
-                x1={pts[6]?.[0]} y1={pts[6]?.[1]}
-                x2={pts[12]?.[0]} y2={pts[12]?.[1]}
-                stroke={skelColor} strokeWidth={1} opacity={skelOpacity * 0.15} strokeDasharray="4,4"
-              />
-            </>
-          )}
+                {/* Keypoints */}
+                {displayPts.map(([x, y], i) => {
+                  if (isPositioning && !visibleMask[i]) return null;
+                  const isHead = i < 5;
+                  const conf = realPts && realLandmarks?.[i]?.v;
+                  const glow = conf != null ? Math.min(1, conf) : 0.08;
+                  return (
+                    <G key={`pt-${i}`}>
+                      <Circle cx={x} cy={y} r={isHead ? 10 : 8}
+                        fill={skelColor} opacity={glow} />
+                      <Circle cx={x} cy={y} r={isHead ? 5 : 4}
+                        fill={skelColor} opacity={skelOpacity} />
+                      <Circle cx={x} cy={y} r={1.5}
+                        fill="#FFFFFF" opacity={skelOpacity * 0.9} />
+                    </G>
+                  );
+                })}
+
+                {/* Body silhouette (torso) */}
+                {!isPositioning && (
+                  <>
+                    <Line
+                      x1={displayPts[5]?.[0]} y1={displayPts[5]?.[1]}
+                      x2={displayPts[11]?.[0]} y2={displayPts[11]?.[1]}
+                      stroke={skelColor} strokeWidth={1} opacity={skelOpacity * 0.15} strokeDasharray="4,4"
+                    />
+                    <Line
+                      x1={displayPts[6]?.[0]} y1={displayPts[6]?.[1]}
+                      x2={displayPts[12]?.[0]} y2={displayPts[12]?.[1]}
+                      stroke={skelColor} strokeWidth={1} opacity={skelOpacity * 0.15} strokeDasharray="4,4"
+                    />
+                  </>
+                )}
+              </>
+            );
+          })()}
 
           {/* HUD DATA LABELS */}
           {currentBeatDef && (
@@ -1272,6 +1370,33 @@ const dbg$ = StyleSheet.create({
   txt: {
     color: '#FF453A', fontSize: 10, fontWeight: '900', letterSpacing: 3,
   },
+});
+
+// ── CENTRATI NELL'ARENA warning overlay
+const cw$ = StyleSheet.create({
+  container: {
+    position: 'absolute', bottom: 16, left: 0, right: 0,
+    alignItems: 'center', gap: 6, zIndex: 20,
+    flexDirection: 'row', justifyContent: 'center',
+  },
+  txt: {
+    color: '#D4AF37', fontSize: 18, fontWeight: '900', letterSpacing: 2,
+    textShadowColor: 'rgba(212,175,55,0.8)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+  },
+});
+
+// ── Live FPS badge
+const fps$ = StyleSheet.create({
+  badge: {
+    position: 'absolute', top: 8, left: 8, zIndex: 25,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)',
+  },
+  txt: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  low: { color: '#FF453A' }, // red when below 20fps
 });
 
 // ── PRIVACY CONSENT styles
