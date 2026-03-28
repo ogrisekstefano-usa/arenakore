@@ -1,4 +1,4 @@
-# ARENAKORE — PRD (Product Requirements Document) v9.0
+# ARENAKORE — PRD (Product Requirements Document) v10.0
 
 ## Overview
 **ARENAKORE** è la piattaforma mobile d'élite per atleti con analisi biometrica in tempo reale, sistema XP/Level, battle competitive, crew sociali e leaderboard globali. Estetica "Nike Elite / Chic-Tech / Cinema". Zero emoji. Solo Ionicons.
@@ -6,7 +6,7 @@
 **Stack Tecnico**: Expo React Native SDK 54 + FastAPI + MongoDB  
 **Bundle ID**: `com.arenakore.app`  
 **Data aggiornamento**: Marzo 2026  
-**Versione**: 9.0 — SPRINT 15: LEGACY INITIATION + SECURITY RESET
+**Versione**: 10.0 — SPRINT 16: KORE SOCIAL PASSPORT
 
 ---
 
@@ -16,7 +16,8 @@
 - **Auth**: JWT (python-jose + passlib/bcrypt). `hash_password()` = bcrypt salted irreversibile. MD5 BANNED.
 - **DB**: MongoDB (`arenakore`). Collections: `users`, `password_resets`
 - **KORE #00001**: STEFANO OGRISEK (ogrisek.stefano@gmail.com / Founder@KORE2026!). Founder role = COSMETIC badge. System logic AGNOSTIC.
-- **Endpoints**: `/api/auth/*`, `/api/wallet/*`, `/api/leaderboard`, `/api/nexus/*`, `/api/notifications`, `/api/dna/history`
+- **Endpoints**: `/api/auth/*`, `/api/wallet/*`, `/api/leaderboard`, `/api/nexus/*`, `/api/notifications`, `/api/dna/history`, `/api/kore/*`
+- **KORE Social Passport API**: `/api/kore/city-rank`, `/api/kore/affiliations`, `/api/kore/action-center`
 - **Register**: Accepts height_cm, weight_kg, age, training_level (from Legacy Initiation Step 3)
 - **ID Recovery**: /auth/forgot-password (OTP SHA256) → /auth/verify-otp (JWT 15min) → /auth/reset-password (bcrypt)
 
