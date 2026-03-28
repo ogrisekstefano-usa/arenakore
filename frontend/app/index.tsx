@@ -118,8 +118,8 @@ function BiometricHeroBg() {
             {/* Keypoints (cyan dots) */}
             {pts.map(([x, y], i) => (
               <G key={`p-${fi}-${i}`}>
-                <Circle cx={x} cy={y} r={i < 5 ? 4 : 3} fill="#00F2FF" opacity={0.22} />
-                <Circle cx={x} cy={y} r={i < 5 ? 1.5 : 1} fill="#00F2FF" opacity={0.5} />
+                <Circle cx={x} cy={y} r={i < 5 ? 4 : 3} fill="#00F2FF" opacity={0.14} />
+                <Circle cx={x} cy={y} r={i < 5 ? 1.5 : 1} fill="#00F2FF" opacity={0.35} />
               </G>
             ))}
           </G>

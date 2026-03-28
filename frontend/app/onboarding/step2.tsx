@@ -355,6 +355,15 @@ export default function NexusBioScan() {
   const [koScore, setKoScore]               = useState(0);
   const [holdProgress, setHoldProgress]     = useState(0);
   const [scoreBreakdown, setScoreBreakdown] = useState({ stability: 0, confidence: 0, amplitude: 0 });
+  const [triggerApproval, setTriggerApproval] = useState(false); // fires handleApproval asynchronously
+  // Refs to read latest score values inside handleApproval (useCallback has [] deps)
+  const koScoreRef       = useRef(0);
+  const scoreBreakRef    = useRef({ stability: 0, confidence: 0, amplitude: 0 });
+  const [cityRef]        = useState('CHICAGO');
+
+  // Keep score refs in sync with state
+  useEffect(() => { koScoreRef.current = koScore; }, [koScore]);
+  useEffect(() => { scoreBreakRef.current = scoreBreakdown; }, [scoreBreakdown]);
 
   // Skeleton state
   const ptsRef = useRef<[number, number][]>(
@@ -887,6 +896,15 @@ export default function NexusBioScan() {
     };
     try {
       await AsyncStorage.setItem('@kore_pending_dna', JSON.stringify(BEAT5_DNA));
+      // ── PASSPORT DATA: Save Score Engine result for passport page
+      const scanResult = {
+        kore_score: koScoreRef.current > 0 ? koScoreRef.current : 74,
+        stability:  Math.max(0, Math.min(100, Math.round(scoreBreakRef.current.stability * 100))),
+        amplitude:  Math.max(0, Math.min(100, Math.round(scoreBreakRef.current.amplitude * 100))),
+        city:       cityRef,
+        scan_date:  new Date().toISOString(),
+      };
+      await AsyncStorage.setItem('@kore_scan_result', JSON.stringify(scanResult));
       // If user is already logged in, sync directly to backend
       const savedToken = await AsyncStorage.getItem('@arenakore_token');
       if (savedToken) {
@@ -898,7 +916,8 @@ export default function NexusBioScan() {
       // DNA sync failure is non-blocking — scan still succeeds
     }
 
-    setTimeout(() => router.push('/onboarding/step3'), 4000);
+    // ── Navigate to Athlete Passport (trofeo digitale) after gold flash
+    setTimeout(() => router.push('/onboarding/passport'), 4000);
   }, []);
 
   // ── Score Engine Gold Flash: fires handleApproval when pendingApprovalRef is set.
