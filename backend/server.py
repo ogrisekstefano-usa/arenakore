@@ -3322,7 +3322,6 @@ async def nexus_scanner_page():
   <div id="status">NEXUS: LOADING...</div>
   <div id="err"></div>
 
-  <!-- MediaPipe — self-hosted on our server (ZERO CDN cold start) -->
 
 
   <script src="/api/static/mediapipe/camera_utils.js" crossorigin="anonymous"></script>
@@ -3437,7 +3436,7 @@ async def nexus_scanner_page():
       // Resize canvas to match video dimensions
       if (!results.poseLandmarks || !results.poseLandmarks.length) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        statusEl.textContent = fps + ' FPS — WAITING FOR ATHLETE...';
+        statusEl.textContent = 'NEXUS: IN ATTESA ATLETA...';
         post({ type: 'pose', landmarks: [], fps: fps, centered: false, person_detected: false, visible_count: 0 });
         return;
       }

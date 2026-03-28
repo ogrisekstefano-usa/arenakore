@@ -433,7 +433,7 @@ export default function NexusBioScan() {
   // ===================================================================
   // REAL POSE DATA HANDLER — drives skeleton + Score Engine
   // ===================================================================
-  const handlePoseData = useCallback((data: PoseData) => {
+  const handlePoseData = useCallback(async (data: PoseData) => {
     // CDN TIMEOUT → show manual fallback
     if (data.type === 'timeout') {
       setPoseTimeout(true);
@@ -499,9 +499,13 @@ export default function NexusBioScan() {
         setVisibleMask(landmarks.map(l => l !== null && (l.v ?? 0) > 0.4));
 
         if (elapsed >= ENTRY_HOLD_MS) {
-          // 3 seconds achieved → advance to VERIFYING
+          // 3 seconds achieved → INGRESSO ARENA
           personEntrySinceRef.current = null;
           setDetectedPoints(17);
+          // ── HAPTIC: atleta "entrato ufficialmente" nell'Arena
+          try {
+            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          } catch (_e) {}
           setTimeout(() => {
             if (phaseRef.current !== 'positioning') return;
             confidenceStartRef.current = null;
@@ -1430,19 +1434,37 @@ export default function NexusBioScan() {
                 )}
               </>
             ) : (
-              /* ── SCANNING ACTIVE: 17-point progressive detection ── */
+              /* ── SCANNING ACTIVE: Real MediaPipe entry gate (3 seconds) ── */
               <>
-                <Text style={s.statusLabel}>RILEVAMENTO PUPPET-MOTION-DECK</Text>
+                <Text style={s.statusLabel}>
+                  {poseEngineReady && detectedPoints > 0
+                    ? 'NEXUS DETECTED — ANALYZING...'
+                    : 'RILEVAMENTO PUPPET-MOTION-DECK'}
+                </Text>
                 <View style={s.detectBar}>
-                  <View style={[s.detectFill, { width: `${(detectedPoints / 17) * 100}%` as any }]} />
+                  <View style={[
+                    s.detectFill,
+                    {
+                      width: `${(detectedPoints / 17) * 100}%` as any,
+                      // Gold bar when entry gate is in progress (real MediaPipe)
+                      backgroundColor: poseEngineReady && detectedPoints > 0 ? '#D4AF37' : '#00F2FF',
+                    }
+                  ]} />
                 </View>
                 {detectedPoints < 17 ? (
                   <Animated.View style={[s.positioningRow, positionPulseStyle]}>
-                    <View style={s.positioningDot} />
-                    <Text style={s.positioningTxt}>NEXUS IS SEARCHING FOR ATHLETE...</Text>
+                    <View style={[s.positioningDot, poseEngineReady && detectedPoints > 0 && { backgroundColor: '#D4AF37' }]} />
+                    <Text style={[
+                      s.positioningTxt,
+                      poseEngineReady && detectedPoints > 0 && { color: '#D4AF37' }
+                    ]}>
+                      {poseEngineReady && detectedPoints > 0
+                        ? `NEXUS DETECTED — ANALYZING...`
+                        : 'NEXUS IS SEARCHING FOR ATHLETE...'}
+                    </Text>
                   </Animated.View>
                 ) : (
-                  <Text style={s.detectNote}>17/17 RILEVATI — STABILIZZAZIONE...</Text>
+                  <Text style={[s.detectNote, { color: '#D4AF37' }]}>17/17 RILEVATI — INGRESSO ARENA</Text>
                 )}
                 <Text style={s.detectCount}>{detectedPoints} / 17</Text>
               </>
