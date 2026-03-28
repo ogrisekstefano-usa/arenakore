@@ -859,6 +859,79 @@ async def seed_data():
         ]
         await db.crews.insert_many(crews)
 
+    # ── CHICAGO CITY RANKING — Seed athletes + Migrate Stefano
+    # Set Stefano (is_admin) to CHICAGO if city not already configured
+    await db.users.update_one(
+        {"is_admin": True, "$or": [{"city": {"$exists": False}}, {"city": None}, {"city": ""}]},
+        {"$set": {"city": "CHICAGO"}}
+    )
+
+    chicago_seed_exists = await db.users.count_documents({"city": "CHICAGO", "is_seed": True})
+    if chicago_seed_exists == 0:
+        now = datetime.now(timezone.utc)
+        _seed_dna_base = lambda vel,fr,res,agi,tec,pot,men,fle: {
+            "velocita": vel, "forza": fr, "resistenza": res, "agilita": agi,
+            "tecnica": tec, "potenza": pot, "mentalita": men, "flessibilita": fle,
+        }
+        chicago_athletes = [
+            {
+                "username": "T.BUTLER", "email": "t.butler@chicago.kore",
+                "password_hash": hash_password("Seed@Chicago1"),
+                "city": "CHICAGO", "xp": 4200, "level": 9,
+                "dna": _seed_dna_base(83, 81, 84, 82, 80, 83, 79, 77),
+                "avatar_color": "#FF453A", "sport": "BASKETBALL", "category": "TEAM SPORT",
+                "is_seed": True, "is_founder": False, "is_admin": False,
+                "training_level": "ELITE", "pro_unlocked": True, "created_at": now,
+            },
+            {
+                "username": "M.JORDAN", "email": "m.jordan@chicago.kore",
+                "password_hash": hash_password("Seed@Chicago1"),
+                "city": "CHICAGO", "xp": 3800, "level": 8,
+                "dna": _seed_dna_base(82, 79, 83, 80, 78, 82, 76, 74),
+                "avatar_color": "#BF5AF2", "sport": "BASKETBALL", "category": "TEAM SPORT",
+                "is_seed": True, "is_founder": False, "is_admin": False,
+                "training_level": "ELITE", "pro_unlocked": True, "created_at": now,
+            },
+            {
+                "username": "L.GRANT", "email": "l.grant@chicago.kore",
+                "password_hash": hash_password("Seed@Chicago1"),
+                "city": "CHICAGO", "xp": 2900, "level": 6,
+                "dna": _seed_dna_base(78, 76, 79, 77, 75, 78, 74, 73),
+                "avatar_color": "#30D158", "sport": "ATLETICA", "category": "ATLETICA",
+                "is_seed": True, "is_founder": False, "is_admin": False,
+                "training_level": "ELITE", "pro_unlocked": False, "created_at": now,
+            },
+            {
+                "username": "C.HAYES", "email": "c.hayes@chicago.kore",
+                "password_hash": hash_password("Seed@Chicago1"),
+                "city": "CHICAGO", "xp": 2100, "level": 5,
+                "dna": _seed_dna_base(74, 71, 78, 73, 72, 76, 70, 68),
+                "avatar_color": "#FF9F0A", "sport": "BOXE", "category": "COMBAT",
+                "is_seed": True, "is_founder": False, "is_admin": False,
+                "training_level": "LEGACY", "pro_unlocked": False, "created_at": now,
+            },
+            {
+                "username": "D.ROSE", "email": "d.rose@chicago.kore",
+                "password_hash": hash_password("Seed@Chicago1"),
+                "city": "CHICAGO", "xp": 1500, "level": 4,
+                "dna": _seed_dna_base(76, 68, 72, 75, 74, 70, 72, 71),
+                "avatar_color": "#0A84FF", "sport": "ATLETICA", "category": "ATLETICA",
+                "is_seed": True, "is_founder": False, "is_admin": False,
+                "training_level": "LEGACY", "pro_unlocked": False, "created_at": now,
+            },
+            {
+                "username": "K.PAYNE", "email": "k.payne@chicago.kore",
+                "password_hash": hash_password("Seed@Chicago1"),
+                "city": "CHICAGO", "xp": 900, "level": 3,
+                "dna": _seed_dna_base(65, 68, 70, 67, 66, 69, 63, 62),
+                "avatar_color": "#FFD60A", "sport": "CROSSFIT", "category": "FITNESS",
+                "is_seed": True, "is_founder": False, "is_admin": False,
+                "training_level": "LEGACY", "pro_unlocked": False, "created_at": now,
+            },
+        ]
+        await db.users.insert_many(chicago_athletes)
+        logger.info("[CityRanking] Seeded 6 Chicago athletes")
+
 
 # ====================================
 # CREW MANAGEMENT ENDPOINTS
@@ -2983,6 +3056,97 @@ async def get_action_center(current_user: dict = Depends(get_current_user)):
         "pending": pending_items,
         "pending_count": len(pending_items),
     }
+
+
+# ====================================
+# CITY RANKINGS — DYNAMIC KORE_SCORE
+# ====================================
+
+def _compute_kore_score(user: dict) -> float:
+    """
+    KORE_SCORE = (DNA average × 0.85) + XP bonus (max 15 pts)
+    Range: 0 → 100. DNA drives 85%, XP drives up to 15%.
+    """
+    dna = user.get("dna") or {}
+    if dna:
+        vals = [float(v) for v in dna.values() if v is not None]
+        dna_avg = sum(vals) / len(vals) if vals else 0.0
+    else:
+        dna_avg = 0.0
+    xp = float(user.get("xp", 0) or 0)
+    xp_bonus = min(15.0, (xp / 10000.0) * 15.0)
+    return round(dna_avg * 0.85 + xp_bonus, 1)
+
+
+@api_router.get("/rankings/city")
+async def get_city_ranking(
+    city: str = "CHICAGO",
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Real-time city ranking sorted by KORE_SCORE.
+    KORE_SCORE = (DNA average × 0.85) + XP bonus (max 15 pts).
+    Auto-updates: any DNA change via 5beat-dna or nexus session
+    is reflected instantly on the next call.
+    """
+    city_upper = city.upper().strip()
+
+    # Fetch all users in this city (real + seeded)
+    raw = await db.users.find(
+        {"city": {"$regex": f"^{city_upper}$", "$options": "i"}}
+    ).to_list(500)
+
+    my_id = str(current_user["_id"])
+
+    scored = []
+    for u in raw:
+        uid = str(u["_id"])
+        score = _compute_kore_score(u)
+        dna = u.get("dna") or {}
+        dna_vals = [float(v) for v in dna.values() if v is not None]
+        dna_avg = round(sum(dna_vals) / len(dna_vals), 1) if dna_vals else 0.0
+
+        scored.append({
+            "user_id": uid,
+            "username": u.get("username", "ATLETA"),
+            "kore_score": score,
+            "dna_avg": dna_avg,
+            "xp": u.get("xp", 0),
+            "level": u.get("level", 1),
+            "is_founder": bool(u.get("is_founder") or u.get("is_admin")),
+            "is_seed": bool(u.get("is_seed", False)),
+            "avatar_color": u.get("avatar_color", "#00F2FF"),
+            "sport": u.get("sport", "ATHLETICS"),
+            "is_me": uid == my_id,
+        })
+
+    # Sort: primary KORE_SCORE desc, secondary XP desc (tie-breaker)
+    scored.sort(key=lambda x: (-x["kore_score"], -x["xp"]))
+
+    # Assign medal ranks
+    top10 = [{"rank": i + 1, **a} for i, a in enumerate(scored[:10])]
+
+    # Full rank of current user (might be outside top 10)
+    my_full_rank = next((i + 1 for i, a in enumerate(scored) if a["is_me"]), None)
+    my_score = next((a["kore_score"] for a in scored if a["is_me"]), None)
+
+    return {
+        "city": city_upper,
+        "total_athletes": len(scored),
+        "top10": top10,
+        "my_rank": my_full_rank,
+        "my_kore_score": my_score,
+    }
+
+
+@api_router.put("/profile/city")
+async def update_my_city(body: dict, current_user: dict = Depends(get_current_user)):
+    """Update user's city for city ranking participation."""
+    city = (body.get("city") or "").upper().strip()
+    if not city:
+        raise HTTPException(status_code=400, detail="City richiesta")
+    await db.users.update_one({"_id": current_user["_id"]}, {"$set": {"city": city}})
+    return {"status": "updated", "city": city}
 
 
 # Register all routes (must be AFTER all @api_router decorators)

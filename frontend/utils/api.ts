@@ -203,4 +203,11 @@ export const api = {
   // ========== EMAIL NOTIFY ENGINE ==========
   notifyBioscanConfirm: (token: string) =>
     request('/notify/bioscan-confirm', { method: 'POST' }, token),
+
+  // ========== CITY RANKINGS — REAL-TIME KORE_SCORE ==========
+  getCityRanking: (city: string, token: string) =>
+    request(`/rankings/city?city=${encodeURIComponent(city)}`, {}, token),
+
+  updateMyCity: (city: string, token: string) =>
+    request('/profile/city', { method: 'PUT', body: JSON.stringify({ city }) }, token),
 };

@@ -1,0 +1,53 @@
+{
+  "summary": "Sprint 17 — City Rankings Dinamici testing. Backend APIs fully functional (23 tests, 20 pass, 3 fail — all due to single root cause: Stefano's XP=47 vs expected 9999). Frontend CityRanking component was NOT rendering due to `{token && <CityRanking>}` evaluating to null — fixed to unconditional render. After fix: full KORE tab City Ranking shows correctly with medals, TU/FOUNDER badges, 13-city selector, TOKYO empty state, pull-to-refresh.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "seed_data() startup migration",
+        "issue": "Stefano migration sets city=CHICAGO but NOT xp=9999. Current XP=47, so KORE_SCORE=69.6 (not ~89). The migration condition `{$or city not set}` also never re-runs since city is already CHICAGO from previous boot. Stefano is rank #3, not rank #1. Fix: unconditionally update Stefano with {city:'CHICAGO', xp:9999, level:20, dna:{vel:87,for:83,res:91,tec:88,men:94,fle:79}} at startup.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "KoreTab — CityRanking conditional render",
+        "issue": "CRITICAL: `{token && <CityRanking token={token} refreshKey={...} />}` evaluates to null at render time even when user is logged in. The `token` from useAuth() is null or not yet set when the component renders after loadData() completes. Root cause likely: React batching/timing issue between auth context token state and KoreTab loading state. FIXED by changing to unconditional render: `<CityRanking token={token || ''} refreshKey={...} />`. The component now renders correctly.",
+        "testID": "city-ranking-container",
+        "priority": "CRITICAL (FIXED)"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sprint17_city_rankings.py",
+    "/app/test_reports/pytest/sprint17_pytest_results.xml"
+  ],
+  "action_items": [
+    "FIX (HIGH PRIORITY): In seed_data() at server.py line 864, replace the conditional Stefano migration with an unconditional update that ALSO sets xp=9999, level=20, and sets dna to exactly {velocita:87, forza:83, resistenza:91, tecnica:88, mentalita:94, flessibilita:79}. The current condition `$or city not set` never fires on subsequent restarts since city is already CHICAGO. Without this fix, Stefano's KORE_SCORE=69.6 (rank #3) instead of ~89 (rank #1).",
+    "INVESTIGATE: Why does `{token && <CityRanking>}` prevent CityRanking from rendering even when user is logged in? The fix (unconditional render) works but hides the root cause. Possible issue: KoreTab renders with loading=false and token from auth context, but token is somehow still null at that exact render cycle. Consider using `{!!token && <CityRanking>}` or using a local token check.",
+    "NOTE: The Stefano DNA fix should also remove the random `potenza` field from onboarding. Currently Stefano has 7 DNA fields (6 5beat + 1 random potenza=50.3) giving dna_avg=81.76 instead of 87. Startup migration should override the full DNA to only the 6 intended fields."
+  ],
+  "critical_code_review_comments": [
+    "server.py L864: Stefano migration condition `$or city not set` is not idempotent — runs only once on first boot. Subsequent boots skip it. Need to make the migration unconditional for correctness.",
+    "kore.tsx L1074: `{token && <CityRanking>}` pattern is fragile when token from useAuth() has async initialization race with loading state. Use `token || ''` pattern or ensure token is always available when ScrollView renders.",
+    "kore.tsx: useFocusEffect only increments rankingRefreshKey but does NOT call loadData(). The rank infographic city data (old section) does NOT refresh on focus, only CityRanking does. This could cause stale rank data in the old section.",
+    "CityRanking component: when token is empty string (not logged in), component renders 'NESSUN ATLETA' instead of showing nothing — acceptable but slightly misleading"
+  ],
+  "updated_files": [
+    "/app/frontend/app/(tabs)/kore.tsx"
+  ],
+  "success_rate": {
+    "backend": "87% (20/23 passed — all 3 failures due to Stefano XP seed bug)",
+    "frontend": "90% (CityRanking now visible after fix, all UI elements working: medals, TU/FOUNDER badges, 13-city selector, TOKYO empty state, pull-to-refresh, all 6 seed athletes shown)"
+  },
+  "seed_data_creation": "No new seed data created by testing agent. Confirmed existing 6 seed athletes in CHICAGO: T.BUTLER(75.3), M.JORDAN(73.1), L.GRANT(69.2), C.HAYES(65), D.ROSE(63.7), K.PAYNE(57.7).",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Sprint 17 City Rankings. Backend endpoint /api/rankings/city fully works (auth, city filter, kore_score formula, sort, top10 structure). Frontend CityRanking component now renders (testID=city-ranking-container added). The {token && <CityRanking>} condition was changed to unconditional render. The main remaining bug is Stefano being rank 3 instead of rank 1 due to XP=47 (needs xp=9999 via startup migration fix). After that fix, all 23 backend tests should pass.",
+  "rca_of_issue": "ROOT CAUSE 1 (Stefano rank #3): The seed_data() startup migration at server.py line 864 sets city=CHICAGO for is_admin user ONLY IF city is not already set. Since city was set on first boot, subsequent restarts skip this update. The migration also omits xp=9999 entirely. Stefano's XP is 47 from onboarding, giving KORE_SCORE=69.6 (rank #3) instead of expected 88.95 (rank #1). Fix: change to unconditional $set {city:'CHICAGO', xp:9999, level:20, dna:{6 5beat fields}}.\n\nROOT CAUSE 2 (CityRanking not rendering): `{token && <CityRanking>}` in KoreTab evaluates to null because token from useAuth() is null at the render cycle when loading becomes false. Even though loadData() ran with a valid token in its closure (proving auth worked), the token from useAuth() in the render closure appears null. This is a React state timing issue. Fixed by making render unconditional: `<CityRanking token={token || ''} ...>`. The component now makes the API call and renders correctly."
+}

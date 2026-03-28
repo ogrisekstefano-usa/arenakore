@@ -19,6 +19,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { Header } from '../../components/Header';
+import { useFocusEffect } from 'expo-router';
 
 const { width: SW } = Dimensions.get('window');
 
@@ -747,6 +748,232 @@ const wm$ = StyleSheet.create({
   closeTxt: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 4 },
 });
 
+// ========== CITY RANKING — REAL-TIME KORE_SCORE ==========
+
+const MEDAL_CONFIG: Record<number, { icon: string; color: string }> = {
+  1: { icon: 'trophy',  color: '#D4AF37' },
+  2: { icon: 'medal',   color: '#ABABAB' },
+  3: { icon: 'ribbon',  color: '#CD7F32' },
+};
+
+function CityRanking({
+  token, refreshKey,
+}: { token: string; refreshKey: number }) {
+  const [city, setCity] = useState('CHICAGO');
+  const [data, setData]         = useState<any>(null);
+  const [loading, setLoading]   = useState(true);
+  const [cityOpen, setCityOpen] = useState(false);
+
+  const CITY_LIST = [
+    'CHICAGO', 'MILANO', 'ROMA', 'TORINO', 'NAPOLI', 'FIRENZE',
+    'LONDON', 'PARIS', 'BARCELONA', 'BERLIN', 'NEW YORK', 'TOKYO', 'DUBAI',
+  ];
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.getCityRanking(city, token);
+      setData(res);
+    } catch (_) {}
+    finally { setLoading(false); }
+  }, [city, token, refreshKey]);
+
+  useEffect(() => { load(); }, [load]);
+
+  return (
+    <Animated.View entering={FadeInDown.delay(250)} style={cr$.container} testID="city-ranking-container">
+      {/* Section Header */}
+      <View style={cr$.sectionRow}>
+        <Ionicons name="trophy" size={13} color="#D4AF37" />
+        <Text style={cr$.title} testID="city-ranking-title">CITY RANKING</Text>
+        {/* City Selector */}
+        <TouchableOpacity style={cr$.cityBtn} onPress={() => setCityOpen(true)} activeOpacity={0.8}>
+          <Ionicons name="location" size={10} color="#00F2FF" />
+          <Text style={cr$.cityBtnText}>{city}</Text>
+          <Ionicons name="chevron-down" size={10} color="rgba(255,255,255,0.3)" />
+        </TouchableOpacity>
+      </View>
+
+      {/* City picker modal */}
+      <Modal transparent visible={cityOpen} animationType="fade" onRequestClose={() => setCityOpen(false)}>
+        <TouchableOpacity style={cr$.backdrop} activeOpacity={1} onPress={() => setCityOpen(false)}>
+          <View style={cr$.sheet}>
+            <LinearGradient colors={['#0D0D0D', '#080808']} style={cr$.sheetInner}>
+              <Text style={cr$.sheetTitle}>SELEZIONA CITY</Text>
+              <View style={cr$.sheetDivider} />
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {CITY_LIST.map(c => (
+                  <TouchableOpacity
+                    key={c}
+                    style={[cr$.cityOption, c === city && cr$.cityOptionActive]}
+                    onPress={() => { setCity(c); setCityOpen(false); }}
+                  >
+                    <Ionicons name="location-outline" size={11} color={c === city ? '#D4AF37' : 'rgba(255,255,255,0.3)'} />
+                    <Text style={[cr$.cityOptionText, c === city && { color: '#D4AF37' }]}>{c}</Text>
+                    {c === city && <Ionicons name="checkmark" size={11} color="#D4AF37" />}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </LinearGradient>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Ranking Card */}
+      <View style={cr$.card}>
+        <LinearGradient colors={['#0C0C0C', '#070707']} style={cr$.cardInner}>
+          <View style={cr$.cardTopBar} />
+
+          {loading ? (
+            <View style={cr$.loader}><ActivityIndicator color="#D4AF37" size="small" /></View>
+          ) : !data || data.total_athletes === 0 ? (
+            <View style={cr$.empty}>
+              <Ionicons name="person-outline" size={24} color="rgba(255,255,255,0.1)" />
+              <Text style={cr$.emptyText}>NESSUN ATLETA IN {city}</Text>
+            </View>
+          ) : (
+            <>
+              {/* Meta row */}
+              <View style={cr$.metaRow}>
+                <Text style={cr$.metaCity}>{city}</Text>
+                <Text style={cr$.metaCount}>{data.total_athletes} ATLETI</Text>
+              </View>
+
+              {/* Top 10 athletes */}
+              {(data.top10 || []).map((athlete: any) => {
+                const medal = MEDAL_CONFIG[athlete.rank];
+                const isMe = athlete.is_me;
+                return (
+                  <Animated.View
+                    key={athlete.user_id}
+                    entering={FadeIn.delay(athlete.rank * 60)}
+                    style={[cr$.athleteRow, isMe && cr$.athleteRowMe]}
+                  >
+                    {/* Medal / Rank */}
+                    <View style={cr$.medalBox}>
+                      {medal ? (
+                        <Ionicons name={medal.icon as any} size={16} color={medal.color} />
+                      ) : (
+                        <Text style={cr$.rankNum}>{athlete.rank}</Text>
+                      )}
+                    </View>
+
+                    {/* Avatar dot */}
+                    <View style={[cr$.avatarDot, { backgroundColor: athlete.avatar_color || '#00F2FF' }]} />
+
+                    {/* Info */}
+                    <View style={cr$.athleteInfo}>
+                      <View style={cr$.nameRow}>
+                        <Text style={[cr$.athleteName, isMe && cr$.athleteNameMe]} numberOfLines={1}>
+                          {athlete.username}
+                        </Text>
+                        {athlete.is_founder && (
+                          <View style={cr$.founderPill}>
+                            <Ionicons name="star" size={7} color="#D4AF37" />
+                            <Text style={cr$.founderPillText}>FOUNDER</Text>
+                          </View>
+                        )}
+                        {isMe && (
+                          <View style={cr$.mePill}>
+                            <Text style={cr$.mePillText}>TU</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={cr$.athleteSub}>
+                        DNA {athlete.dna_avg} · LVL {athlete.level}
+                      </Text>
+                    </View>
+
+                    {/* Score */}
+                    <View style={cr$.scoreBox}>
+                      <Text style={[
+                        cr$.scoreVal,
+                        athlete.rank === 1 && { color: '#D4AF37' },
+                        isMe && { color: '#00F2FF' },
+                      ]}>
+                        {athlete.kore_score}
+                      </Text>
+                      <Text style={cr$.scoreLabel}>KORE</Text>
+                    </View>
+                  </Animated.View>
+                );
+              })}
+
+              {/* My rank if outside top 10 */}
+              {data.my_rank && data.my_rank > 10 && (
+                <View style={cr$.myRankRow}>
+                  <Text style={cr$.myRankText}>
+                    LA TUA POSIZIONE: #{data.my_rank} · SCORE: {data.my_kore_score}
+                  </Text>
+                </View>
+              )}
+            </>
+          )}
+        </LinearGradient>
+      </View>
+    </Animated.View>
+  );
+}
+
+const cr$ = StyleSheet.create({
+  container: { marginHorizontal: 16, marginBottom: 12 },
+  sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+  title: { flex: 1, color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 4 },
+  cityBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: 'rgba(0,242,255,0.06)', borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)',
+  },
+  cityBtnText: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  // Modal
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'flex-end' },
+  sheet: { maxHeight: '50%', borderTopLeftRadius: 20, borderTopRightRadius: 20, overflow: 'hidden' },
+  sheetInner: { padding: 20, borderWidth: 1, borderColor: 'rgba(212,175,55,0.1)', borderTopLeftRadius: 20, borderTopRightRadius: 20 },
+  sheetTitle: { color: '#FFFFFF', fontSize: 11, fontWeight: '900', letterSpacing: 4, marginBottom: 12 },
+  sheetDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginBottom: 8 },
+  cityOption: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 11, paddingHorizontal: 4 },
+  cityOptionActive: { backgroundColor: 'rgba(212,175,55,0.05)', borderRadius: 8, paddingHorizontal: 10 },
+  cityOptionText: { flex: 1, color: 'rgba(255,255,255,0.45)', fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
+  // Card
+  card: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(212,175,55,0.12)' },
+  cardInner: { paddingBottom: 8 },
+  cardTopBar: { height: 2, backgroundColor: '#D4AF37', opacity: 0.7, marginBottom: 12 },
+  loader: { paddingVertical: 28, alignItems: 'center' },
+  empty: { paddingVertical: 28, alignItems: 'center', gap: 8 },
+  emptyText: { color: 'rgba(255,255,255,0.15)', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
+  // Meta
+  metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 10 },
+  metaCity: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
+  metaCount: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  // Athlete row
+  athleteRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: 16, paddingVertical: 10,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)',
+  },
+  athleteRowMe: { backgroundColor: 'rgba(0,242,255,0.04)', borderRadius: 10, borderBottomWidth: 0, marginHorizontal: 6, marginVertical: 2 },
+  medalBox: { width: 24, alignItems: 'center' },
+  rankNum: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '900' },
+  avatarDot: { width: 8, height: 8, borderRadius: 4 },
+  athleteInfo: { flex: 1, gap: 2 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+  athleteName: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1, flexShrink: 1 },
+  athleteNameMe: { color: '#00F2FF' },
+  founderPill: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)' },
+  founderPillText: { color: '#D4AF37', fontSize: 7, fontWeight: '900', letterSpacing: 1 },
+  mePill: { backgroundColor: 'rgba(0,242,255,0.12)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)' },
+  mePillText: { color: '#00F2FF', fontSize: 7, fontWeight: '900', letterSpacing: 1 },
+  athleteSub: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  // Score
+  scoreBox: { alignItems: 'flex-end', minWidth: 44 },
+  scoreVal: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
+  scoreLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
+  // My rank outside top10
+  myRankRow: { paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.08)', alignItems: 'center' },
+  myRankText: { color: 'rgba(0,242,255,0.6)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+});
+
 // ========== XP PROGRESS ==========
 function XpProgress({ user }: { user: any }) {
   const xp = (user?.xp || 0) as number;
@@ -793,6 +1020,8 @@ export default function KoreTab() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [city, setCity] = useState('MILANO');
+  // Increments on every tab focus → triggers CityRanking real-time refresh
+  const [rankingRefreshKey, setRankingRefreshKey] = useState(0);
 
   const loadData = useCallback(async () => {
     if (!token) return;
@@ -811,6 +1040,13 @@ export default function KoreTab() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  // ── Real-time refresh on tab focus (triggers CityRanking reload after scan)
+  useFocusEffect(
+    useCallback(() => {
+      setRankingRefreshKey(k => k + 1);
+    }, [])
+  );
+
   const handleCitySelect = (newCity: string) => {
     setCity(newCity);
     // Rank will auto-reload because city is in loadData dependency
@@ -825,7 +1061,7 @@ export default function KoreTab() {
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} tintColor="#00F2FF" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); setRankingRefreshKey(k => k + 1); }} tintColor="#00F2FF" />}
           contentContainerStyle={{ paddingBottom: 100 }}
         >
           {/* 1. PASSPORT HEADER */}
@@ -834,16 +1070,19 @@ export default function KoreTab() {
           {/* 2. RANK INFOGRAPHIC */}
           <RankInfographic rankData={rankData} city={city} onCitySelect={handleCitySelect} />
 
-          {/* 3. AFFILIATIONS */}
+          {/* 3. CITY RANKING — Real-Time KORE_SCORE */}
+          <CityRanking token={token || ''} refreshKey={rankingRefreshKey} />
+
+          {/* 4. AFFILIATIONS */}
           <Affiliations affiliData={affiliData} token={token || ''} onRefresh={loadData} />
 
-          {/* 4. ACTION CENTER */}
+          {/* 5. ACTION CENTER */}
           <ActionCenter actionData={actionData} />
 
-          {/* 5. KORE CARD + WALLET */}
+          {/* 6. KORE CARD + WALLET */}
           <KoreCard user={user} rankData={rankData} />
 
-          {/* 6. XP PROGRESS */}
+          {/* 7. XP PROGRESS */}
           <XpProgress user={user} />
         </ScrollView>
       )}
