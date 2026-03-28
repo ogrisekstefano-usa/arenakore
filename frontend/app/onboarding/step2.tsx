@@ -1142,8 +1142,8 @@ export default function NexusBioScan() {
           </Animated.View>
         )}
 
-        {/* ── LIVE FPS badge (top-left of scan area) ── */}
-        {liveFps > 0 && (
+        {/* ── Live FPS badge — DEV only ── */}
+        {__DEV__ && liveFps > 0 && (
           <View style={fps$.badge} pointerEvents="none">
             <Text style={[fps$.txt, liveFps < 20 && fps$.low]}>{liveFps} FPS</Text>
           </View>

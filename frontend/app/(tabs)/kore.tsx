@@ -21,6 +21,7 @@ import { api } from '../../utils/api';
 import { Header } from '../../components/Header';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SW } = Dimensions.get('window');
 
@@ -769,6 +770,13 @@ function CityRanking({
   const [loading, setLoading]   = useState(true);
   const [cityOpen, setCityOpen] = useState(false);
 
+  // ── GPS: read user's detected city from step3 and use it as default
+  useEffect(() => {
+    AsyncStorage.getItem('@kore_gps_city').then(gpsCity => {
+      if (gpsCity && gpsCity.trim()) setCity(gpsCity.trim().toUpperCase());
+    });
+  }, []);
+
   const CITY_LIST = [
     'CHICAGO', 'MILANO', 'ROMA', 'TORINO', 'NAPOLI', 'FIRENZE',
     'LONDON', 'PARIS', 'BARCELONA', 'BERLIN', 'NEW YORK', 'TOKYO', 'DUBAI',
@@ -836,9 +844,12 @@ function CityRanking({
           {loading ? (
             <View style={cr$.loader}><ActivityIndicator color="#D4AF37" size="small" /></View>
           ) : !data || data.total_athletes === 0 ? (
+            /* ── Empty: first athlete detected — motivate to dominate ── */
             <View style={cr$.empty}>
-              <Ionicons name="person-outline" size={24} color="rgba(255,255,255,0.1)" />
-              <Text style={cr$.emptyText}>NESSUN ATLETA IN {city}</Text>
+              <Ionicons name="flame" size={28} color="#D4AF37" />
+              <Text style={cr$.emptyTitleFirst}>PRIMO ATLETA{'\n'}RILEVATO A</Text>
+              <Text style={cr$.emptyCity}>{city}</Text>
+              <Text style={cr$.emptyDominate}>DOMINA IL RANKING</Text>
             </View>
           ) : (
             <>
@@ -951,6 +962,18 @@ const cr$ = StyleSheet.create({
   loader: { paddingVertical: 28, alignItems: 'center' },
   empty: { paddingVertical: 28, alignItems: 'center', gap: 8 },
   emptyText: { color: 'rgba(255,255,255,0.15)', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
+  // "First athlete" motivating empty state
+  emptyTitleFirst: {
+    color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '900',
+    letterSpacing: 3, textAlign: 'center', lineHeight: 18,
+  },
+  emptyCity: {
+    color: '#D4AF37', fontSize: 22, fontWeight: '900', letterSpacing: 2,
+    textShadowColor: 'rgba(212,175,55,0.7)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10,
+  },
+  emptyDominate: {
+    color: 'rgba(0,242,255,0.6)', fontSize: 10, fontWeight: '900', letterSpacing: 5,
+  },
   // Meta
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 10 },
   metaCity: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
