@@ -1116,6 +1116,8 @@ export default function NexusBioScan() {
             style: 'destructive',
             onPress: () => {
               // Full reset → positioning state
+              VoiceController.resetSession(); // Allow WELCOME to play again after retry
+
               setPhase('loading');
               setDetectedPoints(0);
               setVisibleMask(new Array(17).fill(false));

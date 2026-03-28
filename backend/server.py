@@ -3412,19 +3412,46 @@ async def nexus_scanner_page():
 
       var mp_lm = results.poseLandmarks;
 
-      // ── CENTRALITY GUARD: nose must be in central 18%-82% zone
-      // Real athlete is always center-screen; reflections appear at edges.
-      // If nose is at edge → this is the iPhone mirror ghost → DISCARD.
+      // ── HIGHLANDER QUALITY GATE: getBestPose logic
+      // Rule 1: Average confidence of key body landmarks must be >= 60%
+      //         (Reflections have lower confidence — they fail this check)
+      var KEY_LM = [0, 5, 6, 11, 12, 13, 14, 15, 16]; // nose+shoulders+hips+knees+ankles
+      var avgConf = KEY_LM.reduce(function(s, i) {
+        return s + (mp_lm[i] ? (mp_lm[i].visibility || 0) : 0);
+      }, 0) / KEY_LM.length;
+
+      if (avgConf < 0.60) {
+        // GHOST PURGE: confidence too low — real reflections can't reach 60%
+        personFirstSeen = null;
+        clearAndWait();
+        post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+        return;
+      }
+
+      // Rule 2: Centrality — nose must be in 18%-82% zone
       var noseX = mp_lm[0] ? mp_lm[0].x : 0.5;
       if (noseX < 0.18 || noseX > 0.82) {
         personFirstSeen = null;
         clearAndWait();
         post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-        return;  // REFLECTION DISCARDED
+        return;  // EDGE GHOST DISCARDED
+      }
+
+      // Rule 3: Completeness — count high-confidence landmarks
+      var hiConfCount = 0;
+      for (var ki = 0; ki < mp_lm.length; ki++) {
+        if (mp_lm[ki] && (mp_lm[ki].visibility || 0) >= 0.75) hiConfCount++;
+      }
+      // Need at least 12 high-confidence landmarks for a clean skeleton
+      if (hiConfCount < 12) {
+        personFirstSeen = null;
+        clearAndWait();
+        post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+        return;
       }
 
       var coco17 = drawSkeleton(mp_lm);
-      // Count only CENTRAL points to exclude edge reflection debris
+      // Count only CENTRAL points
       var vc = coco17.filter(function(p) {
         if (!p) return false;
         var nx = p.x / canvas.width, ny = p.y / canvas.height;
