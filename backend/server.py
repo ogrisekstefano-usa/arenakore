@@ -3258,11 +3258,11 @@ async def save_scan_result(body: dict, current_user: dict = Depends(get_current_
 
 
 # ====================================
-# NEXUS SCANNER — Served over HTTPS
-# Fixes: "No navigator.mediaDevices.getUserMedia"
-# Must be served from HTTPS for getUserMedia to work in WebView.
+# NEXUS SCANNER — Served over HTTPS via /api route
+# Path: GET /api/nexus/scanner (goes through Kubernetes ingress → port 8001)
+# CRITICAL: Must be /api/* to reach FastAPI, NOT /scanner (which routes to Expo port 3000)
 # ====================================
-@app.get("/scanner", response_class=HTMLResponse, include_in_schema=False)
+@api_router.get("/nexus/scanner", response_class=HTMLResponse, include_in_schema=False)
 async def nexus_scanner_page():
     """
     ARENAKORE Nexus Bio-Scanner page served over HTTPS.

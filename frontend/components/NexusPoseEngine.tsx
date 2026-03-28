@@ -36,11 +36,14 @@ interface Props {
   enabled?: boolean;
 }
 
-// ── Scanner URL served over HTTPS from our backend
-// HTTPS context is required for navigator.mediaDevices.getUserMedia
+// ── Scanner URL served over HTTPS via /api route
+// CRITICAL: Must use /api/nexus/scanner so Kubernetes ingress routes to FastAPI (port 8001).
+//           /scanner without /api prefix routes to Expo web app (port 3000) → no camera!
 const SCANNER_URL = (() => {
   const base = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
-  return base ? `${base}/scanner` : 'https://kore-biometric-scan.preview.emergentagent.com/scanner';
+  return base
+    ? `${base}/api/nexus/scanner`
+    : 'https://kore-biometric-scan.preview.emergentagent.com/api/nexus/scanner';
 })();
 
 export function NexusPoseEngine({ onPoseData, enabled = true }: Props) {
