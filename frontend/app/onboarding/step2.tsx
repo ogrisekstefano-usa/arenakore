@@ -19,6 +19,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../../utils/api';
+import * as Haptics from 'expo-haptics';
 
 // ===================================================================
 // PUPPET-MOTION-DECK: 17-POINT COCO SKELETON
@@ -641,12 +642,13 @@ export default function NexusBioScan() {
   }, [phase, currentBeat]);
 
   // ===================================================================
-  // APPROVAL — Gold Flash + Save DNA + Navigate
+  // APPROVAL — Gold Flash + Haptics + Save DNA + Navigate
   // ===================================================================
   const handleApproval = useCallback(async () => {
     setPhase('approved');
     setShowHud(false);
 
+    // ── GOLD FLASH visual
     flashOpacity.value = withSequence(
       withTiming(1, { duration: 200 }),
       withTiming(0, { duration: 500 }),
@@ -658,6 +660,18 @@ export default function NexusBioScan() {
       withTiming(0.5, { duration: 0 }),
       withDelay(300, withTiming(1, { duration: 500, easing: Easing.out(Easing.back(1.5)) })),
     );
+
+    // ── HAPTIC SEQUENCE: "serratura che si apre"
+    // Impact Heavy → 80ms pause → Impact Medium → 120ms pause → Notification Success
+    try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      await new Promise(r => setTimeout(r, 80));
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      await new Promise(r => setTimeout(r, 120));
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (_e) {
+      // Haptics not available on all platforms — graceful fallback
+    }
 
     // ── BEAT 5 DNA SYNC: Save scan results to AsyncStorage + attempt API sync
     const BEAT5_DNA = {
