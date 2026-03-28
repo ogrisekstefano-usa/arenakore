@@ -28,6 +28,7 @@ const NEXUS_VOICES: Record<VoiceLang, Record<string, any>> = {
     FEET_GUIDANCE:  require('../assets/voice/it/feet_guidance.mp3'),
     CHEAT_DETECTED: require('../assets/voice/it/cheat_detected.mp3'),
     NEXUS_ACTIVE:   require('../assets/voice/it/nexus_active.mp3'),
+    ACKNOWLEDGED:   require('../assets/voice/it/acknowledged.mp3'),
   },
   EN: {
     WELCOME:        require('../assets/voice/en/welcome.mp3'),
@@ -44,6 +45,7 @@ const NEXUS_VOICES: Record<VoiceLang, Record<string, any>> = {
     FEET_GUIDANCE:  require('../assets/voice/en/feet_guidance.mp3'),
     CHEAT_DETECTED: require('../assets/voice/en/cheat_detected.mp3'),
     NEXUS_ACTIVE:   require('../assets/voice/en/nexus_active.mp3'),
+    ACKNOWLEDGED:   require('../assets/voice/en/acknowledged.mp3'),
   },
   ES: {
     WELCOME:        require('../assets/voice/es/welcome.mp3'),
@@ -60,6 +62,7 @@ const NEXUS_VOICES: Record<VoiceLang, Record<string, any>> = {
     FEET_GUIDANCE:  require('../assets/voice/es/feet_guidance.mp3'),
     CHEAT_DETECTED: require('../assets/voice/es/cheat_detected.mp3'),
     NEXUS_ACTIVE:   require('../assets/voice/es/nexus_active.mp3'),
+    ACKNOWLEDGED:   require('../assets/voice/es/acknowledged.mp3'),
   },
 };
 
@@ -210,6 +213,44 @@ class VoiceControllerClass {
   async playBeat(beatIndex: number): Promise<void> {
     await this.play(`BEAT_${beatIndex + 1}`);
   }
-}
+
+  /** Play and wait for completion — used in step1 for ACKNOWLEDGED before navigation */
+  async playAndWait(key: string): Promise<void> {
+    await this.stop();
+    await this.ensureAudioMode();
+    const cacheKey = `${this.lang}_${key}`;
+    let sound = this.soundCache.get(cacheKey);
+    if (!sound) {
+      const module = NEXUS_VOICES[this.lang]?.[key] ?? null;
+      if (!module) {
+        console.error(`[VoiceController] ❌ MISSING: ${this.lang}/${key}.mp3`);
+        return;
+      }
+      try {
+        const loaded = await Audio.Sound.createAsync(module, { shouldPlay: false });
+        sound = loaded.sound;
+      } catch (e) {
+        console.error(`[VoiceController] ❌ LOAD FAILED: ${this.lang}/${key}`, e);
+        return;
+      }
+    }
+    return new Promise(async (resolve) => {
+      try {
+        sound!.setOnPlaybackStatusUpdate(status => {
+          if (status.isLoaded && status.didJustFinish) {
+            if (this.currentSound === sound) this.currentSound = null;
+            resolve();
+          }
+        });
+        await sound!.setPositionAsync(0);
+        await sound!.setVolumeAsync(1.0);
+        await sound!.playAsync();
+        this.currentSound = sound!;
+        this.lastPlayStart = Date.now();
+      } catch (_e) {
+        resolve(); // resolve anyway on error
+      }
+    });
+  }
 
 export const VoiceController = new VoiceControllerClass();

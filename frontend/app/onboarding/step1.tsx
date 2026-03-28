@@ -16,6 +16,7 @@ import Animated, {
   useAnimatedStyle, FadeInDown, Easing,
 } from 'react-native-reanimated';
 import * as Speech from 'expo-speech';
+import { VoiceController } from '../../utils/VoiceController';
 
 // ===================================================================
 // VOICE ENGINE — Speech Recognition + TTS
@@ -60,20 +61,20 @@ function useVoiceEngine(onActivated: () => void) {
 
     setState('heard');
 
-    // SAFETY TIMEOUT: navigate after 2s regardless of TTS outcome
+    // Extend safety timeout to 5s (voice file can be ~2-3s)
     if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
-    safetyTimerRef.current = setTimeout(safeNavigate, 2000);
+    safetyTimerRef.current = setTimeout(safeNavigate, 5000);
 
     setState('speaking');
 
-    // Best-effort TTS (non-blocking)
-    Speech.speak(TTS_RESPONSE, {
-      language: 'en-US',
-      pitch: 0.9,
-      rate: 0.95,
-      onDone:  safeNavigate,
-      onError: safeNavigate,
-    });
+    // ── Play ACKNOWLEDGED with Stefano's voice, navigate only after completion
+    VoiceController.playAndWait('ACKNOWLEDGED').then(() => {
+      if (safetyTimerRef.current) {
+        clearTimeout(safetyTimerRef.current);
+        safetyTimerRef.current = null;
+      }
+      safeNavigate();
+    }).catch(() => safeNavigate());
   }, [safeNavigate]);
 
   // manualTrigger = activate from any state (mic button + CTA button)

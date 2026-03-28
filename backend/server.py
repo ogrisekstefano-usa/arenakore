@@ -3425,14 +3425,22 @@ async def nexus_scanner_page():
     }
 
     function clearAndWait() {
-      prevSmoothed = null;  // reset stale smoothed data
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      prevSmoothed = null;
+      var W = window.innerWidth||390, H = window.innerHeight||844;
+      if (canvas.width!==W) canvas.width=W;
+      if (canvas.height!==H) canvas.height=H;
+      ctx.clearRect(0, 0, W, H);
       showStatus('AWAITING ATHLETE');
     }
 
     function drawSkeleton(mp_lm) {
-      // ── CLEAR before drawing (memory: no frame accumulation)
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // ── RESIZE canvas every frame (fixes 0x0 canvas bug after WebView init)
+      var W = window.innerWidth  || 390;
+      var H = window.innerHeight || 844;
+      if (canvas.width  !== W) canvas.width  = W;
+      if (canvas.height !== H) canvas.height = H;
+      // ── CLEAR before drawing
+      ctx.clearRect(0, 0, W, H);
       var coco17 = new Array(17).fill(null);
       for (var k in MP_TO_COCO) {
         var mpIdx = parseInt(k);
