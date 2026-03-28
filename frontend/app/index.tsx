@@ -31,7 +31,7 @@ const BG   = '#050505';
 // =====================================================================
 // ATHLETE BACKGROUND — blurred photo with deep vignette
 // =====================================================================
-const ATHLETE_BG = 'https://images.pexels.com/photos/4401809/pexels-photo-4401809.jpeg?auto=compress&cs=tinysrgb&h=1200&w=800';
+const ATHLETE_BG = 'https://customer-assets.emergentagent.com/job_1cc481b0-9549-42bf-b77d-feaf4ea618cf/artifacts/m8l3ra29_Screenshot%202026-03-28%20at%2011.02.30%E2%80%AFAM.png';
 function ScanLine() {
   const { height } = useWindowDimensions();
   const y = useSharedValue(-100);
@@ -150,11 +150,11 @@ export default function HeroIndex() {
     <View style={s.root}>
       <StatusBar barStyle="light-content" />
 
-      {/* ── ATHLETE BACKGROUND — two boxers, dim ring, real sport ── */}
+      {/* ── ATHLETE BACKGROUND — user's personal training photo ── */}
       <Image
         source={{ uri: ATHLETE_BG }}
-        style={[StyleSheet.absoluteFill, { opacity: 0.5 }]}
-        blurRadius={4}
+        style={[StyleSheet.absoluteFill, { opacity: 0.60 }]}
+        blurRadius={2}
         resizeMode="cover"
       />
 
