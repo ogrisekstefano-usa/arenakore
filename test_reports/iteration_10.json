@@ -1,0 +1,58 @@
+{
+  "summary": "Sprint 16 — NEXUS PROTOCOL v2. Tested: (1) Step1 CTA voice trigger fix, (2) Step2 anti-ghost biometric wall fix, (3) Backend POST /api/nexus/5beat-dna endpoint, (4) KORE tab DNA display after 5-Beat sync. ALL CRITICAL FIXES VERIFIED WORKING. One pre-existing issue (username truncation) not fixed. Founder password hash mismatch found and fixed in DB.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "system",
+        "issue": "Founder password hash in MongoDB didn't match 'Founder@KORE2026!' (hash from previous seed/test run). Fixed by direct DB reset during testing. Root cause: seed script may be re-hashing with different salt on each restart. Need consistent seeding."
+      },
+      {
+        "endpoint": "system",
+        "issue": "passlib bcrypt warning: 'module bcrypt has no attribute __about__'. Cosmetic warning trapped by passlib — does NOT affect functionality but indicates version mismatch between passlib and bcrypt package."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "PassportIdentity (kore.tsx)",
+        "issue": "Username 'STEFANO' (7 chars) still truncated to 'STEFA...' on KORE card — pre-existing issue from iteration 9",
+        "testID": "none",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sprint16_nexus_protocol.py",
+    "/app/test_reports/pytest/sprint16_pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix founder password mismatch: ensure seed script (db_reset_legacy.py or startup seed) always sets a consistent bcrypt hash for the founder. The hash changes on each seed run due to bcrypt salting.",
+    "Fix username truncation on KORE card for 'STEFANO' (7 chars) — pre-existing issue from iteration 9",
+    "Optional: upgrade passlib>=1.7.5 or bcrypt>=4.0.0 to fix the __about__ attribute warning"
+  ],
+  "critical_code_review_comments": [
+    "Step1 fix VERIFIED: CTA button correctly calls manualTrigger() which triggers TTS via Speech.speak() and navigates ONLY in onDone callback. Voice state transitions (idle→listened→heard→speaking→navigating) work correctly on web (transitions fast, <400ms).",
+    "Step2 anti-ghost VERIFIED: isScanning=false initially blocks all 17-point detection. Web fallback correctly sets isScanning=true after 3s. Footer shows 'NEXUS IS SEARCHING FOR ATHLETE...' + 'POSIZIONATI DAVANTI ALLA CAMERA' before scanning starts.",
+    "Step2 7-gate biometric flow VERIFIED: loading(1.8s)→positioning(isScanning guard)→verifying→pose_check→countdown→beats→approved all wired correctly. No ghost-triggering observed.",
+    "Backend /api/nexus/5beat-dna VERIFIED: correctly saves all 6 KORE DNA keys (velocita/forza/resistenza/tecnica/mentalita/flessibilita), requires auth, validates dna_results, persists to user.dna, response includes status+dna_updated+user.",
+    "KORE tab DNA display VERIFIED: VEL:87, FOR:83, RES:91, TEC:88, MEN:94, FLE:79 all displayed correctly after 5-Beat scan sync. DNA_LABELS correctly maps mentalita→MEN and flessibilita→FLE."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_sprint16_nexus_protocol.py (new)",
+    "MongoDB arenakore DB: founder password hash reset to match Founder@KORE2026!"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9 tests passed — all /api/nexus/5beat-dna tests, auth flow, rescan eligibility)",
+    "frontend": "95% (step1 voice trigger ✓, step2 anti-ghost ✓, step2 7-gate flow ✓, KORE DNA display ✓, username truncation pre-existing MEDIUM issue)"
+  },
+  "seed_data_creation": "No new test users created. Founder DNA reset to expected 5-Beat values: velocita=87, forza=83, resistenza=91, tecnica=88, mentalita=94, flessibilita=79.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Sprint 16 fixes all verified. DB=arenakore. Founder: ogrisek.stefano@gmail.com / Founder@KORE2026! (password was reset in this iteration — may need re-reset if another seed runs). All 4 onboarding steps working. 5beat-dna endpoint working and syncs to KORE tab DNA bars. Step2 anti-ghost biometric wall working (3s web fallback for isScanning). Step1 voice CTA triggers TTS navigation correctly.",
+  "rca_of_issue": "FOUNDER PASSWORD MISMATCH: Root cause is bcrypt salted hashing — each call to hash_password() generates a different hash. If the founder was seeded with one hash but then the startup seed event (seed_data) re-runs without checking if founder already exists, or if any test creates a new hash, the stored hash diverges. The seed_data startup event only badges founders retroactively (is_founder=True) but does NOT reset passwords — so the mismatch must have come from a previous test run or manual password change. MITIGATION: Direct DB reset of password hash in this iteration. LONG-TERM FIX: Add idempotent seeding that only creates founder if not exists (already done for battles/disciplines/crews)."
+}

@@ -195,4 +195,8 @@ export const api = {
     request('/auth/verify-otp', { method: 'POST', body: JSON.stringify({ email, otp }) }),
   resetPassword: (reset_token: string, new_password: string, confirm_password: string) =>
     request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ reset_token, new_password, confirm_password }) }),
+
+  // ========== NEXUS 5-BEAT DNA SYNC ==========
+  saveFiveBeatDna: (dnaResults: Record<string, number>, token: string) =>
+    request('/nexus/5beat-dna', { method: 'POST', body: JSON.stringify({ dna_results: dnaResults }) }, token),
 };

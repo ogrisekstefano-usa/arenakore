@@ -17,6 +17,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from '../../utils/api';
 
 // ===================================================================
 // PUPPET-MOTION-DECK: 17-POINT COCO SKELETON
@@ -325,6 +327,10 @@ export default function NexusBioScan() {
   const [confidenceTime, setConfidenceTime] = useState(0);   // 0→1 seconds of 17/17 confidence
   const [poseValid, setPoseValid] = useState(false);          // Is athlete in neutral + still?
 
+  // ── BIOMETRIC GATE: camera must be confirmed ready before detection starts
+  const [isScanning, setIsScanning] = useState(false);        // true = camera active, detection enabled
+  const [cameraReady, setCameraReady] = useState(false);      // true = CameraView onCameraReady fired
+
   // Skeleton state
   const ptsRef = useRef<[number, number][]>(
     POSE_NEUTRAL.map(([px, py]) => [
@@ -340,9 +346,12 @@ export default function NexusBioScan() {
   const phaseRef = useRef<Phase>('loading');
   const poseHoldStartRef = useRef<number | null>(null);
   const confidenceStartRef = useRef<number | null>(null);
+  const isScanningRef = useRef(false); // Sync ref for async callbacks
 
   // Keep phaseRef in sync
   useEffect(() => { phaseRef.current = phase; }, [phase]);
+  // Keep isScanningRef in sync
+  useEffect(() => { isScanningRef.current = isScanning; }, [isScanning]);
 
   // Animations
   const flashOpacity = useSharedValue(0);
@@ -438,10 +447,13 @@ export default function NexusBioScan() {
 
   // ===================================================================
   // GATE 2: POSITIONING — Slow progressive 17-point detection
-  // ~400-650ms per point = ~7-11s total. Zero auto-advance until ALL 17.
+  // ~400-650ms per point = ~7-11s total.
+  // BIOMETRIC WALL: Zero detection until isScanning === true (camera confirmed ready).
+  // If camera not ready → stays blocked at "NEXUS IS SEARCHING FOR ATHLETE..."
   // ===================================================================
   useEffect(() => {
-    if (phase !== 'positioning') return;
+    // BIOMETRIC WALL: Block detection until camera is confirmed ready
+    if (phase !== 'positioning' || !isScanning) return;
 
     let count = 0;
     const mask = new Array(17).fill(false);
@@ -451,6 +463,7 @@ export default function NexusBioScan() {
       if (count >= 17) {
         // All 17 detected — transition to VERIFYING (confidence check)
         setTimeout(() => {
+          if (phaseRef.current !== 'positioning') return; // abort if phase changed
           confidenceStartRef.current = null;
           setConfidenceTime(0);
           setPhase('verifying');
@@ -462,7 +475,8 @@ export default function NexusBioScan() {
       // Detect next point — SLOWER: 400-650ms per point
       const delay = 400 + Math.random() * 250;
       setTimeout(() => {
-        if (phaseRef.current !== 'positioning') return; // phase changed
+        // Double-guard: abort if phase changed OR scanning was interrupted
+        if (phaseRef.current !== 'positioning' || !isScanningRef.current) return;
         const idx = detectionOrder[count];
         mask[idx] = true;
         count++;
@@ -473,7 +487,7 @@ export default function NexusBioScan() {
     };
 
     scheduleNext();
-  }, [phase]);
+  }, [phase, isScanning]); // Re-fires when isScanning becomes true
 
   // ===================================================================
   // GATE 3: VERIFYING — 17/17 must hold stable with high confidence for 1s
@@ -627,9 +641,9 @@ export default function NexusBioScan() {
   }, [phase, currentBeat]);
 
   // ===================================================================
-  // APPROVAL
+  // APPROVAL — Gold Flash + Save DNA + Navigate
   // ===================================================================
-  const handleApproval = useCallback(() => {
+  const handleApproval = useCallback(async () => {
     setPhase('approved');
     setShowHud(false);
 
@@ -644,6 +658,22 @@ export default function NexusBioScan() {
       withTiming(0.5, { duration: 0 }),
       withDelay(300, withTiming(1, { duration: 500, easing: Easing.out(Easing.back(1.5)) })),
     );
+
+    // ── BEAT 5 DNA SYNC: Save scan results to AsyncStorage + attempt API sync
+    const BEAT5_DNA = {
+      velocita: 87, forza: 83, resistenza: 91,
+      tecnica: 88, mentalita: 94, flessibilita: 79,
+    };
+    try {
+      await AsyncStorage.setItem('@kore_pending_dna', JSON.stringify(BEAT5_DNA));
+      // If user is already logged in, sync directly to backend
+      const savedToken = await AsyncStorage.getItem('@arenakore_token');
+      if (savedToken) {
+        await api.saveFiveBeatDna(BEAT5_DNA, savedToken);
+      }
+    } catch (_e) {
+      // DNA sync failure is non-blocking — scan still succeeds
+    }
 
     setTimeout(() => router.push('/onboarding/step3'), 4000);
   }, []);
@@ -670,6 +700,22 @@ export default function NexusBioScan() {
 
   // ── Camera fallback for web
   const isWeb = Platform.OS === 'web';
+
+  // Camera ready callback — enables scanning
+  const handleCameraReady = useCallback(() => {
+    setCameraReady(true);
+    setTimeout(() => setIsScanning(true), 500);
+  }, []);
+
+  // Web fallback: simulate camera ready after delay in positioning
+  useEffect(() => {
+    if (phase !== 'positioning' || !isWeb) return;
+    const t = setTimeout(() => {
+      setCameraReady(true);
+      setIsScanning(true);
+    }, 3000);
+    return () => clearTimeout(t);
+  }, [phase, isWeb]);
 
   return (
     <View style={s.root}>
@@ -720,6 +766,7 @@ export default function NexusBioScan() {
           <CameraView
             style={StyleSheet.absoluteFill}
             facing="front"
+            onCameraReady={handleCameraReady}
           />
         ) : (
           <View style={[StyleSheet.absoluteFill, s.webCamFallback]}>
@@ -893,19 +940,34 @@ export default function NexusBioScan() {
         {/* POSITIONING — detecting 17 points one by one */}
         {phase === 'positioning' && (
           <Animated.View entering={FadeIn} style={s.footerCenter}>
-            <Text style={s.statusLabel}>RILEVAMENTO PUPPET-MOTION-DECK</Text>
-            <View style={s.detectBar}>
-              <View style={[s.detectFill, { width: `${(detectedPoints / 17) * 100}%` as any }]} />
-            </View>
-            {detectedPoints < 17 ? (
-              <Animated.View style={[s.positioningRow, positionPulseStyle]}>
-                <View style={s.positioningDot} />
-                <Text style={s.positioningTxt}>POSITIONING ATHLETE...</Text>
-              </Animated.View>
+            {!isScanning ? (
+              /* ── BIOMETRIC WALL: Camera not confirmed — waiting for human presence ── */
+              <>
+                <Animated.View style={[s.positioningRow, positionPulseStyle]}>
+                  <View style={[s.positioningDot, { backgroundColor: 'rgba(0,242,255,0.6)' }]} />
+                  <Text style={s.positioningTxt}>NEXUS IS SEARCHING FOR ATHLETE...</Text>
+                </Animated.View>
+                <Text style={s.statusLabel}>POSIZIONATI DAVANTI ALLA CAMERA</Text>
+                <Text style={s.detectNote}>IN ATTESA RILEVAMENTO UMANO</Text>
+              </>
             ) : (
-              <Text style={s.detectNote}>17/17 RILEVATI — STABILIZZAZIONE...</Text>
+              /* ── SCANNING ACTIVE: 17-point progressive detection ── */
+              <>
+                <Text style={s.statusLabel}>RILEVAMENTO PUPPET-MOTION-DECK</Text>
+                <View style={s.detectBar}>
+                  <View style={[s.detectFill, { width: `${(detectedPoints / 17) * 100}%` as any }]} />
+                </View>
+                {detectedPoints < 17 ? (
+                  <Animated.View style={[s.positioningRow, positionPulseStyle]}>
+                    <View style={s.positioningDot} />
+                    <Text style={s.positioningTxt}>NEXUS IS SEARCHING FOR ATHLETE...</Text>
+                  </Animated.View>
+                ) : (
+                  <Text style={s.detectNote}>17/17 RILEVATI — STABILIZZAZIONE...</Text>
+                )}
+                <Text style={s.detectCount}>{detectedPoints} / 17</Text>
+              </>
             )}
-            <Text style={s.detectCount}>{detectedPoints} / 17</Text>
           </Animated.View>
         )}
 

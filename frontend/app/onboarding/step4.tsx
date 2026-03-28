@@ -13,6 +13,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from '../../utils/api';
 
 export default function LegacyStep4() {
   const router = useRouter();
@@ -51,6 +53,18 @@ export default function LegacyStep4() {
           training_level: params.training_level || 'LEGACY',
         },
       );
+      // ── DNA SYNC: After registration, apply 5-Beat scan DNA if available
+      try {
+        const pendingDnaRaw = await AsyncStorage.getItem('@kore_pending_dna');
+        const savedToken    = await AsyncStorage.getItem('@arenakore_token');
+        if (pendingDnaRaw && savedToken) {
+          const dna = JSON.parse(pendingDnaRaw);
+          await api.saveFiveBeatDna(dna, savedToken);
+          await AsyncStorage.removeItem('@kore_pending_dna');
+        }
+      } catch (_dnaErr) {
+        // Non-blocking: registration still succeeds even if DNA sync fails
+      }
       router.replace('/(tabs)/kore');
     } catch (e: any) {
       setError((e.message || 'ERRORE DI REGISTRAZIONE').toUpperCase());

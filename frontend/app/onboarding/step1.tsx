@@ -31,14 +31,72 @@ function useVoiceEngine(onActivated: () => void) {
   const [micPermission, setMicPermission] = useState<'granted' | 'denied' | 'unknown'>('unknown');
   const recognitionRef = useRef<any>(null);
   const stateRef = useRef<VoiceState>('idle');
-  const activatedRef = useRef(false);
+  const lockedRef = useRef(false); // prevents double-trigger
 
   useEffect(() => { stateRef.current = state; }, [state]);
 
-  // ── Initialize Speech Recognition (Web Speech API)
+  // ── CORE: Speak then navigate. Navigation ONLY after onDone.
+  const speakThenNavigate = useCallback(() => {
+    if (lockedRef.current) return;
+    lockedRef.current = true;
+
+    setState('speaking');
+
+    Speech.speak(TTS_RESPONSE, {
+      language: 'en-US',
+      pitch: 0.9,
+      rate: 0.95,
+      onDone: () => {
+        // ONLY HERE: navigate after TTS finishes
+        setState('navigating');
+        onActivated();
+      },
+      onError: () => {
+        // TTS failed — still navigate but with small delay
+        setState('navigating');
+        setTimeout(() => onActivated(), 500);
+      },
+    });
+  }, [onActivated]);
+
+  // ── KEYWORD DETECTED (from Web Speech API)
+  const handleKeywordDetected = useCallback(() => {
+    if (lockedRef.current || stateRef.current !== 'listening') return;
+    setState('heard');
+
+    // Stop recognition
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch (_e) {}
+    }
+
+    // Brief visual pause, then speak
+    setTimeout(() => speakThenNavigate(), 400);
+  }, [speakThenNavigate]);
+
+  // ── MANUAL TRIGGER (Mic button tap)
+  // On Expo (simulated): simulate 1.5s "hearing", THEN speak, THEN navigate
+  // On Web: same as keyword detected
+  const manualTrigger = useCallback(() => {
+    if (lockedRef.current) return;
+    if (stateRef.current !== 'listening' && stateRef.current !== 'idle') return;
+
+    if (Platform.OS !== 'web') {
+      // EXPO: Simulate "hearing" phase — wait 1.5s before speaking
+      lockedRef.current = true;
+      setState('heard');
+      setTimeout(() => {
+        speakThenNavigate();
+      }, 1500);
+    } else {
+      // WEB: Immediate keyword detected flow
+      handleKeywordDetected();
+    }
+  }, [handleKeywordDetected, speakThenNavigate]);
+
+  // ── Initialize Speech Recognition (Web Speech API only)
   const initRecognition = useCallback(() => {
     if (Platform.OS !== 'web') {
-      // Mobile: no native Web Speech API, use mock listening mode
+      // Mobile: set to listening (voice sim ready). Mic tap required.
       setMicPermission('granted');
       setState('listening');
       return;
@@ -47,7 +105,6 @@ function useVoiceEngine(onActivated: () => void) {
     try {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        console.log('[Voice] Web Speech API not available');
         setMicPermission('denied');
         return;
       }
@@ -64,26 +121,16 @@ function useVoiceEngine(onActivated: () => void) {
       };
 
       recognition.onresult = (event: any) => {
-        let finalTranscript = '';
-        let interimTranscript = '';
-
+        let finalT = '';
+        let interimT = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          const result = event.results[i];
-          if (result.isFinal) {
-            finalTranscript += result[0].transcript;
-          } else {
-            interimTranscript += result[0].transcript;
-          }
+          if (event.results[i].isFinal) finalT += event.results[i][0].transcript;
+          else interimT += event.results[i][0].transcript;
         }
-
-        const combined = (finalTranscript + ' ' + interimTranscript).toLowerCase().trim();
+        const combined = (finalT + ' ' + interimT).toLowerCase().trim();
         setTranscript(combined);
-
-        // Check for keyword match (fuzzy: contains the phrase)
         if (combined.includes('nexus') && (combined.includes('pronto') || combined.includes('sono pronto'))) {
-          if (stateRef.current === 'listening') {
-            handleKeywordDetected();
-          }
+          handleKeywordDetected();
         }
       };
 
@@ -91,74 +138,31 @@ function useVoiceEngine(onActivated: () => void) {
         if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
           setMicPermission('denied');
         }
-        // Auto-restart on non-critical errors
         if (event.error === 'no-speech' || event.error === 'aborted') {
           setTimeout(() => {
             if (stateRef.current === 'listening') {
-              try { recognition.start(); } catch (_e) { /* already running */ }
+              try { recognition.start(); } catch (_e) {}
             }
-          }, 200);
+          }, 300);
         }
       };
 
       recognition.onend = () => {
-        // Auto-restart if still in listening mode
         if (stateRef.current === 'listening') {
           setTimeout(() => {
-            try { recognition.start(); } catch (_e) { /* already running */ }
-          }, 200);
+            try { recognition.start(); } catch (_e) {}
+          }, 300);
         }
       };
 
       recognitionRef.current = recognition;
-
-      // Start listening
-      try {
-        recognition.start();
-      } catch (_e) { /* already running */ }
+      try { recognition.start(); } catch (_e) {}
     } catch (_e) {
       setMicPermission('denied');
     }
-  }, []);
+  }, [handleKeywordDetected]);
 
-  // ── Keyword detected! → TTS → Navigate
-  const handleKeywordDetected = useCallback(() => {
-    setState('heard');
-
-    // Stop recognition
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch (_e) {}
-    }
-
-    // Brief pause then TTS
-    setTimeout(() => {
-      setState('speaking');
-
-      Speech.speak(TTS_RESPONSE, {
-        language: 'en-US',
-        pitch: 0.9,
-        rate: 0.95,
-        onDone: () => {
-          setState('navigating');
-          setTimeout(() => onActivated(), 400);
-        },
-        onError: () => {
-          // TTS failed, navigate anyway
-          setState('navigating');
-          setTimeout(() => onActivated(), 400);
-        },
-      });
-    }, 300);
-  }, [onActivated]);
-
-  // ── Manual trigger (for mobile or when mic is denied)
-  const manualTrigger = useCallback(() => {
-    if (state === 'listening' || state === 'idle') {
-      handleKeywordDetected();
-    }
-  }, [state, handleKeywordDetected]);
-
-  // ── Start listening on mount
+  // ── Mount: init recognition
   useEffect(() => {
     const timer = setTimeout(initRecognition, 500);
     return () => {
@@ -169,22 +173,19 @@ function useVoiceEngine(onActivated: () => void) {
     };
   }, [initRecognition]);
 
-  // ── Fallback: if still idle after 3s, force listening state
+  // ── Fallback: force listening after 2s if still idle
   useEffect(() => {
-    const fallback = setTimeout(() => {
+    const t = setTimeout(() => {
       if (stateRef.current === 'idle') {
-        activatedRef.current = false;
         setState('listening');
         setMicPermission('granted');
       }
     }, 2000);
-    return () => clearTimeout(fallback);
+    return () => clearTimeout(t);
   }, []);
 
-  // ── Cleanup speech on unmount
-  useEffect(() => {
-    return () => { Speech.stop(); };
-  }, []);
+  // ── Cleanup
+  useEffect(() => { return () => { Speech.stop(); }; }, []);
 
   return { state, transcript, micPermission, manualTrigger };
 }
@@ -397,7 +398,7 @@ export default function LegacyStep1() {
           <TouchableOpacity
             testID="step1-start-scan-btn"
             style={[s.cta, displayVoiceState === 'navigating' && s.ctaGold]}
-            onPress={handleNavigate}
+            onPress={manualTrigger}
             activeOpacity={0.85}
             disabled={displayVoiceState === 'speaking' || displayVoiceState === 'navigating'}
           >

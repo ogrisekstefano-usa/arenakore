@@ -1387,6 +1387,47 @@ async def complete_bioscan(current_user: dict = Depends(get_current_user)):
 
 
 # ====================================
+# NEXUS 5-BEAT DNA SYNC
+# ====================================
+@api_router.post("/nexus/5beat-dna")
+async def save_five_beat_dna(body: dict, current_user: dict = Depends(get_current_user)):
+    """Save 5-Beat biometric scan DNA results directly into user profile.
+    Called after KORE DNA Generation completes in the onboarding scanner."""
+    dna_results = body.get("dna_results", {})
+    if not dna_results:
+        raise HTTPException(status_code=400, detail="Nessun dato DNA dal 5-Beat scan")
+
+    # Map Beat 5 labels to DB schema keys
+    label_map = {
+        "velocita": "velocita", "forza": "forza",
+        "resistenza": "resistenza", "tecnica": "tecnica",
+        "mentalita": "mentalita", "flessibilita": "flessibilita",
+        "agilita": "agilita", "potenza": "potenza",
+    }
+    update_dna = {}
+    for k, v in dna_results.items():
+        if k in label_map and v is not None:
+            try:
+                update_dna[f"dna.{label_map[k]}"] = float(v)
+            except (TypeError, ValueError):
+                pass
+
+    if not update_dna:
+        raise HTTPException(status_code=400, detail="Dati DNA non validi")
+
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": update_dna}
+    )
+    updated_user = await db.users.find_one({"_id": current_user["_id"]})
+    return {
+        "status": "5beat_dna_saved",
+        "dna_updated": {k.replace("dna.", ""): v for k, v in update_dna.items()},
+        "user": user_to_response(updated_user),
+    }
+
+
+# ====================================
 # NEXUS SYNC — SESSION ENGINE
 # ====================================
 @api_router.post("/nexus/session/start")
