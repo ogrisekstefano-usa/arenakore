@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import {
   View, Text, StyleSheet, ImageBackground, StatusBar,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,6 +12,14 @@ export default function AuthLanding() {
   const { user, token, isLoading } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { width: SW } = useWindowDimensions();
+
+  // Responsive logo: scale to screen width (24px padding each side)
+  // Formula: 9 characters ("ARENA KORE") + gap must fit in (SW - 48) pixels
+  // Bold weight 900 chars are ~60% of font size width
+  const usableW = SW - 48;
+  const logoSize = Math.min(72, Math.floor(usableW / 6.2));
+  const loadingSize = Math.min(48, Math.floor(SW / 9));
 
   useEffect(() => {
     if (!isLoading && token && user) {
@@ -26,8 +35,8 @@ export default function AuthLanding() {
     return (
       <View style={styles.loadingContainer}>
         <View style={styles.loadingRow}>
-          <Text style={styles.loadingArena}>ARENA</Text>
-          <Text style={styles.loadingKore}>KORE</Text>
+          <Text style={[styles.loadingArena, { fontSize: loadingSize }]}>ARENA</Text>
+          <Text style={[styles.loadingKore, { fontSize: loadingSize }]}>KORE</Text>
         </View>
         <Text style={styles.loadingSub}>The Core of Performance</Text>
       </View>
@@ -47,8 +56,16 @@ export default function AuthLanding() {
             <View style={styles.logoContainer}>
               <Text style={styles.tagline}>THE CORE OF PERFORMANCE</Text>
               <View style={styles.nameRow}>
-                <Text style={styles.appNameArena}>ARENA</Text>
-                <Text style={styles.appNameKore}>KORE</Text>
+                <Text
+                  style={[styles.appNameArena, { fontSize: logoSize, lineHeight: logoSize * 1.08 }]}
+                  adjustsFontSizeToFit
+                  numberOfLines={1}
+                >ARENA</Text>
+                <Text
+                  style={[styles.appNameKore, { fontSize: logoSize, lineHeight: logoSize * 1.08 }]}
+                  adjustsFontSizeToFit
+                  numberOfLines={1}
+                >KORE</Text>
               </View>
               <View style={styles.dividerLine} />
               <Text style={styles.subtitle}>Analisi Biometrica · Performance · Crew</Text>
@@ -83,8 +100,8 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', gap: 8,
   },
   loadingRow: { flexDirection: 'row', gap: 6 },
-  loadingArena: { fontSize: 48, fontWeight: '900', color: '#FFFFFF', letterSpacing: -2 },
-  loadingKore: { fontSize: 48, fontWeight: '900', color: '#D4AF37', letterSpacing: -2 },
+  loadingArena: { fontWeight: '900', color: '#FFFFFF', letterSpacing: -2 },
+  loadingKore: { fontWeight: '900', color: '#D4AF37', letterSpacing: -2 },
   loadingSub: { color: '#555', fontSize: 12, fontWeight: '600', letterSpacing: 3, textTransform: 'uppercase' },
   bg: { flex: 1 },
   bgImage: { opacity: 0.30 },
@@ -95,14 +112,16 @@ const styles = StyleSheet.create({
     color: '#00F2FF', fontSize: 10, fontWeight: '700',
     letterSpacing: 5, marginBottom: 12, textTransform: 'uppercase',
   },
-  nameRow: { flexDirection: 'row', gap: 8 },
+  nameRow: { flexDirection: 'row', gap: 8, flexWrap: 'nowrap' },
   appNameArena: {
-    color: '#FFFFFF', fontSize: 72, fontWeight: '900',
-    letterSpacing: -3, lineHeight: 78, textTransform: 'uppercase',
+    color: '#FFFFFF', fontWeight: '900',
+    letterSpacing: -3, textTransform: 'uppercase',
+    flexShrink: 1,
   },
   appNameKore: {
-    color: '#D4AF37', fontSize: 72, fontWeight: '900',
-    letterSpacing: -3, lineHeight: 78, textTransform: 'uppercase',
+    color: '#D4AF37', fontWeight: '900',
+    letterSpacing: -3, textTransform: 'uppercase',
+    flexShrink: 1,
   },
   dividerLine: {
     width: 48, height: 2, backgroundColor: '#D4AF37',
