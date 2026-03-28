@@ -3283,7 +3283,7 @@ async def nexus_scanner_page():
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
     #video  { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
-    #canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    #canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
     #brand  { position: absolute; top: 14px; left: 14px; z-index: 30; pointer-events: none; display: flex; }
     .arena  { color: #FFF; font-family: -apple-system, Helvetica, sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 2px; }
     .kore   { color: #00F2FF; font-family: -apple-system, Helvetica, sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 2px; text-shadow: 0 0 12px rgba(0,242,255,.9); }
@@ -3395,11 +3395,23 @@ async def nexus_scanner_page():
 
     // ── Canvas sizing
     function resizeCanvas() {
-      canvas.width  = window.innerWidth  || 390;
-      canvas.height = window.innerHeight || 844;
+      var W = window.innerWidth  || screen.width  || 390;
+      var H = window.innerHeight || screen.height || 844;
+      canvas.width  = W;
+      canvas.height = H;
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
+    // Diagnostic: draw a cyan dot at center so we know canvas is overlaying video
+    setTimeout(function() {
+      resizeCanvas();
+      var W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = 'rgba(0,242,255,0.7)';
+      ctx.beginPath(); ctx.arc(W/2, H/2, 20, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#FFF'; ctx.font='900 11px monospace'; ctx.textAlign='center';
+      ctx.fillText('NEXUS READY', W/2, H/2 + 35);
+    }, 500);
 
     // ── Coord mapping: direct [0,1] → screen pixels
     // 256x256 input and screen both stretch the video the same way →
@@ -3537,12 +3549,10 @@ async def nexus_scanner_page():
       if (!poseReady) { poseReady = true; }
       sendPending = false;
 
-      // Performance auto-downgrade
       var elapsed = performance.now() - sendStart;
       if (elapsed > 150 && frameSkip < 2) frameSkip++;
       else if (elapsed < 80 && frameSkip > 0) frameSkip--;
 
-      // ── NO PERSON
       if (!results.poseLandmarks || !results.poseLandmarks.length) {
         personFirstSeen = null;
         prevSmoothed = null;
@@ -3551,76 +3561,24 @@ async def nexus_scanner_page():
         return;
       }
 
+      // DRAW IMMEDIATELY — no confidence/centrality filters
       var mp_lm = results.poseLandmarks;
-
-      // ── KEY QUALITY METRICS
-      var KEY_LM = [0,11,12,23,24];  // nose+shoulders+hips (eyes removed — lower vis)
-      var avgConf = KEY_LM.reduce(function(s,i){
-        return s + (mp_lm[i] ? (mp_lm[i].visibility||0) : 0);
-      }, 0) / KEY_LM.length;
-
-      // ── FILTER 1: minimum confidence (very lenient)
-      if (avgConf < 0.15) {  // near-zero threshold — trust MediaPipe
-        personFirstSeen = null;
-        clearAndWait();
-        post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-        return;
-      }
-
-      // ── FILTER 2: centrality — nose must be in 15%-85% zone
-      var noseX = mp_lm[0] ? mp_lm[0].x : 0.5;
-      if (noseX < 0.15 || noseX > 0.85) {
-        personFirstSeen = null;
-        clearAndWait();
-        post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-        return;
-      }
-
-      // ── FILTER 3: Y-axis sanity (only when both ankles AND hips visible)
-      var lHipLm = mp_lm[23], rHipLm = mp_lm[24];
-      var lAnkLm = mp_lm[27], rAnkLm = mp_lm[28];
-      if (lHipLm && rHipLm && lAnkLm && rAnkLm &&
-          (lAnkLm.visibility||0) > 0.5 && (rAnkLm.visibility||0) > 0.5) {
-        var hipMidY    = (lHipLm.y + rHipLm.y) / 2;
-        var ankleMidY  = (lAnkLm.y + rAnkLm.y) / 2;
-        if (ankleMidY < hipMidY) {
-          // Inverted skeleton (floor reflection) — discard
-          personFirstSeen = null;
-          clearAndWait();
-          post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-          return;
-        }
-      }
-
-      // ── MOTION PREDICTION + SKIN + LPF
-      var motionFiltered = motionFilter(mp_lm, prevSmoothed);
-      var dynamicAlpha = (avgConf < 0.50) ? 0.38 : SMOOTH_ALPHA;
-      var smoothed = lpf(motionFiltered, prevSmoothed, dynamicAlpha);
+      var smoothed = lpf(motionFilter(mp_lm, prevSmoothed), prevSmoothed, SMOOTH_ALPHA);
       prevSmoothed = smoothed;
 
-      // ── DRAW
       var coco17 = drawSkeleton(smoothed);
-
-      // Ankle recovery (extrapolation)
       recoverAnkle(23, 25, 27, 29, 31, 15);
       recoverAnkle(24, 26, 28, 30, 32, 16);
 
-      // Count visible points
-      var vc = coco17.filter(function(p) {
-        if (!p) return false;
-        var nx = p.x / canvas.width, ny = p.y / canvas.height;
-        return nx >= 0.05 && nx <= 0.95 && ny >= 0.02 && ny <= 0.98;
-      }).length;
-
-      var centered = (noseX >= 0.28 && noseX <= 0.72);
+      var noseX = mp_lm[0] ? mp_lm[0].x : 0.5;
+      var centered = (noseX >= 0.25 && noseX <= 0.75);
+      var vc = coco17.filter(function(p){ return p !== null; }).length;
       var now = Date.now();
       if (!personFirstSeen) personFirstSeen = now;
-      var stable = (now - personFirstSeen) >= STABLE_MS && vc >= 7;
+      var stable = (now - personFirstSeen) >= STABLE_MS && vc >= 5;
 
-      // Feet guidance
       var kneesOk  = !!(coco17[13] || coco17[14]);
       var anklesOk = !!(coco17[15] && !coco17[15].ext && coco17[16] && !coco17[16].ext);
-      var feetGuidance = kneesOk && !anklesOk;
 
       var W = canvas.width, H = canvas.height;
       var norm = stable ? coco17.map(function(p) {
@@ -3634,7 +3592,7 @@ async def nexus_scanner_page():
         visible_count: vc,
         centered: centered,
         feet_visible: anklesOk,
-        feet_guidance: feetGuidance,
+        feet_guidance: kneesOk && !anklesOk,
         fps: Math.round(1000 / Math.max(elapsed, 1))
       });
     }

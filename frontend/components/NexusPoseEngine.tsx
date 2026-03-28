@@ -116,7 +116,6 @@ export function NexusPoseEngine({ onPoseData, enabled = true }: Props) {
         // iOS WKWebView: auto-grant camera permission
         mediaCapturePermissionGrantType="grant"
         allowsAirPlayForMediaPlayback={false}
-        backgroundColor="transparent"
         scrollEnabled={false}
         // React-level error boundary with auto-restart
         onError={() => scheduleRestart(500)}
