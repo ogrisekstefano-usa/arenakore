@@ -525,7 +525,7 @@ export default function NexusBioScan() {
       setIsScanning(true);
       usingRealDataRef.current = true;
       // Announce scanning start
-      try { Speech.speak('Nexus attivo. Entra nell\'Arena.', { language: 'it-IT', rate: 0.82 }); } catch (_e) {}
+      VoiceController.play('NEXUS_ACTIVE').catch(() => {});
       return;
     }
     if (data.type === 'error') {
@@ -726,7 +726,7 @@ export default function NexusBioScan() {
       if (now - lastCenterAlertRef.current > 4500) {
         lastCenterAlertRef.current = now;
         try {
-          Speech.speak("Centrati nell'Arena", { language: 'it-IT', rate: 0.88, pitch: 1.0 });
+          VoiceController.play('POSITIONING').catch(() => {});  // CENTRATI — use positioning cue
         } catch (_e) {}
         setCenteringWarning(true);
         setTimeout(() => setCenteringWarning(false), 3000);
@@ -778,16 +778,17 @@ export default function NexusBioScan() {
       setAutoAcceptSecs(prev => {
         if (prev <= 1) {
           clearInterval(interval);
-          // AUTO-ACCEPT
+          // AUTO-ACCEPT: start camera + preload all 14 voice files
           setShowPrivacyConsent(false);
           if (Platform.OS === 'web') { setCameraReady(true); setIsScanning(true); }
+          VoiceController.preloadAll().catch(() => {});
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-    // Welcome announcement
-    Speech.speak('Benvenuto nel Nexus Protocol. Tra 5 secondi la camera si attiverà.', { language: 'it-IT', rate: 0.80 });
+    // Welcome announcement via MP3 (no TTS fallback)
+    VoiceController.play('WELCOME').catch(() => {});
     return () => clearInterval(interval);
   }, [showPrivacyConsent]);
 
@@ -1047,15 +1048,11 @@ export default function NexusBioScan() {
   const repeatWarningRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /** speakWithLead: annuncia l'esercizio, poi dopo delayMs parte il timer */
-  const speakCoach = useCallback((text: string, urgent = false) => {
-    // KORE SCORE LOCK: don't speak if quality is too low
+  const speakCoach = useCallback((_text: string, _urgent = false) => {
+    // KORE SCORE LOCK: stay silent if quality too low
     if (voiceLocked) return;
-    // VoiceController handles overlap guard (fade-out) + real audio fallback
-    VoiceController.stop().then(() => {
-      try {
-        Speech.speak(text, { language: 'it-IT', rate: urgent ? 0.92 : 0.82, pitch: urgent ? 1.15 : 1.0 });
-      } catch (_e) {}
-    }).catch(() => {});
+    // No Speech.speak() — beats use VoiceController.playBeat() directly
+    // speakCoach is kept for API compatibility but stays silent
   }, [voiceLocked]);
 
   // Warn if person disappears during BEATS

@@ -3486,7 +3486,12 @@ async def nexus_scanner_page():
       recoverAnkle(23, 25, 27, 29, 31, 15);
       // Right leg: hip[24] knee[26] ankle[28→COCO16] heel[30] toe[32]
       recoverAnkle(24, 26, 28, 30, 32, 16);
-      ctx.strokeStyle = '#D4AF37'; ctx.lineWidth = 3; ctx.globalAlpha = 0.9;
+      // STATUS GLOW: high confidence → gold aura
+      ctx.shadowColor = (avgConf > 0.82) ? '#D4AF37' : 'transparent';
+      ctx.shadowBlur  = (avgConf > 0.82) ? 16 : 0;
+      ctx.strokeStyle = '#D4AF37';
+      ctx.lineWidth   = (avgConf > 0.82) ? 4.0 : 2.5;
+      ctx.globalAlpha = 0.9;
       COCO_CONN.forEach(function(p) {
         var a = coco17[p[0]], b = coco17[p[1]];
         if (a && b) { ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
@@ -3828,6 +3833,15 @@ async def nexus_scanner_page():
           if (!poseReady) return;
           if (performance.now() - lastFrameReceived > 2000) {
             clearInterval(cameraWatchdog);
+            // WATCHDOG FLASH: show "Optimizing Vision..." for 500ms
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(0,242,255,0.9)';
+            ctx.font = '900 18px monospace';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = '#00F2FF';
+            ctx.shadowBlur = 12;
+            ctx.fillText('OPTIMIZING VISION...', canvas.width/2, canvas.height/2);
+            ctx.shadowBlur = 0;
             post({ type:'error', message:'camera_hang' });
             if (video.srcObject) {
               video.srcObject.getTracks().forEach(function(t){ t.stop(); });
