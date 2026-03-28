@@ -153,7 +153,7 @@ export default function HeroIndex() {
       {/* ── ATHLETE BACKGROUND — shifted up, hood slightly cropped at top edge ── */}
       <Image
         source={{ uri: ATHLETE_BG }}
-        style={[{ position: 'absolute', top: -40, left: 0, right: 0, bottom: 0, opacity: 0.75 }]}
+        style={[{ position: 'absolute', top: -80, left: 0, right: 0, bottom: 0, opacity: 0.75 }]}
         blurRadius={3}
         resizeMode="cover"
       />

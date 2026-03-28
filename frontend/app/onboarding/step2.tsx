@@ -447,6 +447,12 @@ export default function NexusBioScan() {
       return;
     }
 
+    // OOM / WASM abort → PARACHUTE: redirect to manual onboarding
+    if (data.type === 'oom') {
+      router.replace('/onboarding/manual-onboarding');
+      return;
+    }
+
     if (data.type === 'ready') {
       setPoseEngineReady(true);
       setCameraReady(true);

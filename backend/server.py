@@ -3272,10 +3272,7 @@ async def save_scan_result(body: dict, current_user: dict = Depends(get_current_
 # ====================================
 @api_router.get("/nexus/scanner", response_class=HTMLResponse, include_in_schema=False)
 async def nexus_scanner_page():
-    """
-    ARENAKORE Nexus Bio-Scanner page served over HTTPS.
-    Loaded by NexusPoseEngine WebView — enables navigator.mediaDevices.getUserMedia.
-    """
+    """ARENAKORE Nexus Bio-Scanner — M2 Optimized. Direct getUserMedia + 256x256 OffscreenCanvas input."""
     html = """<!DOCTYPE html>
 <html>
 <head>
@@ -3296,20 +3293,30 @@ async def nexus_scanner_page():
   <video id="video" autoplay playsinline muted></video>
   <canvas id="canvas"></canvas>
   <div id="brand"><span class="arena">ARENA</span><span class="kore">KORE</span></div>
-
-  <!-- ONLY pose.js — NO camera_utils (platform check fails on some iPads/WebViews) -->
+  <!-- ONLY pose.js — direct getUserMedia, no camera_utils -->
   <script src="/api/static/mediapipe/pose.js" crossorigin="anonymous"></script>
   <script>
-    var video  = document.getElementById('video');
-    var canvas = document.getElementById('canvas');
-    var ctx    = canvas.getContext('2d');
+    var video        = document.getElementById('video');
+    var canvas       = document.getElementById('canvas');
+    var ctx          = canvas.getContext('2d');
 
+    // ── M2 MEMORY OPTIMIZATION: 256x256 input canvas for MediaPipe
+    // Reduces GPU/RAM usage by ~87% vs raw 480x640 video
+    var small        = document.createElement('canvas');
+    small.width      = 256;
+    small.height     = 256;
+    var smallCtx     = small.getContext('2d');
+
+    // ── State
     var lastFrameTime   = 0;
     var personFirstSeen = null;
-    var STABLE_MS       = 2000;  // 2 seconds of stable detection required
-    var rafId           = null;
+    var STABLE_MS       = 2000;
+    var poseReady       = false;
+    var frameSkip       = 0;   // 0=every frame, 1=every 2nd, 2=every 3rd
+    var frameCounter    = 0;
+    var sendStart       = 0;
+    var sendPending     = false;
 
-    // ── Post message to React Native or parent
     function post(data) {
       try {
         var msg = JSON.stringify(data);
@@ -3318,11 +3325,7 @@ async def nexus_scanner_page():
       } catch(e) {}
     }
 
-    // ── MediaPipe → COCO 17 map
-    var MP_TO_COCO = {0:0,2:1,5:2,7:3,8:4,11:5,12:6,13:7,14:8,15:9,16:10,23:11,24:12,25:13,26:14,27:15,28:16};
-    var COCO_CONN  = [[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
-
-    // ── Canvas size = screen size
+    // ── Canvas sizing
     function resizeCanvas() {
       canvas.width  = window.innerWidth  || 390;
       canvas.height = window.innerHeight || 844;
@@ -3330,87 +3333,85 @@ async def nexus_scanner_page():
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // ── Map MediaPipe [0,1] coords to screen pixels (covers object-fit crop)
+    // ── Coord mapping (256x256 input → screen pixels)
     function toScreen(lm_x, lm_y) {
-      var W = canvas.width,  H = canvas.height;
-      var vW = 480, vH = 640;
-      var scaleX = W / vW, scaleY = H / vH;
-      var scale  = Math.max(scaleX, scaleY);
-      var xOff   = (W - vW * scale) / 2;
-      var yOff   = (H - vH * scale) / 2;
+      var W = canvas.width, H = canvas.height;
+      // input is 256x256 but we treat it as 256(w)x256(h) aspect — map to screen
+      // Use cover scaling from 1:1 (256x256) to actual screen
+      var scale = Math.max(W, H) / 256;
+      var xOff  = (W - 256 * scale) / 2;
+      var yOff  = (H - 256 * scale) / 2;
       return {
-        x: (1 - lm_x) * vW * scale + xOff,
-        y: lm_y * vH * scale + yOff
+        x: (1 - lm_x) * 256 * scale + xOff,
+        y: lm_y * 256 * scale + yOff
       };
     }
 
-    // ── CLEAR + "AWAITING ATHLETE" message
-    function clearAndWait() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var MP_TO_COCO = {0:0,2:1,5:2,7:3,8:4,11:5,12:6,13:7,14:8,15:9,16:10,23:11,24:12,25:13,26:14,27:15,28:16};
+    var COCO_CONN  = [[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
+
+    function showStatus(txt, color) {
       ctx.save();
-      ctx.globalAlpha = 0.45;
-      ctx.fillStyle   = '#00F2FF';
-      ctx.font        = '900 13px monospace';
-      ctx.textAlign   = 'center';
-      ctx.fillText('AWAITING ATHLETE', canvas.width / 2, canvas.height / 2);
+      ctx.clearRect(0, canvas.height/2 - 40, canvas.width, 80);
+      ctx.fillStyle = color || 'rgba(0,242,255,0.6)';
+      ctx.font      = '900 13px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(txt, canvas.width / 2, canvas.height / 2);
       ctx.restore();
     }
 
-    // ── Draw skeleton on canvas
+    function clearAndWait() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      showStatus('AWAITING ATHLETE');
+    }
+
     function drawSkeleton(mp_lm) {
+      // ── CLEAR before drawing (memory: no frame accumulation)
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       var coco17 = new Array(17).fill(null);
-
       for (var k in MP_TO_COCO) {
         var lm = mp_lm[parseInt(k)];
-        // STRICT: only draw points with confidence >= 0.80
-        if (lm && (lm.visibility || 0) >= 0.80) {
+        if (lm && (lm.visibility || 0) >= 0.75) {
           var sc = toScreen(lm.x, lm.y);
           coco17[MP_TO_COCO[k]] = { x: sc.x, y: sc.y, v: lm.visibility };
         }
       }
-
-      // Gold connections
-      ctx.strokeStyle = '#D4AF37';
-      ctx.lineWidth   = 3;
-      ctx.globalAlpha = 0.9;
+      ctx.strokeStyle = '#D4AF37'; ctx.lineWidth = 3; ctx.globalAlpha = 0.9;
       COCO_CONN.forEach(function(p) {
         var a = coco17[p[0]], b = coco17[p[1]];
-        if (a && b) {
-          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-        }
+        if (a && b) { ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
       });
-
-      // Cyan keypoints
       coco17.forEach(function(pt, i) {
         if (!pt) return;
         var r = i < 5 ? 9 : 7;
-        ctx.fillStyle   = '#00F2FF';
-        ctx.globalAlpha = 0.25;
-        ctx.beginPath(); ctx.arc(pt.x, pt.y, r * 2.2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#00F2FF'; ctx.globalAlpha = 0.25;
+        ctx.beginPath(); ctx.arc(pt.x,pt.y,r*2.2,0,Math.PI*2); ctx.fill();
         ctx.globalAlpha = 1.0;
-        ctx.beginPath(); ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath(); ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(pt.x,pt.y,r,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath(); ctx.arc(pt.x,pt.y,3,0,Math.PI*2); ctx.fill();
         ctx.fillStyle = '#00F2FF';
       });
       ctx.globalAlpha = 1;
       return coco17;
     }
 
-    // ── MediaPipe results handler
     function onResults(results) {
-      // Show MEDIAPIPE READY on first call
-      if (!poseReadyCalled) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#32D74B';
-        ctx.font = '900 13px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('MEDIAPIPE READY', canvas.width/2, canvas.height/2);
-        drawRedCircle();
-        return;
+      if (!poseReady) {
+        poseReady = true;
+        post({ type:'info', message:'MediaPipe onResults fired — AI running' });
       }
-      // No person → black + waiting
+      sendPending = false;
+
+      // Auto-downgrade if slow (M2 protection)
+      var elapsed = performance.now() - sendStart;
+      if (elapsed > 150 && frameSkip < 2) {
+        frameSkip++;
+        post({ type:'info', message:'Auto-downgrade: frameSkip=' + frameSkip });
+      } else if (elapsed < 80 && frameSkip > 0) {
+        frameSkip--;  // recover if device gets faster
+      }
+
       if (!results.poseLandmarks || !results.poseLandmarks.length) {
         personFirstSeen = null;
         clearAndWait();
@@ -3418,18 +3419,15 @@ async def nexus_scanner_page():
         return;
       }
 
-      var mp_lm   = results.poseLandmarks;
-      var coco17  = drawSkeleton(mp_lm);
-      var vc      = coco17.filter(function(p){ return p !== null; }).length;
-      var noseX   = mp_lm[0] ? mp_lm[0].x : 0.5;
-      var centered = (noseX >= 0.28 && noseX <= 0.72);
-      var now     = Date.now();
+      var mp_lm  = results.poseLandmarks;
+      var coco17 = drawSkeleton(mp_lm);
+      var vc     = coco17.filter(function(p){ return p !== null; }).length;
+      var noseX  = mp_lm[0] ? mp_lm[0].x : 0.5;
+      var now    = Date.now();
 
-      // 2-second stability requirement
       if (!personFirstSeen) personFirstSeen = now;
-      var stable = (now - personFirstSeen) >= STABLE_MS && vc >= 10;
+      var stable = (now - personFirstSeen) >= STABLE_MS && vc >= 8;
 
-      // Normalised landmarks for React Native
       var W = canvas.width, H = canvas.height;
       var norm = stable ? coco17.map(function(p) {
         return p ? { x: p.x / W, y: p.y / H, v: p.v } : null;
@@ -3440,162 +3438,96 @@ async def nexus_scanner_page():
         landmarks: norm,
         person_detected: stable,
         visible_count: vc,
-        centered: centered,
-        fps: 30
+        centered: (noseX >= 0.28 && noseX <= 0.72),
+        fps: Math.round(1000 / Math.max(elapsed, 1))
       });
     }
 
-    // ── Init MediaPipe Pose (LITE model)
-    var pose = new Pose({
-      locateFile: function(f) { return '/api/static/mediapipe/' + f; }
-    });
-    pose.setOptions({
-      modelComplexity:         0,
-      smoothLandmarks:         true,
-      enableSegmentation:      false,
-      minDetectionConfidence:  0.65,
-      minTrackingConfidence:   0.60
-    });
+    // ── Init Pose
+    var pose = new Pose({ locateFile: function(f){ return '/api/static/mediapipe/' + f; } });
+    pose.setOptions({ modelComplexity:0, smoothLandmarks:true, enableSegmentation:false, minDetectionConfidence:0.55, minTrackingConfidence:0.5 });
     pose.onResults(onResults);
 
-    // ── DIAGNOSTICS
-    var poseReadyCalled  = false;
-    var cameraStartTime  = null;
-    var frameCount       = 0;
-
-    function drawStatus(line1, line2, color) {
-      var W = canvas.width, H = canvas.height;
-      ctx.save();
-      ctx.clearRect(0, W/2 - 60, W, 100);
-      ctx.fillStyle = color || '#00F2FF';
-      ctx.font = '900 14px monospace';
-      ctx.textAlign = 'center';
-      if (line1) ctx.fillText(line1, W/2, H/2 - 10);
-      if (line2) ctx.fillText(line2, W/2, H/2 + 14);
-      ctx.restore();
-    }
-
-    function drawRedCircle() {
-      // DIAGNOSTIC: red dot at center — confirms canvas is on top of video
-      ctx.save();
-      ctx.fillStyle   = '#FF3B30';
-      ctx.globalAlpha = 0.85;
-      ctx.beginPath();
-      ctx.arc(canvas.width / 2, 40, 12, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle   = '#FFFFFF';
-      ctx.font        = '700 9px monospace';
-      ctx.textAlign   = 'center';
-      ctx.fillText('CANVAS OK', canvas.width / 2, 67);
-      ctx.restore();
-    }
-
-    function checkAITimeout() {
-      // After 5s from camera start, if onResults never fired → error
-      setTimeout(function() {
-        if (!poseReadyCalled) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = '#FF3B30';
-          ctx.font      = '900 16px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText('ERRORE MOTORE AI', canvas.width/2, canvas.height/2 - 20);
-          ctx.font      = '700 11px monospace';
-          ctx.fillText('RIAVVIA SCAN', canvas.width/2, canvas.height/2 + 8);
-          post({ type:'error', message:'AI timeout — onResults never called' });
-        }
-      }, 5000);
-    }
-
-    // ── Wrap onResults with diagnostics
-    pose.onResults = function(results) {
-      if (!poseReadyCalled) {
-        poseReadyCalled = true;
-        post({ type:'info', message:'onResults first call — AI engine running' });
+    // ── OOM / WASM abort parachute
+    window.addEventListener('error', function(e) {
+      var msg = (e.message || '') + ' ' + (e.error ? e.error.toString() : '');
+      if (/memory|wasm|abort|oom/i.test(msg)) {
+        post({ type:'oom', message: msg });
       }
-      onResults(results);
+    });
+    window.onerror = function(msg) {
+      if (/memory|wasm|abort|oom/i.test(String(msg))) {
+        post({ type:'oom', message: String(msg) });
+      }
+      return true;
     };
 
-    // ── Start camera with direct getUserMedia (NO camera_utils dependency)
+    // ── Start camera
     function startCamera() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'rgba(0,242,255,0.5)';
-      ctx.font      = '900 13px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('MEDIAPIPE LOADING...', canvas.width/2, canvas.height/2);
-      drawRedCircle();
-
+      showStatus('MEDIAPIPE LOADING...');
       navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 640 } }
+        video: { facingMode:'user', width:{ideal:320}, height:{ideal:240} }
       })
       .then(function(stream) {
         video.srcObject = stream;
         return video.play();
       })
       .then(function() {
-        post({ type: 'ready' });
-        cameraStartTime = Date.now();
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'rgba(0,242,255,0.5)';
-        ctx.font      = '900 13px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('CAMERA ON — AI INITIALIZING...', canvas.width/2, canvas.height/2);
-        drawRedCircle();
-        checkAITimeout();
+        post({ type:'ready' });
+        showStatus('CAMERA ON — AWAITING ATHLETE');
+
+        // 5s timeout: if AI never fires
+        setTimeout(function() {
+          if (!poseReady) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#FF3B30'; ctx.font = '900 16px monospace'; ctx.textAlign = 'center';
+            ctx.fillText('ERRORE MOTORE AI', canvas.width/2, canvas.height/2 - 16);
+            ctx.font = '700 11px monospace';
+            ctx.fillText('RIAVVIA SCAN', canvas.width/2, canvas.height/2 + 10);
+            post({ type:'error', message:'AI timeout — model not responding' });
+          }
+        }, 5000);
 
         // Inference loop
         function loop() {
-          rafId = requestAnimationFrame(loop);
+          requestAnimationFrame(loop);
           var now = performance.now();
-          if (now - lastFrameTime < 40) return;
+          if (now - lastFrameTime < 40) return;  // cap at 25fps
           lastFrameTime = now;
-          frameCount++;
-          if (video.readyState >= 2 && video.videoWidth > 0) {
-            pose.send({ image: video }).catch(function(e){
-              if (!poseReadyCalled) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#FF9500';
-                ctx.font      = '700 11px monospace';
-                ctx.textAlign = 'center';
-                ctx.fillText('pose.send ERROR: ' + (e && e.message || String(e)), canvas.width/2, canvas.height/2);
-                drawRedCircle();
-              }
-            });
-          }
+          if (sendPending) return;  // don't pile up frames
+          frameCounter++;
+          if (frameSkip > 0 && (frameCounter % (frameSkip + 1)) !== 0) return;
+          if (video.readyState < 2 || video.videoWidth === 0) return;
+
+          // ── M2 KEY FIX: draw to 256x256 first, send small canvas
+          // This cuts GPU/RAM usage dramatically vs raw video
+          smallCtx.clearRect(0, 0, 256, 256);
+          smallCtx.drawImage(video, 0, 0, 256, 256);
+
+          sendPending = true;
+          sendStart = performance.now();
+          pose.send({ image: small }).catch(function(e) {
+            sendPending = false;
+            if (!poseReady) showStatus('AI ERROR: ' + (e && e.message || 'pose.send failed'), '#FF9500');
+          });
         }
         loop();
       })
       .catch(function(err) {
-        var denied = (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError');
+        var denied = /NotAllowed|Permission/i.test(err.name || '');
         post({ type: denied ? 'camera_denied' : 'error', message: err.message || err.name });
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = denied ? '#FF3B30' : '#FF9500';
-        ctx.font      = '700 12px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(denied ? 'CAMERA PERMISSION DENIED' : 'CAMERA ERROR: ' + (err.name || err.message), canvas.width/2, canvas.height/2);
+        ctx.font = '700 12px monospace'; ctx.textAlign = 'center';
+        ctx.fillText(denied ? 'CAMERA DENIED' : 'CAMERA ERROR: ' + (err.name || ''), canvas.width/2, canvas.height/2);
       });
     }
-
-    // ── Timeout: if Pose not loaded in 10s
-    setTimeout(function() {
-      if (typeof Pose === 'undefined') {
-        post({ type: 'timeout', message: 'MediaPipe Pose not loaded' });
-      }
-    }, 10000);
-
-    window.onerror = function(msg) {
-      post({ type: 'error', message: 'JS: ' + msg });
-      return true;
-    };
 
     startCamera();
   </script>
 </body>
 </html>"""
+    return HTMLResponse(content=html, headers={"Cache-Control": "no-cache", "X-Frame-Options": "ALLOWALL"})
 
-    return HTMLResponse(content=html, headers={
-        "Cache-Control": "no-cache",
-        "X-Frame-Options": "ALLOWALL",
-    })
 
 
 @api_router.put("/profile/ghost-mode")

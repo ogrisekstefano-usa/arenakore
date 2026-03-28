@@ -82,7 +82,6 @@ export function NexusPoseEngine({ onPoseData, enabled = true }: Props) {
       onPoseData(data);
     } catch (_) {}
   }, [onPoseData, scheduleRestart]);
-
   // Web iframe message listener
   const handleWebMessage = useCallback((event: MessageEvent) => {
     if (typeof event.data === 'string') {
