@@ -388,6 +388,25 @@ export default function NexusBioScan() {
 
   // Keep phaseRef in sync
   useEffect(() => { phaseRef.current = phase; }, [phase]);
+  // ── CONTINUOUS COACHING: audio thread per ogni transizione di fase
+  useEffect(() => {
+    const messages: Record<string, string> = {
+      loading:    'Nexus Protocol in caricamento. Preparati.',
+      positioning: poseEngineReady
+        ? 'Nexus attivo. Posizionati al centro della camera.'
+        : 'Inizializzazione biometrica in corso.',
+      countdown:  'Biometria confermata. Preparati. Tre, due, uno.',
+      approved:   'Kore DNA generato con successo. Benvenuto nell\'Arena.',
+    };
+    const msg = messages[phase];
+    if (msg) {
+      const t = setTimeout(() => {
+        try { Speech.speak(msg, { language: 'it-IT', rate: 0.80 }); } catch (_e) {}
+      }, 300);
+      return () => clearTimeout(t);
+    }
+  }, [phase, poseEngineReady]);
+
   // Keep isScanningRef in sync
   useEffect(() => { isScanningRef.current = isScanning; }, [isScanning]);
   // Keep poseEngineReadyRef in sync
@@ -500,6 +519,9 @@ export default function NexusBioScan() {
         // Person is in frame and centered → start/continue entry timer
         if (!personEntrySinceRef.current) {
           personEntrySinceRef.current = Date.now();
+          // COACHING: announce first detection
+          try { Speech.speak('Ti ho visto. Mantieni la posizione per due secondi.', { language: 'it-IT', rate: 0.85 }); } catch (_e) {}
+
         }
         const elapsed = Date.now() - personEntrySinceRef.current;
         const progress = Math.min(17, Math.round((elapsed / ENTRY_HOLD_MS) * 17));
@@ -633,6 +655,27 @@ export default function NexusBioScan() {
   // ── PRIVACY CONSENT — shown before camera activates
   const [showPrivacyConsent, setShowPrivacyConsent] = useState(true);
   const [cameraPermDenied, setCameraPermDenied] = useState(false);
+  const [autoAcceptSecs, setAutoAcceptSecs]     = useState(5); // 5s auto-accept countdown
+
+  // Auto-accept countdown: user doesn't need to tap
+  useEffect(() => {
+    if (!showPrivacyConsent) return;
+    const interval = setInterval(() => {
+      setAutoAcceptSecs(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          // AUTO-ACCEPT
+          setShowPrivacyConsent(false);
+          if (Platform.OS === 'web') { setCameraReady(true); setIsScanning(true); }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    // Welcome announcement
+    Speech.speak('Benvenuto nel Nexus Protocol. Tra 5 secondi la camera si attiverà.', { language: 'it-IT', rate: 0.80 });
+    return () => clearInterval(interval);
+  }, [showPrivacyConsent]);
 
   // ── Request camera permission
   useEffect(() => {
@@ -1159,24 +1202,31 @@ export default function NexusBioScan() {
             <Text style={prv$.msg}>
               Elaborazione biometrica{' '}
               <Text style={prv$.highlight}>100% locale</Text>.{'\n'}
-              Nessun dato video viene salvato o inviato ai server.{'\n'}
-              Solo vettori numerici anonimi vengono sincronizzati.
+              Nessun dato video viene salvato.{'\n'}
+              Solo vettori numerici anonimi.
             </Text>
+
+            {/* AUTO-ACCEPT COUNTDOWN */}
+            <View style={prv$.countdownRow}>
+              <Ionicons name="timer-outline" size={14} color="#D4AF37" />
+              <Text style={prv$.countdownTxt}>
+                AVVIO AUTOMATICO IN{' '}
+                <Text style={prv$.countdownNum}>{autoAcceptSecs}</Text>
+                {' '}SECONDI
+              </Text>
+            </View>
+
             <View style={prv$.row}>
               <TouchableOpacity
                 style={prv$.acceptBtn}
                 onPress={() => {
                   setShowPrivacyConsent(false);
-                  // Manual start: activate scanning after consent
-                  if (isWeb) {
-                    setCameraReady(true);
-                    setIsScanning(true);
-                  }
+                  if (Platform.OS === 'web') { setCameraReady(true); setIsScanning(true); }
                 }}
                 activeOpacity={0.85}
               >
                 <Ionicons name="checkmark-circle" size={14} color="#050505" />
-                <Text style={prv$.acceptTxt}>ACCETTA & AVVIA SCANSIONE</Text>
+                <Text style={prv$.acceptTxt}>AVVIA ORA</Text>
               </TouchableOpacity>
               <TouchableOpacity style={prv$.cancelBtn} onPress={() => router.back()} activeOpacity={0.8}>
                 <Text style={prv$.cancelTxt}>ANNULLA</Text>
@@ -1534,14 +1584,13 @@ export default function NexusBioScan() {
                 {detectedPoints < 17 ? (
                   <Animated.View style={[s.positioningRow, positionPulseStyle]}>
                     <View style={[s.positioningDot, poseEngineReady && detectedPoints > 0 && { backgroundColor: '#D4AF37' }]} />
-                    <Text style={[
-                      s.positioningTxt,
-                      poseEngineReady && detectedPoints > 0 && { color: '#D4AF37' }
-                    ]}>
-                      {poseEngineReady && detectedPoints > 0
-                        ? `NEXUS DETECTED — ANALYZING...`
-                        : 'NEXUS IS SEARCHING FOR ATHLETE...'}
-                    </Text>
+                <Text style={s.positioningTxt}>
+                  {poseEngineReady && detectedPoints > 0
+                    ? 'NEXUS TI STA RILEVANDO...'
+                    : poseEngineReady
+                    ? 'POSIZIONATI PER INIZIARE'
+                    : 'NEXUS TI STA ASCOLTANDO...'}
+                </Text>
                   </Animated.View>
                 ) : (
                   <Text style={[s.detectNote, { color: '#D4AF37' }]}>17/17 RILEVATI — INGRESSO ARENA</Text>
@@ -1844,14 +1893,18 @@ const prv$ = StyleSheet.create({
   row: { gap: 10 },
   acceptBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#00F2FF', borderRadius: 10, paddingVertical: 16,
+    backgroundColor: '#00F2FF', borderRadius: 10, paddingVertical: 14,
   },
   acceptTxt: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   cancelBtn: {
-    alignItems: 'center', paddingVertical: 12,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 10,
+    alignItems: 'center', paddingVertical: 10,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', borderRadius: 10,
   },
-  cancelTxt: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
+  cancelTxt: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
+  // Auto-accept countdown
+  countdownRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14, backgroundColor: 'rgba(212,175,55,0.06)', borderRadius: 8, padding: 10 },
+  countdownTxt: { color: 'rgba(212,175,55,0.7)', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
+  countdownNum: { color: '#D4AF37', fontSize: 14, fontWeight: '900' },
 });
 
 // ── CAMERA ERROR styles
