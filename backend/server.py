@@ -3420,7 +3420,7 @@ async def nexus_scanner_page():
         return s + (mp_lm[i] ? (mp_lm[i].visibility || 0) : 0);
       }, 0) / KEY_LM.length;
 
-      if (avgConf < 0.60) {
+      if (avgConf < 0.70) {  // AGGRESSIVE: real athletes avg 80-95%
         // GHOST PURGE: confidence too low — real reflections can't reach 60%
         personFirstSeen = null;
         clearAndWait();
@@ -3443,11 +3443,74 @@ async def nexus_scanner_page():
         if (mp_lm[ki] && (mp_lm[ki].visibility || 0) >= 0.75) hiConfCount++;
       }
       // Need at least 12 high-confidence landmarks for a clean skeleton
-      if (hiConfCount < 12) {
+      if (hiConfCount < 14) {  // Need 14 high-confidence landmarks (was 12)
         personFirstSeen = null;
         clearAndWait();
         post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
         return;
+      }
+
+      // ── RULE: BOX MAGNITUDE (ghost is always smaller than real athlete)
+      // Compute bounding box in normalized [0,1] space
+      var bmXs = [], bmYs = [];
+      var KEY_BM = [0,5,6,11,12,23,24,27,28]; // nose,shoulders,hips,knees,ankles
+      for (var bi = 0; bi < KEY_BM.length; bi++) {
+        var bLm = mp_lm[KEY_BM[bi]];
+        if (bLm && (bLm.visibility||0) >= 0.5) {
+          bmXs.push(bLm.x); bmYs.push(bLm.y);
+        }
+      }
+      if (bmXs.length >= 4) {
+        var boxW = Math.max.apply(null,bmXs) - Math.min.apply(null,bmXs);
+        var boxH = Math.max.apply(null,bmYs) - Math.min.apply(null,bmYs);
+        var boxArea = boxW * boxH;
+        // Real person occupies at least 12% of normalized frame area
+        // (e.g., 0.35w × 0.40h = 0.14). Reflections are typically < 8%.
+        if (boxArea < 0.12) {
+          personFirstSeen = null;
+          clearAndWait();
+          post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+          return;  // TOO SMALL — ghost discarded
+        }
+      }
+
+      // ── RULE: Y-AXIS SANITY CHECK
+      // y increases DOWNWARD. Ankles must have HIGHER y than hips.
+      // If ankles are "above" hips → inverted ghost. If pose flies in upper screen → ghost.
+      var lHipLm = mp_lm[23], rHipLm = mp_lm[24];
+      var lAnkLm = mp_lm[27], rAnkLm = mp_lm[28];
+      if (lHipLm && rHipLm && lAnkLm && rAnkLm) {
+        var hipMidY    = (lHipLm.y + rHipLm.y) / 2;
+        var ankleMidY  = (lAnkLm.y + rAnkLm.y) / 2;
+        if (ankleMidY < hipMidY) {
+          // Inverted skeleton — ghost or upside-down artifact
+          personFirstSeen = null;
+          clearAndWait();
+          post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+          return;  // Y-AXIS INVALID
+        }
+        if (ankleMidY < 0.35) {
+          // Ankles in top 35% of frame — person is "flying", likely ghost
+          personFirstSeen = null;
+          clearAndWait();
+          post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+          return;  // FLYING GHOST
+        }
+      }
+
+      // ── RULE: Z-INDEX DEPTH (poseWorldLandmarks if available)
+      // In world coords, shoulder-to-hip z-diff > 0.8m = 2D/ghost artifact
+      if (results.poseWorldLandmarks && results.poseWorldLandmarks.length > 0) {
+        var wLm = results.poseWorldLandmarks;
+        var wShZ = (((wLm[5]||{}).z||0) + ((wLm[6]||{}).z||0)) / 2;
+        var wHiZ = (((wLm[23]||{}).z||0) + ((wLm[24]||{}).z||0)) / 2;
+        if (Math.abs(wShZ - wHiZ) > 0.8) {
+          // Extreme z-axis inconsistency — 3D structure invalid (ghost reflection)
+          personFirstSeen = null;
+          clearAndWait();
+          post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+          return;  // Z-DEPTH INVALID
+        }
       }
 
       var coco17 = drawSkeleton(mp_lm);
