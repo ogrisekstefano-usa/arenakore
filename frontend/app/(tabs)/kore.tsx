@@ -19,7 +19,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { Header } from '../../components/Header';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 const { width: SW } = Dimensions.get('window');
 
@@ -1014,6 +1014,7 @@ const xp$ = StyleSheet.create({
 // ========== MAIN KORE TAB ==========
 export default function KoreTab() {
   const { user, token } = useAuth();
+  const router = useRouter();
   const [rankData, setRankData] = useState<any>(null);
   const [affiliData, setAffiliData] = useState<any>(null);
   const [actionData, setActionData] = useState<any>(null);
@@ -1082,7 +1083,16 @@ export default function KoreTab() {
           {/* 6. KORE CARD + WALLET */}
           <KoreCard user={user} rankData={rankData} />
 
-          {/* 7. XP PROGRESS */}
+          {/* 7. PRIVACY SHIELD */}
+          <Animated.View entering={FadeInDown.delay(500)} style={ps$.wrap}>
+            <TouchableOpacity style={ps$.btn} onPress={() => router.push('/settings/shield')} activeOpacity={0.8}>
+              <Ionicons name="shield-checkmark" size={14} color="#00F2FF" />
+              <Text style={ps$.txt}>PRIVACY SHIELD</Text>
+              <Ionicons name="chevron-forward" size={12} color="rgba(0,242,255,0.4)" />
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* 8. XP PROGRESS */}
           <XpProgress user={user} />
         </ScrollView>
       )}
@@ -1093,4 +1103,11 @@ export default function KoreTab() {
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+});
+
+// Privacy Shield link styles
+const ps$ = StyleSheet.create({
+  wrap: { marginHorizontal: 16, marginBottom: 8 },
+  btn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(0,242,255,0.04)', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)' },
+  txt: { flex: 1, color: 'rgba(0,242,255,0.7)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
 });

@@ -6,7 +6,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
-  KeyboardAvoidingView, Platform, ScrollView, StatusBar,
+  KeyboardAvoidingView, Platform, ScrollView, StatusBar, Switch,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -57,6 +57,7 @@ export default function LegacyStep3() {
   const [age, setAge]       = useState('');
   const [level, setLevel]   = useState<string | null>(null);
   const [error, setError]   = useState('');
+  const [ghostMode, setGhostMode] = useState(false);
 
   const handleContinue = useCallback(() => {
     if (!height || !weight || !age || !level) {
@@ -72,7 +73,7 @@ export default function LegacyStep3() {
     setError('');
     router.push({
       pathname: '/onboarding/step4',
-      params: { height_cm: h, weight_kg: w, age: a, training_level: level },
+      params: { height_cm: h, weight_kg: w, age: a, training_level: level, ghost_mode: ghostMode ? '1' : '0' },
     });
   }, [height, weight, age, level, router]);
 
@@ -229,6 +230,24 @@ export default function LegacyStep3() {
 
         {/* ── CTA ── */}
         <Animated.View entering={FadeInDown.delay(500)}>
+          {/* Ghost Mode toggle */}
+          <View style={s.ghostWrap}>
+            <View style={s.ghostLeft}>
+              <Ionicons name="eye-off-outline" size={16} color="#888" />
+              <View style={s.ghostText}>
+                <Text style={s.ghostTitle}>MODALITÀ GHOST</Text>
+                <Text style={s.ghostDesc}>Appari nei ranking come KORE #XXXXX</Text>
+              </View>
+            </View>
+            <Switch
+              value={ghostMode}
+              onValueChange={setGhostMode}
+              trackColor={{ false: '#1A1A1A', true: 'rgba(0,242,255,0.3)' }}
+              thumbColor={ghostMode ? '#00F2FF' : '#555'}
+              ios_backgroundColor="#1A1A1A"
+            />
+          </View>
+
           <TouchableOpacity
             testID="step3-continue-btn"
             style={s.cta}
@@ -403,7 +422,12 @@ const s = StyleSheet.create({
   },
   errorText: { color: '#FF3B30', fontSize: 11, fontWeight: '800', letterSpacing: 1, flex: 1 },
 
-  // CTA
+  // Ghost mode styles
+  ghostWrap: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12 },
+  ghostLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  ghostText: { flex: 1, gap: 2 },
+  ghostTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
+  ghostDesc: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
   cta: {
     backgroundColor: CYAN,
     borderRadius: 10,

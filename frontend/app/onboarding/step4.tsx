@@ -21,7 +21,7 @@ export default function LegacyStep4() {
   const insets = useSafeAreaInsets();
   const { register } = useAuth();
   const params = useLocalSearchParams<{
-    height_cm: string; weight_kg: string; age: string; training_level: string;
+    height_cm: string; weight_kg: string; age: string; training_level: string; ghost_mode: string;
   }>();
 
   const [nickname, setNickname] = useState('');
@@ -62,9 +62,13 @@ export default function LegacyStep4() {
           await api.saveFiveBeatDna(dna, savedToken);
           await AsyncStorage.removeItem('@kore_pending_dna');
         }
-        // ── PERMISSIONS: Save camera + mic enabled flags to DB (non-blocking)
+        // ── PERMISSIONS + GHOST MODE: save after registration
         if (savedToken) {
           api.updatePermissions(savedToken).catch(() => {});
+          // Apply ghost mode preference from step3
+          if (params.ghost_mode === '1') {
+            api.toggleGhostMode(true, savedToken).catch(() => {});
+          }
         }
       } catch (_dnaErr) {
         // Non-blocking: registration still succeeds even if DNA sync fails

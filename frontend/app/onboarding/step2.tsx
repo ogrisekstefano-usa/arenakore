@@ -371,10 +371,18 @@ export default function NexusBioScan() {
   }, []);
   const positionPulseStyle = useAnimatedStyle(() => ({ opacity: positionPulse.value }));
 
+  // ── PRIVACY CONSENT — shown before camera activates
+  const [showPrivacyConsent, setShowPrivacyConsent] = useState(true);
+  const [cameraPermDenied, setCameraPermDenied] = useState(false);
+
   // ── Request camera permission
   useEffect(() => {
     if (!permission?.granted) {
-      requestPermission().then(() => {});
+      requestPermission().then((result) => {
+        if (result && !result.granted) {
+          setCameraPermDenied(true);
+        }
+      });
     }
   }, []);
 
@@ -723,19 +731,63 @@ export default function NexusBioScan() {
     setTimeout(() => setIsScanning(true), 500);
   }, []);
 
-  // Web fallback: simulate camera ready — FAST (1.5s) so testing is not blocked
-  useEffect(() => {
-    if (phase !== 'positioning' || !isWeb) return;
-    const t = setTimeout(() => {
-      setCameraReady(true);
-      setIsScanning(true);
-    }, 1500); // reduced from 3000 — unblocks testing quickly
-    return () => clearTimeout(t);
-  }, [phase, isWeb]);
+  // Web: NO auto-fallback. Scan starts ONLY when user accepts the Privacy Consent Modal.
+  // On physical device: onCameraReady callback handles it.
+  // Consent accept button: sets setCameraReady(true) + setIsScanning(true).
 
   return (
     <View style={s.root}>
       <StatusBar barStyle="light-content" hidden />
+
+      {/* ── PRIVACY CONSENT MODAL — shown before camera activates ── */}
+      {showPrivacyConsent && (
+        <View style={prv$.overlay} pointerEvents="box-only">
+          <Animated.View entering={FadeInDown.duration(300)} style={prv$.card}>
+            <View style={prv$.topBar} />
+            <View style={prv$.iconRow}>
+              <Ionicons name="lock-closed" size={22} color="#00F2FF" />
+              <Text style={prv$.label}>BIO-SECURE PROTOCOL</Text>
+            </View>
+            <Text style={prv$.msg}>
+              Elaborazione biometrica{' '}
+              <Text style={prv$.highlight}>100% locale</Text>.{'\n'}
+              Nessun dato video viene salvato o inviato ai server.{'\n'}
+              Solo vettori numerici anonimi vengono sincronizzati.
+            </Text>
+            <View style={prv$.row}>
+              <TouchableOpacity
+                style={prv$.acceptBtn}
+                onPress={() => {
+                  setShowPrivacyConsent(false);
+                  // Manual start: activate scanning after consent
+                  if (isWeb) {
+                    setCameraReady(true);
+                    setIsScanning(true);
+                  }
+                }}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="checkmark-circle" size={14} color="#050505" />
+                <Text style={prv$.acceptTxt}>ACCETTA & AVVIA SCANSIONE</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={prv$.cancelBtn} onPress={() => router.back()} activeOpacity={0.8}>
+                <Text style={prv$.cancelTxt}>ANNULLA</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      )}
+
+      {/* ── CAMERA ERROR STATE ── */}
+      {cameraPermDenied && !isWeb && (
+        <View style={camErr$.overlay} pointerEvents="none">
+          <View style={camErr$.box}>
+            <Ionicons name="camera-outline" size={28} color="#FF3B30" />
+            <Text style={camErr$.title}>CAMERA NON RILEVATA</Text>
+            <Text style={camErr$.desc}>CONTROLLA I PERMESSI NELLE IMPOSTAZIONI DEL DISPOSITIVO</Text>
+          </View>
+        </View>
+      )}
 
       {/* GOLD FLASH OVERLAY */}
       <Animated.View style={[StyleSheet.absoluteFill, s.flash, flashStyle]} pointerEvents="none" />
@@ -1218,4 +1270,52 @@ const dbg$ = StyleSheet.create({
   txt: {
     color: '#FF453A', fontSize: 10, fontWeight: '900', letterSpacing: 3,
   },
+});
+
+// ── PRIVACY CONSENT styles
+const prv$ = StyleSheet.create({
+  overlay: {
+    position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 300,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    paddingBottom: 0,
+  },
+  card: {
+    backgroundColor: '#0A0A0A',
+    borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    padding: 24, gap: 14,
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)',
+  },
+  topBar: { height: 2, backgroundColor: '#00F2FF', opacity: 0.6, marginHorizontal: -24, marginTop: -24, marginBottom: 8 },
+  iconRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  label: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  msg: { color: '#E0E0E0', fontSize: 13, fontWeight: '600', lineHeight: 22 },
+  highlight: { color: '#00F2FF', fontWeight: '900' },
+  row: { gap: 10 },
+  acceptBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    backgroundColor: '#00F2FF', borderRadius: 10, paddingVertical: 16,
+  },
+  acceptTxt: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  cancelBtn: {
+    alignItems: 'center', paddingVertical: 12,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 10,
+  },
+  cancelTxt: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
+});
+
+// ── CAMERA ERROR styles
+const camErr$ = StyleSheet.create({
+  overlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  box: {
+    alignItems: 'center', gap: 12,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    borderRadius: 16, padding: 28,
+    borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)',
+    marginHorizontal: 32,
+  },
+  title: { color: '#FF3B30', fontSize: 16, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
+  desc: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 1, textAlign: 'center', lineHeight: 18 },
 });

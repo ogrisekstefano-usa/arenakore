@@ -119,6 +119,8 @@ export default function HeroIndex() {
 
   // ── Loading screen
   const loadingSize = Math.min(52, Math.floor(SW / 8));
+  const KORE_BLUE = '#00B4D8';  // KORE signature blue (distinct from CYAN tech elements)
+
   if (isLoading) {
     return (
       <View style={s.loadWrap}>
@@ -131,6 +133,13 @@ export default function HeroIndex() {
       </View>
     );
   }
+
+  // Brand — split ARENA (white) + KORE (blue) + animated gold glow
+  const brandArenaStyle = useAnimatedStyle(() => ({
+    textShadowColor: `rgba(212,175,55,${glow.value * 0.4})`,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 16 * glow.value,
+  }));
 
   return (
     <View style={s.root}>
@@ -192,13 +201,14 @@ export default function HeroIndex() {
           <View style={s.cornerTL} />
           <View style={s.cornerTR} />
 
-          {/* Brand */}
-          <Animated.Text
+          {/* Brand — ARENA white + KORE blue */}
+          <Animated.View
             entering={FadeInDown.delay(300).springify()}
-            style={[s.brand, glowStyle]}
+            style={s.brandRow}
           >
-            ARENAKORE
-          </Animated.Text>
+            <Animated.Text style={[s.brandArena, brandArenaStyle]}>ARENA</Animated.Text>
+            <Text style={s.brandKore}>KORE</Text>
+          </Animated.View>
 
           {/* Subtitle lines */}
           <Animated.View entering={FadeInDown.delay(450)} style={s.subtitleWrap}>
@@ -289,7 +299,7 @@ export default function HeroIndex() {
               <TouchableOpacity
                 testID="gym-hub-btn"
                 style={s.gymBtn}
-                onPress={() => router.push('/login')}
+                onPress={() => router.push('/onboarding/kore-hub')}
                 activeOpacity={0.85}
               >
                 <Ionicons name="business-outline" size={16} color={BG} />
@@ -319,7 +329,7 @@ const s = StyleSheet.create({
   loadWrap: { flex: 1, backgroundColor: BG, alignItems: 'center', justifyContent: 'center', gap: 10 },
   loadRow: { flexDirection: 'row', gap: 6 },
   loadArena: { fontWeight: '900', color: '#FFFFFF', letterSpacing: -2 },
-  loadKore: { fontWeight: '900', color: GOLD, letterSpacing: -2 },
+  loadKore: { fontWeight: '900', color: '#00B4D8', letterSpacing: -2 },
   loadSub: { color: 'rgba(212,175,55,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 5 },
 
   // Scroll
@@ -357,17 +367,27 @@ const s = StyleSheet.create({
     borderTopWidth: 1.5, borderRightWidth: 1.5, borderColor: 'rgba(212,175,55,0.3)',
   },
 
-  // Brand title
-  brand: {
-    color: GOLD,
+  // Brand — ARENA (white) + KORE (blue)
+  brandRow: { flexDirection: 'row', alignItems: 'baseline', gap: 0 },
+  brandArena: {
+    color: '#FFFFFF',
     fontSize: 58,
     fontWeight: '900',
     letterSpacing: -3,
     lineHeight: 60,
-    textShadowColor: 'rgba(212,175,55,0.7)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 20,
   },
+  brandKore: {
+    color: '#00B4D8',                      // KORE signature blue
+    fontSize: 58,
+    fontWeight: '900',
+    letterSpacing: -3,
+    lineHeight: 60,
+    textShadowColor: 'rgba(0,180,216,0.6)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 16,
+  },
+  // Keep old brand style for compatibility
+  brand: { color: GOLD, fontSize: 58, fontWeight: '900', letterSpacing: -3, lineHeight: 60 },
 
   // Subtitle
   subtitleWrap: { gap: 2 },

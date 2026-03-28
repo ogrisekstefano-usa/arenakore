@@ -214,4 +214,16 @@ export const api = {
   // ========== PROFILE PERMISSIONS ==========
   updatePermissions: (token: string) =>
     request('/profile/permissions', { method: 'PUT', body: JSON.stringify({ camera_enabled: true, mic_enabled: true }) }, token),
+
+  // ========== GHOST MODE ==========
+  toggleGhostMode: (enabled: boolean, token: string) =>
+    request('/profile/ghost-mode', { method: 'PUT', body: JSON.stringify({ enabled }) }, token),
+
+  // ========== BIOMETRIC WIPE ==========
+  wipeBiometricData: (token: string) =>
+    request('/profile/biometric-data', { method: 'DELETE' }, token),
+
+  // ========== KORE HUB REQUEST ==========
+  submitHubRequest: (data: { gym_name: string; locality: string; email: string }) =>
+    request('/gym/hub-request', { method: 'POST', body: JSON.stringify(data) }),
 };

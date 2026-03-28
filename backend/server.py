@@ -150,6 +150,10 @@ def user_to_response(user: dict) -> dict:
         "weight_kg": user.get("weight_kg"),
         "is_pro": (user.get("level", 1) >= 10 or user.get("xp", 0) >= 3000),
         "pro_unlocked": user.get("pro_unlocked", False),
+        "ghost_mode": user.get("ghost_mode", False),          # PRIVACY: hides real name in rankings
+        "camera_enabled": user.get("camera_enabled", False),
+        "mic_enabled": user.get("mic_enabled", False),
+        "city": user.get("city"),
     }
 
 
@@ -3115,9 +3119,15 @@ async def get_city_ranking(
         dna_vals = [float(v) for v in dna.values() if v is not None]
         dna_avg = round(sum(dna_vals) / len(dna_vals), 1) if dna_vals else 0.0
 
+        founder_number = u.get("founder_number")
+        kore_number_str = str(founder_number).zfill(5) if founder_number else str(abs(int(str(u["_id"])[-5:], 16)) % 99999).zfill(5)
+
+        # Ghost Mode: replace username with KORE ID in public rankings
+        display_name = f"KORE #{kore_number_str}" if u.get("ghost_mode") else u.get("username", "ATLETA")
+
         scored.append({
             "user_id": uid,
-            "username": u.get("username", "ATLETA"),
+            "username": display_name,
             "kore_score": score,
             "dna_avg": dna_avg,
             "xp": u.get("xp", 0),
@@ -3127,6 +3137,7 @@ async def get_city_ranking(
             "avatar_color": u.get("avatar_color", "#00F2FF"),
             "sport": u.get("sport", "ATHLETICS"),
             "is_me": uid == my_id,
+            "ghost_mode": bool(u.get("ghost_mode", False)),
         })
 
     # Sort: primary KORE_SCORE desc, secondary XP desc (tie-breaker)
@@ -3160,10 +3171,7 @@ async def update_my_city(body: dict, current_user: dict = Depends(get_current_us
 
 @api_router.put("/profile/permissions")
 async def update_permissions(body: dict, current_user: dict = Depends(get_current_user)):
-    """
-    Save camera_enabled and mic_enabled flags on the user profile.
-    Called automatically after registration so Nexus never asks for permissions again.
-    """
+    """Save camera and mic permission flags to user profile."""
     camera = bool(body.get("camera_enabled", True))
     mic    = bool(body.get("mic_enabled", True))
     await db.users.update_one(
@@ -3171,6 +3179,76 @@ async def update_permissions(body: dict, current_user: dict = Depends(get_curren
         {"$set": {"camera_enabled": camera, "mic_enabled": mic}},
     )
     return {"status": "saved", "camera_enabled": camera, "mic_enabled": mic}
+
+
+@api_router.put("/profile/ghost-mode")
+async def toggle_ghost_mode(body: dict, current_user: dict = Depends(get_current_user)):
+    """
+    GHOST MODE: When enabled, user appears in rankings as 'KORE #XXXXX'
+    instead of their real username. Protects identity in public leaderboards.
+    """
+    enabled = bool(body.get("enabled", False))
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": {"ghost_mode": enabled}},
+    )
+    return {"status": "updated", "ghost_mode": enabled}
+
+
+@api_router.delete("/profile/biometric-data")
+async def wipe_biometric_data(current_user: dict = Depends(get_current_user)):
+    """
+    BIOMETRIC WIPE: Deletes all DNA scan data and biometric signatures.
+    Keeps base profile (username, email, XP, level) intact.
+    This action is irreversible.
+    """
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": {
+            "dna": {},
+            "dna_scans": [],
+            "baseline_scanned_at": None,
+            "validation_scanned_at": None,
+            "camera_enabled": False,
+            "mic_enabled": False,
+        }},
+    )
+    updated = await db.users.find_one({"_id": current_user["_id"]})
+    return {
+        "status": "wiped",
+        "message": "DATI BIOMETRICI ELIMINATI. PROFILO BASE MANTENUTO.",
+        "user": user_to_response(updated),
+    }
+
+
+@api_router.post("/gym/hub-request")
+async def submit_hub_request(body: dict):
+    """
+    PUBLIC: No auth required. Submit a KORE Hub partner registration request.
+    Used by coaches and gyms to join the KORE HUB NETWORK.
+    """
+    gym_name = (body.get("gym_name") or "").strip()
+    locality  = (body.get("locality") or "").strip().upper()
+    email     = (body.get("email") or "").strip().lower()
+
+    if not gym_name or not locality or not email:
+        raise HTTPException(status_code=400, detail="Tutti i campi sono obbligatori")
+    if "@" not in email:
+        raise HTTPException(status_code=400, detail="Email non valida")
+
+    await db.hub_requests.insert_one({
+        "gym_name": gym_name,
+        "locality": locality,
+        "email": email,
+        "status": "pending",
+        "submitted_at": datetime.now(timezone.utc),
+    })
+    return {
+        "status": "received",
+        "message": "RICHIESTA INVIATA. IL TUO HUB SARÀ CERTIFICATO ENTRO 24H.",
+        "gym_name": gym_name,
+        "locality": locality,
+    }
 
 
 # Register all routes (must be AFTER all @api_router decorators)
