@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -3179,6 +3179,232 @@ async def update_permissions(body: dict, current_user: dict = Depends(get_curren
         {"$set": {"camera_enabled": camera, "mic_enabled": mic}},
     )
     return {"status": "saved", "camera_enabled": camera, "mic_enabled": mic}
+
+
+# ====================================
+# NEXUS SCANNER — Served over HTTPS
+# Fixes: "No navigator.mediaDevices.getUserMedia"
+# Must be served from HTTPS for getUserMedia to work in WebView.
+# ====================================
+@app.get("/scanner", response_class=HTMLResponse, include_in_schema=False)
+async def nexus_scanner_page():
+    """
+    ARENAKORE Nexus Bio-Scanner page served over HTTPS.
+    Loaded by NexusPoseEngine WebView — enables navigator.mediaDevices.getUserMedia.
+    """
+    html = """<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>NEXUS SCANNER</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+    #video  { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    #canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    #status {
+      position: absolute; bottom: 8px; left: 0; right: 0;
+      color: rgba(0,242,255,0.8); font-family: monospace; font-size: 10px;
+      text-align: center; pointer-events: none; background: rgba(0,0,0,0.4);
+      padding: 4px 0;
+    }
+    #err {
+      display: none; position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.9); border: 1px solid #FF3B30;
+      border-radius: 12px; padding: 20px 16px; text-align: center;
+      color: #FF3B30; font-family: monospace; font-size: 13px; z-index: 30;
+      width: 85%; line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="canvas"></canvas>
+  <div id="status">NEXUS: LOADING...</div>
+  <div id="err"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+  <script>
+    var videoEl = document.getElementById('video');
+    var canvas  = document.getElementById('canvas');
+    var ctx     = canvas.getContext('2d');
+    var statusEl = document.getElementById('status');
+    var errEl   = document.getElementById('err');
+
+    // ── Post to React Native WebView or parent iframe
+    function post(data) {
+      var msg = JSON.stringify(data);
+      try {
+        if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(msg);
+        else window.parent.postMessage(msg, '*');
+      } catch(e) {}
+    }
+
+    // ── COCO 17 mapping from MediaPipe 33
+    var MP_TO_COCO = {0:0,2:1,5:2,7:3,8:4,11:5,12:6,13:7,14:8,15:9,16:10,23:11,24:12,25:13,26:14,27:15,28:16};
+
+    // ── COCO connections for skeleton lines
+    var COCO_CONN = [[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
+
+    var fpsHistory = [];
+    var lastT = performance.now();
+
+    function drawSkeleton(mp_lm, W, H) {
+      var coco17 = new Array(17).fill(null);
+      Object.keys(MP_TO_COCO).forEach(function(k) {
+        var lm = mp_lm[parseInt(k)];
+        if (lm && (lm.visibility || 0) > 0.3) {
+          // Mirror X because video is CSS-mirrored (scaleX -1)
+          coco17[MP_TO_COCO[k]] = { x: (1 - lm.x) * W, y: lm.y * H, v: lm.visibility || 0 };
+        }
+      });
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Draw connections (gold)
+      ctx.strokeStyle = '#D4AF37';
+      ctx.lineWidth = 2.5;
+      ctx.globalAlpha = 0.75;
+      COCO_CONN.forEach(function(pair) {
+        var a = coco17[pair[0]], b = coco17[pair[1]];
+        if (a && b) {
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      });
+
+      // Draw keypoints (cyan)
+      coco17.forEach(function(pt, i) {
+        if (!pt) return;
+        var r = i < 5 ? 7 : 5;
+        // Outer glow
+        ctx.globalAlpha = 0.25;
+        ctx.fillStyle = '#00F2FF';
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, r * 2, 0, Math.PI * 2); ctx.fill();
+        // Main dot
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2); ctx.fill();
+        // White center
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#00F2FF';
+      });
+
+      ctx.globalAlpha = 1;
+      return coco17;
+    }
+
+    function onResults(results) {
+      var now = performance.now();
+      var dt = Math.max(now - lastT, 1);
+      lastT = now;
+      fpsHistory.push(Math.min(1000 / dt, 60));
+      if (fpsHistory.length > 20) fpsHistory.shift();
+      var fps = Math.round(fpsHistory.reduce(function(a,b){return a+b;},0) / fpsHistory.length);
+
+      // Resize canvas to match video dimensions
+      var W = videoEl.videoWidth || canvas.width;
+      var H = videoEl.videoHeight || canvas.height;
+      if (canvas.width !== W) canvas.width = W;
+      if (canvas.height !== H) canvas.height = H;
+
+      if (!results.poseLandmarks || !results.poseLandmarks.length) {
+        ctx.clearRect(0, 0, W, H);
+        statusEl.textContent = fps + ' FPS — WAITING FOR ATHLETE...';
+        post({ type: 'pose', landmarks: [], fps: fps, centered: false, person_detected: false, visible_count: 0 });
+        return;
+      }
+
+      var mp_lm = results.poseLandmarks;
+      var coco17 = drawSkeleton(mp_lm, W, H);
+
+      var noseX = mp_lm[0] ? mp_lm[0].x : 0.5;
+      var centered = (noseX >= 0.28 && noseX <= 0.72);
+      var visible_count = coco17.filter(function(p){ return p !== null; }).length;
+      var person_detected = visible_count >= 8;
+
+      statusEl.textContent = fps + ' FPS · ' + visible_count + '/17 pts · ' + (centered ? 'CENTRATO' : 'CENTRA');
+
+      // Build landmark array for React Native
+      var landmarkArr = coco17.map(function(pt) {
+        if (!pt) return null;
+        return { x: pt.x / W, y: pt.y / H, v: pt.v || 1 };
+      });
+
+      post({
+        type: 'pose',
+        landmarks: landmarkArr,
+        fps: fps,
+        centered: centered,
+        person_detected: person_detected,
+        visible_count: visible_count,
+        nose_x: noseX
+      });
+    }
+
+    // ── Init MediaPipe Pose LITE
+    var pose = new Pose({
+      locateFile: function(file) {
+        return 'https://cdn.jsdelivr.net/npm/@mediapipe/pose/' + file;
+      }
+    });
+    pose.setOptions({
+      modelComplexity: 0,
+      smoothLandmarks: true,
+      enableSegmentation: false,
+      minDetectionConfidence: 0.4,
+      minTrackingConfidence: 0.4
+    });
+    pose.onResults(onResults);
+
+    // ── Start camera
+    statusEl.textContent = 'RICHIEDENDO ACCESSO CAMERA...';
+
+    var camera = new Camera(videoEl, {
+      onFrame: function() { return pose.send({ image: videoEl }); },
+      width: 480, height: 640
+    });
+
+    camera.start()
+      .then(function() {
+        statusEl.textContent = 'NEXUS ACTIVE';
+        post({ type: 'ready' });
+      })
+      .catch(function(err) {
+        var denied = err.name === 'NotAllowedError';
+        errEl.style.display = 'block';
+        errEl.innerHTML = denied
+          ? 'PERMESSI CAMERA NEGATI<br><small>Impostazioni → ARENAKORE → Camera → Consenti</small>'
+          : 'CAMERA NON DISPONIBILE<br><small>' + (err.message || err.name) + '</small>';
+        statusEl.textContent = denied ? 'PERMESSI NEGATI' : 'ERRORE CAMERA';
+        post({ type: denied ? 'camera_denied' : 'error', message: err.message });
+      });
+
+    // CDN timeout
+    setTimeout(function() {
+      if (typeof Pose === 'undefined') {
+        statusEl.textContent = 'CDN TIMEOUT';
+        post({ type: 'timeout', message: 'MediaPipe CDN timeout' });
+      }
+    }, 12000);
+
+    window.onerror = function(msg) {
+      post({ type: 'error', message: 'JS: ' + msg });
+      return true;
+    };
+  </script>
+</body>
+</html>"""
+    return HTMLResponse(content=html, headers={
+        "Cache-Control": "no-cache",
+        "X-Frame-Options": "ALLOWALL",
+    })
 
 
 @api_router.put("/profile/ghost-mode")
