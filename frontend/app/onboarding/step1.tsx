@@ -172,14 +172,14 @@ function useVoiceEngine(onActivated: () => void) {
     };
   }, [initRecognition]);
 
-  // Fallback: force listening state after 2s if still idle
+  // Fallback: force listening state after 1s (reduced from 2s for ExpoGo responsiveness)
   useEffect(() => {
     const t = setTimeout(() => {
       if (stateRef.current === 'idle') {
         setState('listening');
         setMicPermission('granted');
       }
-    }, 2000);
+    }, 1000);
     return () => clearTimeout(t);
   }, []);
 
@@ -276,8 +276,9 @@ export default function LegacyStep1() {
   }, []);
   const micGlowStyle = useAnimatedStyle(() => ({ opacity: micGlow.value }));
 
-  // Voice state color
+  // Voice state color — mic gold = TTS firing, CTA also activates to cyan
   const isGold = displayVoiceState === 'heard' || displayVoiceState === 'speaking' || displayVoiceState === 'navigating';
+  const isActivated = isGold;  // CTA becomes cyan when voice engine fires
   const micColor = isGold ? '#D4AF37' : '#00F2FF';
   const isWaveActive = displayVoiceState === 'heard' || displayVoiceState === 'speaking';
 
@@ -285,9 +286,12 @@ export default function LegacyStep1() {
     <View style={[s.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 32 }]}>
       <StatusBar barStyle="light-content" />
 
-      {/* Top bar */}
+      {/* Top bar — ARENA white + KORE cyan */}
       <View style={s.topBar}>
-        <Text style={s.brand}>ARENAKORE</Text>
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={[s.brand, { color: '#FFFFFF' }]}>ARENA</Text>
+          <Text style={[s.brand, { color: '#00F2FF' }]}>KORE</Text>
+        </View>
         <View style={s.stepPill}>
           <Text style={s.stepTxt}>01 / 04</Text>
         </View>
@@ -392,7 +396,7 @@ export default function LegacyStep1() {
         <View style={s.ctaRow}>
           <TouchableOpacity
             testID="step1-start-scan-btn"
-            style={[s.cta, displayVoiceState === 'navigating' && s.ctaGold]}
+            style={[s.cta, isActivated && s.ctaActivated]}
             onPress={manualTrigger}
             activeOpacity={0.85}
             disabled={displayVoiceState === 'navigating'}
@@ -459,11 +463,12 @@ const s = StyleSheet.create({
     letterSpacing: 6, marginBottom: 4,
   },
   heroLine1: {
-    color: '#D4AF37', fontSize: 58, fontWeight: '900',
+    color: '#00F2FF',              // NEXUS = CYAN (not gold)
+    fontSize: 58, fontWeight: '900',
     letterSpacing: -2, lineHeight: 60,
-    textShadowColor: 'rgba(212,175,55,0.8)',
+    textShadowColor: 'rgba(0,242,255,0.65)',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 18,
+    textShadowRadius: 16,
   },
   heroLine2: {
     color: '#FFFFFF', fontSize: 42, fontWeight: '900',
@@ -534,6 +539,12 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', gap: 12,
     shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 12,
     elevation: 8,
+  },
+  ctaActivated: {
+    backgroundColor: '#00F2FF',         // Cyan when NEXUS activated
+    shadowColor: '#00F2FF',
+    shadowOpacity: 0.55,
+    shadowRadius: 14,
   },
   ctaGold: { backgroundColor: '#D4AF37', opacity: 0.7 },
   ctaTxt: {

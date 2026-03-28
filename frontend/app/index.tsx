@@ -16,6 +16,7 @@ import Animated, {
   useAnimatedStyle, FadeInDown, FadeIn, Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Line, Circle, Rect, Defs, LinearGradient as SvgGrad, Stop, G } from 'react-native-svg';
 import { Video, ResizeMode } from 'expo-av';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -28,8 +29,115 @@ const CYAN = '#00F2FF';
 const BG   = '#050505';
 
 // =====================================================================
-// ANIMATED SCAN LINE (cinematic overlay)
+// BIOMETRIC WIREFRAME BACKGROUND
+// Two human silhouettes with MediaPipe 17-pt skeleton + gold sweep line
+// Replaces the Pexels video with 100% on-device animated SVG
 // =====================================================================
+const COCO_CONNECTIONS = [
+  [0,1],[0,2],[1,3],[2,4],         // face
+  [5,6],[5,7],[7,9],[6,8],[8,10],  // arms
+  [5,11],[6,12],[11,12],           // torso
+  [11,13],[13,15],[12,14],[14,16], // legs
+];
+
+function makeFigurePts(cx: number, W: number, H: number): [number,number][] {
+  // 17 COCO keypoints normalized to screen, scaled around center cx
+  const sc = W * 0.065; // horizontal scale
+  return [
+    [cx,          H*0.09],  // 0 nose
+    [cx - sc*0.3, H*0.085], // 1 left eye
+    [cx + sc*0.3, H*0.085], // 2 right eye
+    [cx - sc*0.6, H*0.095], // 3 left ear
+    [cx + sc*0.6, H*0.095], // 4 right ear
+    [cx - sc*0.9, H*0.20],  // 5 left shoulder
+    [cx + sc*0.9, H*0.20],  // 6 right shoulder
+    [cx - sc*1.4, H*0.32],  // 7 left elbow
+    [cx + sc*1.4, H*0.32],  // 8 right elbow
+    [cx - sc*1.5, H*0.44],  // 9 left wrist
+    [cx + sc*1.5, H*0.44],  // 10 right wrist
+    [cx - sc*0.7, H*0.50],  // 11 left hip
+    [cx + sc*0.7, H*0.50],  // 12 right hip
+    [cx - sc*0.75,H*0.65],  // 13 left knee
+    [cx + sc*0.75,H*0.65],  // 14 right knee
+    [cx - sc*0.75,H*0.80],  // 15 left ankle
+    [cx + sc*0.75,H*0.80],  // 16 right ankle
+  ] as [number,number][];
+}
+
+function BiometricHeroBg() {
+  const { width: W, height: H } = useWindowDimensions();
+  const sweep = useSharedValue(-40);
+
+  useEffect(() => {
+    sweep.value = withRepeat(
+      withTiming(H + 40, { duration: 5000, easing: Easing.linear }),
+      -1, false,
+    );
+  }, [H]);
+
+  const sweepStyle = useAnimatedStyle(() => ({ transform: [{ translateY: sweep.value }] }));
+
+  const fig1 = makeFigurePts(W * 0.28, W, H);
+  const fig2 = makeFigurePts(W * 0.72, W, H);
+
+  const figures = [fig1, fig2];
+
+  return (
+    <View style={[StyleSheet.absoluteFill, { zIndex: 1 }]} pointerEvents="none">
+      <Svg width={W} height={H} style={StyleSheet.absoluteFill}>
+        {/* Vignette — very dark fade at edges */}
+        <Defs>
+          <SvgGrad id="vignette" x1="0" y1="0" x2="1" y2="0">
+            <Stop offset="0" stopColor="#050505" stopOpacity="0.9" />
+            <Stop offset="0.2" stopColor="#050505" stopOpacity="0.1" />
+            <Stop offset="0.8" stopColor="#050505" stopOpacity="0.1" />
+            <Stop offset="1" stopColor="#050505" stopOpacity="0.9" />
+          </SvgGrad>
+          <SvgGrad id="vignette_v" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor="#050505" stopOpacity="0.6" />
+            <Stop offset="0.3" stopColor="#050505" stopOpacity="0" />
+            <Stop offset="0.7" stopColor="#050505" stopOpacity="0" />
+            <Stop offset="1" stopColor="#050505" stopOpacity="0.95" />
+          </SvgGrad>
+        </Defs>
+
+        {/* Skeleton for each figure */}
+        {figures.map((pts, fi) => (
+          <G key={`fig-${fi}`}>
+            {/* Silhouette head */}
+            <Circle cx={pts[0][0]} cy={pts[0][1] - 12} r={14}
+              fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeWidth={1} />
+            {/* Connections (gold, very dark) */}
+            {COCO_CONNECTIONS.map(([a, b], i) => (
+              <Line key={`c-${fi}-${i}`}
+                x1={pts[a][0]} y1={pts[a][1]}
+                x2={pts[b][0]} y2={pts[b][1]}
+                stroke="#D4AF37" strokeWidth={0.8} opacity={0.18}
+              />
+            ))}
+            {/* Keypoints (cyan dots) */}
+            {pts.map(([x, y], i) => (
+              <G key={`p-${fi}-${i}`}>
+                <Circle cx={x} cy={y} r={i < 5 ? 4 : 3} fill="#00F2FF" opacity={0.22} />
+                <Circle cx={x} cy={y} r={i < 5 ? 1.5 : 1} fill="#00F2FF" opacity={0.5} />
+              </G>
+            ))}
+          </G>
+        ))}
+
+        {/* Vignette overlays */}
+        <Rect x={0} y={0} width={W} height={H} fill="url(#vignette)" />
+        <Rect x={0} y={0} width={W} height={H} fill="url(#vignette_v)" />
+      </Svg>
+
+      {/* Gold sweep line */}
+      <Animated.View style={[{ position: 'absolute', left: 0, right: 0, height: 1 }, sweepStyle]}>
+        <View style={{ height: 1, backgroundColor: 'rgba(212,175,55,0.35)' }} />
+        <View style={{ height: 20, backgroundColor: 'rgba(212,175,55,0.04)', marginTop: -1 }} />
+      </Animated.View>
+    </View>
+  );
+}
 function ScanLine() {
   const { height } = useWindowDimensions();
   const y = useSharedValue(-100);
@@ -145,25 +253,8 @@ export default function HeroIndex() {
     <View style={s.root}>
       <StatusBar barStyle="light-content" />
 
-      {/* ── VIDEO BACKGROUND (muted, loop, autoplay) ── */}
-      {!videoError ? (
-        <Video
-          source={{ uri: VIDEO_URL }}
-          style={[StyleSheet.absoluteFill, { opacity: 0.28 }]}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay
-          isLooping
-          isMuted
-          useNativeControls={false}
-          onError={() => setVideoError(true)}
-        />
-      ) : (
-        <Image
-          source={{ uri: FALLBACK_BG }}
-          style={[StyleSheet.absoluteFill, { opacity: 0.22 }]}
-          resizeMode="cover"
-        />
-      )}
+      {/* ── BIOMETRIC WIREFRAME BACKGROUND — two silhouettes with MediaPipe skeleton ── */}
+      <BiometricHeroBg />
 
       {/* ── GRADIENT OVERLAY — non-blocking, strong at bottom for CTA contrast ── */}
       <LinearGradient
@@ -415,7 +506,13 @@ const s = StyleSheet.create({
   },
 
   // Metrics
-  metricsRow: { flexDirection: 'row', gap: 10 },
+  metricsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    alignSelf: 'stretch',
+    flexWrap: 'wrap',
+  },
 
   // CTAs
   ctaArea: { gap: 12 },

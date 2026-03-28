@@ -949,7 +949,7 @@ export default function NexusBioScan() {
 
       {/* ── PRIVACY CONSENT MODAL — shown before camera activates ── */}
       {showPrivacyConsent && (
-        <View style={prv$.overlay} pointerEvents="box-only">
+        <View style={[prv$.overlay, { zIndex: 400 }]}>
           <Animated.View entering={FadeInDown.duration(300)} style={prv$.card}>
             <View style={prv$.topBar} />
             <View style={prv$.iconRow}>
@@ -1003,7 +1003,10 @@ export default function NexusBioScan() {
       {/* ── HEADER ── */}
       <View style={[s.header, { paddingTop: insets.top + 8, height: HEADER_H }]}>
         <View style={s.headerTop}>
-          <Text style={s.brand}>ARENAKORE</Text>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={s.brand}>ARENA</Text>
+            <Text style={[s.brand, { color: '#00F2FF' }]}>KORE</Text>
+          </View>
           <View style={s.stepPill}><Text style={s.stepTxt}>02 / 04</Text></View>
         </View>
         {phase === 'beats' && <BeatIndicator currentBeat={currentBeat} totalBeats={5} />}
@@ -1038,8 +1041,8 @@ export default function NexusBioScan() {
       {/* ── CAMERA + SKELETON AREA ── */}
       <View style={[s.scanArea, { width: SCAN_W, height: SCAN_H }]}>
 
-        {/* ── MEDIAPIPE POSE ENGINE (replaces static CameraView) ── */}
-        {!showPrivacyConsent && (
+        {/* ── MEDIAPIPE POSE ENGINE — unmounted when approved (frees memory) ── */}
+        {!showPrivacyConsent && phase !== 'approved' && (
           <NexusPoseEngine onPoseData={handlePoseData} enabled />
         )}
 
