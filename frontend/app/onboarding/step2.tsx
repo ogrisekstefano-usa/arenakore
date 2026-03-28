@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, useWindowDimensions, Platform,
-  ActivityIndicator, TouchableOpacity,
+  ActivityIndicator, TouchableOpacity, Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -867,9 +867,41 @@ export default function NexusBioScan() {
   }, [phase, currentBeat]);
 
   // ===================================================================
-  // APPROVAL — Gold Flash + Haptics + Save DNA + Navigate
+  // APPROVAL — Quality Check → Gold Flash → Haptics → Save → Navigate
   // ===================================================================
   const handleApproval = useCallback(async () => {
+    const finalScore = koScoreRef.current;
+
+    // ── QUALITY GATE: if real MediaPipe data gave a poor score, offer retry
+    if (finalScore > 0 && finalScore < 50) {
+      Alert.alert(
+        'CALIBRAZIONE DISTURBATA',
+        `KORE SCORE: ${finalScore}/100\n\nLo scan ha rilevato instabilità eccessiva.\nRiprova per una calibrazione migliore.`,
+        [
+          {
+            text: 'RIPROVA',
+            style: 'destructive',
+            onPress: () => {
+              // Full reset → positioning state
+              setPhase('loading');
+              setDetectedPoints(0);
+              setVisibleMask(new Array(17).fill(false));
+              setIsScanning(false);
+              setRealLandmarks(null);
+              setKoScore(0);
+              setHoldProgress(0);
+              setPoseEngineReady(false);
+              stabilityBufferRef.current = [];
+              holdTimerRef.current = null;
+              pendingApprovalRef.current = false;
+            },
+          },
+          { text: 'CONTINUA COMUNQUE', style: 'cancel' },
+        ],
+      );
+      return; // wait for user choice
+    }
+
     setPhase('approved');
     setShowHud(false);
 

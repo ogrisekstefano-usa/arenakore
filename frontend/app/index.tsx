@@ -31,7 +31,7 @@ const BG   = '#050505';
 // =====================================================================
 // ATHLETE BACKGROUND — blurred photo with deep vignette
 // =====================================================================
-const ATHLETE_BG = 'https://customer-assets.emergentagent.com/job_1cc481b0-9549-42bf-b77d-feaf4ea618cf/artifacts/m8l3ra29_Screenshot%202026-03-28%20at%2011.02.30%E2%80%AFAM.png';
+const ATHLETE_BG = 'https://customer-assets.emergentagent.com/job_1cc481b0-9549-42bf-b77d-feaf4ea618cf/artifacts/2wscrljx_WhatsApp%20Image%202026-03-28%20at%2011.06.50.jpeg';
 function ScanLine() {
   const { height } = useWindowDimensions();
   const y = useSharedValue(-100);
@@ -150,24 +150,25 @@ export default function HeroIndex() {
     <View style={s.root}>
       <StatusBar barStyle="light-content" />
 
-      {/* ── ATHLETE BACKGROUND — user's personal training photo ── */}
+      {/* ── ATHLETE BACKGROUND — B&W hooded athlete, top-aligned, fades to black ── */}
       <Image
         source={{ uri: ATHLETE_BG }}
-        style={[StyleSheet.absoluteFill, { opacity: 0.60 }]}
-        blurRadius={2}
+        style={[StyleSheet.absoluteFill, { opacity: 0.75 }]}
+        blurRadius={3}
         resizeMode="cover"
       />
 
-      {/* ── GRADIENT OVERLAY — softer at top, pure black at bottom ── */}
+      {/* ── GRADIENT — transparent at top, pure black from 55% down ── */}
       <LinearGradient
         colors={[
-          'rgba(5,5,5,0.05)',
-          'rgba(5,5,5,0.45)',
-          'rgba(5,5,5,0.85)',
-          'rgba(5,5,5,0.97)',
+          'rgba(5,5,5,0)',
+          'rgba(5,5,5,0)',
+          'rgba(5,5,5,0.35)',
+          'rgba(5,5,5,0.88)',
+          BG,
           BG,
         ]}
-        locations={[0, 0.25, 0.52, 0.78, 1]}
+        locations={[0, 0.28, 0.44, 0.62, 0.80, 1]}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />
