@@ -192,6 +192,13 @@ const MEDIAPIPE_HTML = `
         document.getElementById('status').textContent = 'ERR: ' + (err.message || 'Camera denied');
         postToRN({ type: 'error', message: err.message || 'Camera access denied' });
       });
+
+    // CDN FALLBACK: if pose model not ready within 8s, notify parent
+    setTimeout(function() {
+      if (typeof Pose === 'undefined') {
+        postToRN({ type: 'timeout', message: 'MediaPipe CDN load timeout — switch to manual mode' });
+      }
+    }, 8000);
   </script>
 </body>
 </html>

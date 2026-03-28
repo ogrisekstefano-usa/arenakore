@@ -341,6 +341,18 @@ export default function NexusBioScan() {
   const [poseEngineReady, setPoseEngineReady] = useState(false);
   const lastCenterAlertRef = useRef(0);
 
+  // ── SCORE ENGINE REFS & STATE
+  // Rolling buffer: last 30 frames of normalized landmark positions (for stability calc)
+  const stabilityBufferRef = useRef<Array<Array<{ x: number; y: number }>>>([]);
+  const holdTimerRef        = useRef<number | null>(null);  // timestamp when valid hold started
+  const usingRealDataRef    = useRef(false);                // suppresses simulated EMA when true
+  const lastRealFrameRef    = useRef(0);                    // timestamp of last MediaPipe frame
+
+  const [poseTimeout, setPoseTimeout]   = useState(false);  // CDN failed → show manual fallback
+  const [koScore, setKoScore]           = useState(0);       // live KORE SCORE 0-100
+  const [holdProgress, setHoldProgress] = useState(0);       // 0-1, 3-second hold progress
+  const [scoreBreakdown, setScoreBreakdown] = useState({ stability: 0, confidence: 0, amplitude: 0 });
+
   // Skeleton state
   const ptsRef = useRef<[number, number][]>(
     POSE_NEUTRAL.map(([px, py]) => [
@@ -364,17 +376,61 @@ export default function NexusBioScan() {
   useEffect(() => { isScanningRef.current = isScanning; }, [isScanning]);
 
   // ===================================================================
-  // REAL POSE DATA HANDLER — drives skeleton from MediaPipe landmarks
+  // SCORE ENGINE — Pure functions (no hooks, safe in callbacks)
+  // ===================================================================
+
+  /** Stability: avg std-dev of landmark positions over rolling buffer.
+   *  Returns 0 (jitter) → 1 (rock solid). */
+  function calcStability(buf: Array<Array<{ x: number; y: number }>>): number {
+    if (buf.length < 5) return 0;
+    let totalDev = 0;
+    const n = buf[0].length;
+    for (let k = 0; k < n; k++) {
+      const xs = buf.map(f => f[k].x);
+      const ys = buf.map(f => f[k].y);
+      const mx = xs.reduce((a, b) => a + b, 0) / xs.length;
+      const my = ys.reduce((a, b) => a + b, 0) / ys.length;
+      const vx = xs.reduce((a, b) => a + (b - mx) ** 2, 0) / xs.length;
+      const vy = ys.reduce((a, b) => a + (b - my) ** 2, 0) / ys.length;
+      totalDev += Math.sqrt(vx + vy);
+    }
+    const avgDev = totalDev / n;
+    // Threshold: < 0.002 = perfect, > 0.02 = too jittery
+    return Math.max(0, Math.min(1, 1 - avgDev / 0.018));
+  }
+
+  /** Amplitude: posture quality measured by shoulder width + torso height ratio. */
+  function calcAmplitude(lm: Array<LandmarkPoint | null>): number {
+    const lShoulder = lm[5], rShoulder = lm[6];
+    const lHip = lm[11],     rHip = lm[12];
+    if (!lShoulder || !rShoulder || !lHip || !rHip) return 0;
+    // Shoulder span (normalized, ideally 0.25-0.45)
+    const spanScore = Math.min(1, Math.abs(rShoulder.x - lShoulder.x) / 0.30);
+    // Torso height (shoulder_y to hip_y, ideally 0.20-0.35)
+    const torsoH = Math.abs(((lShoulder.y + rShoulder.y) / 2) - ((lHip.y + rHip.y) / 2));
+    const torsoScore = Math.min(1, torsoH / 0.25);
+    return (spanScore * 0.5 + torsoScore * 0.5);
+  }
+
+  // ===================================================================
+  // REAL POSE DATA HANDLER — drives skeleton + Score Engine
   // ===================================================================
   const handlePoseData = useCallback((data: PoseData) => {
+    // CDN TIMEOUT → show manual fallback
+    if (data.type === 'timeout') {
+      setPoseTimeout(true);
+      return;
+    }
+
     if (data.type === 'ready') {
       setPoseEngineReady(true);
       setCameraReady(true);
-      setIsScanning(true);  // Engine ready → biometric gate opens
+      setIsScanning(true);
+      usingRealDataRef.current = true;
       return;
     }
     if (data.type === 'error') {
-      // Engine error → fall back to simulated mode
+      // Engine error → fallback to simulated
       setCameraReady(true);
       setIsScanning(true);
       return;
@@ -385,22 +441,79 @@ export default function NexusBioScan() {
 
     if (newFps && newFps > 0) setLiveFps(newFps);
 
+    lastRealFrameRef.current = Date.now();
+    usingRealDataRef.current = true;  // suppress simulated EMA
+
     if (!landmarks || landmarks.length === 0 || !person_detected) {
-      return; // No person — stay in current phase, don't drive detection
+      // No person → reset hold timer
+      holdTimerRef.current = null;
+      setHoldProgress(0);
+      return;
     }
 
-    // ── Update real landmark coordinates (used by SVG override)
+    // ── Update real landmark state (for SVG rendering)
     setRealLandmarks(landmarks);
 
-    // ── Drive detection progress (visible_count → detectedPoints)
+    // ── Update detection progress (real visible count)
     const newCount = Math.min(17, visible_count ?? 0);
     if (phaseRef.current === 'positioning') {
       setDetectedPoints(prev => Math.max(prev, newCount));
-      // Update visible mask based on MediaPipe confidence
       setVisibleMask(landmarks.map(l => l !== null && (l.v ?? 0) > 0.4));
     }
 
-    // ── Centering check — TTS + gold warning
+    // ── SCORE ENGINE ──────────────────────────────────────────────────
+    // 1. Update stability buffer (keep last 30 frames)
+    const frame2d = landmarks.map(l => ({ x: l?.x ?? 0.5, y: l?.y ?? 0.5 }));
+    stabilityBufferRef.current.push(frame2d);
+    if (stabilityBufferRef.current.length > 30) {
+      stabilityBufferRef.current.shift();
+    }
+
+    // 2. Calculate scores
+    const stability  = calcStability(stabilityBufferRef.current);
+    const confidence = Math.min(1, (visible_count ?? 0) / 17);
+    const amplitude  = calcAmplitude(landmarks);
+
+    const kore = Math.round((stability * 0.4 + confidence * 0.4 + amplitude * 0.2) * 100);
+    setKoScore(kore);
+    setScoreBreakdown({ stability, confidence, amplitude });
+
+    // Update stabilityRef used by pose_check phase
+    stabilityRef.current = Math.round(stability * 100);
+    setStability(Math.round(stability * 100));
+    // ─────────────────────────────────────────────────────────────────
+
+    // ── 3-SECOND HOLD TRIGGER
+    // Conditions: confidence > 80% overall AND centered AND in positioning/pose_check phase
+    const HOLD_THRESHOLD    = 80;  // kore score must be > 80 to start hold
+    const HOLD_DURATION_MS  = 3000;
+    const inValidPhase = ['positioning', 'verifying', 'pose_check', 'countdown'].includes(phaseRef.current);
+
+    if (kore > HOLD_THRESHOLD && centered && person_detected && inValidPhase) {
+      const now = Date.now();
+      if (!holdTimerRef.current) {
+        holdTimerRef.current = now;
+      }
+      const elapsed = now - holdTimerRef.current;
+      const progress = Math.min(1, elapsed / HOLD_DURATION_MS);
+      setHoldProgress(progress);
+
+      if (elapsed >= HOLD_DURATION_MS && phaseRef.current !== 'beats' && phaseRef.current !== 'approved') {
+        // ── GOLD FLASH TRIGGER — 3s hold confirmed ──
+        holdTimerRef.current = null;
+        setHoldProgress(0);
+        handleApproval();  // fires Gold Flash + DNA sync + navigation
+        return;
+      }
+    } else {
+      // Reset hold timer if conditions drop
+      if (holdTimerRef.current) {
+        holdTimerRef.current = null;
+        setHoldProgress(0);
+      }
+    }
+
+    // ── CENTERING WARNING (TTS + gold text)
     if (!centered && person_detected) {
       const now = Date.now();
       if (now - lastCenterAlertRef.current > 4500) {
@@ -412,16 +525,14 @@ export default function NexusBioScan() {
         setTimeout(() => setCenteringWarning(false), 3000);
       }
     }
-  }, []); // stable — no deps needed
+  }, [handleApproval]); // eslint-disable-line
 
   // ── Real-to-screen coordinates (MediaPipe normalized → screen pixels)
   const realPts = useMemo<[number, number][] | null>(() => {
     if (!realLandmarks || realLandmarks.length !== 17) return null;
     return realLandmarks.map(l => {
       if (!l) return [SCAN_W / 2, SCAN_H / 2] as [number, number];
-      // Front camera: MediaPipe x=0 = left of frame = right of user
-      // We mirror horizontally so skeleton matches the video (which is already CSS-flipped in WebView)
-      const screenX = (1 - l.x) * SCAN_W;
+      const screenX = (1 - l.x) * SCAN_W;  // mirror horizontally (front camera)
       const screenY = l.y * SCAN_H;
       return [screenX, screenY] as [number, number];
     });
@@ -460,12 +571,19 @@ export default function NexusBioScan() {
   }, []);
 
   // ===================================================================
-  // EMA SKELETON LOOP + STABILITY + POSE VALIDATION
+  // EMA SKELETON LOOP — suppressed when real MediaPipe data is flowing
   // ===================================================================
   useEffect(() => {
     if (tickRef.current) clearInterval(tickRef.current);
 
     tickRef.current = setInterval(() => {
+      // ── REAL MODE: skip simulated loop if MediaPipe is active
+      if (usingRealDataRef.current) {
+        // Check if real data is stale (> 1s without a frame = engine stopped)
+        if (Date.now() - lastRealFrameRef.current < 1000) return;
+        // Stale → fall back to simulated
+        usingRealDataRef.current = false;
+      }
       const targets = targetPoseRef.current;
       const cur = ptsRef.current;
       let totalJitter = 0;
@@ -1082,6 +1200,37 @@ export default function NexusBioScan() {
               </SvgText>
             </G>
           )}
+
+          {/* ── KORE SCORE (live, top-right during scanning) ── */}
+          {poseEngineReady && koScore > 0 && phase !== 'approved' && (
+            <G>
+              <Rect x={SCAN_W - 86} y={8} width={78} height={40} rx={8}
+                fill="rgba(0,0,0,0.7)" stroke="rgba(212,175,55,0.3)" strokeWidth={1} />
+              <SvgText x={SCAN_W - 47} y={24}
+                fill="rgba(212,175,55,0.6)" fontSize={8} fontWeight="900" textAnchor="middle" letterSpacing={2}>
+                KORE SCORE
+              </SvgText>
+              <SvgText x={SCAN_W - 47} y={40}
+                fill={koScore >= 80 ? '#D4AF37' : koScore >= 50 ? '#FFFFFF' : 'rgba(255,255,255,0.5)'}
+                fontSize={14} fontWeight="900" textAnchor="middle" letterSpacing={1}>
+                {koScore}
+              </SvgText>
+            </G>
+          )}
+
+          {/* ── HOLD PROGRESS RING (3-second hold indicator) ── */}
+          {holdProgress > 0 && holdProgress < 1 && (
+            <G>
+              <Rect x={SCAN_W / 2 - 80} y={SCAN_H - 44} width={160} height={28} rx={8}
+                fill="rgba(0,0,0,0.7)" stroke="rgba(212,175,55,0.4)" strokeWidth={1} />
+              <Rect x={SCAN_W / 2 - 76} y={SCAN_H - 36} width={152 * holdProgress} height={12} rx={4}
+                fill="#D4AF37" />
+              <SvgText x={SCAN_W / 2} y={SCAN_H - 26}
+                fill="#D4AF37" fontSize={8} fontWeight="900" textAnchor="middle" letterSpacing={3}>
+                GOLD FLASH IN {Math.ceil(3 * (1 - holdProgress))}s
+              </SvgText>
+            </G>
+          )}
         </Svg>
 
         {/* EMA Filter label (bottom of scan area) */}
@@ -1115,6 +1264,19 @@ export default function NexusBioScan() {
                 </Animated.View>
                 <Text style={s.statusLabel}>POSIZIONATI DAVANTI ALLA CAMERA</Text>
                 <Text style={s.detectNote}>IN ATTESA RILEVAMENTO UMANO</Text>
+
+                {/* CDN FALLBACK: visible if MediaPipe model timed out */}
+                {poseTimeout && (
+                  <TouchableOpacity
+                    style={fallback$.btn}
+                    onPress={() => { setPoseTimeout(false); setIsScanning(true); }}
+                    activeOpacity={0.85}
+                  >
+                    <Ionicons name="refresh-circle-outline" size={14} color="#D4AF37" />
+                    <Text style={fallback$.txt}>USA SCAN MANUALE</Text>
+                  </TouchableOpacity>
+                )}
+
                 {/* ── DEBUG BYPASS: only visible in __DEV__ builds ── */}
                 {__DEV__ && (
                   <TouchableOpacity
@@ -1397,6 +1559,20 @@ const fps$ = StyleSheet.create({
   },
   txt: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
   low: { color: '#FF453A' }, // red when below 20fps
+});
+
+// ── CDN FALLBACK — "USA SCAN MANUALE" button
+const fallback$ = StyleSheet.create({
+  btn: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    borderWidth: 1.5, borderColor: 'rgba(212,175,55,0.4)',
+    borderRadius: 10, paddingHorizontal: 18, paddingVertical: 12,
+    backgroundColor: 'rgba(212,175,55,0.06)',
+    marginTop: 10,
+  },
+  txt: {
+    color: '#D4AF37', fontSize: 12, fontWeight: '900', letterSpacing: 2,
+  },
 });
 
 // ── PRIVACY CONSENT styles
