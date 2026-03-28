@@ -37,6 +37,11 @@ export interface User {
   avatar_color: string;
   is_admin?: boolean;
   is_founder?: boolean;
+  founder_number?: number;
+  ghost_mode?: boolean;        // Privacy: hide real name in public rankings
+  camera_enabled?: boolean;
+  mic_enabled?: boolean;
+  city?: string;
 }
 
 interface AuthContextType {

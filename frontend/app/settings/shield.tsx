@@ -43,25 +43,32 @@ const PILLARS = [
 export default function PrivacyShield() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { user, token, refreshUser, logout } = useAuth();
+  const { user, token, updateUser } = useAuth();
 
-  const [ghostMode, setGhostMode] = useState<boolean>(user?.ghost_mode ?? false);
+  // ── Read initial ghost_mode directly from AuthContext user (now typed correctly)
+  const [ghostMode, setGhostMode] = useState<boolean>(Boolean(user?.ghost_mode));
   const [ghostLoading, setGhostLoading] = useState(false);
   const [wipingData, setWipingData] = useState(false);
 
   const handleGhostToggle = useCallback(async (val: boolean) => {
-    if (!token) return;
+    if (!token || !user) return;
     setGhostLoading(true);
+    // 1. Optimistic local state update (instant UI feedback)
     setGhostMode(val);
+    // 2. Immediately update AuthContext so City Ranking reacts on next focus
+    updateUser({ ...user, ghost_mode: val });
     try {
+      // 3. Persist to backend
       await api.toggleGhostMode(val, token);
-      await refreshUser();
+      // No refreshUser() needed — we already updated via updateUser()
     } catch (_e) {
-      setGhostMode(!val); // revert on error
+      // Revert both local state AND AuthContext on error
+      setGhostMode(!val);
+      updateUser({ ...user, ghost_mode: !val });
     } finally {
       setGhostLoading(false);
     }
-  }, [token, refreshUser]);
+  }, [token, user, updateUser]);
 
   const handleWipe = useCallback(() => {
     Alert.alert(
@@ -73,11 +80,16 @@ export default function PrivacyShield() {
           text: 'ELIMINA',
           style: 'destructive',
           onPress: async () => {
-            if (!token) return;
+            if (!token || !user) return;
             setWipingData(true);
             try {
-              await api.wipeBiometricData(token);
-              await refreshUser();
+              const result = await api.wipeBiometricData(token);
+              // Update AuthContext immediately with wiped user data
+              if (result?.user) {
+                updateUser(result.user);
+              } else {
+                updateUser({ ...user, dna: undefined, camera_enabled: false, mic_enabled: false });
+              }
               Alert.alert('COMPLETATO', 'DATI BIOMETRICI ELIMINATI. PROFILO BASE MANTENUTO.');
             } catch (_e) {
               Alert.alert('ERRORE', 'Impossibile completare la cancellazione.');
