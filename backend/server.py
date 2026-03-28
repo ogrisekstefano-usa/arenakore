@@ -3537,8 +3537,25 @@ async def nexus_scanner_page():
 
       var mp_lm = results.poseLandmarks;
 
+      // ── FIX 1: Z-AXIS NEAR-PLANE CULLING
+      // If any key landmark has z < -1.2 (hand/object touching lens), reject entire pose
+      if (results.poseWorldLandmarks && results.poseWorldLandmarks.length > 0) {
+        var wLm = results.poseWorldLandmarks;
+        var nearPlaneFail = false;
+        var CHECK_NEAR = [0,1,2,3,4,5,6,7,8,9,10,15,16,17,18,19,20,21,22];  // face+hands
+        for (var ni = 0; ni < CHECK_NEAR.length; ni++) {
+          var wpt = wLm[CHECK_NEAR[ni]];
+          if (wpt && wpt.z < -1.2) { nearPlaneFail = true; break; }  // < -1.2m = too close
+        }
+        if (nearPlaneFail) {
+          personFirstSeen = null;
+          clearAndWait();
+          post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+          return;  // Z-NEAR CULLING: ghost hand/object too close
+        }
+      }
+
       // ── GHOST MASKING: prioritize pose with nose closest to center
-      // If nose is far from center AND we have a previous smooth pose, keep it
       var noseDistFromCenter = mp_lm[0] ? Math.abs(mp_lm[0].x - 0.5) : 1.0;
       if (noseDistFromCenter > 0.35 && prevSmoothed) {
         // Current detection is off-center — use smoothed previous (ghost masking)
@@ -3599,6 +3616,27 @@ async def nexus_scanner_page():
           bmXs.push(bLm.x); bmYs.push(bLm.y);
         }
       }
+      // ── FIX 4: GHOST PURGE — shoulder width vs torso height coherence
+      // A real human: shoulder_width / torso_height = 0.4–1.1
+      // Distorted ghost: ratio can be > 2 (wide flat) or < 0.1 (impossibly thin)
+      var gpLshoulder = mp_lm[11], gpRshoulder = mp_lm[12];
+      var gpLhip = mp_lm[23], gpRhip = mp_lm[24];
+      var gpNose = mp_lm[0];
+      if (gpLshoulder && gpRshoulder && gpLhip && gpRhip && gpNose) {
+        var gpShoulderW = Math.abs(gpRshoulder.x - gpLshoulder.x);
+        var gpTorsoH    = Math.abs(((gpLshoulder.y+gpRshoulder.y)/2) - ((gpLhip.y+gpRhip.y)/2));
+        if (gpTorsoH > 0.01) {
+          var gpRatio = gpShoulderW / gpTorsoH;
+          if (gpRatio > 2.2 || gpRatio < 0.15) {
+            // Incoherent skeleton — ghost purge
+            personFirstSeen = null;
+            clearAndWait();
+            post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+            return;  // GHOST PURGE: shoulder/torso ratio invalid
+          }
+        }
+      }
+
       if (bmXs.length >= 4) {
         var boxW = Math.max.apply(null,bmXs) - Math.min.apply(null,bmXs);
         var boxH = Math.max.apply(null,bmYs) - Math.min.apply(null,bmYs);
@@ -3782,6 +3820,25 @@ async def nexus_scanner_page():
         }, 5000);
 
         // Inference loop
+        var lastFrameReceived = performance.now();
+
+        // ── FIX 2: CAMERA RECOVERY HANG — 2s watchdog
+        // If MediaPipe stops getting frames, auto-reset camera
+        var cameraWatchdog = setInterval(function() {
+          if (!poseReady) return;
+          if (performance.now() - lastFrameReceived > 2000) {
+            clearInterval(cameraWatchdog);
+            post({ type:'error', message:'camera_hang' });
+            if (video.srcObject) {
+              video.srcObject.getTracks().forEach(function(t){ t.stop(); });
+            }
+            video.srcObject = null;
+            personFirstSeen = null;
+            prevSmoothed = null;
+            setTimeout(startCamera, 600);  // full restart after 600ms
+          }
+        }, 2000);
+
         function loop() {
           requestAnimationFrame(loop);
           var now = performance.now();
@@ -3791,6 +3848,7 @@ async def nexus_scanner_page():
           frameCounter++;
           if (frameSkip > 0 && (frameCounter % (frameSkip + 1)) !== 0) return;
           if (video.readyState < 2 || video.videoWidth === 0) return;
+          lastFrameReceived = performance.now();  // reset watchdog
 
           // ── BRIGHTNESS NORMALIZER: adaptive filter computed every 15 frames
           smallCtx.clearRect(0, 0, 256, 256);

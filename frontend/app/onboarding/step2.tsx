@@ -368,6 +368,7 @@ export default function NexusBioScan() {
   const [holdProgress, setHoldProgress]     = useState(0);
   const [scoreBreakdown, setScoreBreakdown] = useState({ stability: 0, confidence: 0, amplitude: 0 });
   const [feetGuidance, setFeetGuidance]     = useState(false); // ankles off-frame
+  const [voiceLocked, setVoiceLocked]       = useState(false); // KORE < 60 → mute voice
   const [triggerApproval, setTriggerApproval] = useState(false); // fires handleApproval asynchronously
   // Refs to read latest score values inside handleApproval (useCallback has [] deps)
   const koScoreRef       = useRef(0);
@@ -506,6 +507,18 @@ export default function NexusBioScan() {
       return;
     }
 
+    // CAMERA HANG → auto-restart was handled by scanner watchdog
+    // Just reset React Native state to match
+    if (data.type === 'error' && (data as any).message === 'camera_hang') {
+      setPhase('loading');
+      setDetectedPoints(0);
+      setRealLandmarks(null);
+      setIsScanning(false);
+      setPoseEngineReady(false);
+      personEntrySinceRef.current = null;
+      return;
+    }
+
     if (data.type === 'ready') {
       setPoseEngineReady(true);
       setCameraReady(true);
@@ -626,6 +639,15 @@ export default function NexusBioScan() {
     stabilityRef.current = Math.round(stability * 100);
     setStability(Math.round(stability * 100));
     // ─────────────────────────────────────────────────────────────────
+    // ── KORE SCORE LOCK: silence voice when quality < 60 (camera disturbed or ghost)
+    const VOICE_LOCK_THRESHOLD = 60;
+    if (kore < VOICE_LOCK_THRESHOLD && poseEngineReadyRef.current) {
+      setVoiceLocked(true);
+      VoiceController.stop().catch(() => {});
+    } else if (kore >= VOICE_LOCK_THRESHOLD) {
+      setVoiceLocked(false);
+    }
+
 
     // ── BIOMETRIC IDENTITY LOCK — validate during BEATS phase
     if (phaseRef.current === 'beats' && initialProportionsRef.current) {
@@ -710,7 +732,7 @@ export default function NexusBioScan() {
         setTimeout(() => setCenteringWarning(false), 3000);
       }
     }
-  }, []); // stable — uses pendingApprovalRef instead of direct handleApproval call
+  }, []); // stable — uses setTriggerApproval flag instead of direct handleApproval call // stable — uses pendingApprovalRef instead of direct handleApproval call
 
   // ── Dispatch approval when Score Engine sets the ref flag (avoids TDZ)
   // NOTE: This useEffect intentionally left near handlePoseData so it's close to the trigger logic.
@@ -1026,13 +1048,15 @@ export default function NexusBioScan() {
 
   /** speakWithLead: annuncia l'esercizio, poi dopo delayMs parte il timer */
   const speakCoach = useCallback((text: string, urgent = false) => {
+    // KORE SCORE LOCK: don't speak if quality is too low
+    if (voiceLocked) return;
     // VoiceController handles overlap guard (fade-out) + real audio fallback
     VoiceController.stop().then(() => {
       try {
         Speech.speak(text, { language: 'it-IT', rate: urgent ? 0.92 : 0.82, pitch: urgent ? 1.15 : 1.0 });
       } catch (_e) {}
-    }).catch(() => {}); // non-blocking
-  }, []);
+    }).catch(() => {});
+  }, [voiceLocked]);
 
   // Warn if person disappears during BEATS
   useEffect(() => {
