@@ -1031,6 +1031,21 @@ export default function NexusBioScan() {
     }
   }, [phase, handleApproval]); // 'phase' change triggers re-check
 
+  // ── HAPTIC PULSE: every 2s while system is searching (no athlete detected yet)
+  // Signals to the athlete that Nexus is active and waiting
+  useEffect(() => {
+    if (phase !== 'positioning' || !isScanning || !poseEngineReady) return;
+    const interval = setInterval(async () => {
+      // Only pulse if no person is in frame yet
+      if (!personEntrySinceRef.current) {
+        try {
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        } catch (_e) {}
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [phase, isScanning, poseEngineReady]);
+
   // ===================================================================
   // DERIVED RENDER STATE
   // ===================================================================
@@ -1213,14 +1228,15 @@ export default function NexusBioScan() {
               stroke="rgba(0,242,255,0.04)" strokeWidth={0.5} />
           ))}
 
-          {/* ── SKELETON — REAL data only when MediaPipe active. ZERO ghost fallback. ── */}
+          {/* ── SKELETON — NEXUS v3.0: ZERO SIMULATION POLICY ── */}
           {(() => {
-            // PRODUCTION RULE: when poseEngine is active, ONLY render real confirmed data.
-            // realPts is null when person_detected=false → nothing rendered.
-            // When not in real mode (no WebView), render simulated pts for UX.
-            const displayPts: [number, number][] | null = poseEngineReady ? realPts : pts;
+            // NEXUS v3.0 RULE: NOTHING renders unless:
+            // 1. Real MediaPipe WebView is active (poseEngineReady = true)
+            // 2. Real landmarks have been confirmed (realPts !== null)
+            // If either condition fails → absolute black, no simulation, no fallback.
+            const displayPts: [number, number][] | null = poseEngineReady ? realPts : null;
 
-            if (!displayPts) return null; // No person detected — no skeleton
+            if (!displayPts) return null; // ZERO SIMULATION — black screen until real data
 
             return (
               <>

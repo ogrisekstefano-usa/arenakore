@@ -3379,7 +3379,7 @@ async def nexus_scanner_page():
       var coco17 = new Array(17).fill(null);
       Object.keys(MP_TO_COCO).forEach(function(k) {
         var lm = mp_lm[parseInt(k)];
-        if (lm && (lm.visibility || 0) > 0.3) {
+        if (lm && (lm.visibility || 0) > 0.80) {  // STRICT: 0.8+ confidence only
           var sc = getScreenXY(lm.x, lm.y);
           coco17[MP_TO_COCO[k]] = { x: sc.x, y: sc.y, v: lm.visibility || 0 };
         }
@@ -3447,7 +3447,7 @@ async def nexus_scanner_page():
       var noseX = mp_lm[0] ? mp_lm[0].x : 0.5;
       var centered = (noseX >= 0.28 && noseX <= 0.72);
       var visible_count = coco17.filter(function(p){ return p !== null; }).length;
-      var person_detected = visible_count >= 8;
+      var person_detected = visible_count >= 10;  // 10 high-confidence points required
 
       statusEl.textContent = fps + ' FPS · ' + visible_count + '/17 pts · ' + (centered ? 'CENTRATO' : 'CENTRA');
 
@@ -3478,8 +3478,8 @@ async def nexus_scanner_page():
       modelComplexity: 0,
       smoothLandmarks: true,
       enableSegmentation: false,
-      minDetectionConfidence: 0.4,
-      minTrackingConfidence: 0.4
+      minDetectionConfidence: 0.65,
+      minTrackingConfidence: 0.6
     });
     pose.onResults(onResults);
 
