@@ -3379,24 +3379,45 @@ async def nexus_scanner_page():
         }
       }
 
-      // ── LEG COHERENCE: extrapolate missing ankles from hip→knee direction vector
-      // If ankle is off-frame but hip+knee are visible, we can estimate ankle position
-      function extrapolateAnkle(mpHip, mpKnee, cocoAnkleIdx) {
-        if (!mpHip || !mpKnee || coco17[cocoAnkleIdx]) return;  // already have it
-        var hip = mp_lm[mpHip], knee = mp_lm[mpKnee];
-        if (!hip || !knee || (hip.visibility||0) < 0.6 || (knee.visibility||0) < 0.6) return;
-        // Hip→Knee direction vector, extended by the same length below the knee
-        var dx = knee.x - hip.x, dy = knee.y - hip.y;
-        var ankleX = knee.x + dx;
-        var ankleY = knee.y + dy;
-        // Only extrapolate if result is plausibly below-frame (y ≤ 1.20)
-        if (ankleY > 0 && ankleY <= 1.20 && ankleX >= 0 && ankleX <= 1) {
-          var sc = toScreen(Math.min(ankleX, 1), Math.min(ankleY, 1));
-          coco17[cocoAnkleIdx] = { x: sc.x, y: Math.min(sc.y, canvas.height - 2), v: 0.25, ext: true };
+      // ── ANKLE RECOVERY: multi-strategy shin projection
+      // Strategy priority: 1) heel/toe (best) 2) knee-only extension 3) hip→knee vector
+      function recoverAnkle(mpHip, mpKnee, mpAnkle, mpHeel, mpToe, cocoAnkleIdx) {
+        if (coco17[cocoAnkleIdx]) return;  // already have it
+
+        var hip   = mp_lm[mpHip],   knee  = mp_lm[mpKnee];
+        var ankle = mp_lm[mpAnkle], heel  = mp_lm[mpHeel];
+        var toe   = mp_lm[mpToe];
+
+        var px, py;
+
+        // Strategy A: average of heel + toe (most accurate)
+        if (heel && toe && (heel.visibility||0) > 0.25 && (toe.visibility||0) > 0.25) {
+          px = (heel.x + toe.x) / 2;
+          py = (heel.y + toe.y) / 2;
+
+        // Strategy B: use visible knee-only — extend shin segment (hip→knee × 1.0)
+        } else if (knee && (knee.visibility||0) >= 0.55) {
+          if (hip && (hip.visibility||0) >= 0.50) {
+            var dx = knee.x - hip.x, dy = knee.y - hip.y;
+            px = knee.x + dx;    // project same vector below knee
+            py = knee.y + dy;
+          } else {
+            // No hip: extend straight down from knee by estimated shin fraction
+            px = knee.x;
+            py = knee.y + 0.22;  // ~22% of frame height ≈ shin length
+          }
+
+        } else { return; }  // not enough data to recover
+
+        if (py > 0 && py <= 1.25 && px >= 0.05 && px <= 0.95) {
+          var sc = toScreen(Math.min(px, 1), Math.min(py, 1));
+          coco17[cocoAnkleIdx] = { x: sc.x, y: Math.min(sc.y, canvas.height - 2), v: 0.20, ext: true };
         }
       }
-      extrapolateAnkle(23, 25, 15);  // left:  hip[23]→knee[25]→ankle[15]
-      extrapolateAnkle(24, 26, 16);  // right: hip[24]→knee[26]→ankle[16]
+      // Left leg:  hip[23] knee[25] ankle[27→COCO15] heel[29] toe[31]
+      recoverAnkle(23, 25, 27, 29, 31, 15);
+      // Right leg: hip[24] knee[26] ankle[28→COCO16] heel[30] toe[32]
+      recoverAnkle(24, 26, 28, 30, 32, 16);
       ctx.strokeStyle = '#D4AF37'; ctx.lineWidth = 3; ctx.globalAlpha = 0.9;
       COCO_CONN.forEach(function(p) {
         var a = coco17[p[0]], b = coco17[p[1]];

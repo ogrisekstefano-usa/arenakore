@@ -63,7 +63,7 @@ export const NEXUS_TTS_FALLBACK: Record<string, string> = {
   CHEAT_DETECTED:
     'Atleta non riconosciuto. Il Nèxus ha rilevato un cambio di identità. Rìtorna al centro.',
   FEET_GUIDANCE:
-    'Inquadra i piedi. Allòntanati ancora un po\'.',
+    'Step back. I need to see your feet.',
 
 };
 

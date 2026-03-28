@@ -367,6 +367,7 @@ export default function NexusBioScan() {
   const [koScore, setKoScore]               = useState(0);
   const [holdProgress, setHoldProgress]     = useState(0);
   const [scoreBreakdown, setScoreBreakdown] = useState({ stability: 0, confidence: 0, amplitude: 0 });
+  const [feetGuidance, setFeetGuidance]     = useState(false); // ankles off-frame
   const [triggerApproval, setTriggerApproval] = useState(false); // fires handleApproval asynchronously
   // Refs to read latest score values inside handleApproval (useCallback has [] deps)
   const koScoreRef       = useRef(0);
@@ -531,11 +532,14 @@ export default function NexusBioScan() {
 
     // ── FEET GUIDANCE: knees visible but ankles genuinely missing → voice prompt
     if ((data as any).feet_guidance === true) {
+      setFeetGuidance(true);
       const now = Date.now();
       if (now - lastCenterAlertRef.current > 4500) {
         lastCenterAlertRef.current = now;
         VoiceController.play('FEET_GUIDANCE').catch(() => {});
       }
+    } else {
+      setFeetGuidance(false);
     }
 
     if (!landmarks || landmarks.length === 0 || !person_detected) {
@@ -1408,6 +1412,15 @@ export default function NexusBioScan() {
           </Animated.View>
         )}
 
+        {/* ── FEET VISIBILITY WARNING: giant text when ankles off-frame ── */}
+        {poseEngineReady && feetGuidance && (
+          <Animated.View entering={FadeIn} style={feet$.container} pointerEvents="none">
+            <Ionicons name="arrow-back" size={20} color="#FF9F0A" />
+            <Text style={feet$.title}>ALLONTANATI</Text>
+            <Text style={feet$.sub}>PIEDI NON VISIBILI</Text>
+          </Animated.View>
+        )}
+
         {/* ── Live FPS badge — DEV only ── */}
         {__DEV__ && liveFps > 0 && (
           <View style={fps$.badge} pointerEvents="none">
@@ -1963,6 +1976,23 @@ const fallback$ = StyleSheet.create({
   },
   txt: {
     color: '#D4AF37', fontSize: 12, fontWeight: '900', letterSpacing: 2,
+  },
+});
+
+// ── FEET VISIBILITY WARNING — big overlay when ankles off-frame
+const feet$ = StyleSheet.create({
+  container: {
+    position: 'absolute', top: '30%', left: 0, right: 0,
+    alignItems: 'center', gap: 6, zIndex: 22, paddingHorizontal: 20,
+  },
+  title: {
+    color: '#FF9F0A', fontSize: 36, fontWeight: '900', letterSpacing: 2,
+    textShadowColor: 'rgba(255,159,10,0.8)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
+  },
+  sub: {
+    color: 'rgba(255,159,10,0.7)', fontSize: 14, fontWeight: '900', letterSpacing: 3,
   },
 });
 
