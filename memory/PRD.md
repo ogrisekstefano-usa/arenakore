@@ -1,12 +1,12 @@
-# ARENAKORE — PRD (Product Requirements Document) v5.0
+# ARENAKORE — PRD (Product Requirements Document) v6.0
 
 ## Overview
-**ARENAKORE** è la piattaforma mobile d'élite per atleti con analisi biometrica in tempo reale, sistema XP/Level, battle competitive, crew sociali e leaderboard globali. Estetica "Chic-Tech / Cinema".
+**ARENAKORE** è la piattaforma mobile d'élite per atleti con analisi biometrica in tempo reale, sistema XP/Level, battle competitive, crew sociali e leaderboard globali. Estetica "Nike Elite / Chic-Tech / Cinema".
 
 **Stack Tecnico**: Expo React Native SDK 54 + FastAPI + MongoDB  
 **Bundle ID**: `com.arenakore.app`  
-**Data creazione**: Marzo 2026  
-**Versione**: 5.0 — SPRINT 9: NOTIFICATION ENGINE COMPLETE
+**Data aggiornamento**: Marzo 2026  
+**Versione**: 6.0 — SPRINT 11: RIFONDAZIONE ESTETICA TOTALE + 5-PILLAR COMPLETE
 
 ---
 
@@ -15,15 +15,16 @@
 ### Backend (FastAPI)
 - **Auth**: JWT (python-jose + passlib/bcrypt), token 7 giorni
 - **DB**: MongoDB via Motor (async)
-- **Endpoints**: `/api/auth/*`, `/api/battles`, `/api/disciplines`, `/api/crews`, `/api/leaderboard`, `/api/nexus/*`
+- **Endpoints**: `/api/auth/*`, `/api/battles`, `/api/disciplines`, `/api/crews`, `/api/leaderboard`, `/api/nexus/*`, `/api/notifications`, `/api/dna/history`
 - **Founder Protocol**: Primo 100 utenti ricevono badge Gold permanente
+- **APScheduler**: Background job ogni 6h per notification engine
 
 ### Frontend (Expo Router v6)
 - **Auth**: AsyncStorage per JWT persistence
-- **Navigation**: Expo Router — Strict 5-Tab Lock (KORE, CREWS, NEXUS, DNA, RANK)
+- **Navigation**: Expo Router — Strict 5-Tab Lock (ARENA, KORE, NEXUS, DNA, RANK)
 - **Animazioni**: React Native Reanimated v4
 - **Audio**: Web Audio API (Oscillators per Bio-Scan hum, metallic pings)
-- **Charts**: react-native-svg (Radar Chart biometrico)
+- **Charts**: react-native-svg (Radar Chart biometrico, ArenaGO Radar Map con sweep animato)
 - **Motion Detection**: Camera frame differencing (web) + expo-sensors (native)
 
 ---
