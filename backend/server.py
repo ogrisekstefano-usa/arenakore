@@ -3400,6 +3400,16 @@ async def nexus_scanner_page():
 
     // ── MediaPipe results handler
     function onResults(results) {
+      // Show MEDIAPIPE READY on first call
+      if (!poseReadyCalled) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#32D74B';
+        ctx.font = '900 13px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('MEDIAPIPE READY', canvas.width/2, canvas.height/2);
+        drawRedCircle();
+        return;
+      }
       // No person → black + waiting
       if (!results.poseLandmarks || !results.poseLandmarks.length) {
         personFirstSeen = null;
@@ -3448,9 +3458,72 @@ async def nexus_scanner_page():
     });
     pose.onResults(onResults);
 
+    // ── DIAGNOSTICS
+    var poseReadyCalled  = false;
+    var cameraStartTime  = null;
+    var frameCount       = 0;
+
+    function drawStatus(line1, line2, color) {
+      var W = canvas.width, H = canvas.height;
+      ctx.save();
+      ctx.clearRect(0, W/2 - 60, W, 100);
+      ctx.fillStyle = color || '#00F2FF';
+      ctx.font = '900 14px monospace';
+      ctx.textAlign = 'center';
+      if (line1) ctx.fillText(line1, W/2, H/2 - 10);
+      if (line2) ctx.fillText(line2, W/2, H/2 + 14);
+      ctx.restore();
+    }
+
+    function drawRedCircle() {
+      // DIAGNOSTIC: red dot at center — confirms canvas is on top of video
+      ctx.save();
+      ctx.fillStyle   = '#FF3B30';
+      ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, 40, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle   = '#FFFFFF';
+      ctx.font        = '700 9px monospace';
+      ctx.textAlign   = 'center';
+      ctx.fillText('CANVAS OK', canvas.width / 2, 67);
+      ctx.restore();
+    }
+
+    function checkAITimeout() {
+      // After 5s from camera start, if onResults never fired → error
+      setTimeout(function() {
+        if (!poseReadyCalled) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = '#FF3B30';
+          ctx.font      = '900 16px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('ERRORE MOTORE AI', canvas.width/2, canvas.height/2 - 20);
+          ctx.font      = '700 11px monospace';
+          ctx.fillText('RIAVVIA SCAN', canvas.width/2, canvas.height/2 + 8);
+          post({ type:'error', message:'AI timeout — onResults never called' });
+        }
+      }, 5000);
+    }
+
+    // ── Wrap onResults with diagnostics
+    pose.onResults = function(results) {
+      if (!poseReadyCalled) {
+        poseReadyCalled = true;
+        post({ type:'info', message:'onResults first call — AI engine running' });
+      }
+      onResults(results);
+    };
+
     // ── Start camera with direct getUserMedia (NO camera_utils dependency)
     function startCamera() {
-      clearAndWait();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(0,242,255,0.5)';
+      ctx.font      = '900 13px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('MEDIAPIPE LOADING...', canvas.width/2, canvas.height/2);
+      drawRedCircle();
+
       navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 640 } }
       })
@@ -3460,15 +3533,33 @@ async def nexus_scanner_page():
       })
       .then(function() {
         post({ type: 'ready' });
-        clearAndWait();
-        // Inference loop via requestAnimationFrame — ~25fps cap
+        cameraStartTime = Date.now();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(0,242,255,0.5)';
+        ctx.font      = '900 13px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('CAMERA ON — AI INITIALIZING...', canvas.width/2, canvas.height/2);
+        drawRedCircle();
+        checkAITimeout();
+
+        // Inference loop
         function loop() {
           rafId = requestAnimationFrame(loop);
           var now = performance.now();
-          if (now - lastFrameTime < 40) return;  // ~25fps
+          if (now - lastFrameTime < 40) return;
           lastFrameTime = now;
+          frameCount++;
           if (video.readyState >= 2 && video.videoWidth > 0) {
-            pose.send({ image: video }).catch(function(){});
+            pose.send({ image: video }).catch(function(e){
+              if (!poseReadyCalled) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#FF9500';
+                ctx.font      = '700 11px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('pose.send ERROR: ' + (e && e.message || String(e)), canvas.width/2, canvas.height/2);
+                drawRedCircle();
+              }
+            });
           }
         }
         loop();
@@ -3477,10 +3568,10 @@ async def nexus_scanner_page():
         var denied = (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError');
         post({ type: denied ? 'camera_denied' : 'error', message: err.message || err.name });
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle   = denied ? '#FF3B30' : '#FF9500';
-        ctx.font        = '700 12px monospace';
-        ctx.textAlign   = 'center';
-        ctx.fillText(denied ? 'CAMERA PERMISSION DENIED' : 'CAMERA ERROR: ' + (err.name || err.message), canvas.width / 2, canvas.height / 2);
+        ctx.fillStyle = denied ? '#FF3B30' : '#FF9500';
+        ctx.font      = '700 12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(denied ? 'CAMERA PERMISSION DENIED' : 'CAMERA ERROR: ' + (err.name || err.message), canvas.width/2, canvas.height/2);
       });
     }
 
