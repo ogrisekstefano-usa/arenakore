@@ -350,6 +350,10 @@ export default function NexusBioScan() {
   // pendingApprovalRef: set by Score Engine when 3s hold completes.
   // Checked by a useEffect placed AFTER handleApproval to avoid TDZ.
   const pendingApprovalRef   = useRef(false);
+  // poseEngineReadyRef: when true, POSITIONING simulated loop must stop
+  const poseEngineReadyRef   = useRef(false);
+  // personEntrySinceRef: timestamp when person was first stably detected (3s entry gate)
+  const personEntrySinceRef  = useRef<number | null>(null);
 
   const [poseTimeout, setPoseTimeout]       = useState(false);
   const [koScore, setKoScore]               = useState(0);
@@ -386,6 +390,8 @@ export default function NexusBioScan() {
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   // Keep isScanningRef in sync
   useEffect(() => { isScanningRef.current = isScanning; }, [isScanning]);
+  // Keep poseEngineReadyRef in sync
+  useEffect(() => { poseEngineReadyRef.current = poseEngineReady; }, [poseEngineReady]);
 
   // ===================================================================
   // SCORE ENGINE — Pure functions (no hooks, safe in callbacks)
@@ -475,11 +481,44 @@ export default function NexusBioScan() {
     // ── Update real landmark state (for SVG rendering)
     setRealLandmarks(landmarks);
 
-    // ── Update detection progress (real visible count)
-    const newCount = Math.min(17, visible_count ?? 0);
+    // ── REAL MODE: 3-SECOND ENTRY GATE
+    // Person must be STABLY detected (visible_count ≥ 12 + centered) for 3 full seconds
+    // before POSITIONING advances. This is the biometric wall.
+    const ENTRY_REQUIRED_POINTS = 12;   // minimum keypoints to count as "person present"
+    const ENTRY_HOLD_MS = 3000;         // must be stable for 3 seconds
+
     if (phaseRef.current === 'positioning') {
-      setDetectedPoints(prev => Math.max(prev, newCount));
-      setVisibleMask(landmarks.map(l => l !== null && (l.v ?? 0) > 0.4));
+      if ((visible_count ?? 0) >= ENTRY_REQUIRED_POINTS && centered) {
+        // Person is in frame and centered → start/continue entry timer
+        if (!personEntrySinceRef.current) {
+          personEntrySinceRef.current = Date.now();
+        }
+        const elapsed = Date.now() - personEntrySinceRef.current;
+        const progress = Math.min(17, Math.round((elapsed / ENTRY_HOLD_MS) * 17));
+        setDetectedPoints(progress);
+        setVisibleMask(landmarks.map(l => l !== null && (l.v ?? 0) > 0.4));
+
+        if (elapsed >= ENTRY_HOLD_MS) {
+          // 3 seconds achieved → advance to VERIFYING
+          personEntrySinceRef.current = null;
+          setDetectedPoints(17);
+          setTimeout(() => {
+            if (phaseRef.current !== 'positioning') return;
+            confidenceStartRef.current = null;
+            setConfidenceTime(0);
+            setPhase('verifying');
+            stabilityRef.current = 0;
+            setStability(0);
+          }, 200);
+        }
+      } else {
+        // Person left frame or not centered → RESET entry timer + clear progress
+        if (personEntrySinceRef.current) {
+          personEntrySinceRef.current = null;
+          setDetectedPoints(0);
+          setVisibleMask(new Array(17).fill(false));
+        }
+      }
     }
 
     // ── SCORE ENGINE ──────────────────────────────────────────────────
@@ -672,14 +711,15 @@ export default function NexusBioScan() {
   }, [phase]);
 
   // ===================================================================
-  // GATE 2: POSITIONING — Slow progressive 17-point detection
-  // ~400-650ms per point = ~7-11s total.
-  // BIOMETRIC WALL: Zero detection until isScanning === true (camera confirmed ready).
-  // If camera not ready → stays blocked at "NEXUS IS SEARCHING FOR ATHLETE..."
+  // GATE 2: POSITIONING — 17-point detection
+  // REAL MODE: poseEngineReady=true → this loop does NOT run.
+  //   Detection is driven entirely by handlePoseData 3-second entry gate.
+  // SIMULATED MODE: poseEngineReady=false → runs the old progressive simulation.
   // ===================================================================
   useEffect(() => {
-    // BIOMETRIC WALL: Block detection until camera is confirmed ready
     if (phase !== 'positioning' || !isScanning) return;
+    // ── REAL MODE: MediaPipe WebView is active → skip simulation entirely
+    if (poseEngineReadyRef.current) return;
 
     let count = 0;
     const mask = new Array(17).fill(false);
@@ -687,9 +727,8 @@ export default function NexusBioScan() {
 
     const scheduleNext = () => {
       if (count >= 17) {
-        // All 17 detected — transition to VERIFYING (confidence check)
         setTimeout(() => {
-          if (phaseRef.current !== 'positioning') return; // abort if phase changed
+          if (phaseRef.current !== 'positioning') return;
           confidenceStartRef.current = null;
           setConfidenceTime(0);
           setPhase('verifying');
@@ -698,11 +737,11 @@ export default function NexusBioScan() {
         }, 400);
         return;
       }
-      // Detect next point — SLOWER: 400-650ms per point
       const delay = 400 + Math.random() * 250;
       setTimeout(() => {
-        // Double-guard: abort if phase changed OR scanning was interrupted
         if (phaseRef.current !== 'positioning' || !isScanningRef.current) return;
+        // Stop simulated loop if real engine became active
+        if (poseEngineReadyRef.current) return;
         const idx = detectionOrder[count];
         mask[idx] = true;
         count++;
@@ -713,7 +752,7 @@ export default function NexusBioScan() {
     };
 
     scheduleNext();
-  }, [phase, isScanning]); // Re-fires when isScanning becomes true
+  }, [phase, isScanning, poseEngineReady]); // poseEngineReady in deps stops loop when real engine starts
 
   // ===================================================================
   // GATE 3: VERIFYING — 17/17 must hold stable with high confidence for 1s

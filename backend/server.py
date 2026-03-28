@@ -3352,13 +3352,37 @@ async def nexus_scanner_page():
     var fpsHistory = [];
     var lastT = performance.now();
 
-    function drawSkeleton(mp_lm, W, H) {
+    // Map MediaPipe normalized coords to screen pixels (accounts for object-fit:cover crop)
+    function getScreenXY(lm_x, lm_y) {
+      var videoW = 480, videoH = 640;
+      var dispW = window.innerWidth  || 390;
+      var dispH = window.innerHeight || 844;
+      var videoAspect = videoW / videoH;
+      var dispAspect  = dispW  / dispH;
+      var scale, xOff, yOff;
+      if (dispAspect > videoAspect) {
+        scale = dispW / videoW; xOff = 0; yOff = (dispH - videoH * scale) / 2;
+      } else {
+        scale = dispH / videoH; xOff = (dispW - videoW * scale) / 2; yOff = 0;
+      }
+      return {
+        x: (1 - lm_x) * videoW * scale + xOff,
+        y: lm_y * videoH * scale + yOff
+      };
+    }
+
+    function drawSkeleton(mp_lm) {
+      var W = window.innerWidth  || 390;
+      var H = window.innerHeight || 844;
+      if (canvas.width !== W)  canvas.width  = W;
+      if (canvas.height !== H) canvas.height = H;
+
       var coco17 = new Array(17).fill(null);
       Object.keys(MP_TO_COCO).forEach(function(k) {
         var lm = mp_lm[parseInt(k)];
         if (lm && (lm.visibility || 0) > 0.3) {
-          // Mirror X because video is CSS-mirrored (scaleX -1)
-          coco17[MP_TO_COCO[k]] = { x: (1 - lm.x) * W, y: lm.y * H, v: lm.visibility || 0 };
+          var sc = getScreenXY(lm.x, lm.y);
+          coco17[MP_TO_COCO[k]] = { x: sc.x, y: sc.y, v: lm.visibility || 0 };
         }
       });
 
@@ -3367,7 +3391,7 @@ async def nexus_scanner_page():
       // Draw connections (gold)
       ctx.strokeStyle = '#D4AF37';
       ctx.lineWidth = 2.5;
-      ctx.globalAlpha = 0.75;
+      ctx.globalAlpha = 0.8;
       COCO_CONN.forEach(function(pair) {
         var a = coco17[pair[0]], b = coco17[pair[1]];
         if (a && b) {
@@ -3381,16 +3405,18 @@ async def nexus_scanner_page():
       // Draw keypoints (cyan)
       coco17.forEach(function(pt, i) {
         if (!pt) return;
-        var r = i < 5 ? 7 : 5;
-        // Outer glow
-        ctx.globalAlpha = 0.25;
+        var r = i < 5 ? 8 : 6;
+        ctx.globalAlpha = 0.3;
         ctx.fillStyle = '#00F2FF';
-        ctx.beginPath(); ctx.arc(pt.x, pt.y, r * 2, 0, Math.PI * 2); ctx.fill();
-        // Main dot
-        ctx.globalAlpha = 0.9;
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, r * 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1.0;
         ctx.beginPath(); ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2); ctx.fill();
-        // White center
-        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#00F2FF';
+      });
+
+      ctx.globalAlpha = 1;
         ctx.fillStyle = '#FFFFFF';
         ctx.beginPath(); ctx.arc(pt.x, pt.y, 2, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#00F2FF';
@@ -3409,20 +3435,15 @@ async def nexus_scanner_page():
       var fps = Math.round(fpsHistory.reduce(function(a,b){return a+b;},0) / fpsHistory.length);
 
       // Resize canvas to match video dimensions
-      var W = videoEl.videoWidth || canvas.width;
-      var H = videoEl.videoHeight || canvas.height;
-      if (canvas.width !== W) canvas.width = W;
-      if (canvas.height !== H) canvas.height = H;
-
       if (!results.poseLandmarks || !results.poseLandmarks.length) {
-        ctx.clearRect(0, 0, W, H);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         statusEl.textContent = fps + ' FPS — WAITING FOR ATHLETE...';
         post({ type: 'pose', landmarks: [], fps: fps, centered: false, person_detected: false, visible_count: 0 });
         return;
       }
 
       var mp_lm = results.poseLandmarks;
-      var coco17 = drawSkeleton(mp_lm, W, H);
+      var coco17 = drawSkeleton(mp_lm);
 
       var noseX = mp_lm[0] ? mp_lm[0].x : 0.5;
       var centered = (noseX >= 0.28 && noseX <= 0.72);
