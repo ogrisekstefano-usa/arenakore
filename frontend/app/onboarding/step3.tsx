@@ -1,9 +1,10 @@
 /**
  * ARENAKORE LEGACY INITIATION — STEP 3
  * KORE DNA PROFILING: Altezza, Peso, Età, Livello Allenamento
+ * GPS: Detects real city on mount → overwrites CHICAGO in passport on next render
  * Visual: Gold outer-glow title · Off-white labels (#E0E0E0) · Cyan neon containers
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
   KeyboardAvoidingView, Platform, ScrollView, StatusBar, Switch,
@@ -12,6 +13,8 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── Design tokens
 const CYAN   = '#00F2FF';
@@ -58,6 +61,38 @@ export default function LegacyStep3() {
   const [level, setLevel]   = useState<string | null>(null);
   const [error, setError]   = useState('');
   const [ghostMode, setGhostMode] = useState(false);
+  const [detectedCity, setDetectedCity] = useState<string>('CHICAGO');
+
+  // ── GPS: detect real city on mount, update scan result for passport
+  useEffect(() => {
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') return;
+
+        const pos = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        const [geo] = await Location.reverseGeocodeAsync(pos.coords);
+        const city = (geo?.city || geo?.subregion || geo?.region || 'CHICAGO')
+          .toUpperCase()
+          .trim();
+
+        setDetectedCity(city);
+
+        // Update scan result with real city (passport will show it on next render)
+        const existing = await AsyncStorage.getItem('@kore_scan_result');
+        if (existing) {
+          const parsed = JSON.parse(existing);
+          await AsyncStorage.setItem('@kore_scan_result', JSON.stringify({ ...parsed, city }));
+        }
+        // Also save as standalone GPS city for step4 registration
+        await AsyncStorage.setItem('@kore_gps_city', city);
+      } catch (_e) {
+        // GPS unavailable — keep CHICAGO as fallback, non-blocking
+      }
+    })();
+  }, []);
 
   const handleContinue = useCallback(() => {
     if (!height || !weight || !age || !level) {
@@ -73,7 +108,7 @@ export default function LegacyStep3() {
     setError('');
     router.push({
       pathname: '/onboarding/step4',
-      params: { height_cm: h, weight_kg: w, age: a, training_level: level, ghost_mode: ghostMode ? '1' : '0' },
+      params: { height_cm: h, weight_kg: w, age: a, training_level: level, ghost_mode: ghostMode ? '1' : '0', city: detectedCity },
     });
   }, [height, weight, age, level, router]);
 

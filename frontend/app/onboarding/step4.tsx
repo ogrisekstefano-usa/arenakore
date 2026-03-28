@@ -21,7 +21,7 @@ export default function LegacyStep4() {
   const insets = useSafeAreaInsets();
   const { register } = useAuth();
   const params = useLocalSearchParams<{
-    height_cm: string; weight_kg: string; age: string; training_level: string; ghost_mode: string;
+    height_cm: string; weight_kg: string; age: string; training_level: string; ghost_mode: string; city: string;
   }>();
 
   const [nickname, setNickname] = useState('');
@@ -60,9 +60,10 @@ export default function LegacyStep4() {
         const savedToken     = await AsyncStorage.getItem('@arenakore_token');
 
         if (savedToken) {
-          // Sync pending scan result first (updates DNA + XP + city)
+          // Sync pending scan result with GPS city (overwrites CHICAGO fallback)
+          const gpsCity = params.city || await AsyncStorage.getItem('@kore_gps_city') || 'CHICAGO';
           if (pendingScanRaw) {
-            const scanData = JSON.parse(pendingScanRaw);
+            const scanData = { ...JSON.parse(pendingScanRaw), city: gpsCity };
             await api.saveScanResult(scanData, savedToken);
             await AsyncStorage.removeItem('@kore_pending_scan');
           } else if (pendingDnaRaw) {
@@ -71,6 +72,8 @@ export default function LegacyStep4() {
             await api.saveFiveBeatDna(dna, savedToken);
           }
           if (pendingDnaRaw) await AsyncStorage.removeItem('@kore_pending_dna');
+          // Also update profile city with GPS value
+          api.updateMyCity(gpsCity, savedToken).catch(() => {});
 
           // Save permissions + ghost mode preference
           api.updatePermissions(savedToken).catch(() => {});
