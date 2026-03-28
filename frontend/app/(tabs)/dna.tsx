@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar, ImageBackground,
-  Dimensions, TouchableOpacity,
+  Dimensions, TouchableOpacity, Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -311,6 +311,68 @@ export default function DNATab() {
           </View>
         )}
 
+        {/* ====== TALOSFIT PARTNER BANNER — SPRINT 10 ====== */}
+        {dna && (() => {
+          const avgDna: number = eligibility?.avg_dna ?? Math.round(
+            Object.values(dna as Record<string, number>).reduce((a: number, b: number) => a + b, 0) / 6
+          );
+          const dynamicLine = avgDna < 50
+            ? 'Costruisci le tue basi.'
+            : avgDna > 80
+            ? 'Raggiungi lo status di Giant.'
+            : 'Domina l\'Arena.';
+          return (
+            <TouchableOpacity
+              style={styles.talosBannerWrap}
+              onPress={() => Linking.openURL('https://www.talosfit.com')}
+              activeOpacity={0.88}
+            >
+              <LinearGradient
+                colors={['#0B0900', '#100D02', '#0B0900']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.talosBannerGrad}
+              >
+                {/* Gold top accent line */}
+                <View style={styles.talosTopLine} />
+
+                <View style={styles.talosBannerContent}>
+                  {/* LEFT: Copy */}
+                  <View style={styles.talosLeft}>
+                    <View style={styles.talosPartnerBadge}>
+                      <Ionicons name="shield-checkmark" size={9} color="#D4AF37" />
+                      <Text style={styles.talosPartnerText}>PARTNER UFFICIALE</Text>
+                    </View>
+                    <Text style={styles.talosBannerTitle}>EVOLVE YOUR DNA.</Text>
+                    <Text style={styles.talosBannerBody}>
+                      {dynamicLine}{'\n'}
+                      <Text style={styles.talosBannerBodyAccent}>
+                        Trova il tuo Coach multidisciplina su TalosFit per dominare l'Arena.
+                      </Text>
+                    </Text>
+                    <View style={styles.talosCta}>
+                      <Text style={styles.talosCtaText}>SCOPRI I COACH</Text>
+                      <Ionicons name="arrow-forward" size={11} color="#D4AF37" />
+                    </View>
+                  </View>
+
+                  {/* RIGHT: Brand mark */}
+                  <View style={styles.talosRight}>
+                    <View style={styles.talosLogoWrap}>
+                      <Text style={styles.talosLogoT}>T</Text>
+                    </View>
+                    <Text style={styles.talosLogoName}>TALOS</Text>
+                    <Text style={styles.talosLogoFit}>FIT</Text>
+                  </View>
+                </View>
+
+                {/* Cyan bottom accent line */}
+                <View style={styles.talosBottomLine} />
+              </LinearGradient>
+            </TouchableOpacity>
+          );
+        })()}
+
         {/* Stat cards — monochromatic Ionicons */}
         {dna && (
           <Animated.View style={[styles.statsGrid, scanStyle]}>
@@ -553,6 +615,66 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', fontSize: 13, fontWeight: '900',
     letterSpacing: 2, textTransform: 'uppercase',
   },
+  // ===== TALOSFIT PARTNER BANNER — SPRINT 10 =====
+  talosBannerWrap: {
+    marginHorizontal: 14, marginTop: 14,
+    borderRadius: 18, overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(212,175,55,0.32)',
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  talosBannerGrad: { overflow: 'hidden' },
+  talosTopLine: { height: 2, backgroundColor: '#D4AF37', opacity: 0.8 },
+  talosBottomLine: { height: 1, backgroundColor: '#00F2FF', opacity: 0.25 },
+  talosBannerContent: {
+    flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18, paddingVertical: 18, gap: 14,
+  },
+  talosLeft: { flex: 1, gap: 7 },
+  talosPartnerBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(212,175,55,0.1)',
+    borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1, borderColor: 'rgba(212,175,55,0.22)',
+  },
+  talosPartnerText: { color: '#D4AF37', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
+  talosBannerTitle: {
+    color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1,
+    lineHeight: 22,
+  },
+  talosBannerBody: {
+    color: 'rgba(255,255,255,0.45)', fontSize: 11,
+    fontWeight: '600', lineHeight: 17,
+  },
+  talosBannerBodyAccent: {
+    color: 'rgba(255,255,255,0.6)', fontWeight: '500',
+  },
+  talosCta: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    alignSelf: 'flex-start',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(212,175,55,0.4)',
+    paddingBottom: 1,
+  },
+  talosCtaText: { color: '#D4AF37', fontSize: 10, fontWeight: '900', letterSpacing: 2.5 },
+  talosRight: { alignItems: 'center', gap: 2, width: 52 },
+  talosLogoWrap: {
+    width: 40, height: 40, borderRadius: 12,
+    backgroundColor: 'rgba(212,175,55,0.1)',
+    borderWidth: 1.5, borderColor: 'rgba(212,175,55,0.35)',
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 4,
+  },
+  talosLogoT: {
+    color: '#D4AF37', fontSize: 22, fontWeight: '900', letterSpacing: -1,
+  },
+  talosLogoName: { color: '#FFFFFF', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  talosLogoFit: { color: '#D4AF37', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
   // Notification Bell
   notifBell: { position: 'relative', padding: 4 },
   notifBellBadge: {
