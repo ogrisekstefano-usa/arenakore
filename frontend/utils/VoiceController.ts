@@ -1,125 +1,169 @@
 /**
- * ARENAKORE — NEXUS VOICE CONTROLLER v2.0
+ * ARENAKORE — NEXUS VOICE CONTROLLER v3.0 (Multilingual)
  *
- * Gestisce la voce reale di Stefano Ogrisek (file mp3 locali via expo-av).
- * Fallback silenzioso a Speech.speak() se il file non è ancora presente.
- * Overlap guard: ogni nuovo comando interrompe quello precedente (fade-out).
- * One-shot guard: WELCOME, DETECTION_LOCK etc. suonano solo una volta per sessione.
+ * Gestisce IT / EN / ES con file MP3 reali (42 file generati).
+ * The Butter: Low-Pass Filter (alpha 0.55) già nel scanner HTML.
+ * Overlap guard: fade-out prima del prossimo cue.
+ * One-shot: WELCOME, NEXUS_ACTIVE, DETECTION_LOCK, SUCCESS → una volta per sessione.
  *
- * COME AGGIUNGERE LA VOCE REALE:
- * 1. Posiziona i file mp3 in /app/frontend/assets/voice/
- * 2. Decommenta la riga require() corrispondente in NEXUS_VOICE_MAP
- * 3. Il VoiceController userà automaticamente il file reale
+ * COME SOSTITUIRE CON LA VOCE DI STEFANO:
+ * 1. Registra il file MP3 con la stessa frase (specs: 44.1kHz, 128kbps, ~2-4s)
+ * 2. Sovrascrivilo in assets/voice/{lang}/{key}.mp3
+ * 3. Il controller usa automaticamente il nuovo file (no code change needed)
  */
 import { Audio } from 'expo-av';
 import * as Speech from 'expo-speech';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// ── VOICE MAP
-// null    = placeholder (voce di sistema)
-// require = file audio reale (voce di Stefano)
-export const NEXUS_VOICE_MAP: Record<string, any | null> = {
-  WELCOME:        null, // require('../../assets/voice/benvenuto.mp3'),
-  POSITIONING:    null, // require('../../assets/voice/posizionati.mp3'),
-  DETECTION_LOCK: null, // require('../../assets/voice/ti-ho-visto.mp3'),
-  COUNTDOWN:      null, // require('../../assets/voice/countdown.mp3'),
-  BEAT_1:         null, // require('../../assets/voice/esercizio_1.mp3'),
-  BEAT_2:         null, // require('../../assets/voice/esercizio_2.mp3'),
-  BEAT_3:         null, // require('../../assets/voice/esercizio_3.mp3'),
-  BEAT_4:         null, // require('../../assets/voice/esercizio_4.mp3'),
-  BEAT_5:         null, // require('../../assets/voice/esercizio_5.mp3'),
-  SUCCESS:        null, // require('../../assets/voice/dna-generato.mp3'),
-  REPEAT_WARN:    null, // require('../../assets/voice/ripeti.mp3'),
-  NEXUS_ACTIVE:   null, // require('../../assets/voice/nexus-attivo.mp3'),
-  CHEAT_DETECTED: null, // require('../../assets/voice/cheat-detected.mp3'),
+export type VoiceLang = 'IT' | 'EN' | 'ES';
+
+// ── ALL 42 VOICE FILES (IT × 14 + EN × 14 + ES × 14)
+const NEXUS_VOICES: Record<VoiceLang, Record<string, any>> = {
+  IT: {
+    WELCOME:        require('../assets/voice/it/welcome.mp3'),
+    POSITIONING:    require('../assets/voice/it/positioning.mp3'),
+    DETECTION_LOCK: require('../assets/voice/it/detection_lock.mp3'),
+    COUNTDOWN:      require('../assets/voice/it/countdown.mp3'),
+    BEAT_1:         require('../assets/voice/it/beat_1.mp3'),
+    BEAT_2:         require('../assets/voice/it/beat_2.mp3'),
+    BEAT_3:         require('../assets/voice/it/beat_3.mp3'),
+    BEAT_4:         require('../assets/voice/it/beat_4.mp3'),
+    BEAT_5:         require('../assets/voice/it/beat_5.mp3'),
+    SUCCESS:        require('../assets/voice/it/success.mp3'),
+    REPEAT_WARN:    require('../assets/voice/it/repeat_warn.mp3'),
+    FEET_GUIDANCE:  require('../assets/voice/it/feet_guidance.mp3'),
+    CHEAT_DETECTED: require('../assets/voice/it/cheat_detected.mp3'),
+    NEXUS_ACTIVE:   require('../assets/voice/it/nexus_active.mp3'),
+  },
+  EN: {
+    WELCOME:        require('../assets/voice/en/welcome.mp3'),
+    POSITIONING:    require('../assets/voice/en/positioning.mp3'),
+    DETECTION_LOCK: require('../assets/voice/en/detection_lock.mp3'),
+    COUNTDOWN:      require('../assets/voice/en/countdown.mp3'),
+    BEAT_1:         require('../assets/voice/en/beat_1.mp3'),
+    BEAT_2:         require('../assets/voice/en/beat_2.mp3'),
+    BEAT_3:         require('../assets/voice/en/beat_3.mp3'),
+    BEAT_4:         require('../assets/voice/en/beat_4.mp3'),
+    BEAT_5:         require('../assets/voice/en/beat_5.mp3'),
+    SUCCESS:        require('../assets/voice/en/success.mp3'),
+    REPEAT_WARN:    require('../assets/voice/en/repeat_warn.mp3'),
+    FEET_GUIDANCE:  require('../assets/voice/en/feet_guidance.mp3'),
+    CHEAT_DETECTED: require('../assets/voice/en/cheat_detected.mp3'),
+    NEXUS_ACTIVE:   require('../assets/voice/en/nexus_active.mp3'),
+  },
+  ES: {
+    WELCOME:        require('../assets/voice/es/welcome.mp3'),
+    POSITIONING:    require('../assets/voice/es/positioning.mp3'),
+    DETECTION_LOCK: require('../assets/voice/es/detection_lock.mp3'),
+    COUNTDOWN:      require('../assets/voice/es/countdown.mp3'),
+    BEAT_1:         require('../assets/voice/es/beat_1.mp3'),
+    BEAT_2:         require('../assets/voice/es/beat_2.mp3'),
+    BEAT_3:         require('../assets/voice/es/beat_3.mp3'),
+    BEAT_4:         require('../assets/voice/es/beat_4.mp3'),
+    BEAT_5:         require('../assets/voice/es/beat_5.mp3'),
+    SUCCESS:        require('../assets/voice/es/success.mp3'),
+    REPEAT_WARN:    require('../assets/voice/es/repeat_warn.mp3'),
+    FEET_GUIDANCE:  require('../assets/voice/es/feet_guidance.mp3'),
+    CHEAT_DETECTED: require('../assets/voice/es/cheat_detected.mp3'),
+    NEXUS_ACTIVE:   require('../assets/voice/es/nexus_active.mp3'),
+  },
 };
 
-// ── TTS FALLBACK MESSAGES — con accentazione corretta per sintetizzatore italiano
-// La punteggiatura e le virgole forzano pause naturali. Gli accenti aiutano la pronuncia.
-export const NEXUS_TTS_FALLBACK: Record<string, string> = {
-  WELCOME:
-    'Benvenuto nel Nèxus Protocol. Tra cinque secondi, la camera si attiverà.',
-  POSITIONING:
-    'Nèxus attivo. Pòsizionati al centro della camera.',
-  DETECTION_LOCK:
-    'Ti ho visto. Mantieni la posizione, per due secondi.',
-  COUNTDOWN:
-    'Biomètria confermata. Preparati. Tre... due... uno.',
-  BEAT_1:
-    'Bit uno: Posa neutrale. Mantieni ferma la posizione.',
-  BEAT_2:
-    'Bit due: Alza le braccia, sopra la testa.',
-  BEAT_3:
-    'Bit tre: T-Pose. Braccia aperte, orizzontali.',
-  BEAT_4:
-    'Bit quattro: Mezzo squat. Tieni la posizione.',
-  BEAT_5:
-    'Bit cinque: Generazione Di-En-A Korè, in corso.',
-  SUCCESS:
-    'Korè Di-En-A generato con successo. Benvenuto nell\'Arena.',
-  REPEAT_WARN:
-    'Ripèti il movimento, non ti ho visto!',
-  NEXUS_ACTIVE:
-    'Nèxus attivo. Pòsizionati al centro della camera.',
-  CHEAT_DETECTED:
-    'Atleta non riconosciuto. Il Nèxus ha rilevato un cambio di identità. Rìtorna al centro.',
-  FEET_GUIDANCE:
-    'Step back. I need to see your feet.',
-
+// ── TTS FALLBACK (when MP3 fails or for unsupported keys)
+const TTS_FALLBACK: Record<VoiceLang, Record<string, { text: string; rate: number }>> = {
+  IT: {
+    WELCOME:        { text: 'Benvenuto nel Protocollo Nèxus. Entra nell\'Arena.',                rate: 0.78 },
+    POSITIONING:    { text: 'Nèxus attivo. Pòsizionati al centro della camera.',                rate: 0.80 },
+    DETECTION_LOCK: { text: 'Ti ho visto. Mantieni la posizione per due secondi.',              rate: 0.82 },
+    COUNTDOWN:      { text: 'Biomètria confermata. Tre, due, uno.',                              rate: 0.85 },
+    BEAT_1:         { text: 'Bit uno: Posa neutrale.',                                           rate: 0.86 },
+    BEAT_2:         { text: 'Bit due: Alza le braccia.',                                         rate: 0.86 },
+    BEAT_3:         { text: 'Bit tre: T-Pose.',                                                  rate: 0.86 },
+    BEAT_4:         { text: 'Bit quattro: Mezzo squat.',                                         rate: 0.86 },
+    BEAT_5:         { text: 'Bit cinque: Generazione DNA.',                                      rate: 0.80 },
+    SUCCESS:        { text: 'Korè DNA generato. Benvenuto nell\'Arena.',                         rate: 0.78 },
+    REPEAT_WARN:    { text: 'Ripeti il movimento!',                                              rate: 0.90 },
+    FEET_GUIDANCE:  { text: 'Allontanati. Ho bisogno di vedere i tuoi piedi.',                  rate: 0.84 },
+    CHEAT_DETECTED: { text: 'Atleta non riconosciuto. Ritorna al centro.',                       rate: 0.88 },
+    NEXUS_ACTIVE:   { text: 'Nèxus attivo. Pòsizionati al centro.',                             rate: 0.80 },
+  },
+  EN: {
+    WELCOME:        { text: 'Welcome to the Nexus Protocol. Enter the Arena.',                   rate: 0.78 },
+    POSITIONING:    { text: 'Nexus active. Position yourself in the center.',                    rate: 0.80 },
+    DETECTION_LOCK: { text: 'I see you. Hold that position.',                                    rate: 0.82 },
+    COUNTDOWN:      { text: 'Biometric lock confirmed. Three, two, one.',                        rate: 0.85 },
+    BEAT_1:         { text: 'Beat one: Neutral stance.',                                         rate: 0.86 },
+    BEAT_2:         { text: 'Beat two: Raise your arms.',                                        rate: 0.86 },
+    BEAT_3:         { text: 'Beat three: T-Pose.',                                               rate: 0.86 },
+    BEAT_4:         { text: 'Beat four: Half squat.',                                            rate: 0.86 },
+    BEAT_5:         { text: 'Beat five: DNA generation.',                                        rate: 0.80 },
+    SUCCESS:        { text: 'Kore DNA generated. Welcome to the Arena.',                         rate: 0.78 },
+    REPEAT_WARN:    { text: 'Repeat the movement!',                                              rate: 0.90 },
+    FEET_GUIDANCE:  { text: 'Step back. I need to see your feet.',                               rate: 0.84 },
+    CHEAT_DETECTED: { text: 'Athlete not recognized. Return to center.',                         rate: 0.88 },
+    NEXUS_ACTIVE:   { text: 'Nexus active. Position yourself in the center.',                    rate: 0.80 },
+  },
+  ES: {
+    WELCOME:        { text: 'Bienvenido al Protocolo Nexus. Entra en la Arena.',                 rate: 0.78 },
+    POSITIONING:    { text: 'Nexus activo. Posiciónate en el centro.',                           rate: 0.80 },
+    DETECTION_LOCK: { text: 'Te veo. Mantén esa posición.',                                      rate: 0.82 },
+    COUNTDOWN:      { text: 'Biometría confirmada. Tres, dos, uno.',                             rate: 0.85 },
+    BEAT_1:         { text: 'Turno uno: Postura neutral.',                                       rate: 0.86 },
+    BEAT_2:         { text: 'Turno dos: Levanta los brazos.',                                    rate: 0.86 },
+    BEAT_3:         { text: 'Turno tres: T-Pose.',                                               rate: 0.86 },
+    BEAT_4:         { text: 'Turno cuatro: Medio squat.',                                        rate: 0.86 },
+    BEAT_5:         { text: 'Turno cinco: Generando ADN.',                                       rate: 0.80 },
+    SUCCESS:        { text: 'ADN Kore generado. Bienvenido a la Arena.',                         rate: 0.78 },
+    REPEAT_WARN:    { text: '¡Repite el movimiento!',                                            rate: 0.90 },
+    FEET_GUIDANCE:  { text: 'Aléjate. Necesito ver tus pies.',                                   rate: 0.84 },
+    CHEAT_DETECTED: { text: 'Atleta no reconocido. Regresa al centro.',                          rate: 0.88 },
+    NEXUS_ACTIVE:   { text: 'Nexus activo. Posiciónate en el centro.',                           rate: 0.80 },
+  },
 };
 
-// ── TTS RATE per chiave
-const NEXUS_TTS_RATE: Record<string, number> = {
-  WELCOME:        0.78,
-  POSITIONING:    0.80,
-  DETECTION_LOCK: 0.82,
-  COUNTDOWN:      0.85,
-  BEAT_1:         0.86,
-  BEAT_2:         0.86,
-  BEAT_3:         0.86,
-  BEAT_4:         0.86,
-  BEAT_5:         0.80,
-  SUCCESS:        0.78,
-  REPEAT_WARN:    0.90,
-  NEXUS_ACTIVE:   0.80,
-  CHEAT_DETECTED: 0.88,
-};
+// ── TTS language codes
+const TTS_LANG: Record<VoiceLang, string> = { IT: 'it-IT', EN: 'en-US', ES: 'es-ES' };
 
-// ── ONE-SHOT KEYS: questi cue suonano UNA SOLA VOLTA per sessione.
-// Se l'atleta esce e rientra, il sistema non ripete 'Benvenuto'.
-const ONE_SHOT_KEYS = new Set([
-  'WELCOME',
-  'NEXUS_ACTIVE',
-  'DETECTION_LOCK',
-  'SUCCESS',
-]);
+// ── One-shot keys (play only once per session per language)
+const ONE_SHOT_KEYS = new Set(['WELCOME', 'NEXUS_ACTIVE', 'DETECTION_LOCK', 'SUCCESS']);
 
-// ─────────────────────────────────────────────────────────────────
-// VOICE CONTROLLER SINGLETON
+const LANG_STORAGE_KEY = '@nexus_voice_lang';
+
 // ─────────────────────────────────────────────────────────────────
 class VoiceControllerClass {
+  private lang: VoiceLang = 'EN';
   private currentSound: Audio.Sound | null = null;
   private audioModeSet = false;
-  private hasPlayedSet = new Set<string>(); // one-shot tracking
+  private hasPlayedSet = new Set<string>();
 
-  /** Reset session flags (call when restarting the scan) */
-  resetSession(): void {
-    this.hasPlayedSet.clear();
+  constructor() {
+    // Load saved language preference
+    AsyncStorage.getItem(LANG_STORAGE_KEY).then(saved => {
+      if (saved === 'IT' || saved === 'EN' || saved === 'ES') {
+        this.lang = saved;
+      }
+    }).catch(() => {});
   }
 
-  /** Ensure iOS plays audio even in silent mode */
+  /** Set active language and persist preference */
+  async setLanguage(lang: VoiceLang): Promise<void> {
+    this.lang = lang;
+    this.hasPlayedSet.clear(); // new language = fresh session
+    await AsyncStorage.setItem(LANG_STORAGE_KEY, lang).catch(() => {});
+  }
+
+  getCurrentLanguage(): VoiceLang { return this.lang; }
+
+  resetSession(): void { this.hasPlayedSet.clear(); }
+
   private async ensureAudioMode() {
     if (this.audioModeSet) return;
     try {
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: false,
-        shouldDuckAndroid: true,
-      });
+      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true, staysActiveInBackground: false, shouldDuckAndroid: true });
       this.audioModeSet = true;
     } catch (_e) {}
   }
 
-  /** Fade-out + stop + unload the currently playing sound */
   async stop(): Promise<void> {
     try { Speech.stop(); } catch (_e) {}
     const sound = this.currentSound;
@@ -140,39 +184,27 @@ class VoiceControllerClass {
     } catch (_e) {}
   }
 
-  /**
-   * Play a voice cue by key.
-   * - ONE-SHOT guard: WELCOME, NEXUS_ACTIVE, DETECTION_LOCK, SUCCESS play once per session.
-   * - Overlap guard: stops previous audio before starting new one.
-   * - Fallback: TTS if mp3 is null or fails.
-   */
   async play(key: string): Promise<void> {
-    // ONE-SHOT guard: skip if already played this session
-    if (ONE_SHOT_KEYS.has(key) && this.hasPlayedSet.has(key)) {
-      return; // silently skip — don't repeat welcome to returning athlete
-    }
+    // One-shot guard
+    if (ONE_SHOT_KEYS.has(key) && this.hasPlayedSet.has(`${this.lang}_${key}`)) return;
 
     await this.stop();
 
-    const audioModule = NEXUS_VOICE_MAP[key] ?? null;
-    const ttsText = NEXUS_TTS_FALLBACK[key] ?? '';
-    const ttsRate = NEXUS_TTS_RATE[key] ?? 0.80;
+    const audioModule = NEXUS_VOICES[this.lang]?.[key] ?? null;
+    const fallback    = TTS_FALLBACK[this.lang]?.[key];
 
     if (audioModule !== null) {
       try {
         await this.ensureAudioMode();
-        const { sound } = await Audio.Sound.createAsync(
-          audioModule,
-          { shouldPlay: true, volume: 1.0 },
-        );
+        const { sound } = await Audio.Sound.createAsync(audioModule, { shouldPlay: true, volume: 1.0 });
         this.currentSound = sound;
-        sound.setOnPlaybackStatusUpdate((status) => {
+        sound.setOnPlaybackStatusUpdate(status => {
           if (status.isLoaded && status.didJustFinish) {
             sound.unloadAsync().catch(() => {});
             if (this.currentSound === sound) this.currentSound = null;
           }
         });
-        if (ONE_SHOT_KEYS.has(key)) this.hasPlayedSet.add(key);
+        if (ONE_SHOT_KEYS.has(key)) this.hasPlayedSet.add(`${this.lang}_${key}`);
         return;
       } catch (_e) {
         this.currentSound = null;
@@ -180,26 +212,17 @@ class VoiceControllerClass {
     }
 
     // TTS fallback
-    if (ttsText) {
+    if (fallback) {
       try {
-        Speech.speak(ttsText, { language: 'it-IT', rate: ttsRate, pitch: 1.0 });
-        if (ONE_SHOT_KEYS.has(key)) this.hasPlayedSet.add(key);
+        Speech.speak(fallback.text, { language: TTS_LANG[this.lang], rate: fallback.rate, pitch: 1.0 });
+        if (ONE_SHOT_KEYS.has(key)) this.hasPlayedSet.add(`${this.lang}_${key}`);
       } catch (_e) {}
     }
   }
 
-  /** Play beat cue (beats always play, never one-shot) */
-  async playBeat(beatIndex: number, overrideText?: string): Promise<void> {
-    const key = `BEAT_${beatIndex + 1}`;
-    if (overrideText) {
-      await this.stop();
-      const rate = NEXUS_TTS_RATE[key] ?? 0.86;
-      try { Speech.speak(overrideText, { language: 'it-IT', rate, pitch: 1.0 }); } catch (_e) {}
-    } else {
-      await this.play(key);
-    }
+  async playBeat(beatIndex: number): Promise<void> {
+    await this.play(`BEAT_${beatIndex + 1}`);
   }
 }
 
-// Export singleton
 export const VoiceController = new VoiceControllerClass();
