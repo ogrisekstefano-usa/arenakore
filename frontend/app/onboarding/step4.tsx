@@ -62,6 +62,10 @@ export default function LegacyStep4() {
           await api.saveFiveBeatDna(dna, savedToken);
           await AsyncStorage.removeItem('@kore_pending_dna');
         }
+        // ── PERMISSIONS: Save camera + mic enabled flags to DB (non-blocking)
+        if (savedToken) {
+          api.updatePermissions(savedToken).catch(() => {});
+        }
       } catch (_dnaErr) {
         // Non-blocking: registration still succeeds even if DNA sync fails
       }

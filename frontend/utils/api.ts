@@ -210,4 +210,8 @@ export const api = {
 
   updateMyCity: (city: string, token: string) =>
     request('/profile/city', { method: 'PUT', body: JSON.stringify({ city }) }, token),
+
+  // ========== PROFILE PERMISSIONS ==========
+  updatePermissions: (token: string) =>
+    request('/profile/permissions', { method: 'PUT', body: JSON.stringify({ camera_enabled: true, mic_enabled: true }) }, token),
 };

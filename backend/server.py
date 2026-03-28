@@ -3158,6 +3158,21 @@ async def update_my_city(body: dict, current_user: dict = Depends(get_current_us
     return {"status": "updated", "city": city}
 
 
+@api_router.put("/profile/permissions")
+async def update_permissions(body: dict, current_user: dict = Depends(get_current_user)):
+    """
+    Save camera_enabled and mic_enabled flags on the user profile.
+    Called automatically after registration so Nexus never asks for permissions again.
+    """
+    camera = bool(body.get("camera_enabled", True))
+    mic    = bool(body.get("mic_enabled", True))
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": {"camera_enabled": camera, "mic_enabled": mic}},
+    )
+    return {"status": "saved", "camera_enabled": camera, "mic_enabled": mic}
+
+
 # Register all routes (must be AFTER all @api_router decorators)
 app.include_router(api_router)
 
