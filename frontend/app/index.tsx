@@ -119,7 +119,14 @@ export default function HeroIndex() {
 
   // ── Loading screen
   const loadingSize = Math.min(52, Math.floor(SW / 8));
-  const KORE_BLUE = '#00B4D8';  // KORE signature blue (distinct from CYAN tech elements)
+  const KORE_BLUE = '#00B4D8';  // KORE signature blue
+
+  // ── Brand animated style — MUST be declared before any conditional return
+  const brandArenaStyle = useAnimatedStyle(() => ({
+    textShadowColor: `rgba(212,175,55,${glow.value * 0.4})`,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 16 * glow.value,
+  }));
 
   if (isLoading) {
     return (
@@ -133,13 +140,6 @@ export default function HeroIndex() {
       </View>
     );
   }
-
-  // Brand — split ARENA (white) + KORE (blue) + animated gold glow
-  const brandArenaStyle = useAnimatedStyle(() => ({
-    textShadowColor: `rgba(212,175,55,${glow.value * 0.4})`,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 16 * glow.value,
-  }));
 
   return (
     <View style={s.root}>
