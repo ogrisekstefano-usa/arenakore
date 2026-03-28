@@ -3464,13 +3464,53 @@ async def nexus_scanner_page():
         var boxW = Math.max.apply(null,bmXs) - Math.min.apply(null,bmXs);
         var boxH = Math.max.apply(null,bmYs) - Math.min.apply(null,bmYs);
         var boxArea = boxW * boxH;
-        // Real person occupies at least 12% of normalized frame area
-        // (e.g., 0.35w × 0.40h = 0.14). Reflections are typically < 8%.
+
+        // ── RULE 1: BOX MAGNITUDE
         if (boxArea < 0.12) {
-          personFirstSeen = null;
-          clearAndWait();
+          personFirstSeen = null; clearAndWait();
           post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-          return;  // TOO SMALL — ghost discarded
+          return;  // TOO SMALL
+        }
+
+        // ── RULE 2: ASPECT RATIO — standing human is taller than wide (H ≥ 2×W)
+        // The horizontal floor/table reflection is WIDE and FLAT → H < W.
+        // A standing person: width ~0.30, height ~0.65 → ratio ≈ 2.2
+        // A floor reflection: width ~0.50, height ~0.20 → ratio ≈ 0.4 → DISCARD
+        var aspectRatio = (boxW > 0.01) ? (boxH / boxW) : 99;
+        if (aspectRatio < 2.0) {
+          personFirstSeen = null; clearAndWait();
+          post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+          return;  // FLAT GHOST — too wide, not tall enough
+        }
+
+        // ── RULE 3: FLOOR LEVEL — nose must be in the UPPER 50% of the skeleton bbox
+        // In a floor reflection, the head appears at the BOTTOM of the skeleton.
+        // (y increases downward: nose.y should be LESS than body midpoint.y)
+        var noseLmFl = mp_lm[0];
+        if (noseLmFl && bmYs.length >= 4) {
+          var bboxMidY = (Math.min.apply(null,bmYs) + Math.max.apply(null,bmYs)) / 2;
+          if (noseLmFl.y > bboxMidY) {
+            // Nose is below skeleton midpoint — inverted/floor reflection
+            personFirstSeen = null; clearAndWait();
+            post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+            return;  // HEAD BELOW MID — floor reflection discarded
+          }
+        }
+
+        // ── RULE 4: GRAVITY BIAS — body axis (hips→nose) must be predominantly vertical
+        // For floor reflections, the body axis is nearly horizontal (deltaX ≈ deltaY).
+        // For a standing person, |deltaY| >> |deltaX|
+        var noseLmGr = mp_lm[0];
+        var lHipGr = mp_lm[23], rHipGr = mp_lm[24];
+        if (noseLmGr && lHipGr && rHipGr) {
+          var axisX = noseLmGr.x - (lHipGr.x + rHipGr.x) / 2;
+          var axisY = noseLmGr.y - (lHipGr.y + rHipGr.y) / 2;  // negative = nose above hips ✓
+          // Must be upright (nose ABOVE hips) and axis more vertical than horizontal
+          if (axisY >= 0 || Math.abs(axisX) > Math.abs(axisY) * 0.7) {
+            personFirstSeen = null; clearAndWait();
+            post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+            return;  // GRAVITY BIAS FAILED — horizontal/inverted ghost
+          }
         }
       }
 
