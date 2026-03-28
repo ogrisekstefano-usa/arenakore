@@ -14,6 +14,7 @@ import base64
 import zipfile
 import hashlib
 import json as stdlib_json
+import asyncio
 from pathlib import Path
 from pydantic import BaseModel
 from typing import Optional, List
@@ -24,6 +25,7 @@ from bson import ObjectId
 import qrcode
 from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.colormasks import SolidFillColorMask
+import email_service
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -954,6 +956,20 @@ async def invite_to_crew(crew_id: str, data: CrewInvite, current_user: dict = De
         "status": "pending",
         "created_at": datetime.now(timezone.utc),
     })
+
+    # ── EMAIL ENGINE: Fire-and-forget crew invite email to target user
+    target_email = target.get("email", "")
+    if target_email:
+        asyncio.create_task(
+            email_service.send_crew_invite_email(
+                to_email=target_email,
+                to_name=target.get("username", "ATLETA"),
+                from_name=current_user.get("username", "ATLETA"),
+                crew_name=crew.get("name", "CREW"),
+                invite_id=crew_id,
+            )
+        )
+
     return {"status": "invited", "username": data.username}
 
 
@@ -1206,6 +1222,43 @@ async def get_rescan_eligibility(current_user: dict = Depends(get_current_user))
 
 
 # ============================================================
+# ============================================================
+# EMAIL NOTIFY ENGINE
+# ============================================================
+
+@api_router.post("/notify/bioscan-confirm")
+async def notify_bioscan_confirm(current_user: dict = Depends(get_current_user)):
+    """Send Bio-Scan Confirmation email to the current user with their DNA summary."""
+    to_email = current_user.get("email", "")
+    if not to_email:
+        raise HTTPException(status_code=400, detail="Email utente non disponibile")
+
+    dna = current_user.get("dna") or {}
+    founder_number = current_user.get("founder_number")
+    kore_number = (
+        str(founder_number).zfill(5)
+        if founder_number
+        else str(abs(int(str(current_user["_id"])[-5:], 16)) % 99999).zfill(5)
+    )
+
+    # Fire email asynchronously — non-blocking
+    asyncio.create_task(
+        email_service.send_bioscan_confirm_email(
+            to_email=to_email,
+            to_name=current_user.get("username", "ATLETA"),
+            kore_number=kore_number,
+            dna=dna,
+        )
+    )
+
+    return {
+        "status": "email_queued",
+        "to": to_email,
+        "kore_number": kore_number,
+        "dna_keys": list(dna.keys()),
+    }
+
+
 # SPRINT 9 — NOTIFICATION ENGINE ENDPOINTS
 # ============================================================
 

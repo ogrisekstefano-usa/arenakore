@@ -199,4 +199,8 @@ export const api = {
   // ========== NEXUS 5-BEAT DNA SYNC ==========
   saveFiveBeatDna: (dnaResults: Record<string, number>, token: string) =>
     request('/nexus/5beat-dna', { method: 'POST', body: JSON.stringify({ dna_results: dnaResults }) }, token),
+
+  // ========== EMAIL NOTIFY ENGINE ==========
+  notifyBioscanConfirm: (token: string) =>
+    request('/notify/bioscan-confirm', { method: 'POST' }, token),
 };

@@ -684,6 +684,8 @@ export default function NexusBioScan() {
       const savedToken = await AsyncStorage.getItem('@arenakore_token');
       if (savedToken) {
         await api.saveFiveBeatDna(BEAT5_DNA, savedToken);
+        // ── Send Bio-Scan Confirmation email (fire-and-forget via backend)
+        api.notifyBioscanConfirm(savedToken).catch(() => {});
       }
     } catch (_e) {
       // DNA sync failure is non-blocking — scan still succeeds
