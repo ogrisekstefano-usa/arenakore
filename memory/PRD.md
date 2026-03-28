@@ -6,7 +6,7 @@
 **Stack Tecnico**: Expo React Native SDK 54 + FastAPI + MongoDB  
 **Bundle ID**: `com.arenakore.app`  
 **Data aggiornamento**: Marzo 2026  
-**Versione**: 6.0 — SPRINT 11: RIFONDAZIONE ESTETICA TOTALE + 5-PILLAR COMPLETE
+**Versione**: 6.1 — SPRINT 12: RISTRUTTURAZIONE 5 PILASTRI
 
 ---
 
