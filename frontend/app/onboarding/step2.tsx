@@ -766,6 +766,13 @@ export default function NexusBioScan() {
   }, []);
   const positionPulseStyle = useAnimatedStyle(() => ({ opacity: positionPulse.value }));
 
+  // ── Kill Step1 TTS immediately on Step2 mount (voice overlap fix)
+  useEffect(() => {
+    Speech.stop();
+    VoiceController.stop().catch(() => {});
+  }, []);
+
+
   // ── PRIVACY CONSENT — shown before camera activates
   const [showPrivacyConsent, setShowPrivacyConsent] = useState(true);
   const [cameraPermDenied, setCameraPermDenied] = useState(false);

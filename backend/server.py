@@ -3355,7 +3355,7 @@ async def nexus_scanner_page():
         var dist = Math.sqrt((lm.x-p.x)*(lm.x-p.x) + (lm.y-p.y)*(lm.y-p.y));
         if (dist > MAX_VELOCITY) {
           // Teleportation detected — blend 15% new + 85% old (reject ghost jump)
-          return { x: p.x*0.85 + lm.x*0.15, y: p.y*0.85 + lm.y*0.15, visibility: lm.visibility*0.4 };
+          return { x: p.x*0.85 + lm.x*0.15, y: p.y*0.85 + lm.y*0.15, visibility: lm.visibility };  // keep vis!
         }
         return lm;
       });
@@ -3425,6 +3425,7 @@ async def nexus_scanner_page():
     }
 
     function clearAndWait() {
+      prevSmoothed = null;  // reset stale smoothed data
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       showStatus('AWAITING ATHLETE');
     }
@@ -3545,13 +3546,13 @@ async def nexus_scanner_page():
       var mp_lm = results.poseLandmarks;
 
       // ── KEY QUALITY METRICS
-      var KEY_LM = [0,5,6,11,12,23,24];
+      var KEY_LM = [0,11,12,23,24];  // nose+shoulders+hips (eyes removed — lower vis)
       var avgConf = KEY_LM.reduce(function(s,i){
         return s + (mp_lm[i] ? (mp_lm[i].visibility||0) : 0);
       }, 0) / KEY_LM.length;
 
       // ── FILTER 1: minimum confidence (very lenient)
-      if (avgConf < 0.25) {
+      if (avgConf < 0.15) {  // near-zero threshold — trust MediaPipe
         personFirstSeen = null;
         clearAndWait();
         post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
