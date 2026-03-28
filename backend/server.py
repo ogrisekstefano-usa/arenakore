@@ -3333,17 +3333,13 @@ async def nexus_scanner_page():
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // ── Coord mapping (256x256 input → screen pixels)
+    // ── Coord mapping: direct [0,1] → screen pixels
+    // 256x256 input and screen both stretch the video the same way →
+    // normalized coords map directly to screen. No scale math needed.
     function toScreen(lm_x, lm_y) {
-      var W = canvas.width, H = canvas.height;
-      // input is 256x256 but we treat it as 256(w)x256(h) aspect — map to screen
-      // Use cover scaling from 1:1 (256x256) to actual screen
-      var scale = Math.max(W, H) / 256;
-      var xOff  = (W - 256 * scale) / 2;
-      var yOff  = (H - 256 * scale) / 2;
       return {
-        x: (1 - lm_x) * 256 * scale + xOff,
-        y: lm_y * 256 * scale + yOff
+        x: (1 - lm_x) * canvas.width,   // mirror x (front camera)
+        y: lm_y * canvas.height
       };
     }
 
@@ -3383,6 +3379,8 @@ async def nexus_scanner_page():
       });
       coco17.forEach(function(pt, i) {
         if (!pt) return;
+        // Skip any point outside visible canvas area (off-screen ghost fragments)
+        if (pt.x < -20 || pt.x > canvas.width + 20 || pt.y < -20 || pt.y > canvas.height + 20) return;
         var r = i < 5 ? 9 : 7;
         ctx.fillStyle = '#00F2FF'; ctx.globalAlpha = 0.25;
         ctx.beginPath(); ctx.arc(pt.x,pt.y,r*2.2,0,Math.PI*2); ctx.fill();
@@ -3397,20 +3395,13 @@ async def nexus_scanner_page():
     }
 
     function onResults(results) {
-      if (!poseReady) {
-        poseReady = true;
-        post({ type:'info', message:'MediaPipe onResults fired — AI running' });
-      }
+      if (!poseReady) { poseReady = true; }
       sendPending = false;
 
-      // Auto-downgrade if slow (M2 protection)
+      // Auto-downgrade if slow
       var elapsed = performance.now() - sendStart;
-      if (elapsed > 150 && frameSkip < 2) {
-        frameSkip++;
-        post({ type:'info', message:'Auto-downgrade: frameSkip=' + frameSkip });
-      } else if (elapsed < 80 && frameSkip > 0) {
-        frameSkip--;  // recover if device gets faster
-      }
+      if (elapsed > 150 && frameSkip < 2) frameSkip++;
+      else if (elapsed < 80 && frameSkip > 0) frameSkip--;
 
       if (!results.poseLandmarks || !results.poseLandmarks.length) {
         personFirstSeen = null;
@@ -3419,11 +3410,28 @@ async def nexus_scanner_page():
         return;
       }
 
-      var mp_lm  = results.poseLandmarks;
+      var mp_lm = results.poseLandmarks;
+
+      // ── CENTRALITY GUARD: nose must be in central 18%-82% zone
+      // Real athlete is always center-screen; reflections appear at edges.
+      // If nose is at edge → this is the iPhone mirror ghost → DISCARD.
+      var noseX = mp_lm[0] ? mp_lm[0].x : 0.5;
+      if (noseX < 0.18 || noseX > 0.82) {
+        personFirstSeen = null;
+        clearAndWait();
+        post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+        return;  // REFLECTION DISCARDED
+      }
+
       var coco17 = drawSkeleton(mp_lm);
-      var vc     = coco17.filter(function(p){ return p !== null; }).length;
-      var noseX  = mp_lm[0] ? mp_lm[0].x : 0.5;
-      var now    = Date.now();
+      // Count only CENTRAL points to exclude edge reflection debris
+      var vc = coco17.filter(function(p) {
+        if (!p) return false;
+        var nx = p.x / canvas.width, ny = p.y / canvas.height;
+        return nx >= 0.10 && nx <= 0.90 && ny >= 0.03 && ny <= 0.97;
+      }).length;
+      var centered = (noseX >= 0.28 && noseX <= 0.72);
+      var now = Date.now();
 
       if (!personFirstSeen) personFirstSeen = now;
       var stable = (now - personFirstSeen) >= STABLE_MS && vc >= 8;
@@ -3438,7 +3446,7 @@ async def nexus_scanner_page():
         landmarks: norm,
         person_detected: stable,
         visible_count: vc,
-        centered: (noseX >= 0.28 && noseX <= 0.72),
+        centered: centered,
         fps: Math.round(1000 / Math.max(elapsed, 1))
       });
     }

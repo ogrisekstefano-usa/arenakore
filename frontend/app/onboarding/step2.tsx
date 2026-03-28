@@ -505,21 +505,19 @@ export default function NexusBioScan() {
         setVisibleMask(landmarks.map(l => l !== null && (l.v ?? 0) > 0.4));
 
         if (elapsed >= ENTRY_HOLD_MS) {
-          // 3 seconds achieved → INGRESSO ARENA
+          // ── 2s BIOMETRIC LOCK CONFIRMED
+          // Real mode: skip VERIFYING + POSE_CHECK (stability threshold blocks real-world movement)
+          // Go directly: LOCK → COUNTDOWN → BEATS (5 exercises) → GOLD FLASH
           personEntrySinceRef.current = null;
           setDetectedPoints(17);
-          // ── HAPTIC: atleta "entrato ufficialmente" nell'Arena
           try {
             await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           } catch (_e) {}
           setTimeout(() => {
             if (phaseRef.current !== 'positioning') return;
-            confidenceStartRef.current = null;
-            setConfidenceTime(0);
-            setPhase('verifying');
-            stabilityRef.current = 0;
-            setStability(0);
+            setPhase('countdown');  // Skip VERIFYING, POSE_CHECK → direct to 3-2-1 → BEATS
           }, 200);
+          return;
         }
       } else {
         // Person left frame or not centered → RESET entry timer + clear progress
