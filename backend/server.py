@@ -3528,13 +3528,15 @@ async def nexus_scanner_page():
       if (!poseReady) { poseReady = true; }
       sendPending = false;
 
-      // Auto-downgrade if slow
+      // Performance auto-downgrade
       var elapsed = performance.now() - sendStart;
       if (elapsed > 150 && frameSkip < 2) frameSkip++;
       else if (elapsed < 80 && frameSkip > 0) frameSkip--;
 
+      // ── NO PERSON
       if (!results.poseLandmarks || !results.poseLandmarks.length) {
         personFirstSeen = null;
+        prevSmoothed = null;
         clearAndWait();
         post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
         return;
@@ -3542,230 +3544,79 @@ async def nexus_scanner_page():
 
       var mp_lm = results.poseLandmarks;
 
-      // ── FIX 1: Z-AXIS NEAR-PLANE CULLING
-      // If any key landmark has z < -1.2 (hand/object touching lens), reject entire pose
-      if (results.poseWorldLandmarks && results.poseWorldLandmarks.length > 0) {
-        var wLm = results.poseWorldLandmarks;
-        var nearPlaneFail = false;
-        var CHECK_NEAR = [0,1,2,3,4,5,6,7,8,9,10,15,16,17,18,19,20,21,22];  // face+hands
-        for (var ni = 0; ni < CHECK_NEAR.length; ni++) {
-          var wpt = wLm[CHECK_NEAR[ni]];
-          if (wpt && wpt.z < -1.2) { nearPlaneFail = true; break; }  // < -1.2m = too close
-        }
-        if (nearPlaneFail) {
-          personFirstSeen = null;
-          clearAndWait();
-          post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-          return;  // Z-NEAR CULLING: ghost hand/object too close
-        }
-      }
-
-      // ── GHOST MASKING: prioritize pose with nose closest to center
-      var noseDistFromCenter = mp_lm[0] ? Math.abs(mp_lm[0].x - 0.5) : 1.0;
-      if (noseDistFromCenter > 0.35 && prevSmoothed) {
-        // Current detection is off-center — use smoothed previous (ghost masking)
-        var coco17b = drawSkeleton(prevSmoothed);
-        var vcb = coco17b.filter(function(p){return p!==null;}).length;
-        var now2 = Date.now();
-        if (!personFirstSeen) personFirstSeen = now2;
-        var stable2 = (now2 - personFirstSeen) >= STABLE_MS && vcb >= 7;
-        post({ type:'pose', landmarks: stable2 ? coco17b.map(function(p){return p?{x:p.x/canvas.width,y:p.y/canvas.height,v:p.v||1}:null;}) : [],
-               person_detected: stable2, visible_count: vcb, centered: false, fps: 30 });
-        return;
-      }
-
-      // ── HIGHLANDER QUALITY GATE: getBestPose logic
-      // Rule 1: Average confidence of key body landmarks must be >= 55%
-      var KEY_LM = [0, 5, 6, 11, 12, 13, 14, 15, 16]; // nose+shoulders+hips+knees+ankles
-      var avgConf = KEY_LM.reduce(function(s, i) {
-        return s + (mp_lm[i] ? (mp_lm[i].visibility || 0) : 0);
+      // ── KEY QUALITY METRICS
+      var KEY_LM = [0,5,6,11,12,23,24];
+      var avgConf = KEY_LM.reduce(function(s,i){
+        return s + (mp_lm[i] ? (mp_lm[i].visibility||0) : 0);
       }, 0) / KEY_LM.length;
 
-      if (avgConf < 0.35) {  // SOFT: 35% avg — let it lock on easily
-        // GHOST PURGE: confidence too low — real reflections can't reach 60%
+      // ── FILTER 1: minimum confidence (very lenient)
+      if (avgConf < 0.25) {
         personFirstSeen = null;
         clearAndWait();
         post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
         return;
       }
 
-      // Rule 2: Centrality — nose must be in 18%-82% zone
+      // ── FILTER 2: centrality — nose must be in 15%-85% zone
       var noseX = mp_lm[0] ? mp_lm[0].x : 0.5;
-      if (noseX < 0.18 || noseX > 0.82) {
-        personFirstSeen = null;
-        clearAndWait();
-        post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-        return;  // EDGE GHOST DISCARDED
-      }
-
-      // Rule 3: Completeness — count high-confidence landmarks
-      var hiConfCount = 0;
-      for (var ki = 0; ki < mp_lm.length; ki++) {
-        if (mp_lm[ki] && (mp_lm[ki].visibility || 0) >= 0.75) hiConfCount++;
-      }
-      // Need at least 12 high-confidence landmarks for a clean skeleton
-      if (hiConfCount < 7) {   // SOFT: only need 7 decent landmarks
+      if (noseX < 0.15 || noseX > 0.85) {
         personFirstSeen = null;
         clearAndWait();
         post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
         return;
       }
 
-      // ── RULE: BOX MAGNITUDE (ghost is always smaller than real athlete)
-      // Compute bounding box in normalized [0,1] space
-      var bmXs = [], bmYs = [];
-      var KEY_BM = [0,5,6,11,12,23,24,27,28]; // nose,shoulders,hips,knees,ankles
-      for (var bi = 0; bi < KEY_BM.length; bi++) {
-        var bLm = mp_lm[KEY_BM[bi]];
-        if (bLm && (bLm.visibility||0) >= 0.5) {
-          bmXs.push(bLm.x); bmYs.push(bLm.y);
-        }
-      }
-      // ── FIX 4: GHOST PURGE — shoulder width vs torso height coherence
-      // A real human: shoulder_width / torso_height = 0.4–1.1
-      // Distorted ghost: ratio can be > 2 (wide flat) or < 0.1 (impossibly thin)
-      var gpLshoulder = mp_lm[11], gpRshoulder = mp_lm[12];
-      var gpLhip = mp_lm[23], gpRhip = mp_lm[24];
-      var gpNose = mp_lm[0];
-      if (gpLshoulder && gpRshoulder && gpLhip && gpRhip && gpNose) {
-        var gpShoulderW = Math.abs(gpRshoulder.x - gpLshoulder.x);
-        var gpTorsoH    = Math.abs(((gpLshoulder.y+gpRshoulder.y)/2) - ((gpLhip.y+gpRhip.y)/2));
-        if (gpTorsoH > 0.01) {
-          var gpRatio = gpShoulderW / gpTorsoH;
-          if (gpRatio > 2.2 || gpRatio < 0.15) {
-            // Incoherent skeleton — ghost purge
-            personFirstSeen = null;
-            clearAndWait();
-            post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-            return;  // GHOST PURGE: shoulder/torso ratio invalid
-          }
-        }
-      }
-
-      if (bmXs.length >= 4) {
-        var boxW = Math.max.apply(null,bmXs) - Math.min.apply(null,bmXs);
-        var boxH = Math.max.apply(null,bmYs) - Math.min.apply(null,bmYs);
-        var boxArea = boxW * boxH;
-
-        // ── RULE 1: BOX MAGNITUDE
-        if (boxArea < 0.04) {  // MINIMAL: only reject truly tiny ghosts (<4%)
-          personFirstSeen = null; clearAndWait();
-          post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-          return;  // TOO SMALL
-        }
-
-        // ── RULE 2: ASPECT RATIO — standing human is taller than wide (H ≥ 2×W)
-        // The horizontal floor/table reflection is WIDE and FLAT → H < W.
-        // A standing person: width ~0.30, height ~0.65 → ratio ≈ 2.2
-        // A floor reflection: width ~0.50, height ~0.20 → ratio ≈ 0.4 → DISCARD
-        var aspectRatio = (boxW > 0.01) ? (boxH / boxW) : 99;
-        if (aspectRatio < 2.0) {
-          personFirstSeen = null; clearAndWait();
-          post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-          return;  // FLAT GHOST — too wide, not tall enough
-        }
-
-        // ── RULE 3: FLOOR LEVEL — nose must be in the UPPER 50% of the skeleton bbox
-        // In a floor reflection, the head appears at the BOTTOM of the skeleton.
-        // (y increases downward: nose.y should be LESS than body midpoint.y)
-        var noseLmFl = mp_lm[0];
-        if (noseLmFl && bmYs.length >= 4) {
-          var bboxMidY = (Math.min.apply(null,bmYs) + Math.max.apply(null,bmYs)) / 2;
-          if (noseLmFl.y > bboxMidY) {
-            // Nose is below skeleton midpoint — inverted/floor reflection
-            personFirstSeen = null; clearAndWait();
-            post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-            return;  // HEAD BELOW MID — floor reflection discarded
-          }
-        }
-
-        // ── RULE 4: GRAVITY BIAS — body axis (hips→nose) must be predominantly vertical
-        // For floor reflections, the body axis is nearly horizontal (deltaX ≈ deltaY).
-        // For a standing person, |deltaY| >> |deltaX|
-        var noseLmGr = mp_lm[0];
-        var lHipGr = mp_lm[23], rHipGr = mp_lm[24];
-        if (noseLmGr && lHipGr && rHipGr) {
-          var axisX = noseLmGr.x - (lHipGr.x + rHipGr.x) / 2;
-          var axisY = noseLmGr.y - (lHipGr.y + rHipGr.y) / 2;  // negative = nose above hips ✓
-          // Must be upright (nose ABOVE hips) and axis more vertical than horizontal
-          if (axisY >= 0 || Math.abs(axisX) > Math.abs(axisY) * 0.7) {
-            personFirstSeen = null; clearAndWait();
-            post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-            return;  // GRAVITY BIAS FAILED — horizontal/inverted ghost
-          }
-        }
-      }
-
-      // ── RULE: Y-AXIS SANITY CHECK
-      // y increases DOWNWARD. Ankles must have HIGHER y than hips.
-      // If ankles are "above" hips → inverted ghost. If pose flies in upper screen → ghost.
+      // ── FILTER 3: Y-axis sanity (only when both ankles AND hips visible)
       var lHipLm = mp_lm[23], rHipLm = mp_lm[24];
       var lAnkLm = mp_lm[27], rAnkLm = mp_lm[28];
-      if (lHipLm && rHipLm && lAnkLm && rAnkLm) {
+      if (lHipLm && rHipLm && lAnkLm && rAnkLm &&
+          (lAnkLm.visibility||0) > 0.5 && (rAnkLm.visibility||0) > 0.5) {
         var hipMidY    = (lHipLm.y + rHipLm.y) / 2;
         var ankleMidY  = (lAnkLm.y + rAnkLm.y) / 2;
         if (ankleMidY < hipMidY) {
-          // Inverted skeleton — ghost or upside-down artifact
+          // Inverted skeleton (floor reflection) — discard
           personFirstSeen = null;
           clearAndWait();
           post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-          return;  // Y-AXIS INVALID
-        }
-        if (ankleMidY < 0.35) {
-          // Ankles in top 35% of frame — person is "flying", likely ghost
-          personFirstSeen = null;
-          clearAndWait();
-          post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-          return;  // FLYING GHOST
+          return;
         }
       }
 
-      // Z-Depth check DISABLED — restored smooth demo feeling
-
-      // ── NEXUS VISION: motion prediction → skin boost → LPF
-      // Step 1: Motion prediction (reject teleportation ghosts)
+      // ── MOTION PREDICTION + SKIN + LPF
       var motionFiltered = motionFilter(mp_lm, prevSmoothed);
-
-      // Step 2: Skin confidence boost — landmarks on skin pixels get higher priority
-      var skinBoosted = motionFiltered.map(function(lm, i) {
-        if (!lm) return null;
-        // Only check face + hands + feet (most exposed skin)
-        var checkSkin = (i===0||i===1||i===2||i===7||i===8||i===15||i===16||i===17||i===18||i===19||i===20||i===21||i===22||i===27||i===28);
-        if (checkSkin) {
-          // Scale normalized [0,1] coords to 64x64 skin sample space
-          var skinConf = isSkinPixel(lm.x * 256/64, lm.y * 256/64) ? 1.0 : 0.5;
-          return { x: lm.x, y: lm.y, visibility: lm.visibility * skinConf };
-        }
-        return lm;
-      });
-
-      // Step 3: Low-Pass Filter (smooth remaining jitter)
       var dynamicAlpha = (avgConf < 0.50) ? 0.38 : SMOOTH_ALPHA;
-      var smoothed = lpf(skinBoosted, prevSmoothed, dynamicAlpha);
+      var smoothed = lpf(motionFiltered, prevSmoothed, dynamicAlpha);
       prevSmoothed = smoothed;
 
+      // ── DRAW
       var coco17 = drawSkeleton(smoothed);
-      // Count only CENTRAL points
+
+      // Ankle recovery (extrapolation)
+      recoverAnkle(23, 25, 27, 29, 31, 15);
+      recoverAnkle(24, 26, 28, 30, 32, 16);
+
+      // Count visible points
       var vc = coco17.filter(function(p) {
         if (!p) return false;
         var nx = p.x / canvas.width, ny = p.y / canvas.height;
-        return nx >= 0.10 && nx <= 0.90 && ny >= 0.03 && ny <= 0.97;
+        return nx >= 0.05 && nx <= 0.95 && ny >= 0.02 && ny <= 0.98;
       }).length;
+
       var centered = (noseX >= 0.28 && noseX <= 0.72);
       var now = Date.now();
-
       if (!personFirstSeen) personFirstSeen = now;
-      var stable = (now - personFirstSeen) >= STABLE_MS && vc >= 8;
+      var stable = (now - personFirstSeen) >= STABLE_MS && vc >= 7;
+
+      // Feet guidance
+      var kneesOk  = !!(coco17[13] || coco17[14]);
+      var anklesOk = !!(coco17[15] && !coco17[15].ext && coco17[16] && !coco17[16].ext);
+      var feetGuidance = kneesOk && !anklesOk;
 
       var W = canvas.width, H = canvas.height;
       var norm = stable ? coco17.map(function(p) {
-        return p ? { x: p.x / W, y: p.y / H, v: p.v } : null;
+        return p ? { x: p.x / W, y: p.y / H, v: p.v || 1 } : null;
       }) : [];
-
-      // Feet guidance: knees visible but ankles not → user needs to step back
-      var kneesOk  = !!(coco17[13] || coco17[14]);
-      var anklesOk = !!(coco17[15] && !coco17[15].ext && coco17[16] && !coco17[16].ext);
-      var feetGuidance = kneesOk && !anklesOk;  // saw knees but real ankles missing
 
       post({
         type: 'pose',
