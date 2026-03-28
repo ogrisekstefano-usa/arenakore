@@ -165,15 +165,16 @@ export default function HeroIndex() {
         />
       )}
 
-      {/* ── GRADIENT OVERLAY — non-blocking ── */}
+      {/* ── GRADIENT OVERLAY — non-blocking, strong at bottom for CTA contrast ── */}
       <LinearGradient
         colors={[
-          'rgba(5,5,5,0.15)',
-          'rgba(5,5,5,0.55)',
-          'rgba(5,5,5,0.90)',
+          'rgba(5,5,5,0.10)',
+          'rgba(5,5,5,0.45)',
+          'rgba(5,5,5,0.82)',
+          'rgba(5,5,5,0.96)',
           BG,
         ]}
-        locations={[0, 0.35, 0.65, 1]}
+        locations={[0, 0.25, 0.55, 0.80, 1]}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />

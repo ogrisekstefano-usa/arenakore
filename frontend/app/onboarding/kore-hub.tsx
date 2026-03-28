@@ -49,6 +49,10 @@ export default function KoreHubRegistration() {
     try {
       await api.submitHubRequest({ gym_name: gymName.trim(), locality, email: email.trim().toLowerCase() });
       setSuccess(true);
+      // Auto-redirect home after 3 seconds with implicit "Richiesta ricevuta, Coach!" message
+      setTimeout(() => {
+        router.replace('/');
+      }, 3000);
     } catch (_e) {
       setError('ERRORE DI CONNESSIONE — RIPROVA');
     } finally {
@@ -64,14 +68,14 @@ export default function KoreHubRegistration() {
           <View style={s.successIcon}>
             <Ionicons name="checkmark-circle" size={56} color={CYAN} />
           </View>
-          <Text style={s.successTitle}>RICHIESTA INVIATA.</Text>
+          <Text style={s.successTitle}>RICHIESTA RICEVUTA,{'\n'}COACH!</Text>
           <Text style={s.successSub}>
-            IL TUO HUB SARÀ CERTIFICATO{' '}\n
-            ENTRO 24 ORE.
+            IL TUO HUB SARÀ CERTIFICATO{'\n'}ENTRO 24 ORE.
           </Text>
           <View style={s.successDivider} />
           <Text style={s.successNote}>
-            RICEVERAI UNA EMAIL DI CONFERMA\nCON LE CREDENZIALI DI ACCESSO AL\nKORE HUB DASHBOARD.
+            Riceverai una email di conferma con le credenziali KORE HUB Dashboard.{'\n'}
+            Reindirizzamento automatico...
           </Text>
           <TouchableOpacity
             style={s.doneBtn}

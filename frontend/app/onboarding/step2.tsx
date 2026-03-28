@@ -1017,15 +1017,17 @@ export default function NexusBioScan() {
                 </Animated.View>
                 <Text style={s.statusLabel}>POSIZIONATI DAVANTI ALLA CAMERA</Text>
                 <Text style={s.detectNote}>IN ATTESA RILEVAMENTO UMANO</Text>
-                {/* ── DEBUG BYPASS: visible when camera gate is blocking ── */}
-                <TouchableOpacity
-                  style={dbg$.btn}
-                  onPress={() => { setCameraReady(true); setIsScanning(true); }}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="flash" size={11} color="#FF453A" />
-                  <Text style={dbg$.txt}>DEBUG: FORCE SCAN</Text>
-                </TouchableOpacity>
+                {/* ── DEBUG BYPASS: only visible in __DEV__ builds ── */}
+                {__DEV__ && (
+                  <TouchableOpacity
+                    style={dbg$.btn}
+                    onPress={() => { setCameraReady(true); setIsScanning(true); }}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="flash" size={11} color="#FF453A" />
+                    <Text style={dbg$.txt}>DEBUG: FORCE SCAN</Text>
+                  </TouchableOpacity>
+                )}
               </>
             ) : (
               /* ── SCANNING ACTIVE: 17-point progressive detection ── */

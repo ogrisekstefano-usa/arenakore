@@ -298,21 +298,20 @@ export default function LegacyStep1() {
         <View style={[s.progFill, { width: '25%' }]} />
       </View>
 
-      {/* Hero text */}
+      {/* Hero text — NEXUS CALIBRATION (Gold outer-glow) */}
       <Animated.View entering={FadeInDown.delay(200)} style={s.heroWrap}>
+        <Text style={s.heroTagline}>— PROTOCOLLO BIOMETRICO —</Text>
         <Text style={s.heroLine1}>NEXUS</Text>
-        <Text style={s.heroLine2}>BIO-SCAN</Text>
-        <Text style={s.heroLine3}>PROTOCOL</Text>
+        <Text style={s.heroLine2}>CALIBRATION</Text>
+        <View style={s.goldLine} />
       </Animated.View>
-
-      <View style={s.cyanLine} />
 
       {/* Body text */}
       <Animated.View entering={FadeInDown.delay(400)} style={s.bodyWrap}>
         <Text style={s.bodyText}>
-          IL PROSSIMO STEP GENERERA IL TUO KORE DNA.{' '}
-          POSIZIONATI DAVANTI ALLA CAMERA E RIMANI{' '}
-          IMMOBILE PER 3 SECONDI PER LA CALIBRAZIONE{' '}
+          IL PROSSIMO STEP GENERERÀ IL TUO KORE DNA.
+          POSIZIONATI DAVANTI ALLA CAMERA E RIMANI
+          IMMOBILE PER 3 SECONDI PER LA CALIBRAZIONE
           BIOMETRICA.
         </Text>
       </Animated.View>
@@ -331,7 +330,7 @@ export default function LegacyStep1() {
           ['flash', 'GOLD FLASH: KORE IDENTIFICATO'],
         ].map(([icon, txt], i) => (
           <View key={i} style={s.specRow}>
-            <Ionicons name={icon as any} size={12} color="#00F2FF" />
+            <Ionicons name={icon as any} size={12} color="#D4AF37" />
             <Text style={s.specTxt}>{txt}</Text>
           </View>
         ))}
@@ -449,60 +448,77 @@ const s = StyleSheet.create({
   },
   stepTxt: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   progBar: {
-    height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 32, overflow: 'hidden',
+    height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 28, overflow: 'hidden',
   },
-  progFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
-  heroWrap: { gap: 2, marginBottom: 20 },
+  progFill: { height: '100%', backgroundColor: '#D4AF37', borderRadius: 2 },
+
+  // ── HERO — NEXUS CALIBRATION with Gold Outer-Glow
+  heroWrap: { gap: 2, marginBottom: 16 },
+  heroTagline: {
+    color: 'rgba(212,175,55,0.4)', fontSize: 9, fontWeight: '900',
+    letterSpacing: 6, marginBottom: 4,
+  },
   heroLine1: {
-    color: '#FFFFFF', fontSize: 58, fontWeight: '900',
-    letterSpacing: -2, lineHeight: 62,
+    color: '#D4AF37', fontSize: 58, fontWeight: '900',
+    letterSpacing: -2, lineHeight: 60,
+    textShadowColor: 'rgba(212,175,55,0.8)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 18,
   },
   heroLine2: {
-    color: '#00F2FF', fontSize: 58, fontWeight: '900',
-    letterSpacing: -2, lineHeight: 62,
+    color: '#FFFFFF', fontSize: 42, fontWeight: '900',
+    letterSpacing: -1, lineHeight: 46,
+    textShadowColor: 'rgba(212,175,55,0.35)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
   },
-  heroLine3: {
-    color: '#FFFFFF', fontSize: 58, fontWeight: '900',
-    letterSpacing: -2, lineHeight: 62,
+  goldLine: {
+    height: 2, width: 56, backgroundColor: '#D4AF37', marginTop: 12,
+    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6,
   },
-  cyanLine: {
-    height: 2, width: 56, backgroundColor: '#00F2FF', marginBottom: 28,
-  },
-  bodyWrap: { marginBottom: 24 },
+  // Legacy compatibility (unused but kept to avoid ref errors)
+  heroLine3: { color: '#FFFFFF', fontSize: 58, fontWeight: '900', letterSpacing: -2 },
+  cyanLine: { height: 2, width: 56, backgroundColor: '#00F2FF', marginBottom: 28 },
+
+  // ── BODY TEXT — Off-White #E0E0E0
+  bodyWrap: { marginBottom: 20 },
   bodyText: {
-    color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '800',
-    letterSpacing: 1, lineHeight: 22,
+    color: '#E0E0E0', fontSize: 12, fontWeight: '700',
+    letterSpacing: 0.5, lineHeight: 20,
   },
+
+  // ── SPEC / WARNING — command center aesthetic
   warningRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20,
+    flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12,
   },
   warningDot: {
-    width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF',
+    width: 8, height: 8, borderRadius: 4, backgroundColor: '#D4AF37',
   },
-  warningTxt: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-  specList: { gap: 8, marginBottom: 16 },
+  warningTxt: { color: '#D4AF37', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  specList: { gap: 7, marginBottom: 12 },
   specRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  specTxt: { color: '#333', fontSize: 10, fontWeight: '800', letterSpacing: 2 },
+  specTxt: { color: '#888', fontSize: 10, fontWeight: '800', letterSpacing: 1.5 },
 
-  // Voice section
+  // Voice section — SALA COMANDI
   voiceSection: { gap: 6, marginBottom: 'auto' as any },
   voiceStatusRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(0,242,255,0.04)',
-    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)',
+    backgroundColor: 'rgba(0,242,255,0.05)',
+    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
+    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.15)',
   },
   voiceStatusGold: {
     backgroundColor: 'rgba(212,175,55,0.06)',
-    borderColor: 'rgba(212,175,55,0.2)',
+    borderColor: 'rgba(212,175,55,0.3)',
+    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 10,
   },
   voiceLabelRow: { flexDirection: 'row', alignItems: 'center' },
   voiceLabel: {
-    flex: 1, color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 2,
+    flex: 1, color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 2,
   },
   keywordHint: {
-    color: 'rgba(0,242,255,0.25)', fontSize: 9, fontWeight: '800',
-    letterSpacing: 2, textAlign: 'center',
+    color: 'rgba(212,175,55,0.4)', fontSize: 9, fontWeight: '900',
+    letterSpacing: 3, textAlign: 'center',
   },
   transcript: {
     color: 'rgba(255,255,255,0.12)', fontSize: 8, fontWeight: '700',
@@ -513,23 +529,26 @@ const s = StyleSheet.create({
   ctaWrap: { marginTop: 12, gap: 8 },
   ctaRow: { flexDirection: 'row', gap: 10 },
   cta: {
-    flex: 1, backgroundColor: '#00F2FF', borderRadius: 8,
+    flex: 1, backgroundColor: '#D4AF37', borderRadius: 10,
     paddingVertical: 18, flexDirection: 'row',
     alignItems: 'center', justifyContent: 'center', gap: 12,
+    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 12,
+    elevation: 8,
   },
-  ctaGold: { backgroundColor: '#D4AF37' },
+  ctaGold: { backgroundColor: '#D4AF37', opacity: 0.7 },
   ctaTxt: {
-    color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 3,
+    color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 2,
   },
   micBtn: {
-    width: 58, height: 58, borderRadius: 8,
+    width: 58, height: 58, borderRadius: 10,
     backgroundColor: 'rgba(0,242,255,0.06)',
-    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.2)',
+    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.25)',
     alignItems: 'center', justifyContent: 'center',
   },
   micBtnGold: {
-    backgroundColor: 'rgba(212,175,55,0.08)',
-    borderColor: 'rgba(212,175,55,0.3)',
+    backgroundColor: 'rgba(212,175,55,0.1)',
+    borderColor: 'rgba(212,175,55,0.4)',
+    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 10,
   },
   orLabel: {
     color: 'rgba(255,255,255,0.15)', fontSize: 9, fontWeight: '800',
