@@ -67,14 +67,21 @@ function useVoiceEngine(onActivated: () => void) {
 
     setState('speaking');
 
-    // ── Play ACKNOWLEDGED with Stefano's voice, navigate only after completion
-    VoiceController.playAndWait('ACKNOWLEDGED').then(() => {
-      if (safetyTimerRef.current) {
-        clearTimeout(safetyTimerRef.current);
-        safetyTimerRef.current = null;
-      }
-      safeNavigate();
-    }).catch(() => safeNavigate());
+    // ── Play ACKNOWLEDGED with Stefano's cloned voice via Audio.Sound directly
+    const ACK_MODULE = require('../../assets/voice/en/acknowledged.mp3');
+    Audio.setAudioModeAsync({ playsInSilentModeIOS: true, staysActiveInBackground: false })
+      .then(() => Audio.Sound.createAsync(ACK_MODULE, { shouldPlay: true }))
+      .then(({ sound }) => {
+        sound.setOnPlaybackStatusUpdate((status: any) => {
+          if (status.isLoaded && status.didJustFinish) {
+            sound.unloadAsync().catch(() => {});
+            if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
+            safetyTimerRef.current = null;
+            safeNavigate();
+          }
+        });
+      })
+      .catch(() => safeNavigate());
   }, [safeNavigate]);
 
   // manualTrigger = activate from any state (mic button + CTA button)

@@ -119,9 +119,9 @@ class VoiceControllerClass {
   }
 
   private async unloadAll(): Promise<void> {
-    for (const [, sound] of this.soundCache.entries()) {
+    this.soundCache.forEach(async (sound) => {
       try { await sound.unloadAsync(); } catch (_e) {}
-    }
+    });
     this.soundCache.clear();
   }
 
@@ -213,44 +213,6 @@ class VoiceControllerClass {
   async playBeat(beatIndex: number): Promise<void> {
     await this.play(`BEAT_${beatIndex + 1}`);
   }
-
-  /** Play and wait for completion — used in step1 for ACKNOWLEDGED before navigation */
-  async playAndWait(key: string): Promise<void> {
-    await this.stop();
-    await this.ensureAudioMode();
-    const cacheKey = `${this.lang}_${key}`;
-    let sound = this.soundCache.get(cacheKey);
-    if (!sound) {
-      const module = NEXUS_VOICES[this.lang]?.[key] ?? null;
-      if (!module) {
-        console.error(`[VoiceController] ❌ MISSING: ${this.lang}/${key}.mp3`);
-        return;
-      }
-      try {
-        const loaded = await Audio.Sound.createAsync(module, { shouldPlay: false });
-        sound = loaded.sound;
-      } catch (e) {
-        console.error(`[VoiceController] ❌ LOAD FAILED: ${this.lang}/${key}`, e);
-        return;
-      }
-    }
-    return new Promise(async (resolve) => {
-      try {
-        sound!.setOnPlaybackStatusUpdate(status => {
-          if (status.isLoaded && status.didJustFinish) {
-            if (this.currentSound === sound) this.currentSound = null;
-            resolve();
-          }
-        });
-        await sound!.setPositionAsync(0);
-        await sound!.setVolumeAsync(1.0);
-        await sound!.playAsync();
-        this.currentSound = sound!;
-        this.lastPlayStart = Date.now();
-      } catch (_e) {
-        resolve(); // resolve anyway on error
-      }
-    });
-  }
+}
 
 export const VoiceController = new VoiceControllerClass();
