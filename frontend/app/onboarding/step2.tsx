@@ -248,7 +248,7 @@ const s = StyleSheet.create({
     position: 'absolute', bottom: 8, left: 0, right: 0,
     alignItems: 'center',
   },
-  emaTxt: { color: '#1A1A1A', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
+  emaTxt: { color: '#2E2E2E', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
   flash: { backgroundColor: '#D4AF37', zIndex: 100, pointerEvents: 'none' as any },
   footer: {
     paddingHorizontal: 24, paddingTop: 16, alignItems: 'center', gap: 10,

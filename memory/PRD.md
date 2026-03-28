@@ -1,35 +1,36 @@
-# ARENAKORE — PRD (Product Requirements Document) v8.0
+# ARENAKORE — PRD (Product Requirements Document) v9.0
 
 ## Overview
-**ARENAKORE** è la piattaforma mobile d'élite per atleti con analisi biometrica in tempo reale, sistema XP/Level, battle competitive, crew sociali e leaderboard globali. Estetica "Nike Elite / Chic-Tech / Cinema".
+**ARENAKORE** è la piattaforma mobile d'élite per atleti con analisi biometrica in tempo reale, sistema XP/Level, battle competitive, crew sociali e leaderboard globali. Estetica "Nike Elite / Chic-Tech / Cinema". Zero emoji. Solo Ionicons.
 
 **Stack Tecnico**: Expo React Native SDK 54 + FastAPI + MongoDB  
 **Bundle ID**: `com.arenakore.app`  
 **Data aggiornamento**: Marzo 2026  
-**Versione**: 8.0 — SPRINT 14: SECURITY AUDIT + ID RECOVERY
+**Versione**: 9.0 — SPRINT 15: LEGACY INITIATION + SECURITY RESET
 
 ---
 
 ## Architettura
 
 ### Backend (FastAPI)
-- **Auth**: JWT (python-jose + passlib/bcrypt), token 7 giorni. **BCRYPT CONFIRMED. MD5 BANNED.**
-- **DB**: MongoDB via Motor (async). Collection `password_resets` per OTP recovery.
-- **Endpoints**: `/api/auth/*`, `/api/battles`, `/api/disciplines`, `/api/crews`, `/api/leaderboard`, `/api/nexus/*`, `/api/notifications`, `/api/dna/history`, `/api/wallet/apple-pass`, `/api/wallet/google-pass`, `/api/auth/forgot-password`, `/api/auth/verify-otp`, `/api/auth/reset-password`
-- **ID Recovery**: OTP 6 cifre, SHA256-hashed in DB, 10min expiry → reset_token JWT 15min → bcrypt new hash
-- **Founder Protocol**: Primo 100 utenti ricevono badge Gold permanente
-- **APScheduler**: Background job ogni 6h per notification engine
-- **Wallet Engine**: GET /api/wallet/apple-pass (mock .pkpass ZIP+base64), GET /api/wallet/google-pass (mock JWT + Google save URL)
+- **Auth**: JWT (python-jose + passlib/bcrypt). `hash_password()` = bcrypt salted irreversibile. MD5 BANNED.
+- **DB**: MongoDB (`arenakore`). Collections: `users`, `password_resets`
+- **KORE #00001**: STEFANO OGRISEK (ogrisek.stefano@gmail.com / Founder@KORE2026!). Founder role = COSMETIC badge. System logic AGNOSTIC.
+- **Endpoints**: `/api/auth/*`, `/api/wallet/*`, `/api/leaderboard`, `/api/nexus/*`, `/api/notifications`, `/api/dna/history`
+- **Register**: Accepts height_cm, weight_kg, age, training_level (from Legacy Initiation Step 3)
+- **ID Recovery**: /auth/forgot-password (OTP SHA256) → /auth/verify-otp (JWT 15min) → /auth/reset-password (bcrypt)
 
 ### Frontend (Expo Router v6)
-- **Auth**: AsyncStorage per JWT persistence
-- **Navigation**: Expo Router — Strict 5-Tab Lock (ARENA, KORE, NEXUS, DNA, RANK)
-- **ID Recovery**: /recover — 4-step flow (email → 6-box OTP → new password → ACCESSO RIPRISTINATO). Neon cyan boxes, gold ARENAKORE brand.
-- **Animazioni**: React Native Reanimated v4
-- **Audio**: Web Audio API (Oscillators per Bio-Scan hum, metallic pings)
-- **Charts**: react-native-svg (Radar Chart biometrico, ArenaGO Radar Map con sweep animato)
-- **Motion Detection**: Camera frame differencing (web) + expo-sensors (native)
-- **Wallet**: handleApple()/handleGoogle() — chiama backend, blob download su web, Modal Nike Elite feedback
+- **Auth**: AsyncStorage JWT persistence
+- **Navigation**: 5-Tab (ARENA, KORE, NEXUS, DNA, RANK) + `/onboarding/step1-4`, `/recover`, `/login`
+- **LEGACY INITIATION** (4 step):
+  - step1: NEXUS BIO-SCAN PROTOCOL (massive NEXUS/BIO-SCAN/PROTOCOL, spec list, INIZIA CALIBRAZIONE)
+  - step2: Puppet-Motion-Deck SVG (17 punti, EMA α=0.12, hysteresis 3px, 3s → KORE IDENTIFICATO)
+  - step3: DNA Profiling (height/weight/age + LEGACY/ELITE/KORE selector)
+  - step4: KORE ID Creation (nickname 15chars, email, password → register → KORE tab)
+- **START LEGACY**: index.tsx + login.tsx → /onboarding/step1
+- **ID Recovery**: /recover (4-step OTP neon cyan flow)
+- **Wallet**: Apple .pkpass mock + Google Wallet JWT mock (KORE tab)
 
 ---
 

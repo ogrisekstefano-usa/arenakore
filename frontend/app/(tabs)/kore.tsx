@@ -134,7 +134,11 @@ function PassportIdentity({ user, cityRank, city, onCitySelect }: { user: any; c
                 </Animated.View>
               )}
             </View>
-            <Text style={pi$.sport}>{(user?.sport || '---').toUpperCase()} · {(user?.category || 'ATHLETICS').toUpperCase()}</Text>
+            <Text style={pi$.sport}>
+              {(user?.sport && user.sport !== 'ATHLETICS'
+                ? user.sport : user?.training_level || 'KORE'
+              ).toUpperCase()}
+            </Text>
             <View style={pi$.badgeRow}>
               <View style={pi$.lvlBadge}>
                 <Ionicons name="flash" size={8} color="#00F2FF" />
@@ -559,8 +563,8 @@ const kc$ = StyleSheet.create({
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   brandSm: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '800', letterSpacing: 4 },
   cardType: { color: '#00F2FF', fontSize: 18, fontWeight: '900', letterSpacing: 3 },
-  founderBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: '#D4AF37' },
-  founderText: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  founderBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 4, borderWidth: 1, borderColor: '#D4AF37', flexShrink: 0 },
+  founderText: { color: '#D4AF37', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
   dnaSection: { gap: 7 },
   dnaCap: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '900', letterSpacing: 3, marginBottom: 6 },
   dnaRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },

@@ -169,8 +169,8 @@ async def register(data: UserRegister):
     is_founder = total_users < 100
 
     user = {
-        "username": data.username,
-        "email": data.email,
+        "username": data.username.strip(),
+        "email": data.email.strip().lower(),  # Always store lowercase
         "password_hash": hash_password(data.password),
         "role": None,
         "sport": "ATHLETICS",  # Default sport — updated via profile
