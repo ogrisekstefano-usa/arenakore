@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Base URL from frontend/.env
-BASE_URL = "https://nexus-pro-unlock.preview.emergentagent.com/api"
+BASE_URL = "https://arena-kore-scan.preview.emergentagent.com/api"
 
 # Test credentials from /app/memory/test_credentials.md
 ADMIN_EMAIL = "admin@arenadare.com"

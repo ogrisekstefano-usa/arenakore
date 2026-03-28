@@ -11,6 +11,9 @@ import random
 import string
 import io
 import base64
+import zipfile
+import hashlib
+import json as stdlib_json
 from pathlib import Path
 from pydantic import BaseModel
 from typing import Optional, List
@@ -2260,7 +2263,7 @@ async def update_event_status(event_id: str, body: dict, current_user: dict = De
     return {"status": new_status, "event_id": event_id}
 
 
-app.include_router(api_router)
+# NOTE: app.include_router is called at the BOTTOM of this file after all endpoint definitions
 
 app.add_middleware(
     CORSMiddleware,
@@ -2362,6 +2365,181 @@ async def check_notification_triggers():
 
     except Exception as e:
         logger.error(f"[NotifEngine] Error: {e}")
+
+
+# =====================================================================
+# WALLET ENGINE — APPLE WALLET (.pkpass) + GOOGLE WALLET (JWT)
+# Architecture is production-ready: replace mock certs with real ones
+# =====================================================================
+
+@api_router.get("/wallet/apple-pass")
+async def generate_apple_pass(current_user: dict = Depends(get_current_user)):
+    """
+    Generates a structurally valid mock .pkpass for Apple Wallet.
+    Returns base64-encoded ZIP.
+    To activate fully: replace 'teamIdentifier' + add real PKCS7 signature
+    with Pass Type ID Certificate from Apple Developer Account.
+    """
+    user_id = str(current_user["_id"])
+    username = current_user.get("username", "ATHLETE").upper()
+    sport = current_user.get("sport", "ATHLETICS").upper()
+    level = current_user.get("level", 1)
+    xp = current_user.get("xp", 0)
+    is_founder = current_user.get("is_founder", False) or current_user.get("is_admin", False)
+    founder_number = current_user.get("founder_number", None)
+
+    try:
+        kore_num = int(user_id[-5:], 16) % 99999
+    except Exception:
+        kore_num = 1
+    kore_number = f"{founder_number:05d}" if founder_number else f"{kore_num:05d}"
+
+    pass_dict = {
+        "formatVersion": 1,
+        "passTypeIdentifier": "pass.com.arenadare.athlete",
+        "serialNumber": f"KORE-{kore_number}",
+        "teamIdentifier": "ARENADARE1",
+        "organizationName": "ARENAKORE",
+        "description": "KORE ATHLETE PASSPORT",
+        "logoText": "ARENAKORE",
+        "foregroundColor": "rgb(0, 242, 255)",
+        "backgroundColor": "rgb(5, 5, 5)",
+        "labelColor": "rgb(212, 175, 55)",
+        "generic": {
+            "primaryFields": [
+                {"key": "athlete", "label": "ATLETA", "value": username}
+            ],
+            "secondaryFields": [
+                {"key": "sport", "label": "SPORT", "value": sport},
+                {"key": "level", "label": "LIVELLO", "value": str(level)},
+            ],
+            "auxiliaryFields": [
+                {"key": "xp", "label": "XP TOTALE", "value": f"{xp:,}"},
+                {"key": "status", "label": "STATUS", "value": "FOUNDER" if is_founder else "KORE ATHLETE"},
+            ],
+            "backFields": [
+                {"key": "kore_number", "label": "KORE #", "value": kore_number},
+                {
+                    "key": "note",
+                    "label": "ATTIVAZIONE",
+                    "value": "Pass generato da ARENAKORE. Per firma digitale Apple, aggiungere Pass Type ID Certificate."
+                },
+            ],
+        },
+        "barcodes": [
+            {
+                "message": f"arenakore://athlete/{user_id}",
+                "format": "PKBarcodeFormatQR",
+                "messageEncoding": "iso-8859-1",
+                "altText": f"KORE #{kore_number}",
+            }
+        ],
+    }
+
+    pass_bytes = stdlib_json.dumps(pass_dict, indent=2).encode("utf-8")
+    manifest_bytes = stdlib_json.dumps(
+        {"pass.json": hashlib.sha1(pass_bytes).hexdigest()}
+    ).encode("utf-8")
+    # Mock signature — replace with real PKCS7 when Apple certs are available
+    signature_bytes = b"MOCK_SIGNATURE_PLACEHOLDER_REPLACE_WITH_PKCS7_SIGNED_CERT"
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("pass.json", pass_bytes)
+        zf.writestr("manifest.json", manifest_bytes)
+        zf.writestr("signature", signature_bytes)
+    zip_buffer.seek(0)
+    pkpass_b64 = base64.b64encode(zip_buffer.read()).decode("utf-8")
+
+    return {
+        "status": "generated",
+        "kore_number": kore_number,
+        "athlete": username,
+        "pass_b64": pkpass_b64,
+        "filename": f"KORE_{kore_number}.pkpass",
+        "content_type": "application/vnd.apple.pkpass",
+        "note": "Mock — firma non certificata. Aggiungere Pass Type ID Certificate Apple per attivazione completa.",
+    }
+
+
+@api_router.get("/wallet/google-pass")
+async def generate_google_pass(current_user: dict = Depends(get_current_user)):
+    """
+    Generates a mock Google Wallet JWT and save URL.
+    To activate fully: replace mock SERVICE_ACCOUNT_EMAIL + sign JWT
+    with Google Service Account private key from Cloud Console.
+    """
+    user_id = str(current_user["_id"])
+    username = current_user.get("username", "ATHLETE").upper()
+    sport = current_user.get("sport", "ATHLETICS").upper()
+    level = current_user.get("level", 1)
+    xp = current_user.get("xp", 0)
+    is_founder = current_user.get("is_founder", False) or current_user.get("is_admin", False)
+    founder_number = current_user.get("founder_number", None)
+
+    try:
+        kore_num = int(user_id[-5:], 16) % 99999
+    except Exception:
+        kore_num = 1
+    kore_number = f"{founder_number:05d}" if founder_number else f"{kore_num:05d}"
+
+    now_ts = int(datetime.now(timezone.utc).timestamp())
+    # Mock issuer — replace with real Google Pay & Wallet Issuer ID
+    issuer_id = "3388000000022800000"
+
+    google_pass_payload = {
+        "iss": "arenakore-mock@arenadare.iam.gserviceaccount.com",
+        "aud": "google",
+        "typ": "savetowallet",
+        "iat": now_ts,
+        "payload": {
+            "genericObjects": [
+                {
+                    "id": f"{issuer_id}.kore_{user_id}",
+                    "classId": f"{issuer_id}.kore_athlete_pass",
+                    "genericType": "GENERIC_TYPE_UNSPECIFIED",
+                    "hexBackgroundColor": "#050505",
+                    "cardTitle": {
+                        "defaultValue": {"language": "it-IT", "value": "ARENAKORE"}
+                    },
+                    "subheader": {
+                        "defaultValue": {"language": "it-IT", "value": "KORE ATHLETE PASSPORT"}
+                    },
+                    "header": {
+                        "defaultValue": {"language": "it-IT", "value": username}
+                    },
+                    "textModulesData": [
+                        {"id": "sport", "header": "SPORT", "body": sport},
+                        {"id": "level", "header": "LIVELLO", "body": str(level)},
+                        {"id": "xp", "header": "XP TOTALE", "body": f"{xp:,}"},
+                        {"id": "status", "header": "STATUS", "body": "FOUNDER" if is_founder else "KORE ATHLETE"},
+                        {"id": "kore_number", "header": "KORE #", "body": kore_number},
+                    ],
+                    "barcode": {
+                        "type": "QR_CODE",
+                        "value": f"arenakore://athlete/{user_id}",
+                        "alternateText": f"KORE #{kore_number}",
+                    },
+                    "state": "ACTIVE",
+                }
+            ]
+        },
+    }
+
+    jwt_token = jwt.encode(google_pass_payload, SECRET_KEY, algorithm=ALGORITHM)
+    wallet_url = f"https://pay.google.com/gp/v/save/{jwt_token}"
+
+    return {
+        "status": "generated",
+        "kore_number": kore_number,
+        "athlete": username,
+        "wallet_url": wallet_url,
+        "note": "Mock JWT — firmato con chiave locale. Per attivazione completa, configurare Google Pay & Wallet API Service Account.",
+    }
+
+
+# Register all routes (must be AFTER all @api_router decorators)
+app.include_router(api_router)
 
 
 @app.on_event("shutdown")

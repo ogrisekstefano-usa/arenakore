@@ -324,7 +324,10 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
             <Text style={fg$.exDesc}>Velocit{'\u00e0'} {'\u00b7'} Agilit{'\u00e0'}</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => setMode(null)} style={fg$.backBtn}><Text style={fg$.backText}>{'\u2190'} INDIETRO</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setMode(null)} style={fg$.backBtn}>
+          <Ionicons name="arrow-back" size={14} color="#555" />
+          <Text style={fg$.backText}>INDIETRO</Text>
+        </TouchableOpacity>
       </Animated.View>
     );
   }
@@ -375,8 +378,8 @@ const fg$ = StyleSheet.create({
   },
   exName: { color: '#00F2FF', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
   exDesc: { color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: '700' },
-  backBtn: { marginTop: 8 },
-  backText: { color: '#555', fontSize: 11, fontWeight: '700' },
+  backBtn: { marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  backText: { color: '#555', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
 });
 
 // ========== MINI DNA RADAR ==========
@@ -403,98 +406,228 @@ function MiniDNARadar({ dna, explosive }: { dna: any; explosive: boolean }) {
   );
 }
 
-// ========== 3-SECOND POSE VALIDATION OVERLAY ==========
-function StabilizingOverlay({ exercise, onComplete }: { exercise: ExerciseType; onComplete: () => void }) {
-  const [count, setCount] = useState(3);
-  const progress = useSharedValue(0);
+// ========== PUPPET-MOTION-DECK: SMOOTH VALIDATION (3s) ==========
+// Moving average + 10% tolerance + no-reset on micro-movements
+const STABILITY_THRESHOLD = 0.82;
+const TARGET_STABLE_MS = 3000;
+
+function SmoothedValidation({ exercise, onComplete }: { exercise: ExerciseType; onComplete: () => void }) {
+  const [stability, setStability] = useState(0);
+  const [validatedMs, setValidatedMs] = useState(0);
+  const [phase, setPhase] = useState<'init' | 'validating' | 'done'>('init');
+  const [statusMsg, setStatusMsg] = useState('INIZIALIZZAZIONE SENSORI...');
+
+  // Reanimated values
+  const progressAnim = useSharedValue(0);
+  const stabilityAnim = useSharedValue(0);
+  const glowAnim = useSharedValue(0.25);
+  const screenFlash = useSharedValue(0);
+  const doneScale = useSharedValue(0);
+
+  // Refs: progress never resets for micro-movements
+  const validatedMsRef = useRef(0);
+  const bufferRef = useRef<number[]>([]);
+  const activeRef = useRef(true);
 
   useEffect(() => {
-    progress.value = withTiming(1, { duration: 3000 });
-    const countInterval = setInterval(() => {
-      setCount(p => {
-        const next = p - 1;
-        if (next <= 0) { clearInterval(countInterval); return 0; }
-        return next;
-      });
-    }, 1000);
-    const doneTimer = setTimeout(() => {
-      if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      onComplete();
-    }, 3000);
-    return () => { clearInterval(countInterval); clearTimeout(doneTimer); };
+    const t0 = Date.now();
+
+    // Phase 1: sensor init (0.8s)
+    const initTimer = setTimeout(() => {
+      if (!activeRef.current) return;
+      setPhase('validating');
+      setStatusMsg('TIENI LA POSIZIONE');
+    }, 800);
+
+    // 100ms tick — moving average stability model
+    const tick = setInterval(() => {
+      if (!activeRef.current) return;
+      const elapsed = (Date.now() - t0) / 1000;
+
+      // Simulate realistic build-up with 10-sample moving average
+      const base = Math.min(1, Math.max(0, (elapsed - 0.8) / 1.4));
+      const noise = (Math.random() - 0.5) * 0.22;
+      const raw = Math.max(0, Math.min(1, base + noise));
+
+      // Moving average (10 samples = 1s window → ignores micro-tremors)
+      bufferRef.current.push(raw);
+      if (bufferRef.current.length > 10) bufferRef.current.shift();
+      const avg = bufferRef.current.reduce((a, b) => a + b, 0) / bufferRef.current.length;
+
+      setStability(avg);
+      stabilityAnim.value = withTiming(avg, { duration: 80 });
+      glowAnim.value = withTiming(0.25 + avg * 0.75, { duration: 80 });
+
+      // KEY: advance only when stable — PAUSE (not reset) when unstable
+      if (avg >= STABILITY_THRESHOLD) {
+        validatedMsRef.current = Math.min(TARGET_STABLE_MS, validatedMsRef.current + 100);
+        setValidatedMs(validatedMsRef.current);
+        progressAnim.value = withTiming(validatedMsRef.current / TARGET_STABLE_MS, { duration: 100 });
+        setStatusMsg('ANALISI IN CORSO');
+      } else {
+        setStatusMsg(avg < 0.4 ? 'CENTRARE IL CORPO' : 'TIENI LA POSIZIONE');
+      }
+
+      // Completion
+      if (validatedMsRef.current >= TARGET_STABLE_MS) {
+        clearInterval(tick);
+        activeRef.current = false;
+        setPhase('done');
+        // Gold flash sequence
+        screenFlash.value = withSequence(
+          withTiming(1, { duration: 120 }),
+          withTiming(0.5, { duration: 180 }),
+          withTiming(0.85, { duration: 120 }),
+          withTiming(0, { duration: 900 })
+        );
+        // Done card scale-in
+        doneScale.value = withSequence(
+          withTiming(1.15, { duration: 300 }),
+          withTiming(1, { duration: 200 })
+        );
+        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setTimeout(() => { onComplete(); }, 2200);
+      }
+    }, 100);
+
+    return () => { activeRef.current = false; clearTimeout(initTimer); clearInterval(tick); };
   }, []);
 
-  const barStyle = useAnimatedStyle(() => ({ width: `${progress.value * 100}%` as any }));
-  const glowStyle = useAnimatedStyle(() => ({ opacity: 0.3 + progress.value * 0.4 }));
+  const progressStyle = useAnimatedStyle(() => ({ width: `${progressAnim.value * 100}%` as any }));
+  const stabStyle = useAnimatedStyle(() => ({ width: `${stabilityAnim.value * 100}%` as any }));
+  const glowStyle = useAnimatedStyle(() => ({ opacity: glowAnim.value, shadowOpacity: glowAnim.value }));
+  const flashStyle = useAnimatedStyle(() => ({ opacity: screenFlash.value }));
+  const doneStyle = useAnimatedStyle(() => ({ transform: [{ scale: doneScale.value }], opacity: doneScale.value }));
 
-  const hint = exercise === 'squat'
-    ? 'POSIZIONE: PIEDI ALLA LARGHEZZA DELLE SPALLE'
-    : 'POSIZIONE: GUARDIA PUGNI ALTI';
+  const pct = Math.round((validatedMs / TARGET_STABLE_MS) * 100);
+  const isStable = stability >= STABILITY_THRESHOLD;
 
+  // ── COMPLETION STATE ──
+  if (phase === 'done') {
+    return (
+      <View style={smv$.overlay}>
+        <Animated.View style={[StyleSheet.absoluteFill, smv$.flashGold, flashStyle]} />
+        <Animated.View style={[smv$.doneWrap, doneStyle]}>
+          <View style={smv$.doneCircle}>
+            <Ionicons name="shield-checkmark" size={64} color="#D4AF37" />
+          </View>
+          <Text style={smv$.doneTitle}>KORE IDENTIFICATO</Text>
+          <View style={smv$.doneDivider} />
+          <Text style={smv$.doneAccess}>ACCESSO AUTORIZZATO</Text>
+          <Text style={smv$.doneDesc}>AVVIO TRACKING BIOMETRICO IN CORSO...</Text>
+        </Animated.View>
+      </View>
+    );
+  }
+
+  // ── VALIDATION STATE ──
   return (
-    <View style={stab$.overlay}>
-      <Animated.View entering={FadeIn.duration(300)} style={stab$.content}>
-        {/* Icon */}
-        <Animated.View style={[stab$.iconCircle, glowStyle]}>
-          <Ionicons name={exercise === 'squat' ? 'body' : 'hand-left'} size={40} color="#00F2FF" />
+    <View style={smv$.overlay}>
+      <Animated.View style={[StyleSheet.absoluteFill, smv$.flashGold, flashStyle]} />
+
+      <View style={smv$.content}>
+        {/* Phase label */}
+        <Text style={smv$.phaseLabel}>
+          {phase === 'init' ? 'INIZIALIZZAZIONE SENSORI' : 'PUPPET·MOTION·DECK ATTIVO'}
+        </Text>
+
+        {/* Icon + neon glow */}
+        <Animated.View style={[smv$.iconCircle, glowStyle]}>
+          <Ionicons name={exercise === 'squat' ? 'body' : 'hand-left'} size={56} color="#00F2FF" />
         </Animated.View>
 
-        {/* Countdown number */}
-        <View style={stab$.countWrap}>
-          <Text style={stab$.countNum}>{count === 0 ? 'GO' : count}</Text>
+        {/* Main status message — GIANT */}
+        <Text style={[smv$.mainMsg, { color: isStable ? '#00F2FF' : '#FFFFFF' }]}>
+          {statusMsg}
+        </Text>
+
+        {/* Exercise hint */}
+        <Text style={smv$.hint}>
+          {exercise === 'squat'
+            ? 'PIEDI ALLA LARGHEZZA DELLE SPALLE'
+            : 'GUARDIA ALTA · PUGNI PRONTI'}
+        </Text>
+
+        {/* Stability bar */}
+        <View style={smv$.section}>
+          <View style={smv$.barRow}>
+            <Text style={smv$.barLabel}>STABILITÀ CORPO</Text>
+            <Text style={[smv$.barPct, { color: isStable ? '#00F2FF' : 'rgba(255,255,255,0.4)' }]}>
+              {Math.round(stability * 100)}%
+            </Text>
+          </View>
+          <View style={smv$.barBg}>
+            <Animated.View style={[smv$.stabFill, stabStyle, {
+              backgroundColor: isStable ? '#00F2FF' : '#FF453A',
+            }]} />
+          </View>
         </View>
 
-        {/* Main message */}
-        <Text style={stab$.title}>TIENI LA POSIZIONE</Text>
-        <Text style={stab$.hint}>{hint}</Text>
-
-        {/* Progress bar */}
-        <View style={stab$.barWrap}>
-          <Animated.View style={[stab$.barFill, barStyle]} />
+        {/* Progress countdown bar */}
+        <View style={smv$.section}>
+          <View style={smv$.barRow}>
+            <Text style={smv$.barLabel}>VALIDAZIONE POSTURA</Text>
+            <Text style={smv$.progressPct}>{pct}%</Text>
+          </View>
+          <View style={smv$.progressBg}>
+            <Animated.View style={[smv$.progressFill, progressStyle]} />
+          </View>
+          <Text style={smv$.progressNote}>
+            {isStable ? 'STABILE — VALIDAZIONE IN CORSO' : 'IN PAUSA — NON RESETTATO'}
+          </Text>
         </View>
-
-        {/* Sub text */}
-        <Text style={stab$.sub}>MANTIENI STABILE PER AVVIARE IL TRACKING</Text>
-      </Animated.View>
+      </View>
     </View>
   );
 }
 
-const stab$ = StyleSheet.create({
+const smv$ = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject, zIndex: 30,
-    backgroundColor: 'rgba(5,5,5,0.82)',
+    backgroundColor: 'rgba(0,0,0,0.85)',
     justifyContent: 'center', alignItems: 'center',
   },
-  content: { alignItems: 'center', gap: 14, paddingHorizontal: 40 },
+  flashGold: { backgroundColor: '#D4AF37', zIndex: 31 },
+  content: { alignItems: 'center', gap: 22, paddingHorizontal: 32, width: '100%' },
+  phaseLabel: { color: 'rgba(0,242,255,0.55)', fontSize: 11, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
   iconCircle: {
-    width: 80, height: 80, borderRadius: 40,
-    backgroundColor: 'rgba(0,242,255,0.08)',
-    borderWidth: 2, borderColor: '#00F2FF',
+    width: 110, height: 110, borderRadius: 55,
+    backgroundColor: 'rgba(0,242,255,0.05)',
+    borderWidth: 2.5, borderColor: '#00F2FF',
     alignItems: 'center', justifyContent: 'center',
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8, shadowRadius: 16,
+    shadowOpacity: 0.9, shadowRadius: 28,
   },
-  countWrap: {
-    width: 72, height: 72, borderRadius: 36,
-    backgroundColor: 'rgba(0,242,255,0.06)',
-    borderWidth: 2, borderColor: 'rgba(0,242,255,0.4)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  countNum: { color: '#00F2FF', fontSize: 36, fontWeight: '900', letterSpacing: 2 },
-  title: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 4, textAlign: 'center' },
-  hint: { color: 'rgba(0,242,255,0.65)', fontSize: 10, fontWeight: '700', letterSpacing: 2, textAlign: 'center' },
-  barWrap: {
-    width: SW * 0.65, height: 4, backgroundColor: 'rgba(0,242,255,0.12)',
-    borderRadius: 2, overflow: 'hidden', marginTop: 4,
-  },
-  barFill: {
-    height: '100%', borderRadius: 2,
-    backgroundColor: '#00F2FF',
+  mainMsg: { fontSize: 34, fontWeight: '900', letterSpacing: 4, textAlign: 'center' },
+  hint: { color: 'rgba(0,242,255,0.65)', fontSize: 13, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center', marginTop: -8 },
+  section: { width: '100%', gap: 8 },
+  barRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  barLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  barPct: { fontSize: 15, fontWeight: '900', letterSpacing: 2 },
+  barBg: { height: 5, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2.5, overflow: 'hidden' },
+  stabFill: { height: '100%', borderRadius: 2.5 },
+  progressBg: { height: 7, backgroundColor: 'rgba(0,242,255,0.06)', borderRadius: 3.5, overflow: 'hidden' },
+  progressFill: {
+    height: '100%', borderRadius: 3.5, backgroundColor: '#00F2FF',
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1, shadowRadius: 8,
+    shadowOpacity: 1, shadowRadius: 10,
   },
-  sub: { color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '700', letterSpacing: 2, textAlign: 'center' },
+  progressPct: { color: '#00F2FF', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
+  progressNote: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center' },
+  // Done state
+  doneWrap: { alignItems: 'center', gap: 16, paddingHorizontal: 32 },
+  doneCircle: {
+    width: 130, height: 130, borderRadius: 65,
+    backgroundColor: 'rgba(212,175,55,0.08)',
+    borderWidth: 3, borderColor: '#D4AF37',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1, shadowRadius: 40,
+  },
+  doneTitle: { color: '#D4AF37', fontSize: 38, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
+  doneDivider: { width: 80, height: 2.5, backgroundColor: '#D4AF37', borderRadius: 1.5 },
+  doneAccess: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
+  doneDesc: { color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: '800', letterSpacing: 3, textAlign: 'center' },
 });
 
 // ========== COUNTDOWN ==========
@@ -704,9 +837,9 @@ export default function NexusTriggerScreen() {
       <ScanLine active={phase === 'scanning'} />
       {phase === 'scanning' && <MiniDNARadar dna={user?.dna} explosive={motionActive} />}
 
-      {/* 3-SEC POSE VALIDATION */}
+      {/* PUPPET-MOTION-DECK: SMOOTH VALIDATION */}
       {phase === 'stabilizing' && (
-        <StabilizingOverlay exercise={exercise} onComplete={handleStabilizingComplete} />
+        <SmoothedValidation exercise={exercise} onComplete={handleStabilizingComplete} />
       )}
       {phase === 'bioscan' && <BioScanTrigger user={user} onComplete={async () => {
         setPhase('forge');

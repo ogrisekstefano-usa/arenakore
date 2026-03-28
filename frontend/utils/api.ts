@@ -170,4 +170,8 @@ export const api = {
 
   updateEventStatus: (eventId: string, status: string, token: string) =>
     request(`/gym/events/${eventId}/status`, { method: 'PUT', body: JSON.stringify({ status }) }, token),
+
+  // ========== WALLET ENGINE — APPLE + GOOGLE ==========
+  generateApplePass: (token: string) => request('/wallet/apple-pass', {}, token),
+  generateGooglePass: (token: string) => request('/wallet/google-pass', {}, token),
 };

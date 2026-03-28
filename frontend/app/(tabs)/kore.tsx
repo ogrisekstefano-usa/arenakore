@@ -323,7 +323,11 @@ const radar$ = StyleSheet.create({
 
 // ========== KORE CARD + WALLET ==========
 function KoreCard({ user, cityRank }: { user: any; cityRank: any }) {
+  const { token } = useAuth();
   const scanPulse = useSharedValue(0);
+  const [walletState, setWalletState] = useState<'idle' | 'loading' | 'success_apple' | 'success_google' | 'error'>('idle');
+  const [walletInfo, setWalletInfo] = useState<any>(null);
+
   useEffect(() => {
     scanPulse.value = withRepeat(
       withSequence(withTiming(1, { duration: 1500 }), withTiming(0, { duration: 1500 })), -1, false
@@ -340,8 +344,45 @@ function KoreCard({ user, cityRank }: { user: any; cityRank: any }) {
     ? Math.round(dnaValues.reduce((a, b) => a + b, 0) / dnaValues.length)
     : 0;
 
-  const handleApple = () => Linking.openURL('https://arenadare.com/wallet/apple').catch(() => {});
-  const handleGoogle = () => Linking.openURL('https://arenadare.com/wallet/google').catch(() => {});
+  const handleApple = async () => {
+    if (!token || walletState === 'loading') return;
+    setWalletState('loading');
+    try {
+      const result = await api.generateApplePass(token);
+      setWalletInfo(result);
+      setWalletState('success_apple');
+      // Web: trigger .pkpass download via blob
+      if (Platform.OS === 'web' && result.pass_b64) {
+        try {
+          const byteChars = atob(result.pass_b64);
+          const byteArr = new Uint8Array(byteChars.length);
+          for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
+          const blob = new Blob([byteArr], { type: 'application/vnd.apple.pkpass' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = result.filename || 'KORE.pkpass';
+          a.click(); URL.revokeObjectURL(url);
+        } catch (_) {}
+      }
+    } catch (_) {
+      setWalletState('error');
+    }
+  };
+
+  const handleGoogle = async () => {
+    if (!token || walletState === 'loading') return;
+    setWalletState('loading');
+    try {
+      const result = await api.generateGooglePass(token);
+      setWalletInfo(result);
+      setWalletState('success_google');
+      if (result.wallet_url) {
+        Linking.openURL(result.wallet_url).catch(() => {});
+      }
+    } catch (_) {
+      setWalletState('error');
+    }
+  };
 
   return (
     <Animated.View entering={FadeInDown.delay(350)} style={kc$.container}>
@@ -405,9 +446,13 @@ function KoreCard({ user, cityRank }: { user: any; cityRank: any }) {
       {/* Wallet buttons */}
       <View style={kc$.walletRow}>
         {Platform.OS !== 'android' && (
-          <TouchableOpacity style={kc$.appleBtn} onPress={handleApple} activeOpacity={0.85}>
+          <TouchableOpacity style={kc$.appleBtn} onPress={handleApple} activeOpacity={0.85} disabled={walletState === 'loading'}>
             <LinearGradient colors={['#1C1C1E', '#111']} style={kc$.btnInner}>
-              <Ionicons name="phone-portrait" size={15} color="#FFFFFF" />
+              {walletState === 'loading' ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Ionicons name="phone-portrait" size={15} color="#FFFFFF" />
+              )}
               <View>
                 <Text style={kc$.btnSm}>ADD TO</Text>
                 <Text style={kc$.btnBig}>APPLE WALLET</Text>
@@ -415,9 +460,13 @@ function KoreCard({ user, cityRank }: { user: any; cityRank: any }) {
             </LinearGradient>
           </TouchableOpacity>
         )}
-        <TouchableOpacity style={kc$.googleBtn} onPress={handleGoogle} activeOpacity={0.85}>
+        <TouchableOpacity style={kc$.googleBtn} onPress={handleGoogle} activeOpacity={0.85} disabled={walletState === 'loading'}>
           <LinearGradient colors={['#1A1A1A', '#111']} style={kc$.btnInner}>
-            <Ionicons name="card" size={15} color="#4285F4" />
+            {walletState === 'loading' ? (
+              <ActivityIndicator size="small" color="#4285F4" />
+            ) : (
+              <Ionicons name="card" size={15} color="#4285F4" />
+            )}
             <View>
               <Text style={kc$.btnSm}>SAVE TO</Text>
               <Text style={[kc$.btnBig, { color: '#4285F4' }]}>GOOGLE WALLET</Text>
@@ -425,6 +474,77 @@ function KoreCard({ user, cityRank }: { user: any; cityRank: any }) {
           </LinearGradient>
         </TouchableOpacity>
       </View>
+
+      {/* Wallet Success / Error Modal — Nike Elite Style */}
+      <Modal
+        transparent
+        visible={walletState === 'success_apple' || walletState === 'success_google' || walletState === 'error'}
+        animationType="fade"
+        onRequestClose={() => setWalletState('idle')}
+      >
+        <View style={wm$.overlay}>
+          <Animated.View entering={FadeInDown.duration(300)} style={wm$.card}>
+            <LinearGradient colors={['#0D0D0D', '#080808']} style={wm$.cardInner}>
+              <View style={wm$.topGlow} />
+
+              {/* Icon */}
+              <View style={[wm$.iconCircle, walletState === 'error' && { borderColor: '#FF453A' }]}>
+                <Ionicons
+                  name={
+                    walletState === 'success_apple' ? 'phone-portrait' :
+                    walletState === 'success_google' ? 'card' : 'close-circle'
+                  }
+                  size={40}
+                  color={
+                    walletState === 'success_apple' ? '#FFFFFF' :
+                    walletState === 'success_google' ? '#4285F4' : '#FF453A'
+                  }
+                />
+              </View>
+
+              {/* Title */}
+              <Text style={[wm$.title, walletState === 'error' && { color: '#FF453A' }]}>
+                {walletState === 'success_apple' ? 'APPLE WALLET' :
+                 walletState === 'success_google' ? 'GOOGLE WALLET' : 'ERRORE'}
+              </Text>
+              <Text style={wm$.subtitle}>
+                {walletState === 'success_apple' ? 'KORE CARD GENERATA' :
+                 walletState === 'success_google' ? 'LINK WALLET CREATO' : 'GENERAZIONE FALLITA'}
+              </Text>
+
+              {/* Info row */}
+              {walletInfo && (
+                <>
+                  <View style={wm$.divider} />
+                  <View style={wm$.infoRow}>
+                    <Text style={wm$.infoLabel}>ATLETA</Text>
+                    <Text style={wm$.infoVal}>{walletInfo.athlete}</Text>
+                  </View>
+                  <View style={wm$.infoRow}>
+                    <Text style={wm$.infoLabel}>KORE #</Text>
+                    <Text style={[wm$.infoVal, { color: '#D4AF37' }]}>{walletInfo.kore_number}</Text>
+                  </View>
+                  <View style={wm$.divider} />
+                  <Text style={wm$.note}>
+                    {walletState === 'success_apple'
+                      ? 'File .pkpass generato. Apri su iPhone per aggiungere al Wallet.'
+                      : walletState === 'success_google'
+                      ? 'Link Google Wallet aperto. Aggiungi il pass al tuo account.'
+                      : ''}
+                  </Text>
+                  {walletInfo.note && (
+                    <Text style={wm$.mockNote}>MOCK · {walletInfo.note.slice(0, 60)}...</Text>
+                  )}
+                </>
+              )}
+
+              <TouchableOpacity style={wm$.closeBtn} onPress={() => setWalletState('idle')} activeOpacity={0.85}>
+                <Text style={wm$.closeTxt}>CHIUDI</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </Animated.View>
+        </View>
+      </Modal>
     </Animated.View>
   );
 }
@@ -462,6 +582,69 @@ const kc$ = StyleSheet.create({
   btnInner: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 14, paddingHorizontal: 14 },
   btnSm: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '800', letterSpacing: 1.5 },
   btnBig: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 0.5 },
+});
+
+// ========== WALLET MODAL STYLES ==========
+const wm$ = StyleSheet.create({
+  overlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.88)',
+    justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24,
+  },
+  card: {
+    width: '100%', maxWidth: 380, borderRadius: 20, overflow: 'hidden',
+    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.15)',
+  },
+  cardInner: { padding: 24, alignItems: 'center', gap: 14 },
+  topGlow: {
+    height: 2, width: '110%', backgroundColor: '#00F2FF', opacity: 0.6,
+    marginHorizontal: -24, marginTop: -24, marginBottom: 8,
+    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1, shadowRadius: 8,
+  },
+  iconCircle: {
+    width: 88, height: 88, borderRadius: 44,
+    backgroundColor: 'rgba(0,242,255,0.05)',
+    borderWidth: 2, borderColor: '#00F2FF',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7, shadowRadius: 20,
+  },
+  title: {
+    color: '#00F2FF', fontSize: 30, fontWeight: '900',
+    letterSpacing: 5, textAlign: 'center',
+  },
+  subtitle: {
+    color: '#FFFFFF', fontSize: 18, fontWeight: '900',
+    letterSpacing: 3, textAlign: 'center', marginTop: -6,
+  },
+  divider: { height: 1, width: '100%', backgroundColor: 'rgba(255,255,255,0.06)' },
+  infoRow: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', width: '100%', paddingHorizontal: 4,
+  },
+  infoLabel: {
+    color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '900', letterSpacing: 3,
+  },
+  infoVal: {
+    color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 2,
+  },
+  note: {
+    color: 'rgba(0,242,255,0.7)', fontSize: 12, fontWeight: '800',
+    letterSpacing: 1, textAlign: 'center',
+  },
+  mockNote: {
+    color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '700',
+    letterSpacing: 1, textAlign: 'center',
+  },
+  closeBtn: {
+    marginTop: 8, width: '100%', alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 16, borderRadius: 12,
+    backgroundColor: 'rgba(0,242,255,0.06)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
+  },
+  closeTxt: {
+    color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 4,
+  },
 });
 
 // ========== XP PROGRESS ==========
