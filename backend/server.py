@@ -3366,12 +3366,37 @@ async def nexus_scanner_page():
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       var coco17 = new Array(17).fill(null);
       for (var k in MP_TO_COCO) {
-        var lm = mp_lm[parseInt(k)];
-        if (lm && (lm.visibility || 0) >= 0.75) {
+        var mpIdx = parseInt(k);
+        var lm = mp_lm[mpIdx];
+        // EXTREMITY HEURISTIC: ankles (27,28) near frame bottom get lenient threshold
+        var visThresh = 0.75;
+        if ((mpIdx === 27 || mpIdx === 28) && lm && lm.y > 0.82) {
+          visThresh = 0.30;  // extremity near edge — accept lower confidence
+        }
+        if (lm && (lm.visibility || 0) >= visThresh) {
           var sc = toScreen(lm.x, lm.y);
-          coco17[MP_TO_COCO[k]] = { x: sc.x, y: sc.y, v: lm.visibility };
+          coco17[MP_TO_COCO[k]] = { x: sc.x, y: sc.y, v: lm.visibility, ext: false };
         }
       }
+
+      // ── LEG COHERENCE: extrapolate missing ankles from hip→knee direction vector
+      // If ankle is off-frame but hip+knee are visible, we can estimate ankle position
+      function extrapolateAnkle(mpHip, mpKnee, cocoAnkleIdx) {
+        if (!mpHip || !mpKnee || coco17[cocoAnkleIdx]) return;  // already have it
+        var hip = mp_lm[mpHip], knee = mp_lm[mpKnee];
+        if (!hip || !knee || (hip.visibility||0) < 0.6 || (knee.visibility||0) < 0.6) return;
+        // Hip→Knee direction vector, extended by the same length below the knee
+        var dx = knee.x - hip.x, dy = knee.y - hip.y;
+        var ankleX = knee.x + dx;
+        var ankleY = knee.y + dy;
+        // Only extrapolate if result is plausibly below-frame (y ≤ 1.20)
+        if (ankleY > 0 && ankleY <= 1.20 && ankleX >= 0 && ankleX <= 1) {
+          var sc = toScreen(Math.min(ankleX, 1), Math.min(ankleY, 1));
+          coco17[cocoAnkleIdx] = { x: sc.x, y: Math.min(sc.y, canvas.height - 2), v: 0.25, ext: true };
+        }
+      }
+      extrapolateAnkle(23, 25, 15);  // left:  hip[23]→knee[25]→ankle[15]
+      extrapolateAnkle(24, 26, 16);  // right: hip[24]→knee[26]→ankle[16]
       ctx.strokeStyle = '#D4AF37'; ctx.lineWidth = 3; ctx.globalAlpha = 0.9;
       COCO_CONN.forEach(function(p) {
         var a = coco17[p[0]], b = coco17[p[1]];
@@ -3379,16 +3404,27 @@ async def nexus_scanner_page():
       });
       coco17.forEach(function(pt, i) {
         if (!pt) return;
-        // Skip any point outside visible canvas area (off-screen ghost fragments)
         if (pt.x < -20 || pt.x > canvas.width + 20 || pt.y < -20 || pt.y > canvas.height + 20) return;
         var r = i < 5 ? 9 : 7;
-        ctx.fillStyle = '#00F2FF'; ctx.globalAlpha = 0.25;
-        ctx.beginPath(); ctx.arc(pt.x,pt.y,r*2.2,0,Math.PI*2); ctx.fill();
-        ctx.globalAlpha = 1.0;
-        ctx.beginPath(); ctx.arc(pt.x,pt.y,r,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#FFF';
-        ctx.beginPath(); ctx.arc(pt.x,pt.y,3,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#00F2FF';
+        var isExt = !!pt.ext;  // extrapolated ankle (gold dashed ring)
+        if (isExt) {
+          // Extrapolated: gold dashed ring (estimated position)
+          ctx.strokeStyle = '#D4AF37'; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.55;
+          ctx.setLineDash([5, 4]);
+          ctx.beginPath(); ctx.arc(pt.x, pt.y, r + 3, 0, Math.PI * 2); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.globalAlpha = 0.5;
+          ctx.fillStyle = '#D4AF37';
+          ctx.beginPath(); ctx.arc(pt.x, pt.y, 3.5, 0, Math.PI * 2); ctx.fill();
+        } else {
+          ctx.fillStyle = '#00F2FF'; ctx.globalAlpha = 0.25;
+          ctx.beginPath(); ctx.arc(pt.x,pt.y,r*2.2,0,Math.PI*2); ctx.fill();
+          ctx.globalAlpha = 1.0;
+          ctx.beginPath(); ctx.arc(pt.x,pt.y,r,0,Math.PI*2); ctx.fill();
+          ctx.fillStyle = '#FFF';
+          ctx.beginPath(); ctx.arc(pt.x,pt.y,3,0,Math.PI*2); ctx.fill();
+          ctx.fillStyle = '#00F2FF';
+        }
       });
       ctx.globalAlpha = 1;
       return coco17;
@@ -3571,12 +3607,19 @@ async def nexus_scanner_page():
         return p ? { x: p.x / W, y: p.y / H, v: p.v } : null;
       }) : [];
 
+      // Feet guidance: knees visible but ankles not → user needs to step back
+      var kneesOk  = !!(coco17[13] || coco17[14]);
+      var anklesOk = !!(coco17[15] && !coco17[15].ext && coco17[16] && !coco17[16].ext);
+      var feetGuidance = kneesOk && !anklesOk;  // saw knees but real ankles missing
+
       post({
         type: 'pose',
         landmarks: norm,
         person_detected: stable,
         visible_count: vc,
         centered: centered,
+        feet_visible: anklesOk,
+        feet_guidance: feetGuidance,
         fps: Math.round(1000 / Math.max(elapsed, 1))
       });
     }

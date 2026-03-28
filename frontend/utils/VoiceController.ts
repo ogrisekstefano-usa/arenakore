@@ -62,6 +62,9 @@ export const NEXUS_TTS_FALLBACK: Record<string, string> = {
     'Nèxus attivo. Pòsizionati al centro della camera.',
   CHEAT_DETECTED:
     'Atleta non riconosciuto. Il Nèxus ha rilevato un cambio di identità. Rìtorna al centro.',
+  FEET_GUIDANCE:
+    'Inquadra i piedi. Allòntanati ancora un po\'.',
+
 };
 
 // ── TTS RATE per chiave

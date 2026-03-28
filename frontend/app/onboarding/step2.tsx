@@ -529,6 +529,15 @@ export default function NexusBioScan() {
     lastRealFrameRef.current = Date.now();
     usingRealDataRef.current = true;  // suppress simulated EMA
 
+    // ── FEET GUIDANCE: knees visible but ankles genuinely missing → voice prompt
+    if ((data as any).feet_guidance === true) {
+      const now = Date.now();
+      if (now - lastCenterAlertRef.current > 4500) {
+        lastCenterAlertRef.current = now;
+        VoiceController.play('FEET_GUIDANCE').catch(() => {});
+      }
+    }
+
     if (!landmarks || landmarks.length === 0 || !person_detected) {
       // ── GHOST PREVENTION: ALWAYS clear stale landmarks when person leaves frame.
       // This ensures realLandmarks=null → realPts=null → ZERO skeleton rendered.
