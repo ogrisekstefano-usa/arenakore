@@ -73,12 +73,15 @@ function MetricBadge({ value, label, delay }: { value: string; label: string; de
 }
 const mb$ = StyleSheet.create({
   badge: {
-    alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10,
+    flex: 1,                          // equal distribution — forces 3 on same row
+    alignItems: 'center',
+    paddingHorizontal: 8, paddingVertical: 10,
     backgroundColor: 'rgba(212,175,55,0.07)',
     borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)', borderRadius: 10,
+    minWidth: 0,                      // allow shrinking below natural width
   },
-  value: { color: GOLD, fontSize: 20, fontWeight: '900', letterSpacing: 1 },
-  label: { color: 'rgba(255,255,255,0.35)', fontSize: 8, fontWeight: '900', letterSpacing: 2, marginTop: 2 },
+  value: { color: GOLD, fontSize: 18, fontWeight: '900', letterSpacing: 0 },
+  label: { color: 'rgba(255,255,255,0.35)', fontSize: 7, fontWeight: '900', letterSpacing: 1.5, marginTop: 2, textAlign: 'center' },
 });
 
 // =====================================================================
@@ -398,13 +401,11 @@ const s = StyleSheet.create({
     shadowColor: GOLD, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 8,
   },
 
-  // Metrics
+  // Metrics — 3 badges on single row, equal width
   metricsRow: {
     flexDirection: 'row',
     gap: 8,
-    justifyContent: 'center',
     alignSelf: 'stretch',
-    flexWrap: 'wrap',
   },
 
   // CTAs
