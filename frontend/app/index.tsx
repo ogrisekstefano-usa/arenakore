@@ -1,26 +1,95 @@
-import React, { useEffect } from 'react';
+/**
+ * ARENAKORE — HERO INDEX v2.0
+ * The Biometric Frontier. DNA-Certified Performance.
+ * Video background (expo-av) + Cinematic overlays + Coach/Gym partner section.
+ */
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ImageBackground, StatusBar,
-  useWindowDimensions,
+  View, Text, StyleSheet, TouchableOpacity, StatusBar,
+  ScrollView, Image, useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AnimatedButton } from '../components/AnimatedButton';
+import { Ionicons } from '@expo/vector-icons';
+import Animated, {
+  useSharedValue, withRepeat, withTiming, withSequence,
+  useAnimatedStyle, FadeInDown, FadeIn, Easing,
+} from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Video, ResizeMode } from 'expo-av';
 import { useAuth } from '../contexts/AuthContext';
 
-export default function AuthLanding() {
+// ── Assets
+const VIDEO_URL   = 'https://videos.pexels.com/video-files/4669895/4669895-hd_1280_720_25fps.mp4';
+const FALLBACK_BG = 'https://images.unsplash.com/photo-1634042341821-05c4e074cedc?crop=entropy&cs=srgb&fm=jpg&q=85&w=1080';
+
+const GOLD = '#D4AF37';
+const CYAN = '#00F2FF';
+const BG   = '#050505';
+
+// =====================================================================
+// ANIMATED SCAN LINE (cinematic overlay)
+// =====================================================================
+function ScanLine() {
+  const { height } = useWindowDimensions();
+  const y = useSharedValue(-100);
+
+  useEffect(() => {
+    y.value = withRepeat(
+      withTiming(height + 100, { duration: 9000, easing: Easing.linear }),
+      -1, false,
+    );
+  }, [height]);
+
+  const lineStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: y.value }],
+  }));
+
+  return (
+    <Animated.View style={[scan$.wrap, lineStyle]} pointerEvents="none">
+      <View style={scan$.line} />
+      <View style={scan$.glow} />
+    </Animated.View>
+  );
+}
+const scan$ = StyleSheet.create({
+  wrap: { position: 'absolute', left: 0, right: 0, zIndex: 5 },
+  line: { height: 1, backgroundColor: 'rgba(212,175,55,0.4)' },
+  glow: { height: 24, backgroundColor: 'rgba(212,175,55,0.06)', marginTop: -12 },
+});
+
+// =====================================================================
+// METRIC BADGES (animated counters)
+// =====================================================================
+function MetricBadge({ value, label, delay }: { value: string; label: string; delay: number }) {
+  return (
+    <Animated.View entering={FadeInDown.delay(delay)} style={mb$.badge}>
+      <Text style={mb$.value}>{value}</Text>
+      <Text style={mb$.label}>{label}</Text>
+    </Animated.View>
+  );
+}
+const mb$ = StyleSheet.create({
+  badge: {
+    alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10,
+    backgroundColor: 'rgba(212,175,55,0.07)',
+    borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)', borderRadius: 10,
+  },
+  value: { color: GOLD, fontSize: 20, fontWeight: '900', letterSpacing: 1 },
+  label: { color: 'rgba(255,255,255,0.35)', fontSize: 8, fontWeight: '900', letterSpacing: 2, marginTop: 2 },
+});
+
+// =====================================================================
+// MAIN COMPONENT
+// =====================================================================
+export default function HeroIndex() {
   const { user, token, isLoading } = useAuth();
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const { width: SW } = useWindowDimensions();
+  const router       = useRouter();
+  const insets       = useSafeAreaInsets();
+  const { height: SH, width: SW } = useWindowDimensions();
+  const [videoError, setVideoError] = useState(false);
 
-  // Responsive logo: scale to screen width (24px padding each side)
-  // Formula: 9 characters ("ARENA KORE") + gap must fit in (SW - 48) pixels
-  // Bold weight 900 chars are ~60% of font size width
-  const usableW = SW - 48;
-  const logoSize = Math.min(72, Math.floor(usableW / 6.2));
-  const loadingSize = Math.min(48, Math.floor(SW / 9));
-
+  // Auth redirect — Login persistence is automatic via AuthContext + AsyncStorage
   useEffect(() => {
     if (!isLoading && token && user) {
       if (user.onboarding_completed) {
@@ -31,117 +100,351 @@ export default function AuthLanding() {
     }
   }, [isLoading, token, user]);
 
+  // ── Gold pulse for brand title
+  const glow = useSharedValue(0.6);
+  useEffect(() => {
+    glow.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.6, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
+      ),
+      -1, false,
+    );
+  }, []);
+  const glowStyle = useAnimatedStyle(() => ({
+    textShadowColor: `rgba(212,175,55,${glow.value * 0.7})`,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 24 * glow.value,
+  }));
+
+  // ── Loading screen
+  const loadingSize = Math.min(52, Math.floor(SW / 8));
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <View style={styles.loadingRow}>
-          <Text style={[styles.loadingArena, { fontSize: loadingSize }]}>ARENA</Text>
-          <Text style={[styles.loadingKore, { fontSize: loadingSize }]}>KORE</Text>
+      <View style={s.loadWrap}>
+        <StatusBar barStyle="light-content" />
+        <View style={s.loadRow}>
+          <Text style={[s.loadArena, { fontSize: loadingSize }]}>ARENA</Text>
+          <Text style={[s.loadKore, { fontSize: loadingSize }]}>KORE</Text>
         </View>
-        <Text style={styles.loadingSub}>The Core of Performance</Text>
+        <Text style={s.loadSub}>NEXUS INITIALIZING...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container} testID="auth-landing">
+    <View style={s.root}>
       <StatusBar barStyle="light-content" />
-      <ImageBackground
-        source={{ uri: 'https://images.pexels.com/photos/7733627/pexels-photo-7733627.jpeg' }}
-        style={styles.bg}
-        imageStyle={styles.bgImage}
+
+      {/* ── VIDEO BACKGROUND (muted, loop, autoplay) ── */}
+      {!videoError ? (
+        <Video
+          source={{ uri: VIDEO_URL }}
+          style={[StyleSheet.absoluteFill, { opacity: 0.28 }]}
+          resizeMode={ResizeMode.COVER}
+          shouldPlay
+          isLooping
+          isMuted
+          useNativeControls={false}
+          onError={() => setVideoError(true)}
+        />
+      ) : (
+        <Image
+          source={{ uri: FALLBACK_BG }}
+          style={[StyleSheet.absoluteFill, { opacity: 0.22 }]}
+          resizeMode="cover"
+        />
+      )}
+
+      {/* ── GRADIENT OVERLAY — non-blocking ── */}
+      <LinearGradient
+        colors={[
+          'rgba(5,5,5,0.15)',
+          'rgba(5,5,5,0.55)',
+          'rgba(5,5,5,0.90)',
+          BG,
+        ]}
+        locations={[0, 0.35, 0.65, 1]}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
+
+      {/* ── SCAN LINE ANIMATION ── */}
+      <ScanLine />
+
+      {/* ── SCROLLABLE CONTENT ── */}
+      <ScrollView
+        style={s.scroll}
+        contentContainerStyle={[s.scrollContent, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 40 }]}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        bounces
       >
-        <View style={styles.overlay}>
-          <View style={[styles.content, { paddingTop: insets.top + 60, paddingBottom: insets.bottom + 40 }]}>
-            <View style={styles.logoContainer}>
-              <Text style={styles.tagline}>THE CORE OF PERFORMANCE</Text>
-              <View style={styles.nameRow}>
-                <Text
-                  style={[styles.appNameArena, { fontSize: logoSize, lineHeight: logoSize * 1.08 }]}
-                  adjustsFontSizeToFit
-                  numberOfLines={1}
-                >ARENA</Text>
-                <Text
-                  style={[styles.appNameKore, { fontSize: logoSize, lineHeight: logoSize * 1.08 }]}
-                  adjustsFontSizeToFit
-                  numberOfLines={1}
-                >KORE</Text>
-              </View>
-              <View style={styles.dividerLine} />
-              <Text style={styles.subtitle}>Analisi Biometrica · Performance · Crew</Text>
-            </View>
-            <View style={styles.buttons}>
-              <AnimatedButton
-                testID="start-legacy-btn"
-                onPress={() => router.push('/onboarding/step1')}
-                style={styles.primaryButton}
-              >
-                <Text style={styles.primaryButtonText}>START LEGACY</Text>
-              </AnimatedButton>
-              <AnimatedButton
-                testID="resume-btn"
-                onPress={() => router.push('/login')}
-                style={styles.outlineButton}
-              >
-                <Text style={styles.outlineButtonText}>RESUME</Text>
-              </AnimatedButton>
-            </View>
-          </View>
+        {/* TOP BADGE */}
+        <Animated.View entering={FadeIn.delay(200)} style={s.topBadge}>
+          <View style={s.liveDot} />
+          <Text style={s.liveTxt}>NEXUS PROTOCOL — CHICAGO BETA</Text>
+        </Animated.View>
+
+        {/* ══════ HERO ══════ */}
+        <View style={[s.hero, { minHeight: SH * 0.72 }]}>
+          {/* Decorative corner */}
+          <View style={s.cornerTL} />
+          <View style={s.cornerTR} />
+
+          {/* Brand */}
+          <Animated.Text
+            entering={FadeInDown.delay(300).springify()}
+            style={[s.brand, glowStyle]}
+          >
+            ARENAKORE
+          </Animated.Text>
+
+          {/* Subtitle lines */}
+          <Animated.View entering={FadeInDown.delay(450)} style={s.subtitleWrap}>
+            <Text style={s.sub1}>THE BIOMETRIC FRONTIER.</Text>
+            <Text style={s.sub2}>DNA-CERTIFIED PERFORMANCE.</Text>
+          </Animated.View>
+
+          {/* Cyan accent line */}
+          <Animated.View entering={FadeIn.delay(600)} style={s.accentLine} />
+
+          {/* Metrics */}
+          <Animated.View entering={FadeInDown.delay(650)} style={s.metricsRow}>
+            <MetricBadge value="17" label="BIO-POINTS" delay={700} />
+            <MetricBadge value="5-BEAT" label="SCAN PROTOCOL" delay={780} />
+            <MetricBadge value="100%" label="DNA-CERTIFIED" delay={860} />
+          </Animated.View>
+
+          {/* ── CTA AREA ── */}
+          <Animated.View entering={FadeInDown.delay(800)} style={s.ctaArea}>
+            {/* PRIMARY: START NEXUS INITIALIZATION */}
+            <TouchableOpacity
+              testID="start-nexus-btn"
+              style={s.primaryBtn}
+              onPress={() => router.push('/onboarding/step1')}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="scan" size={18} color={BG} />
+              <Text style={s.primaryBtnTxt}>START NEXUS INITIALIZATION</Text>
+            </TouchableOpacity>
+
+            {/* SECONDARY: RESUME SESSION */}
+            <TouchableOpacity
+              testID="resume-btn"
+              style={s.outlineBtn}
+              onPress={() => router.push('/login')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="log-in-outline" size={16} color={CYAN} />
+              <Text style={s.outlineBtnTxt}>RESUME SESSION</Text>
+            </TouchableOpacity>
+          </Animated.View>
         </View>
-      </ImageBackground>
+
+        {/* ══════ PARTNER / COACH SECTION ══════ */}
+        <Animated.View entering={FadeInDown.delay(1000)} style={s.partnerSection}>
+          {/* Divider */}
+          <View style={s.partnerDivider}>
+            <View style={s.divLine} />
+            <Text style={s.divTxt}>KORE ECOSYSTEM</Text>
+            <View style={s.divLine} />
+          </View>
+
+          <View style={s.partnerCard}>
+            <LinearGradient
+              colors={['rgba(0,242,255,0.04)', 'rgba(0,242,255,0.01)']}
+              style={s.partnerGrad}
+            >
+              <View style={s.partnerTopGlow} />
+
+              <View style={s.partnerHeader}>
+                <Ionicons name="business" size={20} color={CYAN} />
+                <View>
+                  <Text style={s.partnerLabel}>FOR COACHES & GYMS</Text>
+                  <Text style={s.partnerSub}>KORE HUB NETWORK — CHICAGO</Text>
+                </View>
+              </View>
+
+              <Text style={s.partnerCopy}>
+                Certifica i tuoi atleti.{'\n'}
+                Domina i ranking di squadra.{'\n'}
+                Accedi ai dati biometrici del tuo roster.
+              </Text>
+
+              {/* Feature list */}
+              {[
+                'NEXUS Bio-Scan certificato per squadre',
+                'Dashboard coach con DNA analytics',
+                'City Ranking Dominance per il tuo gym',
+                'QR-Core per eventi di massa',
+              ].map((feat, i) => (
+                <View key={i} style={s.featRow}>
+                  <Ionicons name="checkmark-circle" size={12} color={CYAN} />
+                  <Text style={s.featTxt}>{feat}</Text>
+                </View>
+              ))}
+
+              {/* GYM CTA */}
+              <TouchableOpacity
+                testID="gym-hub-btn"
+                style={s.gymBtn}
+                onPress={() => router.push('/login')}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="business-outline" size={16} color={BG} />
+                <Text style={s.gymBtnTxt}>BECOME A KORE HUB</Text>
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
+        </Animated.View>
+
+        {/* ══════ FOOTER ══════ */}
+        <View style={s.footer}>
+          <Text style={s.footerTxt}>ARENAKORE · THE CORE OF PERFORMANCE</Text>
+          <Text style={s.footerTxt}>CHICAGO BETA · KORE #00001 STEFANO OGRISEK</Text>
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505' },
-  loadingContainer: {
-    flex: 1, backgroundColor: '#050505',
-    alignItems: 'center', justifyContent: 'center', gap: 8,
+// =====================================================================
+// STYLES
+// =====================================================================
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: BG },
+
+  // Loading
+  loadWrap: { flex: 1, backgroundColor: BG, alignItems: 'center', justifyContent: 'center', gap: 10 },
+  loadRow: { flexDirection: 'row', gap: 6 },
+  loadArena: { fontWeight: '900', color: '#FFFFFF', letterSpacing: -2 },
+  loadKore: { fontWeight: '900', color: GOLD, letterSpacing: -2 },
+  loadSub: { color: 'rgba(212,175,55,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 5 },
+
+  // Scroll
+  scroll: { flex: 1 },
+  scrollContent: { paddingHorizontal: 24 },
+
+  // Top badge
+  topBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(0,242,255,0.06)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)',
+    borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7,
+    marginBottom: 12,
   },
-  loadingRow: { flexDirection: 'row', gap: 6 },
-  loadingArena: { fontWeight: '900', color: '#FFFFFF', letterSpacing: -2 },
-  loadingKore: { fontWeight: '900', color: '#D4AF37', letterSpacing: -2 },
-  loadingSub: { color: '#555', fontSize: 12, fontWeight: '600', letterSpacing: 3, textTransform: 'uppercase' },
-  bg: { flex: 1 },
-  bgImage: { opacity: 0.30 },
-  overlay: { flex: 1, backgroundColor: 'rgba(5,5,5,0.72)' },
-  content: { flex: 1, paddingHorizontal: 24, justifyContent: 'space-between' },
-  logoContainer: { flex: 1, justifyContent: 'center', alignItems: 'flex-start' },
-  tagline: {
-    color: '#00F2FF', fontSize: 10, fontWeight: '700',
-    letterSpacing: 5, marginBottom: 12, textTransform: 'uppercase',
+  liveDot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: CYAN },
+  liveTxt: { color: CYAN, fontSize: 9, fontWeight: '900', letterSpacing: 3 },
+
+  // Hero
+  hero: {
+    justifyContent: 'flex-end',
+    paddingBottom: 32,
+    gap: 20,
   },
-  nameRow: { flexDirection: 'row', gap: 8, flexWrap: 'nowrap' },
-  appNameArena: {
-    color: '#FFFFFF', fontWeight: '900',
-    letterSpacing: -3, textTransform: 'uppercase',
-    flexShrink: 1,
+
+  // Decorative corners
+  cornerTL: {
+    position: 'absolute', top: 0, left: 0,
+    width: 24, height: 24,
+    borderTopWidth: 1.5, borderLeftWidth: 1.5, borderColor: 'rgba(212,175,55,0.3)',
   },
-  appNameKore: {
-    color: '#D4AF37', fontWeight: '900',
-    letterSpacing: -3, textTransform: 'uppercase',
-    flexShrink: 1,
+  cornerTR: {
+    position: 'absolute', top: 0, right: 0,
+    width: 24, height: 24,
+    borderTopWidth: 1.5, borderRightWidth: 1.5, borderColor: 'rgba(212,175,55,0.3)',
   },
-  dividerLine: {
-    width: 48, height: 2, backgroundColor: '#D4AF37',
-    marginTop: 16, marginBottom: 12, opacity: 0.6,
+
+  // Brand title
+  brand: {
+    color: GOLD,
+    fontSize: 58,
+    fontWeight: '900',
+    letterSpacing: -3,
+    lineHeight: 60,
+    textShadowColor: 'rgba(212,175,55,0.7)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
   },
-  subtitle: { color: '#888', fontSize: 13, letterSpacing: 0.5 },
-  buttons: { gap: 12, paddingBottom: 8 },
-  primaryButton: {
-    backgroundColor: '#00F2FF', borderRadius: 8,
-    paddingVertical: 18, alignItems: 'center',
+
+  // Subtitle
+  subtitleWrap: { gap: 2 },
+  sub1: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: 2,
+    textShadowColor: 'rgba(255,255,255,0.3)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
-  primaryButtonText: {
-    color: '#050505', fontSize: 16, fontWeight: '800', letterSpacing: 2,
+  sub2: {
+    color: 'rgba(255,255,255,0.55)',
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 2,
   },
-  outlineButton: {
-    backgroundColor: 'transparent', borderRadius: 8,
-    paddingVertical: 18, alignItems: 'center',
-    borderWidth: 1.5, borderColor: '#00F2FF',
+
+  // Accent line
+  accentLine: {
+    height: 2, width: 56, backgroundColor: GOLD,
+    shadowColor: GOLD, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 8,
   },
-  outlineButtonText: {
-    color: '#00F2FF', fontSize: 16, fontWeight: '800', letterSpacing: 2,
+
+  // Metrics
+  metricsRow: { flexDirection: 'row', gap: 10 },
+
+  // CTAs
+  ctaArea: { gap: 12 },
+  primaryBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+    backgroundColor: GOLD,
+    borderRadius: 10, paddingVertical: 18,
+    shadowColor: GOLD, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 14,
+    elevation: 10,
   },
+  primaryBtnTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  outlineBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    backgroundColor: 'transparent',
+    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.4)',
+    borderRadius: 10, paddingVertical: 14,
+  },
+  outlineBtnTxt: { color: CYAN, fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+
+  // Partner section
+  partnerSection: { marginTop: 8, gap: 16 },
+  partnerDivider: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  divLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.06)' },
+  divTxt: { color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '900', letterSpacing: 4 },
+  partnerCard: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(0,242,255,0.12)' },
+  partnerGrad: { padding: 20, gap: 14 },
+  partnerTopGlow: { height: 2, backgroundColor: CYAN, opacity: 0.5, marginHorizontal: -20, marginTop: -20, marginBottom: 6 },
+  partnerHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  partnerLabel: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
+  partnerSub: { color: 'rgba(0,242,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
+  partnerCopy: {
+    color: '#E0E0E0',
+    fontSize: 13,
+    fontWeight: '700',
+    lineHeight: 22,
+    letterSpacing: 0.5,
+  },
+  featRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  featTxt: { color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: '700', letterSpacing: 1, flex: 1 },
+  gymBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    backgroundColor: CYAN,
+    borderRadius: 10, paddingVertical: 16,
+    marginTop: 4,
+    shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 10,
+    elevation: 8,
+  },
+  gymBtnTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+
+  // Footer
+  footer: { alignItems: 'center', gap: 4, marginTop: 28, paddingBottom: 8 },
+  footerTxt: { color: 'rgba(255,255,255,0.12)', fontSize: 8, fontWeight: '700', letterSpacing: 2 },
 });
