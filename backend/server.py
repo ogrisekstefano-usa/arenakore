@@ -82,6 +82,21 @@ class UserLogin(BaseModel):
     password: str
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class VerifyOTPRequest(BaseModel):
+    email: str
+    otp: str
+
+
+class ResetPasswordRequest(BaseModel):
+    reset_token: str
+    new_password: str
+    confirm_password: str
+
+
 class OnboardingUpdate(BaseModel):
     role: Optional[str] = "Kore Member"
     sport: str
@@ -176,6 +191,116 @@ async def login(data: UserLogin):
         raise HTTPException(status_code=401, detail="Credenziali non valide")
     token = create_token(str(user["_id"]))
     return {"token": token, "user": user_to_response(user)}
+
+
+# =====================================================================
+# ARENAKORE ID RECOVERY — bcrypt-secured OTP Flow
+# Step 1: POST /auth/forgot-password  → generate OTP, store SHA256
+# Step 2: POST /auth/verify-otp       → verify OTP, return reset_token
+# Step 3: POST /auth/reset-password   → hash new password with bcrypt
+# Production: replace dev_otp with real SMTP/SendGrid delivery
+# =====================================================================
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(data: ForgotPasswordRequest):
+    """Generate 6-digit OTP and store SHA256 hash in DB (10 min expiry)."""
+    email = data.email.strip().lower()
+    user = await db.users.find_one({"email": email})
+    # Generic response to prevent email enumeration
+    if not user:
+        return {"status": "sent", "message": "Se l'email esiste, riceverai il codice OTP."}
+
+    import random as _rand
+    otp_code = str(_rand.randint(100000, 999999))
+    otp_hash = stdlib_json.dumps(otp_code)  # stored plain for dev; use hashlib in prod
+    # Use SHA256 for OTP (faster than bcrypt; short-lived code doesn't need bcrypt cost)
+    otp_hash = hashlib.sha256(otp_code.encode()).hexdigest()
+
+    await db.password_resets.delete_many({"email": email})
+    await db.password_resets.insert_one({
+        "email": email,
+        "otp_hash": otp_hash,
+        "created_at": datetime.now(timezone.utc),
+        "expires_at": datetime.now(timezone.utc) + timedelta(minutes=10),
+        "verified": False,
+        "used": False,
+    })
+
+    # TODO PRODUCTION: send otp_code via email (SMTP / SendGrid)
+    logging.info(f"[ID-RECOVERY] OTP per {email}: {otp_code}")
+
+    # DEV MODE: return OTP in response — remove in production
+    return {
+        "status": "sent",
+        "message": "Codice OTP generato. Controlla la tua email.",
+        "dev_otp": otp_code,   # REMOVE IN PRODUCTION — solo per demo/dev
+    }
+
+
+@api_router.post("/auth/verify-otp")
+async def verify_otp(data: VerifyOTPRequest):
+    """Verify 6-digit OTP and return a short-lived reset_token."""
+    email = data.email.strip().lower()
+    reset = await db.password_resets.find_one({
+        "email": email,
+        "used": False,
+        "expires_at": {"$gt": datetime.now(timezone.utc)},
+    })
+    if not reset:
+        raise HTTPException(status_code=400, detail="Codice OTP scaduto. Richiedi un nuovo codice.")
+
+    submitted_hash = hashlib.sha256(data.otp.strip().encode()).hexdigest()
+    if submitted_hash != reset["otp_hash"]:
+        raise HTTPException(status_code=400, detail="Codice OTP non valido.")
+
+    # Generate 15-minute reset token signed with SECRET_KEY
+    reset_token = jwt.encode(
+        {
+            "sub": str(reset["_id"]),
+            "email": email,
+            "type": "password_reset",
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=15),
+        },
+        SECRET_KEY,
+        algorithm=ALGORITHM,
+    )
+    await db.password_resets.update_one(
+        {"_id": reset["_id"]}, {"$set": {"verified": True}}
+    )
+    return {"status": "verified", "reset_token": reset_token}
+
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: ResetPasswordRequest):
+    """
+    Use verified reset_token to update password.
+    New password is hashed with bcrypt via hash_password().
+    """
+    if data.new_password != data.confirm_password:
+        raise HTTPException(status_code=400, detail="Le password non corrispondono.")
+    if len(data.new_password) < 8:
+        raise HTTPException(status_code=400, detail="Password troppo corta (minimo 8 caratteri).")
+
+    try:
+        payload = jwt.decode(data.reset_token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "password_reset":
+            raise HTTPException(status_code=400, detail="Token non valido.")
+        email = payload.get("email")
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Token scaduto o non valido.")
+
+    reset = await db.password_resets.find_one({
+        "email": email, "verified": True, "used": False
+    })
+    if not reset:
+        raise HTTPException(status_code=400, detail="Sessione di recupero non valida.")
+
+    # Hash new password with bcrypt (irreversible, salted)
+    new_hash = hash_password(data.new_password)
+    await db.users.update_one({"email": email}, {"$set": {"password_hash": new_hash}})
+    await db.password_resets.update_one({"_id": reset["_id"]}, {"$set": {"used": True}})
+
+    return {"status": "success", "message": "Password aggiornata. Accedi con le nuove credenziali."}
 
 
 @api_router.get("/auth/me")

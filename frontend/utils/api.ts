@@ -174,4 +174,12 @@ export const api = {
   // ========== WALLET ENGINE — APPLE + GOOGLE ==========
   generateApplePass: (token: string) => request('/wallet/apple-pass', {}, token),
   generateGooglePass: (token: string) => request('/wallet/google-pass', {}, token),
+
+  // ========== ARENAKORE ID RECOVERY — OTP Flow ==========
+  forgotPassword: (email: string) =>
+    request('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
+  verifyOTP: (email: string, otp: string) =>
+    request('/auth/verify-otp', { method: 'POST', body: JSON.stringify({ email, otp }) }),
+  resetPassword: (reset_token: string, new_password: string, confirm_password: string) =>
+    request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ reset_token, new_password, confirm_password }) }),
 };

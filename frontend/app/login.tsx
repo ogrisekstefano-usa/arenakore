@@ -109,6 +109,15 @@ export default function Login() {
             }
           </AnimatedButton>
 
+          {/* RECUPERA ACCESSO — ID Recovery Link */}
+          <TouchableOpacity
+            testID="login-recover-link"
+            onPress={() => router.push('/recover')}
+            style={styles.recoverRow}
+          >
+            <Text style={styles.recoverText}>RECUPERA ACCESSO</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity testID="login-register-link" onPress={() => router.replace('/register')}>
             <Text style={styles.registerLink}>
               Non hai un account? <Text style={styles.registerLinkBold}>START LEGACY</Text>
@@ -149,4 +158,11 @@ const styles = StyleSheet.create({
   loginButtonText: { color: '#050505', fontSize: 16, fontWeight: '800', letterSpacing: 2 },
   registerLink: { color: '#555555', fontSize: 14, textAlign: 'center', marginTop: 8 },
   registerLinkBold: { color: '#00F2FF', fontWeight: '700' },
+  recoverRow: {
+    alignItems: 'center', paddingVertical: 14,
+    borderTopWidth: 1, borderTopColor: '#111', marginTop: 4,
+  },
+  recoverText: {
+    color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 3,
+  },
 });

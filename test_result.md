@@ -776,3 +776,79 @@ test_plan:
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
+
+    - agent: "main"
+      message: "SPRINT 14 — SECURITY + ID RECOVERY IMPLEMENTED. (1) SECURITY VERIFIED: bcrypt confirmed via CryptContext(schemes=['bcrypt']) in server.py lines 39-51. hash_password() calls pwd_context.hash() (bcrypt salted, irreversible). verify_password() calls pwd_context.verify(). Zero MD5 anywhere. (2) ID RECOVERY BACKEND: Added 3 endpoints - POST /api/auth/forgot-password (generates 6-digit OTP, SHA256-hashed in MongoDB collection 'password_resets', returns dev_otp in response for demo), POST /api/auth/verify-otp (verifies SHA256 OTP hash, returns JWT reset_token with type=password_reset, 15min expiry), POST /api/auth/reset-password (verifies reset_token, new password hashed with bcrypt, marks reset as used). All 3 endpoints tested via curl: forgot→OTP 638522, verify→reset_token issued, reset→success, login still works. (3) ID RECOVERY FRONTEND: New /app/recover.tsx with 4-step flow: email→OTP→password→done. 6 cyan neon OTP boxes (dynamic width via useWindowDimensions). ARENAKORE brand: gold ARENAKORE text, massive 42pt 'ID RECOVERY', cyan step labels. (4) LOGIN UPDATED: Added 'RECUPERA ACCESSO' link between ACCEDI button and START LEGACY. PLEASE TEST: (A) Go to Login page → verify 'RECUPERA ACCESSO' link visible. (B) Tap RECUPERA ACCESSO → navigate to /recover. (C) Enter admin@arenadare.com → tap INVIA CODICE OTP → go to Step 2 with 6 OTP boxes and dev_otp visible. (D) Enter the 6-digit code in boxes → tap VERIFICA CODICE → go to Step 3. (E) Enter new password (min 8 chars) + confirm → tap RIPRISTINA ACCESSO → see success screen with 'ACCESSO RIPRISTINATO'. (F) Tap ACCEDI ORA → go to login, login with new password. Base URL: https://arena-kore-scan.preview.emergentagent.com Credentials: chicago@arena.com / testpassword123"
+
+backend:
+  - task: "ARENAKORE ID Recovery - forgot-password endpoint"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "POST /api/auth/forgot-password generates OTP, stores SHA256 hash in DB, returns dev_otp for demo. Verified via curl."
+
+  - task: "ARENAKORE ID Recovery - verify-otp endpoint"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "POST /api/auth/verify-otp verifies SHA256 hash, returns JWT reset_token (type=password_reset, 15min expiry). Verified via curl."
+
+  - task: "ARENAKORE ID Recovery - reset-password endpoint"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "POST /api/auth/reset-password verifies reset_token, hashes new password with bcrypt, marks reset as used. Login verified working after reset."
+
+frontend:
+  - task: "ARENAKORE ID Recovery Screen (/recover)"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/recover.tsx"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "New recover.tsx with 4-step flow. Step 1: email input. Step 2: 6 neon cyan OTP boxes (dynamic width). Step 3: new password with strength bar. Step 4: ACCESSO RIPRISTINATO success screen. Gold ARENAKORE brand, massive fonts, zero emojis."
+
+  - task: "Login - RECUPERA ACCESSO link"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/login.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added RECUPERA ACCESSO link between ACCEDI button and START LEGACY. Routes to /recover."
+
+test_plan:
+  current_focus:
+    - "ARENAKORE ID Recovery - forgot-password endpoint"
+    - "ARENAKORE ID Recovery - verify-otp endpoint"
+    - "ARENAKORE ID Recovery - reset-password endpoint"
+    - "ARENAKORE ID Recovery Screen (/recover)"
+    - "Login - RECUPERA ACCESSO link"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
