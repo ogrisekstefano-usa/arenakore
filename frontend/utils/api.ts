@@ -204,7 +204,15 @@ export const api = {
   notifyBioscanConfirm: (token: string) =>
     request('/notify/bioscan-confirm', { method: 'POST' }, token),
 
-  // ========== CITY RANKINGS — REAL-TIME KORE_SCORE ==========
+  // ========== SCAN RESULT — Indestructible Save ==========
+  saveScanResult: (data: {
+    kore_score: number;
+    stability: number;
+    amplitude: number;
+    city?: string;
+    scan_date?: string;
+  }, token: string) =>
+    request('/scan/result', { method: 'POST', body: JSON.stringify(data) }, token),
   getCityRanking: (city: string, token: string) =>
     request(`/rankings/city?city=${encodeURIComponent(city)}`, {}, token),
 

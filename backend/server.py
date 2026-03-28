@@ -3182,6 +3182,82 @@ async def update_permissions(body: dict, current_user: dict = Depends(get_curren
 
 
 # ====================================
+# SCAN RESULT — Indestructible Save
+# POST /api/scan/result
+# Saves NEXUS Bio-Scan outcome: updates DNA, assigns XP, forces city for ranking.
+# ====================================
+@api_router.post("/scan/result")
+async def save_scan_result(body: dict, current_user: dict = Depends(get_current_user)):
+    """
+    Save NEXUS Bio-Scan result. Called after Gold Flash completes.
+    - Updates user DNA from scan metrics (stability, amplitude, kore_score)
+    - Awards XP: 150 + (kore_score * 0.5) points
+    - Forces city assignment so user appears in city rankings immediately
+    - Stores scan record in scan_results collection for history
+    """
+    kore_score = min(100.0, max(0.0, float(body.get("kore_score", 74))))
+    stability  = min(100.0, max(0.0, float(body.get("stability", 50))))
+    amplitude  = min(100.0, max(0.0, float(body.get("amplitude", 50))))
+    city       = (body.get("city") or "CHICAGO").upper().strip()
+    scan_date  = body.get("scan_date") or datetime.now(timezone.utc).isoformat()
+
+    def clamp(v: float) -> float:
+        return round(min(100, max(0, v)))
+
+    # ── DNA mapping from biometric scan:
+    # stability → endurance + mental focus
+    # amplitude → strength + agility + power
+    # kore_score → technique (overall quality)
+    dna_update = {
+        "dna.velocita":     clamp(stability * 0.72 + amplitude * 0.25 + random.uniform(-2, 2)),
+        "dna.forza":        clamp(amplitude * 0.90 + random.uniform(-2, 2)),
+        "dna.resistenza":   clamp(stability * 0.92 + random.uniform(-2, 2)),
+        "dna.agilita":      clamp(amplitude * 0.88 + random.uniform(-2, 2)),
+        "dna.tecnica":      clamp(kore_score * 0.90 + random.uniform(-2, 2)),
+        "dna.potenza":      clamp(amplitude * 0.85 + random.uniform(-2, 2)),
+        "dna.mentalita":    clamp(stability * 0.94 + random.uniform(-2, 2)),
+        "dna.flessibilita": clamp((stability + amplitude) / 2 * 0.82 + random.uniform(-2, 2)),
+    }
+
+    xp_reward = 150 + round(kore_score * 0.5)   # 150–200 XP per scan
+
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {
+            "$set": {**dna_update, "city": city},
+            "$inc": {"xp": xp_reward},
+        }
+    )
+
+    # Record scan history
+    try:
+        await db.scan_results.insert_one({
+            "user_id":    current_user["_id"],
+            "kore_score": kore_score,
+            "stability":  stability,
+            "amplitude":  amplitude,
+            "city":       city,
+            "scan_date":  scan_date,
+            "xp_earned":  xp_reward,
+            "created_at": datetime.now(timezone.utc),
+        })
+    except Exception:
+        pass  # scan_results failure never blocks the main response
+
+    updated_user = await db.users.find_one({"_id": current_user["_id"]})
+    return {
+        "status":     "saved",
+        "kore_score": kore_score,
+        "stability":  stability,
+        "amplitude":  amplitude,
+        "city":       city,
+        "xp_earned":  xp_reward,
+        "new_xp":     updated_user.get("xp", 0),
+        "user":       user_to_response(updated_user),
+    }
+
+
+# ====================================
 # NEXUS SCANNER — Served over HTTPS
 # Fixes: "No navigator.mediaDevices.getUserMedia"
 # Must be served from HTTPS for getUserMedia to work in WebView.
@@ -3203,18 +3279,27 @@ async def nexus_scanner_page():
     html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
     #video  { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
     #canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    /* Brand — top left */
+    #brand {
+      position: absolute; top: 12px; left: 12px; z-index: 30;
+      pointer-events: none; display: flex; align-items: baseline; gap: 0;
+    }
+    #brand .arena { color: #FFFFFF; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 900; font-size: 15px; letter-spacing: 2px; }
+    #brand .kore  { color: #00F2FF; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 900; font-size: 15px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,242,255,0.8); }
+    /* Status — bottom */
     #status {
       position: absolute; bottom: 8px; left: 0; right: 0;
       color: rgba(0,242,255,0.8); font-family: monospace; font-size: 10px;
       text-align: center; pointer-events: none; background: rgba(0,0,0,0.4);
       padding: 4px 0;
     }
+    /* Error overlay */
     #err {
       display: none; position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       background: rgba(0,0,0,0.9); border: 1px solid #FF3B30;
       border-radius: 12px; padding: 20px 16px; text-align: center;
-      color: #FF3B30; font-family: monospace; font-size: 13px; z-index: 30;
+      color: #FF3B30; font-family: monospace; font-size: 13px; z-index: 20;
       width: 85%; line-height: 1.5;
     }
   </style>
@@ -3222,6 +3307,10 @@ async def nexus_scanner_page():
 <body>
   <video id="video" autoplay playsinline muted></video>
   <canvas id="canvas"></canvas>
+  <!-- ARENAKORE Brand -->
+  <div id="brand">
+    <span class="arena">ARENA</span><span class="kore">KORE</span>
+  </div>
   <div id="status">NEXUS: LOADING...</div>
   <div id="err"></div>
 

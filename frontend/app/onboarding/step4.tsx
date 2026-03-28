@@ -53,25 +53,33 @@ export default function LegacyStep4() {
           training_level: params.training_level || 'LEGACY',
         },
       );
-      // ── DNA SYNC: After registration, apply 5-Beat scan DNA if available
+      // ── DNA SYNC + SCAN RESULT SYNC after registration
       try {
-        const pendingDnaRaw = await AsyncStorage.getItem('@kore_pending_dna');
-        const savedToken    = await AsyncStorage.getItem('@arenakore_token');
-        if (pendingDnaRaw && savedToken) {
-          const dna = JSON.parse(pendingDnaRaw);
-          await api.saveFiveBeatDna(dna, savedToken);
-          await AsyncStorage.removeItem('@kore_pending_dna');
-        }
-        // ── PERMISSIONS + GHOST MODE: save after registration
+        const pendingDnaRaw  = await AsyncStorage.getItem('@kore_pending_dna');
+        const pendingScanRaw = await AsyncStorage.getItem('@kore_pending_scan');
+        const savedToken     = await AsyncStorage.getItem('@arenakore_token');
+
         if (savedToken) {
+          // Sync pending scan result first (updates DNA + XP + city)
+          if (pendingScanRaw) {
+            const scanData = JSON.parse(pendingScanRaw);
+            await api.saveScanResult(scanData, savedToken);
+            await AsyncStorage.removeItem('@kore_pending_scan');
+          } else if (pendingDnaRaw) {
+            // Fallback: DNA-only sync
+            const dna = JSON.parse(pendingDnaRaw);
+            await api.saveFiveBeatDna(dna, savedToken);
+          }
+          if (pendingDnaRaw) await AsyncStorage.removeItem('@kore_pending_dna');
+
+          // Save permissions + ghost mode preference
           api.updatePermissions(savedToken).catch(() => {});
-          // Apply ghost mode preference from step3
           if (params.ghost_mode === '1') {
             api.toggleGhostMode(true, savedToken).catch(() => {});
           }
         }
-      } catch (_dnaErr) {
-        // Non-blocking: registration still succeeds even if DNA sync fails
+      } catch (_syncErr) {
+        // Non-blocking: registration still succeeds
       }
       router.replace('/(tabs)/kore');
     } catch (e: any) {

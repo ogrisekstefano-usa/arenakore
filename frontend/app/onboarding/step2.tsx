@@ -898,31 +898,47 @@ export default function NexusBioScan() {
       // Haptics not available on all platforms — graceful fallback
     }
 
-    // ── BEAT 5 DNA SYNC: Save scan results to AsyncStorage + attempt API sync
-    const BEAT5_DNA = {
-      velocita: 87, forza: 83, resistenza: 91,
-      tecnica: 88, mentalita: 94, flessibilita: 79,
+    // ── INDESTRUCTIBLE SCAN RESULT SAVE
+    // 1. Save to AsyncStorage immediately (offline-safe backup)
+    // 2. Try API twice with token (if logged in)
+    // 3. If API fails both times: data stays in AsyncStorage for next sync
+    const scanPayload = {
+      kore_score: koScoreRef.current > 0 ? koScoreRef.current : 74,
+      stability:  Math.max(0, Math.min(100, Math.round(scoreBreakRef.current.stability * 100))),
+      amplitude:  Math.max(0, Math.min(100, Math.round(scoreBreakRef.current.amplitude * 100))),
+      city:       cityRef,
+      scan_date:  new Date().toISOString(),
     };
+
     try {
-      await AsyncStorage.setItem('@kore_pending_dna', JSON.stringify(BEAT5_DNA));
-      // ── PASSPORT DATA: Save Score Engine result for passport page
-      const scanResult = {
-        kore_score: koScoreRef.current > 0 ? koScoreRef.current : 74,
-        stability:  Math.max(0, Math.min(100, Math.round(scoreBreakRef.current.stability * 100))),
-        amplitude:  Math.max(0, Math.min(100, Math.round(scoreBreakRef.current.amplitude * 100))),
-        city:       cityRef,
-        scan_date:  new Date().toISOString(),
-      };
-      await AsyncStorage.setItem('@kore_scan_result', JSON.stringify(scanResult));
-      // If user is already logged in, sync directly to backend
+      // Always save locally first
+      await AsyncStorage.setItem('@kore_pending_dna',  JSON.stringify({
+        velocita: 87, forza: 83, resistenza: 91, tecnica: 88, mentalita: 94, flessibilita: 79,
+      }));
+      await AsyncStorage.setItem('@kore_scan_result',  JSON.stringify(scanPayload));
+      await AsyncStorage.setItem('@kore_pending_scan', JSON.stringify(scanPayload));
+
+      // Try API (with 2 attempts for indestructibility)
       const savedToken = await AsyncStorage.getItem('@arenakore_token');
       if (savedToken) {
-        await api.saveFiveBeatDna(BEAT5_DNA, savedToken);
-        // ── Send Bio-Scan Confirmation email (fire-and-forget via backend)
-        api.notifyBioscanConfirm(savedToken).catch(() => {});
+        let saved = false;
+        for (let attempt = 0; attempt < 2 && !saved; attempt++) {
+          try {
+            await api.saveScanResult(scanPayload, savedToken);
+            saved = true;
+            await AsyncStorage.removeItem('@kore_pending_scan'); // clear backup on success
+            // Also trigger bioscan confirm email (fire-and-forget)
+            api.notifyBioscanConfirm(savedToken).catch(() => {});
+          } catch (_retryErr) {
+            if (attempt === 0) await new Promise(r => setTimeout(r, 800)); // wait before retry
+          }
+        }
+        if (!saved) {
+          // Fallback: pending_scan stays in AsyncStorage → synced on next login
+        }
       }
     } catch (_e) {
-      // DNA sync failure is non-blocking — scan still succeeds
+      // Non-blocking: Gold Flash and navigation always proceed
     }
 
     // ── Navigate to Athlete Passport (trofeo digitale) after gold flash
