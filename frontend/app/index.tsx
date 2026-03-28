@@ -56,7 +56,7 @@ export default function AuthLanding() {
             <View style={styles.buttons}>
               <AnimatedButton
                 testID="start-legacy-btn"
-                onPress={() => router.push('/register')}
+                onPress={() => router.push('/onboarding/step1')}
                 style={styles.primaryButton}
               >
                 <Text style={styles.primaryButtonText}>START LEGACY</Text>

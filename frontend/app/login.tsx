@@ -118,7 +118,7 @@ export default function Login() {
             <Text style={styles.recoverText}>RECUPERA ACCESSO</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity testID="login-register-link" onPress={() => router.replace('/register')}>
+          <TouchableOpacity testID="login-register-link" onPress={() => router.replace('/onboarding/step1')}>
             <Text style={styles.registerLink}>
               Non hai un account? <Text style={styles.registerLinkBold}>START LEGACY</Text>
             </Text>

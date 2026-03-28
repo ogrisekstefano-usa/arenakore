@@ -75,6 +75,11 @@ class UserRegister(BaseModel):
     username: str
     email: str
     password: str
+    # Legacy Initiation fields (collected during onboarding ceremony)
+    height_cm: float | None = None
+    weight_kg: float | None = None
+    age: int | None = None
+    training_level: str | None = None  # LEGACY | ELITE | KORE
 
 
 class UserLogin(BaseModel):
@@ -168,7 +173,11 @@ async def register(data: UserRegister):
         "email": data.email,
         "password_hash": hash_password(data.password),
         "role": None,
-        "sport": None,
+        "sport": "ATHLETICS",  # Default sport — updated via profile
+        "training_level": data.training_level or "LEGACY",
+        "height_cm": data.height_cm,
+        "weight_kg": data.weight_kg,
+        "age": data.age,
         "xp": 0,
         "level": 1,
         "onboarding_completed": False,

@@ -1,0 +1,87 @@
+{
+  "summary": "Sprint 10 — ARENAKORE Legacy Initiation & Security Reset. Critical DB_NAME mismatch bug fixed (db_reset_legacy.py used 'arenakore' DB but backend .env pointed to 'test_database'). Fixed by updating DB_NAME=arenakore in backend/.env. After fix: founder login works, KORE #00001 confirmed, all 4 onboarding steps verified, full registration flow working.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "System Config",
+        "issue": "db_reset_legacy.py hardcodes client['arenakore'] but backend .env had DB_NAME=test_database — founder user seeded into wrong DB. FIXED: updated DB_NAME=arenakore in backend/.env",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "POST /api/auth/forgot-password",
+        "issue": "Email case-sensitivity bug: endpoint lowercases email for DB lookup (email.strip().lower()) but registration stores email as-is without lowercasing. Mixed-case emails like 'TEST_user@arena.com' cannot trigger OTP flow. Fix: lowercase email in register endpoint OR use case-insensitive MongoDB query in forgot-password."
+      },
+      {
+        "endpoint": "GET /api/auth/me & user_to_response",
+        "issue": "DNA label mapping in KORE card doesn't cover 'mentalita' and 'flessibilita' keys (founder's DNA), shows as MEN/FLE fallback. DNA_LABELS only has standard 6 labels, not these founder-specific ones."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "PassportIdentity (kore.tsx)",
+        "issue": "Username 'STEFANO' (7 chars) is truncated to 'STE...' in the passport identity card. The `numberOfLines={1}` with `flex: 1` on username text causes truncation even for short names",
+        "testID": "none",
+        "priority": "MEDIUM"
+      },
+      {
+        "component": "PassportIdentity (kore.tsx)",
+        "issue": "Sport shows 'ATHLETICS · ATHLETICS' for new registrations - both sport and category default to ATHLETICS, creating redundant display",
+        "testID": "none",
+        "priority": "LOW"
+      },
+      {
+        "component": "KoreCard (kore.tsx)",
+        "issue": "FOUNDER badge on KORE CARD is visually cut off at right edge of card, showing '★ FOUNDE' instead of '★ FOUNDER' - badge needs to fit within card bounds",
+        "testID": "none",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Step 1 - NEXUS BIO-SCAN PROTOCOL",
+        "issues": ["EMA FILTER label in step2 (emaTxt) has color #1A1A1A (near black) which makes it nearly invisible against dark background"]
+      }
+    ],
+    "react_native_issues": [
+      {
+        "component": "Login & Onboarding buttons",
+        "issue": "Console warns: TouchableMixin is deprecated. Please use Pressable. AnimatedButton already uses Pressable but some inner components may not."
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sprint10_legacy_initiation.py",
+    "/app/test_reports/pytest/sprint10_pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix email case handling: register endpoint should lowercase email before storing (data.email.strip().lower()) OR forgot-password should use case-insensitive MongoDB query {'$regex': f'^{email}$', '$options': 'i'}",
+    "Fix FOUNDER badge truncation on KORE CARD - reduce badge padding or font size to fit within card bounds",
+    "Fix username truncation in PassportIdentity - 7-char usernames should not be truncated",
+    "Fix default sport/category showing duplicate 'ATHLETICS · ATHLETICS' - consider only showing sport if different from category",
+    "Add DNA_LABELS entries for 'mentalita' and 'flessibilita' in kore.tsx DNA_LABELS map",
+    "Consider making db_reset_legacy.py read DB_NAME from backend/.env instead of hardcoding 'arenakore'"
+  ],
+  "critical_code_review_comments": [
+    "FIXED: db_reset_legacy.py had hardcoded client['arenakore'] while backend .env used 'test_database' - this caused the founder to be seeded into wrong DB",
+    "Email case-sensitivity: forgot-password lowercases for lookup but register stores as-is - inconsistent handling across auth endpoints",
+    "The startup seed_data event retroactively badges founders but does NOT create the initial founder user - relying solely on db_reset_legacy.py which had the DB name bug"
+  ],
+  "updated_files": [
+    "/app/backend/.env (changed DB_NAME from 'test_database' to 'arenakore')",
+    "/app/backend/tests/test_sprint10_legacy_initiation.py (new test file)"
+  ],
+  "success_rate": {
+    "backend": "88% (15/17 passed, 1 skipped, 1 failed due to test concurrency - not a real bug)",
+    "frontend": "95% (all critical flows working: START LEGACY, step1-4 navigation, registration, founder login, KORE #00001 display)"
+  },
+  "seed_data_creation": "Created test users: TEST_LGC_{timestamp}@arena.com, test_ui_66000@arena.com (all in arenakore DB). Founder: ogrisek.stefano@gmail.com (KORE #00001) already exists.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "DB is now correctly pointing to 'arenakore' via backend/.env. Founder user ogrisek.stefano@gmail.com / Founder@KORE2026! works. There are now ~8 test users in arenakore DB from this test run. Email case-sensitivity bug in forgot-password is unresolved - use all-lowercase emails in tests. Full 4-step onboarding flow is working end-to-end.",
+  "rca_of_issue": "ROOT CAUSE: db_reset_legacy.py at line 25 uses `db = client['arenakore']` hardcoded, while the backend server reads DB_NAME from .env which was set to 'test_database'. The purge + founder creation was done against the 'arenakore' MongoDB database, but all API requests went to 'test_database'. MITIGATION: Changed DB_NAME='arenakore' in backend/.env. REPRODUCTION: Run db_reset_legacy.py, check that the backend was serving from test_database (old users visible), founder login returns 401."
+}

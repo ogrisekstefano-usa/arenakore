@@ -1,215 +1,280 @@
-import React, { useState, useEffect, useRef } from 'react';
+/**
+ * ARENAKORE LEGACY INITIATION — STEP 2
+ * PUPPET-MOTION-DECK: 17-point EMA skeleton, Hysteresis 3px, 3s validation
+ * KORE IDENTIFICATO: ACCESSO AUTORIZZATO
+ */
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, StatusBar,
-  TextInput, TouchableOpacity, ActivityIndicator, Dimensions,
+  View, Text, StyleSheet, StatusBar, useWindowDimensions,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
-import { api } from '../../utils/api';
+import Svg, { Line, Circle } from 'react-native-svg';
+import Animated, {
+  useSharedValue, withTiming, withSequence,
+  useAnimatedStyle, FadeIn,
+} from 'react-native-reanimated';
 
-const { width: SCREEN_W } = Dimensions.get('window');
-const CARD_W = (SCREEN_W - 56) / 3;
+// ── 17-POINT COCO SKELETON (% of scan area) ─────────────────────────
+const TARGET_PCT: [number, number][] = [
+  [50, 9],   // 0: nose
+  [45, 7],   // 1: left eye
+  [55, 7],   // 2: right eye
+  [41, 11],  // 3: left ear
+  [59, 11],  // 4: right ear
+  [36, 23],  // 5: left shoulder
+  [64, 23],  // 6: right shoulder
+  [27, 37],  // 7: left elbow
+  [73, 37],  // 8: right elbow
+  [21, 51],  // 9: left wrist
+  [79, 51],  // 10: right wrist
+  [40, 55],  // 11: left hip
+  [60, 55],  // 12: right hip
+  [38, 70],  // 13: left knee
+  [62, 70],  // 14: right knee
+  [36, 85],  // 15: left ankle
+  [64, 85],  // 16: right ankle
+];
 
-export default function Step2() {
+const CONNECTIONS: [number, number][] = [
+  [0, 1], [0, 2], [1, 3], [2, 4],       // head
+  [3, 5], [4, 6], [5, 6],               // neck + shoulders
+  [5, 7], [7, 9],                        // left arm
+  [6, 8], [8, 10],                       // right arm
+  [5, 11], [6, 12], [11, 12],           // torso + hips
+  [11, 13], [13, 15],                    // left leg
+  [12, 14], [14, 16],                    // right leg
+];
+
+// EMA parameters
+const ALPHA = 0.12;        // smoothing factor
+const HYSTERESIS_PX = 3;   // px tolerance for stability
+const STABLE_TICKS = 30;   // 30 × 100ms = 3s
+const TICK_MS = 100;
+
+export default function LegacyStep2() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { category } = useLocalSearchParams<{ category: string }>();
-  const [selected, setSelected] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryData, setCategoryData] = useState<any>(null);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { width, height } = useWindowDimensions();
 
-  // Load category sports
+  const SCAN_W = width;
+  const SCAN_H = height - insets.top - insets.bottom - 160;
+
+  // Compute pixel targets from percentages
+  const getTargets = useCallback(() =>
+    TARGET_PCT.map(([px, py]) => [
+      (px / 100) * SCAN_W,
+      (py / 100) * SCAN_H,
+    ] as [number, number]), [SCAN_W, SCAN_H]);
+
+  // Initialize with ±25px jitter
+  const ptsRef = useRef<[number, number][]>(
+    TARGET_PCT.map(([px, py]) => [
+      (px / 100) * 390 + (Math.random() - 0.5) * 50,
+      (py / 100) * 680 + (Math.random() - 0.5) * 50,
+    ])
+  );
+
+  const [pts, setPts] = useState<[number, number][]>(ptsRef.current);
+  const stableTicksRef = useRef(0);
+  const phaseRef = useRef<'scanning' | 'identified'>('scanning');
+  const [phase, setPhase] = useState<'scanning' | 'identified'>('scanning');
+  const [stablePct, setStablePct] = useState(0);
+
+  // Gold flash
+  const flashOpacity = useSharedValue(0);
+  const flashStyle = useAnimatedStyle(() => ({ opacity: flashOpacity.value }));
+
   useEffect(() => {
-    if (!category) return;
-    api.getSportsByCategory(category)
-      .then(data => { setCategoryData(data); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [category]);
+    const targets = getTargets();
+    ptsRef.current = TARGET_PCT.map(([px, py]) => [
+      (px / 100) * SCAN_W + (Math.random() - 0.5) * 50,
+      (py / 100) * SCAN_H + (Math.random() - 0.5) * 50,
+    ]);
 
-  // Smart search
-  const handleSearch = (text: string) => {
-    setSearchQuery(text);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (text.length >= 2) {
-      setSearching(true);
-      debounceRef.current = setTimeout(async () => {
-        try {
-          const results = await api.searchSports(text);
-          setSearchResults(results);
-        } catch { setSearchResults([]); }
-        finally { setSearching(false); }
-      }, 300);
-    } else {
-      setSearchResults([]);
-      setSearching(false);
-    }
-  };
+    const interval = setInterval(() => {
+      if (phaseRef.current === 'identified') return;
 
-  const displaySports = searchQuery.length >= 2 ? searchResults : (categoryData?.sports || []);
+      const cur = ptsRef.current;
+      let allWithinHysteresis = true;
+
+      const next: [number, number][] = cur.map(([cx, cy], i) => {
+        // Add small noise to target (simulates micro-movement)
+        const noisyTx = targets[i][0] + (Math.random() - 0.5) * 5;
+        const noisyTy = targets[i][1] + (Math.random() - 0.5) * 5;
+        // EMA filter
+        const nx = ALPHA * noisyTx + (1 - ALPHA) * cx;
+        const ny = ALPHA * noisyTy + (1 - ALPHA) * cy;
+        // Check hysteresis
+        const dx = Math.abs(nx - targets[i][0]);
+        const dy = Math.abs(ny - targets[i][1]);
+        if (dx > HYSTERESIS_PX || dy > HYSTERESIS_PX) allWithinHysteresis = false;
+        return [nx, ny];
+      });
+
+      ptsRef.current = next;
+      setPts([...next]);
+
+      if (allWithinHysteresis) {
+        stableTicksRef.current = Math.min(STABLE_TICKS, stableTicksRef.current + 1);
+      } else {
+        stableTicksRef.current = Math.max(0, stableTicksRef.current - 1);
+      }
+
+      const pct = Math.round((stableTicksRef.current / STABLE_TICKS) * 100);
+      setStablePct(pct);
+
+      if (stableTicksRef.current >= STABLE_TICKS && phaseRef.current === 'scanning') {
+        phaseRef.current = 'identified';
+        setPhase('identified');
+        clearInterval(interval);
+
+        // Gold flash sequence
+        flashOpacity.value = withSequence(
+          withTiming(0.9, { duration: 250 }),
+          withTiming(0, { duration: 600 }),
+          withTiming(0.5, { duration: 150 }),
+          withTiming(0, { duration: 400 }),
+        );
+
+        // Navigate to step 3 after ceremony
+        setTimeout(() => router.push('/onboarding/step3'), 3000);
+      }
+    }, TICK_MS);
+
+    return () => clearInterval(interval);
+  }, [SCAN_W, SCAN_H]);
+
+  const skelColor = phase === 'identified' ? '#D4AF37' : '#00F2FF';
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 24 }]}>
-      <StatusBar barStyle="light-content" />
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← INDIETRO</Text>
-        </TouchableOpacity>
-        <Text style={styles.stepLabel}>LEVEL 2 DI 3</Text>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: '66%' }]} />
+    <View style={s.root}>
+      <StatusBar barStyle="light-content" hidden />
+
+      {/* Gold flash overlay */}
+      <Animated.View style={[StyleSheet.absoluteFill, s.flash, flashStyle]} />
+
+      {/* Scan header */}
+      <View style={[s.header, { paddingTop: insets.top + 12 }]}>
+        <Text style={s.brand}>ARENAKORE</Text>
+        <View style={s.stepPill}>
+          <Text style={s.stepTxt}>02 / 04</Text>
         </View>
-        <Text style={styles.title}>IL TUO SPORT</Text>
-        <Text style={styles.subtitle}>
-          {categoryData ? `${categoryData.category} — ${categoryData.sports?.length} discipline` : 'Seleziona la disciplina'}
-        </Text>
       </View>
 
-      {/* Smart Search Bar */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={16} color="rgba(255,255,255,0.4)" />
-        <TextInput
-          testID="sport-search-input"
-          style={styles.searchInput}
-          value={searchQuery}
-          onChangeText={handleSearch}
-          placeholder="Cerca tra 50+ discipline..."
-          placeholderTextColor="#444"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        {searching && <ActivityIndicator color="#00F2FF" size="small" />}
-      </View>
+      {/* 17-Point Neon Skeleton */}
+      <View style={[s.skelWrap, { width: SCAN_W, height: SCAN_H }]}>
+        {/* Scan grid lines */}
+        <View style={[StyleSheet.absoluteFill, s.scanGrid]} />
 
-      {loading ? (
-        <View style={styles.center}><ActivityIndicator color="#00F2FF" size="large" /></View>
-      ) : (
-        <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-          <View style={styles.grid}>
-            {displaySports.map((sport: any, i: number) => (
-              <Animated.View key={sport.id} entering={FadeInDown.delay(i * 40).springify()} style={styles.sportWrapper}>
-                <TouchableOpacity
-                  testID={`sport-${sport.id}-btn`}
-                  onPress={() => setSelected(sport.id)}
-                  style={[
-                    styles.sportCard,
-                    selected === sport.id && styles.sportCardSelected,
-                  ]}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.sportIcon}>{sport.icon}</Text>
-                  <Text style={[
-                    styles.sportLabel,
-                    selected === sport.id && styles.sportLabelActive,
-                  ]} numberOfLines={1}>{sport.label}</Text>
-                  {sport.category_label && searchQuery.length >= 2 && (
-                    <Text style={[styles.sportCat, { color: sport.category_color }]}>
-                      {sport.category_label}
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </Animated.View>
-            ))}
+        <Svg width={SCAN_W} height={SCAN_H}>
+          {/* Skeleton connections */}
+          {CONNECTIONS.map(([a, b], i) => (
+            <Line
+              key={`conn-${i}`}
+              x1={pts[a]?.[0] ?? 0}
+              y1={pts[a]?.[1] ?? 0}
+              x2={pts[b]?.[0] ?? 0}
+              y2={pts[b]?.[1] ?? 0}
+              stroke={skelColor}
+              strokeWidth={1.5}
+              opacity={0.55}
+            />
+          ))}
+          {/* Keypoints */}
+          {pts.map(([x, y], i) => (
+            <Circle
+              key={`pt-${i}`}
+              cx={x} cy={y} r={i < 5 ? 6 : 5}
+              fill={skelColor}
+              opacity={0.95}
+            />
+          ))}
+        </Svg>
+
+        {/* EMA filter label */}
+        {phase === 'scanning' && (
+          <View style={s.emaLabel}>
+            <Text style={s.emaTxt}>EMA FILTER ACTIVE · HYSTERESIS {HYSTERESIS_PX}PX</Text>
           </View>
+        )}
+      </View>
 
-          {displaySports.length === 0 && searchQuery.length >= 2 && (
-            <View style={styles.noResults}>
-              <Text style={styles.noResultsText}>Nessun risultato per "{searchQuery}"</Text>
-              <Text style={styles.noResultsSub}>Prova il profilo Versatile →</Text>
+      {/* Bottom status */}
+      <View style={[s.footer, { paddingBottom: insets.bottom + 16 }]}>
+        {phase === 'scanning' ? (
+          <>
+            <Text style={s.statusLabel}>CALIBRAZIONE BIOMETRICA</Text>
+            <View style={s.stabilityRow}>
+              <Text style={s.stabPct}>{stablePct}%</Text>
+              <View style={s.stabBar}>
+                <View style={[s.stabFill, { width: `${stablePct}%` as any }]} />
+              </View>
             </View>
-          )}
-
-          <View style={{ height: 120 }} />
-        </ScrollView>
-      )}
-
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
-        <TouchableOpacity
-          testID="step2-continue-btn"
-          onPress={() => selected && router.push({
-            pathname: '/onboarding/step3',
-            params: { category, sport: selected, is_versatile: 'false' },
-          })}
-          style={[styles.continueButton, !selected && styles.continueButtonDisabled]}
-          disabled={!selected}
-        >
-          <Text style={styles.continueButtonText}>CONTINUA →</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          testID="step2-versatile-btn"
-          onPress={() => router.push({
-            pathname: '/onboarding/step3',
-            params: { category, sport: 'versatile', is_versatile: 'true' },
-          })}
-          style={styles.versatileBtn}
-        >
-          <Text style={styles.versatileBtnText}>🌐  PROFILO VERSATILE</Text>
-        </TouchableOpacity>
+            <Text style={s.tieneTxt}>
+              {stablePct >= 50 ? 'TIENI LA POSIZIONE...' : 'RIMANI IMMOBILE DAVANTI ALLA CAMERA'}
+            </Text>
+          </>
+        ) : (
+          <Animated.View entering={FadeIn.duration(400)} style={s.identifiedWrap}>
+            <Text style={s.identifiedBig}>KORE IDENTIFICATO</Text>
+            <Text style={s.identifiedSub}>ACCESSO AUTORIZZATO</Text>
+          </Animated.View>
+        )}
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505' },
-  header: { paddingHorizontal: 20, marginBottom: 12 },
-  backBtn: { marginBottom: 12 },
-  backText: { color: '#00F2FF', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  stepLabel: { color: '#00F2FF', fontSize: 10, fontWeight: '700', letterSpacing: 3, marginBottom: 8 },
-  progressBar: { height: 2, backgroundColor: '#1E1E1E', borderRadius: 2, marginBottom: 16 },
-  progressFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
-  title: { color: '#FFFFFF', fontSize: 36, fontWeight: '900', letterSpacing: -1.5 },
-  subtitle: { color: '#555', fontSize: 13, marginTop: 4 },
-  searchContainer: {
-    flexDirection: 'row', alignItems: 'center',
-    marginHorizontal: 20, marginBottom: 12,
-    backgroundColor: '#111111', borderRadius: 10,
-    paddingHorizontal: 14, paddingVertical: 10,
-    borderWidth: 1, borderColor: '#1E1E1E', gap: 8,
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#050505' },
+  header: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', paddingHorizontal: 24, paddingBottom: 12,
   },
-  searchIcon: { fontSize: 16 },
-  searchInput: { flex: 1, color: '#FFFFFF', fontSize: 14, padding: 0 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scroll: { flex: 1 },
-  grid: {
-    flexDirection: 'row', flexWrap: 'wrap',
-    paddingHorizontal: 16, justifyContent: 'space-between', paddingTop: 4,
+  brand: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
+  stepPill: {
+    backgroundColor: 'rgba(0,242,255,0.08)',
+    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
   },
-  sportWrapper: { width: '31%', marginBottom: 10 },
-  sportCard: {
-    backgroundColor: '#111111',
-    borderRadius: 10, padding: 12, alignItems: 'center',
-    gap: 4, borderWidth: 1.5, borderColor: '#1E1E1E',
+  stepTxt: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  skelWrap: { flex: 1, position: 'relative', overflow: 'hidden' },
+  scanGrid: {
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.05)',
+    backgroundColor: 'rgba(0,242,255,0.01)',
   },
-  sportCardSelected: { borderColor: '#00F2FF', backgroundColor: 'rgba(0,242,255,0.06)' },
-  sportIcon: { fontSize: 24 },
-  sportLabel: { color: '#888', fontSize: 10, fontWeight: '700', textAlign: 'center' },
-  sportLabelActive: { color: '#00F2FF' },
-  sportCat: { fontSize: 8, fontWeight: '700', letterSpacing: 1 },
-  noResults: { alignItems: 'center', padding: 32, gap: 8 },
-  noResultsText: { color: '#555', fontSize: 14 },
-  noResultsSub: { color: '#00F2FF', fontSize: 12, fontWeight: '700' },
+  emaLabel: {
+    position: 'absolute', bottom: 8, left: 0, right: 0,
+    alignItems: 'center',
+  },
+  emaTxt: { color: '#1A1A1A', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
+  flash: { backgroundColor: '#D4AF37', zIndex: 100, pointerEvents: 'none' as any },
   footer: {
-    paddingHorizontal: 20, paddingTop: 8,
-    backgroundColor: '#050505', borderTopWidth: 1, borderTopColor: '#111111',
-    gap: 8,
+    paddingHorizontal: 24, paddingTop: 16, alignItems: 'center', gap: 10,
+    backgroundColor: '#050505',
   },
-  continueButton: {
-    backgroundColor: '#00F2FF', borderRadius: 8,
-    paddingVertical: 16, alignItems: 'center',
+  statusLabel: {
+    color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 4,
   },
-  continueButtonDisabled: { opacity: 0.3 },
-  continueButtonText: { color: '#050505', fontSize: 15, fontWeight: '800', letterSpacing: 2 },
-  versatileBtn: {
-    backgroundColor: 'transparent', borderRadius: 8,
-    paddingVertical: 12, alignItems: 'center',
-    borderWidth: 1, borderColor: '#2A2A2A',
+  stabilityRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' },
+  stabPct: { color: '#00F2FF', fontSize: 22, fontWeight: '900', width: 48 },
+  stabBar: {
+    flex: 1, height: 4, backgroundColor: '#111', borderRadius: 2, overflow: 'hidden',
   },
-  versatileBtnText: { color: '#888', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  stabFill: {
+    height: '100%', backgroundColor: '#00F2FF', borderRadius: 2,
+    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8, shadowRadius: 4,
+  },
+  tieneTxt: { color: '#333', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  identifiedWrap: { alignItems: 'center', gap: 6 },
+  identifiedBig: {
+    color: '#D4AF37', fontSize: 32, fontWeight: '900',
+    letterSpacing: -1, textAlign: 'center',
+  },
+  identifiedSub: {
+    color: '#FFFFFF', fontSize: 14, fontWeight: '900',
+    letterSpacing: 4, textAlign: 'center',
+  },
 });

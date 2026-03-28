@@ -1,155 +1,165 @@
-import React, { useState } from 'react';
-import {
-  View, Text, StyleSheet, StatusBar, TouchableOpacity,
-  Dimensions, ImageBackground, ScrollView,
-} from 'react-native';
+/**
+ * ARENAKORE LEGACY INITIATION — STEP 1
+ * NEXUS BIO-SCAN PROTOCOL: Rito d'iniziazione biometrica
+ */
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { CATEGORY_IMAGES } from '../../utils/images';
+import { TouchableOpacity } from 'react-native';
+import Animated, {
+  useSharedValue, withRepeat, withSequence, withTiming,
+  useAnimatedStyle, FadeInDown,
+} from 'react-native-reanimated';
 
-const { width: SCREEN_W } = Dimensions.get('window');
-
-const MACRO_CATEGORIES: { id: string; label: string; ionicon: keyof typeof Ionicons.glyphMap; desc: string; color: string }[] = [
-  { id: 'atletica', label: 'ATLETICA', ionicon: 'walk', desc: 'Track & Field', color: '#FF6B00' },
-  { id: 'combat', label: 'COMBAT', ionicon: 'hand-left', desc: 'Arti Marziali', color: '#FF3B30' },
-  { id: 'acqua', label: 'ACQUA', ionicon: 'water', desc: 'Sport Acquatici', color: '#007AFF' },
-  { id: 'team', label: 'TEAM SPORT', ionicon: 'football', desc: 'Sport di Squadra', color: '#34C759' },
-  { id: 'fitness', label: 'FITNESS', ionicon: 'barbell', desc: 'Forza & Conditioning', color: '#D4AF37' },
-  { id: 'outdoor', label: 'OUTDOOR', ionicon: 'trail-sign', desc: 'Natura & Endurance', color: '#30B0C7' },
-  { id: 'mind_body', label: 'MIND & BODY', ionicon: 'leaf', desc: 'Corpo & Mente', color: '#AF52DE' },
-  { id: 'extreme', label: 'EXTREME', ionicon: 'flame', desc: 'Oltre il Limite', color: '#FF2D55' },
-];
-
-export default function Step1() {
+export default function LegacyStep1() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [selected, setSelected] = useState<string | null>(null);
+
+  // Pulsing dot animation
+  const pulse = useSharedValue(0.4);
+  useEffect(() => {
+    pulse.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 800 }),
+        withTiming(0.4, { duration: 800 }),
+      ), -1, false,
+    );
+  }, []);
+  const pulseStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 16 }]}>
+    <View style={[s.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 32 }]}>
       <StatusBar barStyle="light-content" />
-      <View style={styles.header}>
-        <View style={styles.brandRow}>
-          <Text style={styles.brandA}>ARENA</Text>
-          <Text style={styles.brandK}>KORE</Text>
+
+      {/* Top bar */}
+      <View style={s.topBar}>
+        <Text style={s.brand}>ARENAKORE</Text>
+        <View style={s.stepPill}>
+          <Text style={s.stepTxt}>01 / 04</Text>
         </View>
-        <Text style={styles.stepLabel}>LEVEL 1 DI 3</Text>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: '33%' }]} />
-        </View>
-        <Text style={styles.title}>LA TUA{'\n'}ARENA</Text>
-        <Text style={styles.subtitle}>Scegli la tua macro-categoria</Text>
       </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.grid}
-      >
-        {MACRO_CATEGORIES.map((cat, i) => (
-          <Animated.View
-            key={cat.id}
-            entering={FadeInDown.delay(i * 60).springify()}
-            style={styles.cardWrapper}
-          >
-            <TouchableOpacity
-              testID={`cat-${cat.id}-btn`}
-              onPress={() => setSelected(cat.id)}
-              style={[
-                styles.cardOuter,
-                selected === cat.id && { borderColor: cat.color, borderWidth: 2.5 },
-              ]}
-              activeOpacity={0.85}
-            >
-              <ImageBackground
-                source={{ uri: CATEGORY_IMAGES[cat.id] }}
-                style={styles.cardImage}
-                imageStyle={styles.cardImageStyle}
-              >
-                <LinearGradient
-                  colors={['transparent', 'rgba(5,5,5,0.7)', 'rgba(5,5,5,0.95)']}
-                  locations={[0, 0.4, 0.9]}
-                  style={styles.cardGradient}
-                >
-                  <View style={styles.cardContent}>
-                    <Ionicons name={cat.ionicon} size={22} color={selected === cat.id ? cat.color : '#FFFFFF'} />
-                    <Text style={[
-                      styles.cardLabel,
-                      selected === cat.id && { color: cat.color },
-                    ]}>{cat.label}</Text>
-                    <Text style={styles.cardDesc}>{cat.desc}</Text>
-                  </View>
-                  {selected === cat.id && (
-                    <View style={[styles.selectedDot, { backgroundColor: cat.color }]} />
-                  )}
-                </LinearGradient>
-              </ImageBackground>
-            </TouchableOpacity>
-          </Animated.View>
+      {/* Progress */}
+      <View style={s.progBar}>
+        <View style={[s.progFill, { width: '25%' }]} />
+      </View>
+
+      {/* Hero text */}
+      <Animated.View entering={FadeInDown.delay(200)} style={s.heroWrap}>
+        <Text style={s.heroLine1}>NEXUS</Text>
+        <Text style={s.heroLine2}>BIO-SCAN</Text>
+        <Text style={s.heroLine3}>PROTOCOL</Text>
+      </Animated.View>
+
+      <View style={s.cyanLine} />
+
+      {/* Body text */}
+      <Animated.View entering={FadeInDown.delay(400)} style={s.bodyWrap}>
+        <Text style={s.bodyText}>
+          IL PROSSIMO STEP GENERERÀ IL TUO KORE DNA.{' '}
+          POSIZIONATI DAVANTI ALLA CAMERA E RIMANI{' '}
+          IMMOBILE PER 3 SECONDI PER LA CALIBRAZIONE{' '}
+          BIOMETRICA.
+        </Text>
+      </Animated.View>
+
+      {/* Warning indicators */}
+      <Animated.View entering={FadeInDown.delay(600)} style={s.warningRow}>
+        <Animated.View style={[s.warningDot, pulseStyle]} />
+        <Text style={s.warningTxt}>SISTEMA DI RICONOSCIMENTO ATTIVO</Text>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.delay(700)} style={s.specList}>
+        {[
+          ['analytics', '17 PUNTI BIOMETRICI'],
+          ['pulse', 'FILTRO EMA — JITTER HYSTERESIS 3PX'],
+          ['timer', 'VALIDAZIONE 3 SECONDI'],
+          ['flash', 'GOLD FLASH: KORE IDENTIFICATO'],
+        ].map(([icon, txt], i) => (
+          <View key={i} style={s.specRow}>
+            <Ionicons name={icon as any} size={12} color="#00F2FF" />
+            <Text style={s.specTxt}>{txt}</Text>
+          </View>
         ))}
-        <View style={{ height: 100 }} />
-      </ScrollView>
+      </Animated.View>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
+      {/* CTA */}
+      <Animated.View entering={FadeInDown.delay(900)} style={s.ctaWrap}>
         <TouchableOpacity
-          testID="step1-continue-btn"
-          onPress={() => selected && router.push({ pathname: '/onboarding/step2', params: { category: selected } })}
-          style={[styles.continueButton, !selected && styles.continueButtonDisabled]}
-          disabled={!selected}
+          testID="step1-start-scan-btn"
+          style={s.cta}
+          onPress={() => router.push('/onboarding/step2')}
+          activeOpacity={0.85}
         >
-          <Text style={styles.continueButtonText}>CONTINUA →</Text>
+          <Ionicons name="scan" size={16} color="#050505" />
+          <Text style={s.ctaTxt}>INIZIA CALIBRAZIONE</Text>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505' },
-  header: { paddingHorizontal: 20, marginBottom: 8 },
-  brandRow: { flexDirection: 'row', gap: 4, marginBottom: 12 },
-  brandA: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: -0.5 },
-  brandK: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: -0.5 },
-  stepLabel: { color: '#00F2FF', fontSize: 10, fontWeight: '700', letterSpacing: 3, marginBottom: 8 },
-  progressBar: { height: 2, backgroundColor: '#1E1E1E', borderRadius: 2, marginBottom: 14 },
-  progressFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
-  title: { color: '#FFFFFF', fontSize: 32, fontWeight: '900', letterSpacing: -1.5, lineHeight: 36 },
-  subtitle: { color: 'rgba(255,255,255,0.55)', fontSize: 13, marginTop: 4 },
-  grid: {
-    flexDirection: 'row', flexWrap: 'wrap',
-    justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 8,
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#050505', paddingHorizontal: 24 },
+  topBar: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', marginBottom: 12,
   },
-  cardWrapper: { width: '48%', marginBottom: 10 },
-  cardOuter: {
-    borderRadius: 16, overflow: 'hidden',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
+  brand: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
+  stepPill: {
+    backgroundColor: 'rgba(0,242,255,0.08)',
+    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
   },
-  cardImage: { width: '100%', height: 130 },
-  cardImageStyle: { borderRadius: 15, opacity: 0.75 },
-  cardGradient: {
-    flex: 1, justifyContent: 'flex-end', padding: 12, borderRadius: 15,
+  stepTxt: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  progBar: {
+    height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 32, overflow: 'hidden',
   },
-  cardContent: { gap: 1 },
-  cardIcon: { fontSize: 22 },
-  cardLabel: { color: '#FFFFFF', fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
-  cardDesc: { color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: '500' },
-  selectedDot: {
-    position: 'absolute', top: 10, right: 10,
-    width: 10, height: 10, borderRadius: 5,
+  progFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
+  heroWrap: { gap: 2, marginBottom: 20 },
+  heroLine1: {
+    color: '#FFFFFF', fontSize: 58, fontWeight: '900',
+    letterSpacing: -2, lineHeight: 62,
   },
-  footer: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    paddingHorizontal: 20, paddingTop: 12,
-    backgroundColor: 'rgba(5,5,5,0.95)',
+  heroLine2: {
+    color: '#00F2FF', fontSize: 58, fontWeight: '900',
+    letterSpacing: -2, lineHeight: 62,
   },
-  continueButton: {
-    backgroundColor: '#00F2FF', borderRadius: 12,
-    paddingVertical: 16, alignItems: 'center',
+  heroLine3: {
+    color: '#FFFFFF', fontSize: 58, fontWeight: '900',
+    letterSpacing: -2, lineHeight: 62,
   },
-  continueButtonDisabled: { opacity: 0.3 },
-  continueButtonText: { color: '#050505', fontSize: 15, fontWeight: '800', letterSpacing: 2 },
+  cyanLine: {
+    height: 2, width: 56, backgroundColor: '#00F2FF', marginBottom: 28,
+    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8, shadowRadius: 8,
+  },
+  bodyWrap: { marginBottom: 32 },
+  bodyText: {
+    color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '800',
+    letterSpacing: 1, lineHeight: 22,
+  },
+  warningRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 24,
+  },
+  warningDot: {
+    width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF',
+    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1, shadowRadius: 6,
+  },
+  warningTxt: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  specList: { gap: 10, marginBottom: 'auto' as any },
+  specRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  specTxt: { color: '#333', fontSize: 10, fontWeight: '800', letterSpacing: 2 },
+  ctaWrap: { marginTop: 32 },
+  cta: {
+    backgroundColor: '#00F2FF', borderRadius: 8,
+    paddingVertical: 18, flexDirection: 'row',
+    alignItems: 'center', justifyContent: 'center', gap: 12,
+  },
+  ctaTxt: {
+    color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 3,
+  },
 });

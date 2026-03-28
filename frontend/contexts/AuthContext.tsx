@@ -46,7 +46,9 @@ interface AuthContextType {
   activeRole: UserRole;
   setActiveRole: (role: UserRole) => void;
   login: (email: string, password: string) => Promise<User>;
-  register: (username: string, email: string, password: string) => Promise<User>;
+  register: (username: string, email: string, password: string, extra?: {
+    height_cm?: number; weight_kg?: number; age?: number; training_level?: string;
+  }) => Promise<User>;
   completeOnboarding: (role: string, sport: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
@@ -105,8 +107,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return result.user;
   };
 
-  const register = async (username: string, email: string, password: string): Promise<User> => {
-    const result = await api.register({ username, email, password });
+  const register = async (
+    username: string, email: string, password: string,
+    extra?: { height_cm?: number; weight_kg?: number; age?: number; training_level?: string },
+  ): Promise<User> => {
+    const result = await api.register({ username, email, password, ...extra });
     await AsyncStorage.setItem(TOKEN_KEY, result.token);
     setToken(result.token);
     setUser(result.user);

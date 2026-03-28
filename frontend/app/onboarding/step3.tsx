@@ -1,161 +1,237 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, StatusBar } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+/**
+ * ARENAKORE LEGACY INITIATION — STEP 3
+ * KORE DNA PROFILING: Altezza, Peso, Età, Livello Allenamento
+ */
+import React, { useState } from 'react';
+import {
+  View, Text, StyleSheet, TextInput, TouchableOpacity,
+  KeyboardAvoidingView, Platform, ScrollView, StatusBar,
+} from 'react-native';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../contexts/AuthContext';
-import Animated, {
-  useSharedValue, withTiming, withSequence, withSpring,
-  useAnimatedStyle, FadeIn,
-} from 'react-native-reanimated';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
-export default function Step3() {
+const LEVELS = [
+  { id: 'LEGACY', label: 'LEGACY', desc: 'INIZIANTE — Il tuo viaggio comincia ora' },
+  { id: 'ELITE',  label: 'ELITE',  desc: 'INTERMEDIO — Spingi oltre i limiti' },
+  { id: 'KORE',   label: 'KORE',   desc: 'AVANZATO — Sei già oltre il confine' },
+];
+
+export default function LegacyStep3() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { completeOnboarding } = useAuth();
-  const { category, sport, is_versatile } = useLocalSearchParams<{
-    category: string;
-    sport: string;
-    is_versatile: string;
-  }>();
-  const [status, setStatus] = useState<'activating' | 'done'>('activating');
-  const isVersatile = is_versatile === 'true';
 
-  // Animations
-  const pulseScale = useSharedValue(0.5);
-  const xpScale = useSharedValue(0);
-  const barWidth = useSharedValue(0);
+  const [height, setHeight]   = useState('');
+  const [weight, setWeight]   = useState('');
+  const [age, setAge]         = useState('');
+  const [level, setLevel]     = useState<string | null>(null);
+  const [error, setError]     = useState('');
 
-  useEffect(() => {
-    pulseScale.value = withSpring(1, { damping: 10, stiffness: 80 });
-    barWidth.value = withTiming(100, { duration: 2000 });
-
-    const timer = setTimeout(async () => {
-      try {
-        await completeOnboarding(
-          isVersatile ? 'Kore Member' : 'Kore Member',
-          isVersatile ? 'Versatile' : (sport || 'General'),
-          category || undefined,
-          isVersatile
-        );
-        setStatus('done');
-        xpScale.value = withSpring(1, { damping: 8, stiffness: 120 });
-        setTimeout(() => router.replace('/(tabs)/kore'), 2500);
-      } catch (e) {
-        console.error('Onboarding error:', e);
-        router.replace('/(tabs)/kore');
-      }
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulseScale.value }],
-    opacity: pulseScale.value,
-  }));
-
-  const xpStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: xpScale.value }],
-    opacity: xpScale.value,
-  }));
-
-  const barStyle = useAnimatedStyle(() => ({
-    width: `${barWidth.value}%` as any,
-  }));
+  const handleContinue = () => {
+    if (!height || !weight || !age || !level) {
+      setError('COMPLETA TUTTI I CAMPI PER GENERARE IL TUO PROFILO DNA');
+      return;
+    }
+    const h = parseFloat(height);
+    const w = parseFloat(weight);
+    const a = parseInt(age);
+    if (h < 100 || h > 250) { setError('ALTEZZA NON VALIDA (100–250 CM)'); return; }
+    if (w < 30 || w > 300)  { setError('PESO NON VALIDO (30–300 KG)'); return; }
+    if (a < 12 || a > 100)  { setError('ETÀ NON VALIDA (12–100)'); return; }
+    setError('');
+    router.push({
+      pathname: '/onboarding/step4',
+      params: { height_cm: h, weight_kg: w, age: a, training_level: level },
+    });
+  };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 40 }]}>
-      <StatusBar barStyle="light-content" />
+    <KeyboardAvoidingView
+      style={s.root}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        contentContainerStyle={[s.content, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 32 }]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <StatusBar barStyle="light-content" />
 
-      <View style={styles.header}>
-        <Text style={styles.stepLabel}>LEVEL 3 DI 3</Text>
-        <View style={styles.progressBar}>
-          <Animated.View style={[styles.progressFill, barStyle]} />
+        {/* Top bar */}
+        <View style={s.topBar}>
+          <Text style={s.brand}>ARENAKORE</Text>
+          <View style={s.stepPill}>
+            <Text style={s.stepTxt}>03 / 04</Text>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.center}>
-        <Animated.View style={[styles.iconCircle, pulseStyle]}>
-          <Ionicons name={isVersatile ? 'globe' : 'flash'} size={36} color={isVersatile ? '#D4AF37' : '#00F2FF'} />
+        <View style={s.progBar}>
+          <View style={[s.progFill, { width: '75%' }]} />
+        </View>
+
+        <Animated.View entering={FadeInDown.delay(100)} style={s.titleWrap}>
+          <Text style={s.title}>KORE DNA</Text>
+          <Text style={s.titleBig}>PROFILING</Text>
+          <View style={s.cyanLine} />
         </Animated.View>
 
-        {isVersatile ? (
-          <Animated.View entering={FadeIn.delay(400)} style={styles.textBlock}>
-            <View style={styles.versatileBadge}>
-              <Text style={styles.versatileBadgeText}>KORE UNIVERSAL ADAPTATION ACTIVE</Text>
+        {/* Biometric inputs */}
+        <Animated.View entering={FadeInDown.delay(200)} style={s.fieldsGroup}>
+          <Text style={s.groupLabel}>PARAMETRI BIOMETRICI</Text>
+
+          <View style={s.fieldRow}>
+            <View style={s.fieldHalf}>
+              <Text style={s.fieldLabel}>ALTEZZA (CM)</Text>
+              <TextInput
+                testID="height-input"
+                style={s.input}
+                value={height}
+                onChangeText={setHeight}
+                placeholder="180"
+                placeholderTextColor="#1A1A1A"
+                keyboardType="decimal-pad"
+                maxLength={5}
+              />
             </View>
-            <Text style={styles.title}>PROFILO{`\n`}VERSATILE</Text>
-            <Text style={styles.subtitle}>Il tuo DNA si adatta a ogni disciplina.{`\n`}Nessun limite. Nessuna categoria.</Text>
-          </Animated.View>
-        ) : (
-          <Animated.View entering={FadeIn.delay(400)} style={styles.textBlock}>
-            <Text style={styles.title}>PROFILO{`\n`}ATTIVATO</Text>
-            <Text style={styles.sportBadge}>{(sport || '').toUpperCase()}</Text>
-            <Text style={styles.subtitle}>Il tuo DNA atleta è stato generato.{`\n`}Benvenuto in ArenaKore.</Text>
-          </Animated.View>
+            <View style={s.fieldHalf}>
+              <Text style={s.fieldLabel}>PESO (KG)</Text>
+              <TextInput
+                testID="weight-input"
+                style={s.input}
+                value={weight}
+                onChangeText={setWeight}
+                placeholder="75"
+                placeholderTextColor="#1A1A1A"
+                keyboardType="decimal-pad"
+                maxLength={5}
+              />
+            </View>
+          </View>
+
+          <View style={s.fieldSingle}>
+            <Text style={s.fieldLabel}>ETÀ</Text>
+            <TextInput
+              testID="age-input"
+              style={s.input}
+              value={age}
+              onChangeText={setAge}
+              placeholder="25"
+              placeholderTextColor="#1A1A1A"
+              keyboardType="number-pad"
+              maxLength={3}
+            />
+          </View>
+        </Animated.View>
+
+        {/* Training Level selector */}
+        <Animated.View entering={FadeInDown.delay(350)} style={s.fieldsGroup}>
+          <Text style={s.groupLabel}>LIVELLO ALLENAMENTO</Text>
+          {LEVELS.map((lv, i) => (
+            <TouchableOpacity
+              key={lv.id}
+              testID={`level-${lv.id}-btn`}
+              style={[
+                s.levelCard,
+                level === lv.id && s.levelCardActive,
+              ]}
+              onPress={() => setLevel(lv.id)}
+              activeOpacity={0.85}
+            >
+              <View style={s.levelLeft}>
+                <Ionicons
+                  name={level === lv.id ? 'radio-button-on' : 'radio-button-off'}
+                  size={16}
+                  color={level === lv.id ? '#00F2FF' : '#333'}
+                />
+                <View>
+                  <Text style={[s.levelLabel, level === lv.id && s.levelLabelActive]}>
+                    {lv.label}
+                  </Text>
+                  <Text style={s.levelDesc}>{lv.desc}</Text>
+                </View>
+              </View>
+              {level === lv.id && (
+                <View style={s.levelDot} />
+              )}
+            </TouchableOpacity>
+          ))}
+        </Animated.View>
+
+        {!!error && (
+          <Text style={s.error}>{error}</Text>
         )}
 
-        {status === 'done' && (
-          <Animated.View style={[styles.xpBanner, xpStyle]}>
-            <Text style={styles.xpText}>+100 XP</Text>
-            <Text style={styles.xpSub}>BONUS ATTIVAZIONE</Text>
-          </Animated.View>
-        )}
-      </View>
-
-      <View style={styles.brandFooter}>
-        <Text style={styles.brandA}>ARENA</Text>
-        <Text style={styles.brandK}>KORE</Text>
-      </View>
-    </View>
+        <TouchableOpacity
+          testID="step3-continue-btn"
+          style={s.cta}
+          onPress={handleContinue}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="chevron-forward" size={16} color="#050505" />
+          <Text style={s.ctaTxt}>CONTINUA — CREA KORE ID</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505', paddingHorizontal: 24 },
-  header: { marginBottom: 24 },
-  stepLabel: { color: '#00F2FF', fontSize: 10, fontWeight: '700', letterSpacing: 3, marginBottom: 8 },
-  progressBar: { height: 2, backgroundColor: '#1E1E1E', borderRadius: 2, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 24 },
-  iconCircle: {
-    width: 100, height: 100, borderRadius: 50,
-    backgroundColor: 'rgba(0,242,255,0.06)',
-    borderWidth: 2, borderColor: '#00F2FF',
-    alignItems: 'center', justifyContent: 'center',
+const CYAN = '#00F2FF';
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#050505' },
+  content: { paddingHorizontal: 24 },
+  topBar: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', marginBottom: 12,
   },
-  icon: { fontSize: 44 },
-  textBlock: { alignItems: 'center', gap: 8 },
-  versatileBadge: {
-    backgroundColor: 'rgba(0,242,255,0.08)',
-    borderRadius: 6, paddingHorizontal: 14, paddingVertical: 6,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.25)',
+  brand: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
+  stepPill: {
+    backgroundColor: 'rgba(0,242,255,0.08)', borderRadius: 20,
+    paddingHorizontal: 12, paddingVertical: 5,
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
   },
-  versatileBadgeText: {
-    color: '#00F2FF', fontSize: 9, fontWeight: '800', letterSpacing: 2,
+  stepTxt: { color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  progBar: { height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 28, overflow: 'hidden' },
+  progFill: { height: '100%', backgroundColor: CYAN, borderRadius: 2 },
+  titleWrap: { marginBottom: 32 },
+  title: { color: CYAN, fontSize: 13, fontWeight: '900', letterSpacing: 6 },
+  titleBig: { color: '#FFFFFF', fontSize: 44, fontWeight: '900', letterSpacing: -1.5, lineHeight: 48 },
+  cyanLine: {
+    height: 2, width: 48, backgroundColor: CYAN, marginTop: 16,
+    shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6,
   },
-  title: {
-    color: '#FFFFFF', fontSize: 36, fontWeight: '900',
-    letterSpacing: -1.5, textAlign: 'center', lineHeight: 40,
+  fieldsGroup: { marginBottom: 28, gap: 14 },
+  groupLabel: { color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 4 },
+  fieldRow: { flexDirection: 'row', gap: 12 },
+  fieldHalf: { flex: 1, gap: 6 },
+  fieldSingle: { gap: 6 },
+  fieldLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
+  input: {
+    backgroundColor: '#0D0D0D', borderWidth: 1.5, borderColor: '#1A1A1A',
+    borderRadius: 8, padding: 16, color: CYAN,
+    fontSize: 22, fontWeight: '900', letterSpacing: 1,
   },
-  sportBadge: {
-    color: '#D4AF37', fontSize: 14, fontWeight: '800', letterSpacing: 3,
+  levelCard: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: '#0D0D0D', borderWidth: 1.5, borderColor: '#1A1A1A',
+    borderRadius: 10, padding: 16,
   },
-  subtitle: {
-    color: '#555', fontSize: 14, textAlign: 'center', lineHeight: 22,
+  levelCardActive: {
+    borderColor: CYAN,
+    backgroundColor: 'rgba(0,242,255,0.04)',
   },
-  xpBanner: {
-    backgroundColor: 'rgba(212,175,55,0.08)',
-    borderRadius: 10, paddingHorizontal: 28, paddingVertical: 14,
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.3)',
-    alignItems: 'center', gap: 2,
+  levelLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  levelLabel: { color: '#333', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  levelLabelActive: { color: CYAN },
+  levelDesc: { color: '#222', fontSize: 9, fontWeight: '700', marginTop: 2, letterSpacing: 1 },
+  levelDot: {
+    width: 6, height: 6, borderRadius: 3, backgroundColor: CYAN,
+    shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4,
   },
-  xpText: { color: '#D4AF37', fontSize: 28, fontWeight: '900' },
-  xpSub: { color: '#888', fontSize: 10, fontWeight: '700', letterSpacing: 2 },
-  brandFooter: {
-    flexDirection: 'row', gap: 4, justifyContent: 'center',
+  error: { color: '#FF3B30', fontSize: 12, fontWeight: '800', letterSpacing: 1, textAlign: 'center', marginBottom: 16 },
+  cta: {
+    backgroundColor: CYAN, borderRadius: 8, paddingVertical: 18,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
   },
-  brandA: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: -0.5 },
-  brandK: { color: '#D4AF37', fontSize: 14, fontWeight: '900', letterSpacing: -0.5 },
+  ctaTxt: { color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
 });
