@@ -13,7 +13,7 @@
       "bundleIdentifier": "com.arenakore.app",
       "infoPlist": {
         "NSCameraUsageDescription": "Analizza la tua biomeccanica in tempo reale",
-        "NSMicrophoneUsageDescription": "Registra audio durante le sessioni Nexus",
+        "NSMicrophoneUsageDescription": "Attiva comandi vocali e sessioni Nexus",
         "NSMotionUsageDescription": "Traccia i movimenti per contare le ripetizioni"
       }
     },
