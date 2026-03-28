@@ -918,16 +918,18 @@ export default function NexusBioScan() {
       withDelay(300, withTiming(1, { duration: 500, easing: Easing.out(Easing.back(1.5)) })),
     );
 
-    // ── HAPTIC SEQUENCE: "serratura che si apre"
-    // Impact Heavy → 80ms pause → Impact Medium → 120ms pause → Notification Success
+    // ── HAPTIC COUNTDOWN: micro-vibration ogni secondo (3-2-1 SUCCESS)
+    // L'atleta sente fisicamente la pressione del successo
     try {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      await new Promise(r => setTimeout(r, 80));
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      await new Promise(r => setTimeout(r, 120));
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);    // LOCK
+      await new Promise(r => setTimeout(r, 1000));
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);    // 3...
+      await new Promise(r => setTimeout(r, 1000));
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);   // 2...
+      await new Promise(r => setTimeout(r, 1000));
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); // 1 → CERTIFIED
     } catch (_e) {
-      // Haptics not available on all platforms — graceful fallback
+      // Haptics fallback — non-blocking
     }
 
     // ── INDESTRUCTIBLE SCAN RESULT SAVE

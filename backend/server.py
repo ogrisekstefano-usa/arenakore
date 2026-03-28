@@ -1,6 +1,7 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -42,6 +43,13 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 app = FastAPI()
+
+# ── Self-hosted MediaPipe static files (eliminates CDN cold start)
+# Served at /api/static/mediapipe/* (goes through Kubernetes ingress to port 8001)
+import os as _os
+_static_dir = _os.path.join(_os.path.dirname(__file__), "static")
+_os.makedirs(_static_dir, exist_ok=True)
+app.mount("/api/static", StaticFiles(directory=_static_dir), name="static")
 api_router = APIRouter(prefix="/api")
 
 
@@ -3314,8 +3322,11 @@ async def nexus_scanner_page():
   <div id="status">NEXUS: LOADING...</div>
   <div id="err"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+  <!-- MediaPipe — self-hosted on our server (ZERO CDN cold start) -->
+
+
+  <script src="/api/static/mediapipe/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="/api/static/mediapipe/pose.js" crossorigin="anonymous"></script>
   <script>
     var videoEl = document.getElementById('video');
     var canvas  = document.getElementById('canvas');
@@ -3440,7 +3451,7 @@ async def nexus_scanner_page():
     // ── Init MediaPipe Pose LITE
     var pose = new Pose({
       locateFile: function(file) {
-        return 'https://cdn.jsdelivr.net/npm/@mediapipe/pose/' + file;
+        return '/api/static/mediapipe/' + file;   // LOCAL - zero CDN cold start
       }
     });
     pose.setOptions({
