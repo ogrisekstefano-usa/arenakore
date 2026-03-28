@@ -298,23 +298,38 @@ export default function NexusBioScan() {
   const SCAN_W = SW;
   const SCAN_H = SH - HEADER_H - FOOTER_H;
 
-  // State
-  const [phase, setPhase] = useState<'loading' | 'detecting' | 'beats' | 'approved'>('loading');
+  // ===================================================================
+  // STATE — Biometric Entry Gate
+  // Phases: loading → positioning → stabilizing → countdown → beats → approved
+  // ===================================================================
+  type Phase = 'loading' | 'positioning' | 'stabilizing' | 'countdown' | 'beats' | 'approved';
+  const [phase, setPhase] = useState<Phase>('loading');
   const [currentBeat, setCurrentBeat] = useState(0);
-  const [detectedPoints, setDetectedPoints] = useState(0);
+  const [detectedPoints, setDetectedPoints] = useState(0);       // 0→17 progressive
+  const [visibleMask, setVisibleMask] = useState<boolean[]>(      // which of the 17 points are "detected"
+    new Array(17).fill(false)
+  );
+  const [stability, setStability] = useState(0);                  // 0→100%
+  const [countdownSec, setCountdownSec] = useState(3);            // 3, 2, 1
   const [beatProgress, setBeatProgress] = useState(0);
   const [showHud, setShowHud] = useState(false);
 
   // Skeleton state
   const ptsRef = useRef<[number, number][]>(
     POSE_NEUTRAL.map(([px, py]) => [
-      (px / 100) * SW + (Math.random() - 0.5) * 60,
-      (py / 100) * 500 + (Math.random() - 0.5) * 60,
+      (px / 100) * SW + (Math.random() - 0.5) * 80,
+      (py / 100) * 500 + (Math.random() - 0.5) * 80,
     ])
   );
   const [pts, setPts] = useState<[number, number][]>(ptsRef.current);
   const targetPoseRef = useRef<[number, number][]>(POSE_NEUTRAL);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const stabilityRef = useRef(0);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const phaseRef = useRef<Phase>('loading');
+
+  // Keep phaseRef in sync
+  useEffect(() => { phaseRef.current = phase; }, [phase]);
 
   // Animations
   const flashOpacity = useSharedValue(0);
@@ -324,6 +339,15 @@ export default function NexusBioScan() {
     transform: [{ scale: approvedScale.value }],
     opacity: approvedScale.value > 0.6 ? 1 : 0,
   }));
+  // Pulsing animation for "POSITIONING ATHLETE..."
+  const positionPulse = useSharedValue(0.4);
+  useEffect(() => {
+    positionPulse.value = withRepeat(
+      withSequence(withTiming(1, { duration: 700 }), withTiming(0.4, { duration: 700 })),
+      -1, false
+    );
+  }, []);
+  const positionPulseStyle = useAnimatedStyle(() => ({ opacity: positionPulse.value }));
 
   // ── Request camera permission
   useEffect(() => {
@@ -332,63 +356,178 @@ export default function NexusBioScan() {
     }
   }, []);
 
-  // ── EMA Skeleton loop
+  // ===================================================================
+  // EMA SKELETON LOOP + STABILITY MEASUREMENT
+  // ===================================================================
   useEffect(() => {
     if (tickRef.current) clearInterval(tickRef.current);
 
     tickRef.current = setInterval(() => {
       const targets = targetPoseRef.current;
       const cur = ptsRef.current;
+      let totalJitter = 0;
+      let jitterPoints = 0;
 
       const next: [number, number][] = cur.map(([cx, cy], i) => {
-        const tx = (targets[i][0] / 100) * SCAN_W + (Math.random() - 0.5) * 4;
-        const ty = (targets[i][1] / 100) * SCAN_H + (Math.random() - 0.5) * 4;
+        // During positioning, only animate detected points; others jitter wildly
+        const isDetected = phaseRef.current === 'positioning' ? visibleMask[i] : true;
+
+        if (!isDetected && phaseRef.current === 'positioning') {
+          // Undetected point: wild random drift
+          return [
+            cx + (Math.random() - 0.5) * 12,
+            cy + (Math.random() - 0.5) * 12,
+          ] as [number, number];
+        }
+
+        // Noise amplitude: higher during positioning, lower during stabilizing/countdown
+        const noiseAmp = (phaseRef.current === 'stabilizing' || phaseRef.current === 'countdown')
+          ? 1.5 : 4;
+
+        const tx = (targets[i][0] / 100) * SCAN_W + (Math.random() - 0.5) * noiseAmp;
+        const ty = (targets[i][1] / 100) * SCAN_H + (Math.random() - 0.5) * noiseAmp;
         const nx = ALPHA * tx + (1 - ALPHA) * cx;
         const ny = ALPHA * ty + (1 - ALPHA) * cy;
-        return [nx, ny];
+
+        // Measure jitter (distance from ideal target)
+        const idealX = (targets[i][0] / 100) * SCAN_W;
+        const idealY = (targets[i][1] / 100) * SCAN_H;
+        const dist = Math.sqrt((nx - idealX) ** 2 + (ny - idealY) ** 2);
+        totalJitter += dist;
+        jitterPoints++;
+
+        return [nx, ny] as [number, number];
       });
 
       ptsRef.current = next;
       setPts([...next]);
+
+      // Calculate stability: % of points within HYSTERESIS_PX of target
+      if (jitterPoints > 0 && (phaseRef.current === 'stabilizing' || phaseRef.current === 'countdown')) {
+        const avgJitter = totalJitter / jitterPoints;
+        // Map jitter to stability: 0px = 100%, 10px = 0%
+        const stab = Math.max(0, Math.min(100, Math.round((1 - avgJitter / 10) * 100)));
+        // Smooth stability reading
+        stabilityRef.current = Math.round(stabilityRef.current * 0.7 + stab * 0.3);
+        setStability(stabilityRef.current);
+      }
     }, TICK_MS);
 
     return () => { if (tickRef.current) clearInterval(tickRef.current); };
-  }, [SCAN_W, SCAN_H]);
+  }, [SCAN_W, SCAN_H, visibleMask]);
 
-  // ── Phase: DETECTING (simulate point detection)
+  // ===================================================================
+  // GATE 1: LOADING → POSITIONING (after camera init)
+  // ===================================================================
   useEffect(() => {
     if (phase !== 'loading') return;
-
-    const timer = setTimeout(() => {
-      setPhase('detecting');
-      // Simulate progressive point detection
-      let count = 0;
-      const detectInterval = setInterval(() => {
-        count += Math.floor(Math.random() * 3) + 1;
-        if (count >= 17) {
-          count = 17;
-          setDetectedPoints(17);
-          clearInterval(detectInterval);
-          // Points validated! Start beats after short delay
-          setTimeout(() => {
-            setPhase('beats');
-            setCurrentBeat(0);
-            setShowHud(true);
-          }, 800);
-        } else {
-          setDetectedPoints(count);
-        }
-      }, 200);
-    }, 1500);
-
+    const timer = setTimeout(() => setPhase('positioning'), 1500);
     return () => clearTimeout(timer);
   }, [phase]);
 
-  // ── Phase: BEATS (5 sequential poses)
+  // ===================================================================
+  // GATE 2: POSITIONING — Progressive 17-point detection
+  // Points appear one-by-one. Must reach 17/17 to proceed.
+  // ===================================================================
+  useEffect(() => {
+    if (phase !== 'positioning') return;
+
+    let count = 0;
+    const mask = new Array(17).fill(false);
+    // Detection order: body first, then limbs, then head details
+    const detectionOrder = [5, 6, 11, 12, 0, 7, 8, 13, 14, 9, 10, 15, 16, 1, 2, 3, 4];
+
+    const detectInterval = setInterval(() => {
+      if (count >= 17) {
+        clearInterval(detectInterval);
+        // All 17 detected! Transition to stabilizing after brief pause
+        setTimeout(() => {
+          setPhase('stabilizing');
+          stabilityRef.current = 0;
+          setStability(0);
+        }, 600);
+        return;
+      }
+      // Detect next point (variable speed: 200-500ms between detections)
+      const idx = detectionOrder[count];
+      mask[idx] = true;
+      count++;
+      setVisibleMask([...mask]);
+      setDetectedPoints(count);
+    }, 280 + Math.random() * 220); // ~280-500ms per point = ~5-8s total
+
+    return () => clearInterval(detectInterval);
+  }, [phase]);
+
+  // ===================================================================
+  // GATE 3: STABILIZING → Wait for stability ≥ 90%
+  // ===================================================================
+  useEffect(() => {
+    if (phase !== 'stabilizing') return;
+
+    const checkInterval = setInterval(() => {
+      if (stabilityRef.current >= 90) {
+        clearInterval(checkInterval);
+        // Stability reached! Start countdown
+        setCountdownSec(3);
+        setPhase('countdown');
+      }
+    }, 100);
+
+    return () => clearInterval(checkInterval);
+  }, [phase]);
+
+  // ===================================================================
+  // GATE 4: COUNTDOWN — 3... 2... 1... with instant reset on movement
+  // ===================================================================
+  useEffect(() => {
+    if (phase !== 'countdown') return;
+
+    let secondsLeft = 3;
+    setCountdownSec(3);
+
+    countdownRef.current = setInterval(() => {
+      // CHECK: if stability dropped below 90%, RESET to stabilizing
+      if (stabilityRef.current < 90) {
+        if (countdownRef.current) clearInterval(countdownRef.current);
+        countdownRef.current = null;
+        setPhase('stabilizing');
+        setStability(stabilityRef.current);
+        return;
+      }
+
+      secondsLeft--;
+      setCountdownSec(secondsLeft);
+
+      if (secondsLeft <= 0) {
+        // GATE PASSED! Start beats
+        if (countdownRef.current) clearInterval(countdownRef.current);
+        countdownRef.current = null;
+
+        // Micro cyan flash to signal start
+        flashOpacity.value = withSequence(
+          withTiming(0.2, { duration: 80 }),
+          withTiming(0, { duration: 200 }),
+        );
+
+        setPhase('beats');
+        setCurrentBeat(0);
+        setShowHud(true);
+      }
+    }, 1000);
+
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    };
+  }, [phase]);
+
+  // ===================================================================
+  // PHASE: BEATS (5 sequential poses) — unchanged logic
+  // ===================================================================
   useEffect(() => {
     if (phase !== 'beats') return;
     if (currentBeat >= BEATS.length) {
-      // ALL BEATS DONE → APPROVAL
       handleApproval();
       return;
     }
@@ -397,7 +536,6 @@ export default function NexusBioScan() {
     targetPoseRef.current = beat.targetPose;
     setBeatProgress(0);
 
-    // Progress timer
     const startTime = Date.now();
     const progressInterval = setInterval(() => {
       const elapsed = Date.now() - startTime;
@@ -405,7 +543,6 @@ export default function NexusBioScan() {
       setBeatProgress(Math.round(pct));
       if (pct >= 100) {
         clearInterval(progressInterval);
-        // Small flash between beats
         flashOpacity.value = withSequence(
           withTiming(0.15, { duration: 100 }),
           withTiming(0, { duration: 200 }),
@@ -417,12 +554,13 @@ export default function NexusBioScan() {
     return () => clearInterval(progressInterval);
   }, [phase, currentBeat]);
 
-  // ── Approval sequence
+  // ===================================================================
+  // APPROVAL SEQUENCE
+  // ===================================================================
   const handleApproval = useCallback(() => {
     setPhase('approved');
     setShowHud(false);
 
-    // Epic Gold Flash
     flashOpacity.value = withSequence(
       withTiming(1, { duration: 200 }),
       withTiming(0, { duration: 500 }),
@@ -435,20 +573,27 @@ export default function NexusBioScan() {
       withDelay(300, withTiming(1, { duration: 500, easing: Easing.out(Easing.back(1.5)) })),
     );
 
-    // Navigate after ceremony
     setTimeout(() => router.push('/onboarding/step3'), 4000);
   }, []);
 
-  // ── Skeleton color based on phase
+  // ===================================================================
+  // DERIVED RENDER STATE
+  // ===================================================================
   const skelColor = phase === 'approved' ? '#D4AF37'
-    : phase === 'beats' && currentBeat === 4 ? '#D4AF37'  // DNA beat = gold
+    : phase === 'beats' && currentBeat === 4 ? '#D4AF37'
+    : phase === 'countdown' ? '#00F2FF'
     : '#00F2FF';
 
-  const skelOpacity = phase === 'loading' ? 0.3
-    : phase === 'detecting' ? 0.5
+  const skelOpacity = phase === 'loading' ? 0.15
+    : phase === 'positioning' ? 0.7
+    : phase === 'stabilizing' ? 0.85
+    : phase === 'countdown' ? 0.95
     : 0.85;
 
   const currentBeatDef = phase === 'beats' && currentBeat < BEATS.length ? BEATS[currentBeat] : null;
+
+  // During positioning, only render detected points
+  const isPositioning = phase === 'positioning';
 
   // ── Camera fallback for web
   const isWeb = Platform.OS === 'web';
@@ -467,10 +612,22 @@ export default function NexusBioScan() {
           <View style={s.stepPill}><Text style={s.stepTxt}>02 / 04</Text></View>
         </View>
         {phase === 'beats' && <BeatIndicator currentBeat={currentBeat} totalBeats={5} />}
-        {phase === 'detecting' && (
+        {phase === 'positioning' && (
           <View style={s.detectRow}>
             <View style={s.detectDot} />
             <Text style={s.detectTxt}>NEXUS DETECTION: {detectedPoints}/17 PUNTI</Text>
+          </View>
+        )}
+        {phase === 'stabilizing' && (
+          <View style={s.detectRow}>
+            <View style={[s.detectDot, { backgroundColor: stability >= 90 ? '#D4AF37' : '#00F2FF' }]} />
+            <Text style={s.detectTxt}>STABILIZZAZIONE: {stability}%</Text>
+          </View>
+        )}
+        {phase === 'countdown' && (
+          <View style={s.detectRow}>
+            <View style={[s.detectDot, { backgroundColor: '#D4AF37' }]} />
+            <Text style={[s.detectTxt, { color: '#D4AF37' }]}>LOCK: {countdownSec}s</Text>
           </View>
         )}
       </View>
@@ -514,42 +671,52 @@ export default function NexusBioScan() {
               stroke="rgba(0,242,255,0.04)" strokeWidth={0.5} />
           ))}
 
-          {/* Skeleton Connections */}
-          {CONNECTIONS.map(([a, b], i) => (
-            <Line
-              key={`conn-${i}`}
-              x1={pts[a]?.[0] ?? 0} y1={pts[a]?.[1] ?? 0}
-              x2={pts[b]?.[0] ?? 0} y2={pts[b]?.[1] ?? 0}
-              stroke={skelColor} strokeWidth={2} opacity={skelOpacity * 0.6}
-            />
-          ))}
+          {/* Skeleton Connections — only show if both endpoints detected */}
+          {CONNECTIONS.map(([a, b], i) => {
+            if (isPositioning && (!visibleMask[a] || !visibleMask[b])) return null;
+            return (
+              <Line
+                key={`conn-${i}`}
+                x1={pts[a]?.[0] ?? 0} y1={pts[a]?.[1] ?? 0}
+                x2={pts[b]?.[0] ?? 0} y2={pts[b]?.[1] ?? 0}
+                stroke={skelColor} strokeWidth={2} opacity={skelOpacity * 0.6}
+              />
+            );
+          })}
 
-          {/* Keypoints */}
-          {pts.map(([x, y], i) => (
-            <G key={`pt-${i}`}>
-              {/* Outer glow */}
-              <Circle cx={x} cy={y} r={i < 5 ? 10 : 8}
-                fill={skelColor} opacity={skelOpacity * 0.08} />
-              {/* Point */}
-              <Circle cx={x} cy={y} r={i < 5 ? 5 : 4}
-                fill={skelColor} opacity={skelOpacity} />
-              {/* Inner bright */}
-              <Circle cx={x} cy={y} r={1.5}
-                fill="#FFFFFF" opacity={skelOpacity * 0.9} />
-            </G>
-          ))}
+          {/* Keypoints — only show detected ones during positioning */}
+          {pts.map(([x, y], i) => {
+            if (isPositioning && !visibleMask[i]) return null;
+            return (
+              <G key={`pt-${i}`}>
+                {/* Outer glow */}
+                <Circle cx={x} cy={y} r={i < 5 ? 10 : 8}
+                  fill={skelColor} opacity={skelOpacity * 0.08} />
+                {/* Point */}
+                <Circle cx={x} cy={y} r={i < 5 ? 5 : 4}
+                  fill={skelColor} opacity={skelOpacity} />
+                {/* Inner bright */}
+                <Circle cx={x} cy={y} r={1.5}
+                  fill="#FFFFFF" opacity={skelOpacity * 0.9} />
+              </G>
+            );
+          })}
 
-          {/* Body outline silhouette (torso trapezoid) */}
-          <Line
-            x1={pts[5]?.[0]} y1={pts[5]?.[1]}
-            x2={pts[11]?.[0]} y2={pts[11]?.[1]}
-            stroke={skelColor} strokeWidth={1} opacity={skelOpacity * 0.15} strokeDasharray="4,4"
-          />
-          <Line
-            x1={pts[6]?.[0]} y1={pts[6]?.[1]}
-            x2={pts[12]?.[0]} y2={pts[12]?.[1]}
-            stroke={skelColor} strokeWidth={1} opacity={skelOpacity * 0.15} strokeDasharray="4,4"
-          />
+          {/* Body outline silhouette (torso trapezoid) — only when all detected */}
+          {!isPositioning && (
+            <>
+              <Line
+                x1={pts[5]?.[0]} y1={pts[5]?.[1]}
+                x2={pts[11]?.[0]} y2={pts[11]?.[1]}
+                stroke={skelColor} strokeWidth={1} opacity={skelOpacity * 0.15} strokeDasharray="4,4"
+              />
+              <Line
+                x1={pts[6]?.[0]} y1={pts[6]?.[1]}
+                x2={pts[12]?.[0]} y2={pts[12]?.[1]}
+                stroke={skelColor} strokeWidth={1} opacity={skelOpacity * 0.15} strokeDasharray="4,4"
+              />
+            </>
+          )}
 
           {/* HUD DATA LABELS */}
           {currentBeatDef && (
@@ -561,14 +728,27 @@ export default function NexusBioScan() {
             />
           )}
 
-          {/* Validation text: points detected */}
-          {phase === 'detecting' && detectedPoints >= 15 && (
+          {/* Stabilization HUD: show stability + jitter readout */}
+          {(phase === 'stabilizing' || phase === 'countdown') && (
+            <G>
+              <Rect x={SCAN_W / 2 - 60} y={16} width={120} height={28} rx={8}
+                fill="rgba(0,0,0,0.6)" stroke={phase === 'countdown' ? 'rgba(212,175,55,0.4)' : 'rgba(0,242,255,0.2)'} strokeWidth={1} />
+              <SvgText x={SCAN_W / 2} y={35}
+                fill={phase === 'countdown' ? '#D4AF37' : '#00F2FF'} fontSize={12} fontWeight="900"
+                textAnchor="middle" letterSpacing={2}>
+                {phase === 'countdown' ? `LOCK ${countdownSec}` : `${stability}%`}
+              </SvgText>
+            </G>
+          )}
+
+          {/* Positioning: 17/17 validation pill on scan area */}
+          {phase === 'positioning' && detectedPoints >= 15 && (
             <G>
               <Rect x={SCAN_W / 2 - 70} y={SCAN_H - 36} width={140} height={24} rx={6}
                 fill="rgba(0,242,255,0.08)" stroke="rgba(0,242,255,0.25)" strokeWidth={1} />
               <SvgText x={SCAN_W / 2} y={SCAN_H - 20}
                 fill="#00F2FF" fontSize={10} fontWeight="900" textAnchor="middle" letterSpacing={2}>
-                {detectedPoints}/17 VALIDATI
+                {detectedPoints}/17 RILEVATI
               </SvgText>
             </G>
           )}
@@ -599,7 +779,7 @@ export default function NexusBioScan() {
         </Svg>
 
         {/* EMA Filter label (bottom of scan area) */}
-        {phase === 'beats' && (
+        {(phase === 'beats' || phase === 'stabilizing' || phase === 'countdown') && (
           <View style={s.emaLabel}>
             <Text style={s.emaTxt}>EMA {ALPHA} · HYSTERESIS {HYSTERESIS_PX}PX · {TICK_MS}MS</Text>
           </View>
@@ -617,16 +797,53 @@ export default function NexusBioScan() {
           </View>
         )}
 
-        {/* DETECTING */}
-        {phase === 'detecting' && (
+        {/* POSITIONING — detecting 17 points one by one */}
+        {phase === 'positioning' && (
           <Animated.View entering={FadeIn} style={s.footerCenter}>
             <Text style={s.statusLabel}>RILEVAMENTO PUPPET-MOTION-DECK</Text>
             <View style={s.detectBar}>
               <View style={[s.detectFill, { width: `${(detectedPoints / 17) * 100}%` as any }]} />
             </View>
-            <Text style={s.detectNote}>
-              {detectedPoints < 15 ? 'POSIZIONATI AL CENTRO DELLA CAMERA' : 'VALIDAZIONE COMPLETATA'}
+            {detectedPoints < 17 ? (
+              <Animated.View style={[s.positioningRow, positionPulseStyle]}>
+                <View style={s.positioningDot} />
+                <Text style={s.positioningTxt}>POSITIONING ATHLETE...</Text>
+              </Animated.View>
+            ) : (
+              <Text style={s.detectNote}>17/17 RILEVATI — STABILIZZAZIONE...</Text>
+            )}
+            <Text style={s.detectCount}>{detectedPoints} / 17</Text>
+          </Animated.View>
+        )}
+
+        {/* STABILIZING — waiting for 90% stability */}
+        {phase === 'stabilizing' && (
+          <Animated.View entering={FadeIn} style={s.footerCenter}>
+            <Text style={s.statusLabel}>CALIBRAZIONE BIOMETRICA</Text>
+            <View style={s.stabilityRow}>
+              <Text style={[s.stabPct, stability >= 90 && { color: '#D4AF37' }]}>{stability}%</Text>
+              <View style={s.stabBar}>
+                <View style={[s.stabFill, { width: `${stability}%` as any }, stability >= 90 && { backgroundColor: '#D4AF37' }]} />
+              </View>
+            </View>
+            <Text style={s.tieneTxt}>
+              {stability < 60 ? 'RIMANI IMMOBILE' : stability < 90 ? 'TIENI LA POSIZIONE...' : 'STABILITA RAGGIUNTA'}
             </Text>
+          </Animated.View>
+        )}
+
+        {/* COUNTDOWN — 3... 2... 1... */}
+        {phase === 'countdown' && (
+          <Animated.View entering={FadeIn} style={s.footerCenter}>
+            <Text style={s.countdownLabel}>IMMOBILITA CONFERMATA</Text>
+            <Text style={s.countdownBig}>{countdownSec}</Text>
+            <View style={s.stabilityRow}>
+              <Text style={[s.stabPct, { color: '#D4AF37' }]}>{stability}%</Text>
+              <View style={s.stabBar}>
+                <View style={[s.stabFill, { width: `${stability}%` as any, backgroundColor: '#D4AF37' }]} />
+              </View>
+            </View>
+            <Text style={s.countdownNote}>NON MUOVERTI — LOCK IN CORSO</Text>
           </Animated.View>
         )}
 
@@ -720,11 +937,29 @@ const s = StyleSheet.create({
   // Loading
   loadingTxt: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
 
-  // Detecting
+  // Detecting / Positioning
   statusLabel: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
   detectBar: { width: '100%', height: 4, backgroundColor: '#111', borderRadius: 2, overflow: 'hidden' },
   detectFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
   detectNote: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '800', letterSpacing: 1.5 },
+  detectCount: { color: '#00F2FF', fontSize: 26, fontWeight: '900', letterSpacing: 2 },
+  positioningRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  positioningDot: {
+    width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF',
+  },
+  positioningTxt: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+
+  // Stabilizing
+  stabilityRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' },
+  stabPct: { color: '#00F2FF', fontSize: 28, fontWeight: '900', width: 60, textAlign: 'center' as const },
+  stabBar: { flex: 1, height: 5, backgroundColor: '#111', borderRadius: 3, overflow: 'hidden' },
+  stabFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 3 },
+  tieneTxt: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+
+  // Countdown
+  countdownLabel: { color: '#D4AF37', fontSize: 9, fontWeight: '900', letterSpacing: 4 },
+  countdownBig: { color: '#D4AF37', fontSize: 64, fontWeight: '900', letterSpacing: 2, lineHeight: 68 },
+  countdownNote: { color: 'rgba(212,175,55,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
 
   // Beats
   beatLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
