@@ -107,7 +107,7 @@ type BeatDef = {
 
 const BEATS: BeatDef[] = [
   {
-    id: 1, label: 'POSA', instruction: 'TIENI LA POSA (3s)...',
+    id: 1, label: 'POSA', instruction: 'MANTIENI POSIZIONE NEUTRALE',
     targetPose: POSE_NEUTRAL, duration: 3500,
     hudData: [
       { label: 'STABILITA', value: '98.2%', position: 'left', yPct: 30 },
@@ -117,7 +117,7 @@ const BEATS: BeatDef[] = [
     ],
   },
   {
-    id: 2, label: 'ALZA', instruction: 'ALZA LE BRACCIA',
+    id: 2, label: 'ALZA', instruction: 'ALZA LE BRACCIA SOPRA LA TESTA',
     targetPose: POSE_ARMS_UP, duration: 3500,
     hudData: [
       { label: 'ANGOLO SPALLE', value: '178\u00B0', position: 'left', yPct: 18 },
@@ -127,7 +127,7 @@ const BEATS: BeatDef[] = [
     ],
   },
   {
-    id: 3, label: 'APRI', instruction: 'APRI LE BRACCIA',
+    id: 3, label: 'T-POSE', instruction: 'BRACCIA APERTE — ASSUMI T-POSE',
     targetPose: POSE_ARMS_OPEN, duration: 3500,
     hudData: [
       { label: 'APERTURA', value: '180\u00B0', position: 'left', yPct: 22 },
@@ -137,7 +137,7 @@ const BEATS: BeatDef[] = [
     ],
   },
   {
-    id: 4, label: 'SQUAT', instruction: 'PIEGA LE GAMBE (MEZZO SQUAT)',
+    id: 4, label: 'SQUAT', instruction: 'ESEGUI MEZZO SQUAT — TIENI',
     targetPose: POSE_SQUAT, duration: 3500,
     hudData: [
       { label: 'FLESS. GINOCCHIA', value: '98%', position: 'left', yPct: 65 },
@@ -299,26 +299,37 @@ export default function NexusBioScan() {
   const SCAN_H = SH - HEADER_H - FOOTER_H;
 
   // ===================================================================
-  // STATE — Biometric Entry Gate
-  // Phases: loading → positioning → stabilizing → countdown → beats → approved
+  // STATE — STRICT Biometric Entry Gate (Anti-Ghost Trigger)
+  //
+  // loading → positioning → verifying → pose_check → countdown → beats → approved
+  //
+  // POSITIONING: 17 points detected one-by-one (~8-12s). Pulsing "POSITIONING ATHLETE...".
+  //   → Only advances when ALL 17 confirmed AND held stable for 1s (confidence gate).
+  // VERIFYING: 17/17 detected. Confidence check: skeleton proportions validated for 1s.
+  // POSE_CHECK: "BRACCIA LUNGO I FIANCHI — RIMANI IMMOBILE". Athlete must hold neutral
+  //   pose with arms at sides for 2 full seconds. Movement resets the 2s timer.
+  // COUNTDOWN: 3... 2... 1... If stability < 90% or pose breaks → reset to pose_check.
+  // BEATS: 5 I-Beats execute.
+  // APPROVED: Gold flash + "KORE DNA GENERATO: APPROVATO!"
   // ===================================================================
-  type Phase = 'loading' | 'positioning' | 'stabilizing' | 'countdown' | 'beats' | 'approved';
+  type Phase = 'loading' | 'positioning' | 'verifying' | 'pose_check' | 'countdown' | 'beats' | 'approved';
   const [phase, setPhase] = useState<Phase>('loading');
   const [currentBeat, setCurrentBeat] = useState(0);
-  const [detectedPoints, setDetectedPoints] = useState(0);       // 0→17 progressive
-  const [visibleMask, setVisibleMask] = useState<boolean[]>(      // which of the 17 points are "detected"
-    new Array(17).fill(false)
-  );
-  const [stability, setStability] = useState(0);                  // 0→100%
-  const [countdownSec, setCountdownSec] = useState(3);            // 3, 2, 1
+  const [detectedPoints, setDetectedPoints] = useState(0);
+  const [visibleMask, setVisibleMask] = useState<boolean[]>(new Array(17).fill(false));
+  const [stability, setStability] = useState(0);
+  const [countdownSec, setCountdownSec] = useState(3);
   const [beatProgress, setBeatProgress] = useState(0);
   const [showHud, setShowHud] = useState(false);
+  const [poseHoldTime, setPoseHoldTime] = useState(0);       // 0→2 seconds of neutral hold
+  const [confidenceTime, setConfidenceTime] = useState(0);   // 0→1 seconds of 17/17 confidence
+  const [poseValid, setPoseValid] = useState(false);          // Is athlete in neutral + still?
 
   // Skeleton state
   const ptsRef = useRef<[number, number][]>(
     POSE_NEUTRAL.map(([px, py]) => [
-      (px / 100) * SW + (Math.random() - 0.5) * 80,
-      (py / 100) * 500 + (Math.random() - 0.5) * 80,
+      (px / 100) * SW + (Math.random() - 0.5) * 100,
+      (py / 100) * 500 + (Math.random() - 0.5) * 100,
     ])
   );
   const [pts, setPts] = useState<[number, number][]>(ptsRef.current);
@@ -327,6 +338,8 @@ export default function NexusBioScan() {
   const stabilityRef = useRef(0);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const phaseRef = useRef<Phase>('loading');
+  const poseHoldStartRef = useRef<number | null>(null);
+  const confidenceStartRef = useRef<number | null>(null);
 
   // Keep phaseRef in sync
   useEffect(() => { phaseRef.current = phase; }, [phase]);
@@ -339,7 +352,6 @@ export default function NexusBioScan() {
     transform: [{ scale: approvedScale.value }],
     opacity: approvedScale.value > 0.6 ? 1 : 0,
   }));
-  // Pulsing animation for "POSITIONING ATHLETE..."
   const positionPulse = useSharedValue(0.4);
   useEffect(() => {
     positionPulse.value = withRepeat(
@@ -357,7 +369,7 @@ export default function NexusBioScan() {
   }, []);
 
   // ===================================================================
-  // EMA SKELETON LOOP + STABILITY MEASUREMENT
+  // EMA SKELETON LOOP + STABILITY + POSE VALIDATION
   // ===================================================================
   useEffect(() => {
     if (tickRef.current) clearInterval(tickRef.current);
@@ -369,27 +381,27 @@ export default function NexusBioScan() {
       let jitterPoints = 0;
 
       const next: [number, number][] = cur.map(([cx, cy], i) => {
-        // During positioning, only animate detected points; others jitter wildly
         const isDetected = phaseRef.current === 'positioning' ? visibleMask[i] : true;
 
         if (!isDetected && phaseRef.current === 'positioning') {
-          // Undetected point: wild random drift
           return [
-            cx + (Math.random() - 0.5) * 12,
-            cy + (Math.random() - 0.5) * 12,
+            cx + (Math.random() - 0.5) * 14,
+            cy + (Math.random() - 0.5) * 14,
           ] as [number, number];
         }
 
-        // Noise amplitude: higher during positioning, lower during stabilizing/countdown
-        const noiseAmp = (phaseRef.current === 'stabilizing' || phaseRef.current === 'countdown')
-          ? 1.5 : 4;
+        // Noise amplitude per phase
+        let noiseAmp = 4;
+        if (phaseRef.current === 'verifying') noiseAmp = 2.5;
+        if (phaseRef.current === 'pose_check') noiseAmp = 1.8;
+        if (phaseRef.current === 'countdown') noiseAmp = 1.2;
+        if (phaseRef.current === 'beats') noiseAmp = 3;
 
         const tx = (targets[i][0] / 100) * SCAN_W + (Math.random() - 0.5) * noiseAmp;
         const ty = (targets[i][1] / 100) * SCAN_H + (Math.random() - 0.5) * noiseAmp;
         const nx = ALPHA * tx + (1 - ALPHA) * cx;
         const ny = ALPHA * ty + (1 - ALPHA) * cy;
 
-        // Measure jitter (distance from ideal target)
         const idealX = (targets[i][0] / 100) * SCAN_W;
         const idealY = (targets[i][1] / 100) * SCAN_H;
         const dist = Math.sqrt((nx - idealX) ** 2 + (ny - idealY) ** 2);
@@ -402,12 +414,11 @@ export default function NexusBioScan() {
       ptsRef.current = next;
       setPts([...next]);
 
-      // Calculate stability: % of points within HYSTERESIS_PX of target
-      if (jitterPoints > 0 && (phaseRef.current === 'stabilizing' || phaseRef.current === 'countdown')) {
+      // Stability calculation for verifying / pose_check / countdown
+      const calcPhases = ['verifying', 'pose_check', 'countdown'];
+      if (jitterPoints > 0 && calcPhases.includes(phaseRef.current)) {
         const avgJitter = totalJitter / jitterPoints;
-        // Map jitter to stability: 0px = 100%, 10px = 0%
         const stab = Math.max(0, Math.min(100, Math.round((1 - avgJitter / 10) * 100)));
-        // Smooth stability reading
         stabilityRef.current = Math.round(stabilityRef.current * 0.7 + stab * 0.3);
         setStability(stabilityRef.current);
       }
@@ -417,60 +428,82 @@ export default function NexusBioScan() {
   }, [SCAN_W, SCAN_H, visibleMask]);
 
   // ===================================================================
-  // GATE 1: LOADING → POSITIONING (after camera init)
+  // GATE 1: LOADING → POSITIONING
   // ===================================================================
   useEffect(() => {
     if (phase !== 'loading') return;
-    const timer = setTimeout(() => setPhase('positioning'), 1500);
+    const timer = setTimeout(() => setPhase('positioning'), 1800);
     return () => clearTimeout(timer);
   }, [phase]);
 
   // ===================================================================
-  // GATE 2: POSITIONING — Progressive 17-point detection
-  // Points appear one-by-one. Must reach 17/17 to proceed.
+  // GATE 2: POSITIONING — Slow progressive 17-point detection
+  // ~400-650ms per point = ~7-11s total. Zero auto-advance until ALL 17.
   // ===================================================================
   useEffect(() => {
     if (phase !== 'positioning') return;
 
     let count = 0;
     const mask = new Array(17).fill(false);
-    // Detection order: body first, then limbs, then head details
     const detectionOrder = [5, 6, 11, 12, 0, 7, 8, 13, 14, 9, 10, 15, 16, 1, 2, 3, 4];
 
-    const detectInterval = setInterval(() => {
+    const scheduleNext = () => {
       if (count >= 17) {
-        clearInterval(detectInterval);
-        // All 17 detected! Transition to stabilizing after brief pause
+        // All 17 detected — transition to VERIFYING (confidence check)
         setTimeout(() => {
-          setPhase('stabilizing');
+          confidenceStartRef.current = null;
+          setConfidenceTime(0);
+          setPhase('verifying');
           stabilityRef.current = 0;
           setStability(0);
-        }, 600);
+        }, 400);
         return;
       }
-      // Detect next point (variable speed: 200-500ms between detections)
-      const idx = detectionOrder[count];
-      mask[idx] = true;
-      count++;
-      setVisibleMask([...mask]);
-      setDetectedPoints(count);
-    }, 280 + Math.random() * 220); // ~280-500ms per point = ~5-8s total
+      // Detect next point — SLOWER: 400-650ms per point
+      const delay = 400 + Math.random() * 250;
+      setTimeout(() => {
+        if (phaseRef.current !== 'positioning') return; // phase changed
+        const idx = detectionOrder[count];
+        mask[idx] = true;
+        count++;
+        setVisibleMask([...mask]);
+        setDetectedPoints(count);
+        scheduleNext();
+      }, delay);
+    };
 
-    return () => clearInterval(detectInterval);
+    scheduleNext();
   }, [phase]);
 
   // ===================================================================
-  // GATE 3: STABILIZING → Wait for stability ≥ 90%
+  // GATE 3: VERIFYING — 17/17 must hold stable with high confidence for 1s
+  // If signal "drops" (simulated: stability check), reset to positioning.
   // ===================================================================
   useEffect(() => {
-    if (phase !== 'stabilizing') return;
+    if (phase !== 'verifying') return;
 
     const checkInterval = setInterval(() => {
-      if (stabilityRef.current >= 90) {
-        clearInterval(checkInterval);
-        // Stability reached! Start countdown
-        setCountdownSec(3);
-        setPhase('countdown');
+      const stab = stabilityRef.current;
+
+      if (stab >= 85) {
+        // Good signal — accumulate confidence
+        if (!confidenceStartRef.current) {
+          confidenceStartRef.current = Date.now();
+        }
+        const elapsed = (Date.now() - confidenceStartRef.current) / 1000;
+        setConfidenceTime(Math.min(elapsed, 1));
+
+        if (elapsed >= 1.0) {
+          // 1 full second of confirmed 17/17 high confidence
+          clearInterval(checkInterval);
+          setPhase('pose_check');
+          poseHoldStartRef.current = null;
+          setPoseHoldTime(0);
+        }
+      } else {
+        // Weak signal — reset confidence timer
+        confidenceStartRef.current = null;
+        setConfidenceTime(0);
       }
     }, 100);
 
@@ -478,7 +511,47 @@ export default function NexusBioScan() {
   }, [phase]);
 
   // ===================================================================
-  // GATE 4: COUNTDOWN — 3... 2... 1... with instant reset on movement
+  // GATE 4: POSE_CHECK — "BRACCIA LUNGO I FIANCHI — RIMANI IMMOBILE"
+  // Athlete must hold neutral standing pose (arms down) for 2 full seconds.
+  // Any significant movement resets the 2s timer instantly.
+  // ===================================================================
+  useEffect(() => {
+    if (phase !== 'pose_check') return;
+
+    const REQUIRED_HOLD_SECONDS = 2;
+    const STABILITY_THRESHOLD = 88; // strict
+
+    const checkInterval = setInterval(() => {
+      const stab = stabilityRef.current;
+      const isStable = stab >= STABILITY_THRESHOLD;
+
+      setPoseValid(isStable);
+
+      if (isStable) {
+        if (!poseHoldStartRef.current) {
+          poseHoldStartRef.current = Date.now();
+        }
+        const heldFor = (Date.now() - poseHoldStartRef.current) / 1000;
+        setPoseHoldTime(Math.min(heldFor, REQUIRED_HOLD_SECONDS));
+
+        if (heldFor >= REQUIRED_HOLD_SECONDS) {
+          // 2 full seconds of immobility confirmed!
+          clearInterval(checkInterval);
+          setCountdownSec(3);
+          setPhase('countdown');
+        }
+      } else {
+        // MOVEMENT DETECTED — reset hold timer instantly
+        poseHoldStartRef.current = null;
+        setPoseHoldTime(0);
+      }
+    }, 80);
+
+    return () => clearInterval(checkInterval);
+  }, [phase]);
+
+  // ===================================================================
+  // GATE 5: COUNTDOWN — 3... 2... 1... Reset to pose_check on movement
   // ===================================================================
   useEffect(() => {
     if (phase !== 'countdown') return;
@@ -487,12 +560,13 @@ export default function NexusBioScan() {
     setCountdownSec(3);
 
     countdownRef.current = setInterval(() => {
-      // CHECK: if stability dropped below 90%, RESET to stabilizing
-      if (stabilityRef.current < 90) {
+      if (stabilityRef.current < 88) {
         if (countdownRef.current) clearInterval(countdownRef.current);
         countdownRef.current = null;
-        setPhase('stabilizing');
-        setStability(stabilityRef.current);
+        // Reset to pose check — athlete moved!
+        poseHoldStartRef.current = null;
+        setPoseHoldTime(0);
+        setPhase('pose_check');
         return;
       }
 
@@ -500,14 +574,12 @@ export default function NexusBioScan() {
       setCountdownSec(secondsLeft);
 
       if (secondsLeft <= 0) {
-        // GATE PASSED! Start beats
         if (countdownRef.current) clearInterval(countdownRef.current);
         countdownRef.current = null;
 
-        // Micro cyan flash to signal start
         flashOpacity.value = withSequence(
-          withTiming(0.2, { duration: 80 }),
-          withTiming(0, { duration: 200 }),
+          withTiming(0.25, { duration: 80 }),
+          withTiming(0, { duration: 250 }),
         );
 
         setPhase('beats');
@@ -523,7 +595,7 @@ export default function NexusBioScan() {
   }, [phase]);
 
   // ===================================================================
-  // PHASE: BEATS (5 sequential poses) — unchanged logic
+  // PHASE: BEATS (5 I-Beats)
   // ===================================================================
   useEffect(() => {
     if (phase !== 'beats') return;
@@ -555,7 +627,7 @@ export default function NexusBioScan() {
   }, [phase, currentBeat]);
 
   // ===================================================================
-  // APPROVAL SEQUENCE
+  // APPROVAL
   // ===================================================================
   const handleApproval = useCallback(() => {
     setPhase('approved');
@@ -581,18 +653,19 @@ export default function NexusBioScan() {
   // ===================================================================
   const skelColor = phase === 'approved' ? '#D4AF37'
     : phase === 'beats' && currentBeat === 4 ? '#D4AF37'
-    : phase === 'countdown' ? '#00F2FF'
+    : phase === 'countdown' ? '#D4AF37'
+    : phase === 'pose_check' && poseValid ? '#00F2FF'
+    : phase === 'pose_check' && !poseValid ? '#FF453A'
     : '#00F2FF';
 
   const skelOpacity = phase === 'loading' ? 0.15
-    : phase === 'positioning' ? 0.7
-    : phase === 'stabilizing' ? 0.85
+    : phase === 'positioning' ? 0.65
+    : phase === 'verifying' ? 0.8
+    : phase === 'pose_check' ? 0.9
     : phase === 'countdown' ? 0.95
     : 0.85;
 
   const currentBeatDef = phase === 'beats' && currentBeat < BEATS.length ? BEATS[currentBeat] : null;
-
-  // During positioning, only render detected points
   const isPositioning = phase === 'positioning';
 
   // ── Camera fallback for web
@@ -618,10 +691,18 @@ export default function NexusBioScan() {
             <Text style={s.detectTxt}>NEXUS DETECTION: {detectedPoints}/17 PUNTI</Text>
           </View>
         )}
-        {phase === 'stabilizing' && (
+        {phase === 'verifying' && (
           <View style={s.detectRow}>
-            <View style={[s.detectDot, { backgroundColor: stability >= 90 ? '#D4AF37' : '#00F2FF' }]} />
-            <Text style={s.detectTxt}>STABILIZZAZIONE: {stability}%</Text>
+            <View style={[s.detectDot, { backgroundColor: '#D4AF37' }]} />
+            <Text style={[s.detectTxt, { color: '#D4AF37' }]}>VERIFICA SEGNALE: {Math.round(confidenceTime * 100)}%</Text>
+          </View>
+        )}
+        {phase === 'pose_check' && (
+          <View style={s.detectRow}>
+            <View style={[s.detectDot, { backgroundColor: poseValid ? '#00F2FF' : '#FF453A' }]} />
+            <Text style={[s.detectTxt, { color: poseValid ? '#00F2FF' : '#FF453A' }]}>
+              {poseValid ? `HOLD: ${poseHoldTime.toFixed(1)}s / 2.0s` : 'MOVIMENTO RILEVATO'}
+            </Text>
           </View>
         )}
         {phase === 'countdown' && (
@@ -728,15 +809,27 @@ export default function NexusBioScan() {
             />
           )}
 
-          {/* Stabilization HUD: show stability + jitter readout */}
-          {(phase === 'stabilizing' || phase === 'countdown') && (
+          {/* Stabilization/PoseCheck HUD: show stability + hold readout */}
+          {(phase === 'verifying' || phase === 'pose_check' || phase === 'countdown') && (
             <G>
               <Rect x={SCAN_W / 2 - 60} y={16} width={120} height={28} rx={8}
-                fill="rgba(0,0,0,0.6)" stroke={phase === 'countdown' ? 'rgba(212,175,55,0.4)' : 'rgba(0,242,255,0.2)'} strokeWidth={1} />
+                fill="rgba(0,0,0,0.6)" stroke={
+                  phase === 'countdown' ? 'rgba(212,175,55,0.4)'
+                  : phase === 'pose_check' && poseValid ? 'rgba(0,242,255,0.3)'
+                  : phase === 'pose_check' && !poseValid ? 'rgba(255,69,58,0.3)'
+                  : 'rgba(212,175,55,0.2)'
+                } strokeWidth={1} />
               <SvgText x={SCAN_W / 2} y={35}
-                fill={phase === 'countdown' ? '#D4AF37' : '#00F2FF'} fontSize={12} fontWeight="900"
+                fill={
+                  phase === 'countdown' ? '#D4AF37'
+                  : phase === 'pose_check' && poseValid ? '#00F2FF'
+                  : phase === 'pose_check' && !poseValid ? '#FF453A'
+                  : '#D4AF37'
+                } fontSize={12} fontWeight="900"
                 textAnchor="middle" letterSpacing={2}>
-                {phase === 'countdown' ? `LOCK ${countdownSec}` : `${stability}%`}
+                {phase === 'countdown' ? `LOCK ${countdownSec}`
+                  : phase === 'pose_check' ? (poseValid ? `HOLD ${poseHoldTime.toFixed(1)}s` : 'FERMO')
+                  : `${Math.round(confidenceTime * 100)}%`}
               </SvgText>
             </G>
           )}
@@ -779,7 +872,7 @@ export default function NexusBioScan() {
         </Svg>
 
         {/* EMA Filter label (bottom of scan area) */}
-        {(phase === 'beats' || phase === 'stabilizing' || phase === 'countdown') && (
+        {(phase === 'beats' || phase === 'verifying' || phase === 'pose_check' || phase === 'countdown') && (
           <View style={s.emaLabel}>
             <Text style={s.emaTxt}>EMA {ALPHA} · HYSTERESIS {HYSTERESIS_PX}PX · {TICK_MS}MS</Text>
           </View>
@@ -816,19 +909,53 @@ export default function NexusBioScan() {
           </Animated.View>
         )}
 
-        {/* STABILIZING — waiting for 90% stability */}
-        {phase === 'stabilizing' && (
+        {/* VERIFYING — confidence check: 17/17 for 1 full second */}
+        {phase === 'verifying' && (
           <Animated.View entering={FadeIn} style={s.footerCenter}>
-            <Text style={s.statusLabel}>CALIBRAZIONE BIOMETRICA</Text>
+            <Text style={[s.statusLabel, { color: '#D4AF37' }]}>VERIFICA FORMA UMANA</Text>
             <View style={s.stabilityRow}>
-              <Text style={[s.stabPct, stability >= 90 && { color: '#D4AF37' }]}>{stability}%</Text>
+              <Text style={[s.stabPct, { color: '#D4AF37' }]}>{Math.round(confidenceTime * 100)}%</Text>
               <View style={s.stabBar}>
-                <View style={[s.stabFill, { width: `${stability}%` as any }, stability >= 90 && { backgroundColor: '#D4AF37' }]} />
+                <View style={[s.stabFill, { width: `${confidenceTime * 100}%` as any, backgroundColor: '#D4AF37' }]} />
               </View>
             </View>
-            <Text style={s.tieneTxt}>
-              {stability < 60 ? 'RIMANI IMMOBILE' : stability < 90 ? 'TIENI LA POSIZIONE...' : 'STABILITA RAGGIUNTA'}
-            </Text>
+            <Animated.View style={[s.positioningRow, positionPulseStyle]}>
+              <View style={[s.positioningDot, { backgroundColor: '#D4AF37' }]} />
+              <Text style={[s.positioningTxt, { color: '#D4AF37' }]}>ANALISI CONFIDENZA SEGNALE...</Text>
+            </Animated.View>
+          </Animated.View>
+        )}
+
+        {/* POSE_CHECK — "Hold neutral pose for 2s" */}
+        {phase === 'pose_check' && (
+          <Animated.View entering={FadeIn} style={s.footerCenter}>
+            <Text style={s.poseCommand}>BRACCIA LUNGO I FIANCHI</Text>
+            <Text style={s.poseSubCommand}>RIMANI IMMOBILE</Text>
+            <View style={s.poseTimerRow}>
+              {/* 2 second hold progress indicator */}
+              <View style={s.poseTimerBg}>
+                <View style={[
+                  s.poseTimerFill,
+                  { width: `${(poseHoldTime / 2) * 100}%` as any },
+                  poseValid ? {} : { backgroundColor: '#FF453A' },
+                ]} />
+              </View>
+              <Text style={[s.poseTimerText, !poseValid && { color: '#FF453A' }]}>
+                {poseHoldTime.toFixed(1)}s / 2.0s
+              </Text>
+            </View>
+            {!poseValid && (
+              <Animated.View style={[s.positioningRow, positionPulseStyle]}>
+                <Ionicons name="alert-circle" size={12} color="#FF453A" />
+                <Text style={s.poseWarning}>MOVIMENTO RILEVATO — TIMER RESETTATO</Text>
+              </Animated.View>
+            )}
+            {poseValid && poseHoldTime > 0.3 && (
+              <View style={s.positioningRow}>
+                <Ionicons name="checkmark-circle" size={12} color="#00F2FF" />
+                <Text style={s.poseOk}>IMMOBILITA IN CORSO...</Text>
+              </View>
+            )}
           </Animated.View>
         )}
 
@@ -960,6 +1087,16 @@ const s = StyleSheet.create({
   countdownLabel: { color: '#D4AF37', fontSize: 9, fontWeight: '900', letterSpacing: 4 },
   countdownBig: { color: '#D4AF37', fontSize: 64, fontWeight: '900', letterSpacing: 2, lineHeight: 68 },
   countdownNote: { color: 'rgba(212,175,55,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+
+  // Pose Check
+  poseCommand: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1, textAlign: 'center' as const },
+  poseSubCommand: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 3, textAlign: 'center' as const },
+  poseTimerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, width: '100%' },
+  poseTimerBg: { flex: 1, height: 6, backgroundColor: '#111', borderRadius: 3, overflow: 'hidden' },
+  poseTimerFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 3 },
+  poseTimerText: { color: '#00F2FF', fontSize: 14, fontWeight: '900', width: 80, textAlign: 'right' as const },
+  poseWarning: { color: '#FF453A', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  poseOk: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
 
   // Beats
   beatLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
