@@ -19,6 +19,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Speech from 'expo-speech';
+import { VoiceController } from '../../utils/VoiceController';
 import * as Haptics from 'expo-haptics';
 import { api } from '../../utils/api';
 import { NexusPoseEngine, type PoseData, type LandmarkPoint } from '../../components/NexusPoseEngine';
@@ -390,19 +391,15 @@ export default function NexusBioScan() {
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   // ── CONTINUOUS COACHING: audio thread per ogni transizione di fase
   useEffect(() => {
-    const messages: Record<string, string> = {
-      loading:    'Nexus Protocol in caricamento. Preparati.',
-      positioning: poseEngineReady
-        ? 'Nexus attivo. Posizionati al centro della camera.'
-        : 'Inizializzazione biometrica in corso.',
-      countdown:  'Biometria confermata. Preparati. Tre, due, uno.',
-      approved:   'Kore DNA generato con successo. Benvenuto nell\'Arena.',
+    const keyMap: Record<string, string> = {
+      loading:    'WELCOME',
+      positioning: poseEngineReady ? 'NEXUS_ACTIVE' : 'WELCOME',
+      countdown:  'COUNTDOWN',
+      approved:   'SUCCESS',
     };
-    const msg = messages[phase];
-    if (msg) {
-      const t = setTimeout(() => {
-        try { Speech.speak(msg, { language: 'it-IT', rate: 0.80 }); } catch (_e) {}
-      }, 300);
+    const key = keyMap[phase];
+    if (key) {
+      const t = setTimeout(() => VoiceController.play(key), 300);
       return () => clearTimeout(t);
     }
   }, [phase, poseEngineReady]);
@@ -519,8 +516,8 @@ export default function NexusBioScan() {
         // Person is in frame and centered → start/continue entry timer
         if (!personEntrySinceRef.current) {
           personEntrySinceRef.current = Date.now();
-          // COACHING: announce first detection
-          try { Speech.speak('Ti ho visto. Mantieni la posizione per due secondi.', { language: 'it-IT', rate: 0.85 }); } catch (_e) {}
+          // COACHING: announce first detection via VoiceController
+          VoiceController.play('DETECTION_LOCK').catch(() => {});
 
         }
         const elapsed = Date.now() - personEntrySinceRef.current;
@@ -934,10 +931,12 @@ export default function NexusBioScan() {
 
   /** speakWithLead: annuncia l'esercizio, poi dopo delayMs parte il timer */
   const speakCoach = useCallback((text: string, urgent = false) => {
-    try {
-      Speech.stop();
-      Speech.speak(text, { language: 'it-IT', rate: urgent ? 0.92 : 0.82, pitch: urgent ? 1.15 : 1.0 });
-    } catch (_e) {}
+    // VoiceController handles overlap guard (fade-out) + real audio fallback
+    VoiceController.stop().then(() => {
+      try {
+        Speech.speak(text, { language: 'it-IT', rate: urgent ? 0.92 : 0.82, pitch: urgent ? 1.15 : 1.0 });
+      } catch (_e) {}
+    }).catch(() => {}); // non-blocking
   }, []);
 
   // Warn if person disappears during BEATS
@@ -948,7 +947,7 @@ export default function NexusBioScan() {
       if (!repeatWarningRef.current) {
         repeatWarningRef.current = setTimeout(() => {
           repeatWarningRef.current = null;
-          speakCoach("Ripeti il movimento, non ti ho visto!", true);
+          VoiceController.play('REPEAT_WARN').catch(() => {});
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
         }, 2000);
       }
@@ -978,11 +977,13 @@ export default function NexusBioScan() {
     // ── HAPTIC: colpo pesante all'inizio di ogni esercizio
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
 
-    // ── VOICE LEAD (1s before timer): "Beat X: ISTRUZIONE! Tra un secondo inizia."
-    const leadMsg = currentBeat === 0
-      ? `Attenzione! Beat uno: ${beat.instruction}. Inizia tra un secondo.`
-      : `Beat ${beat.id}: ${beat.label}! ${beat.instruction}.`;
-    speakCoach(leadMsg);
+    // ── VOICE LEAD via VoiceController (real audio or TTS fallback)
+    // First beat: welcome message, others: use beat-specific audio
+    if (currentBeat === 0) {
+      VoiceController.play('WELCOME').catch(() => {});
+    } else {
+      VoiceController.playBeat(currentBeat).catch(() => {});
+    }
 
     // ── 1 second lead pause before progress bar starts
     let progressInterval: ReturnType<typeof setInterval> | null = null;
