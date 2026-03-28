@@ -20,6 +20,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { Header } from '../../components/Header';
 import { useFocusEffect, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width: SW } = Dimensions.get('window');
 
@@ -757,8 +758,12 @@ const MEDAL_CONFIG: Record<number, { icon: string; color: string }> = {
 };
 
 function CityRanking({
-  token, refreshKey,
-}: { token: string; refreshKey: number }) {
+  token, refreshKey, onRankUpdate,
+}: {
+  token: string;
+  refreshKey: number;
+  onRankUpdate?: (rank: number | null, score: number | null, city: string) => void;
+}) {
   const [city, setCity] = useState('CHICAGO');
   const [data, setData]         = useState<any>(null);
   const [loading, setLoading]   = useState(true);
@@ -774,9 +779,13 @@ function CityRanking({
     try {
       const res = await api.getCityRanking(city, token);
       setData(res);
+      // ── Notify parent of user's rank/score for the HUD
+      if (onRankUpdate) {
+        onRankUpdate(res.my_rank ?? null, res.my_kore_score ?? null, city);
+      }
     } catch (_) {}
     finally { setLoading(false); }
-  }, [city, token, refreshKey]);
+  }, [city, token, refreshKey, onRankUpdate]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -1021,8 +1030,14 @@ export default function KoreTab() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [city, setCity] = useState('MILANO');
-  // Increments on every tab focus → triggers CityRanking real-time refresh
   const [rankingRefreshKey, setRankingRefreshKey] = useState(0);
+
+  // ── MY POSITION HUD state (set by CityRanking via callback)
+  const [myHudRank,  setMyHudRank]  = useState<number | null>(null);
+  const [myHudScore, setMyHudScore] = useState<number | null>(null);
+  const [myHudCity,  setMyHudCity]  = useState<string>('CHICAGO');
+
+  const insets = useSafeAreaInsets();
 
   const loadData = useCallback(async () => {
     if (!token) return;
@@ -1060,41 +1075,76 @@ export default function KoreTab() {
       {loading ? (
         <View style={s.center}><ActivityIndicator color="#00F2FF" size="large" /></View>
       ) : (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); setRankingRefreshKey(k => k + 1); }} tintColor="#00F2FF" />}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        >
-          {/* 1. PASSPORT HEADER */}
-          <PassportHeader user={user} />
+        <>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); setRankingRefreshKey(k => k + 1); }} tintColor="#00F2FF" />}
+            contentContainerStyle={{ paddingBottom: myHudRank && myHudRank > 10 ? 130 : 100 }}
+          >
+            {/* 1. PASSPORT HEADER */}
+            <PassportHeader user={user} />
 
-          {/* 2. RANK INFOGRAPHIC */}
-          <RankInfographic rankData={rankData} city={city} onCitySelect={handleCitySelect} />
+            {/* 2. RANK INFOGRAPHIC */}
+            <RankInfographic rankData={rankData} city={city} onCitySelect={handleCitySelect} />
 
-          {/* 3. CITY RANKING — Real-Time KORE_SCORE */}
-          <CityRanking token={token || ''} refreshKey={rankingRefreshKey} />
+            {/* 3. CITY RANKING — Real-Time KORE_SCORE */}
+            {token && (
+              <CityRanking
+                token={token}
+                refreshKey={rankingRefreshKey}
+                onRankUpdate={(rank, score, c) => {
+                  setMyHudRank(rank);
+                  setMyHudScore(score);
+                  setMyHudCity(c);
+                }}
+              />
+            )}
 
-          {/* 4. AFFILIATIONS */}
-          <Affiliations affiliData={affiliData} token={token || ''} onRefresh={loadData} />
+            {/* 4. AFFILIATIONS */}
+            <Affiliations affiliData={affiliData} token={token || ''} onRefresh={loadData} />
 
-          {/* 5. ACTION CENTER */}
-          <ActionCenter actionData={actionData} />
+            {/* 5. ACTION CENTER */}
+            <ActionCenter actionData={actionData} />
 
-          {/* 6. KORE CARD + WALLET */}
-          <KoreCard user={user} rankData={rankData} />
+            {/* 6. KORE CARD + WALLET */}
+            <KoreCard user={user} rankData={rankData} />
 
-          {/* 7. PRIVACY SHIELD */}
-          <Animated.View entering={FadeInDown.delay(500)} style={ps$.wrap}>
-            <TouchableOpacity style={ps$.btn} onPress={() => router.push('/settings/shield')} activeOpacity={0.8}>
-              <Ionicons name="shield-checkmark" size={14} color="#00F2FF" />
-              <Text style={ps$.txt}>PRIVACY SHIELD</Text>
-              <Ionicons name="chevron-forward" size={12} color="rgba(0,242,255,0.4)" />
-            </TouchableOpacity>
-          </Animated.View>
+            {/* 7. PRIVACY SHIELD */}
+            <Animated.View entering={FadeInDown.delay(500)} style={ps$.wrap}>
+              <TouchableOpacity style={ps$.btn} onPress={() => router.push('/settings/shield')} activeOpacity={0.8}>
+                <Ionicons name="shield-checkmark" size={14} color="#00F2FF" />
+                <Text style={ps$.txt}>PRIVACY SHIELD</Text>
+                <Ionicons name="chevron-forward" size={12} color="rgba(0,242,255,0.4)" />
+              </TouchableOpacity>
+            </Animated.View>
 
-          {/* 8. XP PROGRESS */}
-          <XpProgress user={user} />
-        </ScrollView>
+            {/* 8. XP PROGRESS */}
+            <XpProgress user={user} />
+          </ScrollView>
+
+          {/* ── MY POSITION HUD: fixed bottom bar when outside top 10 ── */}
+          {myHudRank !== null && myHudRank > 10 && (
+            <Animated.View
+              entering={FadeInDown.duration(400)}
+              style={[hud$.bar, { paddingBottom: insets.bottom + 8 }]}
+            >
+              <View style={hud$.inner}>
+                <View style={hud$.col}>
+                  <Ionicons name="location" size={10} color="#00F2FF" />
+                  <Text style={hud$.city}>{myHudCity}</Text>
+                </View>
+                <View style={[hud$.col, { flex: 1 }]}>
+                  <Text style={hud$.label}>LA TUA POSIZIONE</Text>
+                  <Text style={hud$.rank}>#{myHudRank} <Text style={hud$.rankSub}>— SCORE: {myHudScore}</Text></Text>
+                </View>
+                <View style={hud$.col}>
+                  <Text style={hud$.hint}>FATTI UNO{'\n'}SCAN</Text>
+                  <Ionicons name="arrow-up-circle" size={16} color="#D4AF37" />
+                </View>
+              </View>
+            </Animated.View>
+          )}
+        </>
       )}
     </View>
   );
@@ -1110,4 +1160,27 @@ const ps$ = StyleSheet.create({
   wrap: { marginHorizontal: 16, marginBottom: 8 },
   btn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(0,242,255,0.04)', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)' },
   txt: { flex: 1, color: 'rgba(0,242,255,0.7)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+});
+
+// MY POSITION HUD — fixed bottom bar
+const hud$ = StyleSheet.create({
+  bar: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: 'rgba(5,5,5,0.96)',
+    borderTopWidth: 1.5, borderTopColor: 'rgba(0,242,255,0.2)',
+    paddingTop: 12, paddingHorizontal: 16,
+    shadowColor: '#00F2FF',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 20,
+  },
+  inner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  col: { alignItems: 'center', gap: 2 },
+  city: { color: '#00F2FF', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
+  label: { color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
+  rank: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 1 },
+  rankSub: { color: 'rgba(0,242,255,0.6)', fontSize: 12, fontWeight: '700' },
+  score: { color: '#D4AF37', fontSize: 16, fontWeight: '900' },
+  hint: { color: 'rgba(212,175,55,0.5)', fontSize: 8, fontWeight: '800', letterSpacing: 1, textAlign: 'center' },
 });

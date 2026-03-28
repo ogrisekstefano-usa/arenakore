@@ -155,16 +155,16 @@ export default function HeroIndex() {
         resizeMode="cover"
       />
 
-      {/* ── GRADIENT OVERLAY — deep darkness from bottom (covers CTAs), athletes visible only at top ── */}
+      {/* ── GRADIENT OVERLAY — softer at top (athletes visible), pure black at bottom ── */}
       <LinearGradient
         colors={[
-          'rgba(5,5,5,0.25)',
-          'rgba(5,5,5,0.55)',
-          'rgba(5,5,5,0.88)',
+          'rgba(5,5,5,0.05)',
+          'rgba(5,5,5,0.45)',
+          'rgba(5,5,5,0.85)',
           'rgba(5,5,5,0.97)',
           BG,
         ]}
-        locations={[0, 0.22, 0.50, 0.75, 1]}
+        locations={[0, 0.25, 0.52, 0.78, 1]}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />
