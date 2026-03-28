@@ -1,4 +1,4 @@
-# ARENAKORE — PRD (Product Requirements Document) v6.0
+# ARENAKORE — PRD (Product Requirements Document) v7.0
 
 ## Overview
 **ARENAKORE** è la piattaforma mobile d'élite per atleti con analisi biometrica in tempo reale, sistema XP/Level, battle competitive, crew sociali e leaderboard globali. Estetica "Nike Elite / Chic-Tech / Cinema".
@@ -6,7 +6,7 @@
 **Stack Tecnico**: Expo React Native SDK 54 + FastAPI + MongoDB  
 **Bundle ID**: `com.arenakore.app`  
 **Data aggiornamento**: Marzo 2026  
-**Versione**: 6.1 — SPRINT 12: RISTRUTTURAZIONE 5 PILASTRI
+**Versione**: 7.0 — SPRINT 13: WALLET ENGINE + PUPPET-MOTION-DECK
 
 ---
 
@@ -15,9 +15,10 @@
 ### Backend (FastAPI)
 - **Auth**: JWT (python-jose + passlib/bcrypt), token 7 giorni
 - **DB**: MongoDB via Motor (async)
-- **Endpoints**: `/api/auth/*`, `/api/battles`, `/api/disciplines`, `/api/crews`, `/api/leaderboard`, `/api/nexus/*`, `/api/notifications`, `/api/dna/history`
+- **Endpoints**: `/api/auth/*`, `/api/battles`, `/api/disciplines`, `/api/crews`, `/api/leaderboard`, `/api/nexus/*`, `/api/notifications`, `/api/dna/history`, `/api/wallet/apple-pass`, `/api/wallet/google-pass`
 - **Founder Protocol**: Primo 100 utenti ricevono badge Gold permanente
 - **APScheduler**: Background job ogni 6h per notification engine
+- **Wallet Engine**: GET /api/wallet/apple-pass (mock .pkpass ZIP+base64), GET /api/wallet/google-pass (mock JWT + Google save URL)
 
 ### Frontend (Expo Router v6)
 - **Auth**: AsyncStorage per JWT persistence
@@ -26,6 +27,7 @@
 - **Audio**: Web Audio API (Oscillators per Bio-Scan hum, metallic pings)
 - **Charts**: react-native-svg (Radar Chart biometrico, ArenaGO Radar Map con sweep animato)
 - **Motion Detection**: Camera frame differencing (web) + expo-sensors (native)
+- **Wallet**: handleApple()/handleGoogle() — chiama backend, blob download su web, Modal Nike Elite feedback
 
 ---
 
