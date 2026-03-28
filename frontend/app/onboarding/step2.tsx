@@ -458,6 +458,8 @@ export default function NexusBioScan() {
       setCameraReady(true);
       setIsScanning(true);
       usingRealDataRef.current = true;
+      // Announce scanning start
+      try { Speech.speak('Nexus attivo. Entra nell\'Arena.', { language: 'it-IT', rate: 0.82 }); } catch (_e) {}
       return;
     }
     if (data.type === 'error') {
@@ -882,7 +884,42 @@ export default function NexusBioScan() {
   }, [phase]);
 
   // ===================================================================
-  // PHASE: BEATS (5 I-Beats)
+  // ===================================================================
+  // VOICE COACH ENGINE
+  // ===================================================================
+  const repeatWarningRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** speakWithLead: annuncia l'esercizio, poi dopo delayMs parte il timer */
+  const speakCoach = useCallback((text: string, urgent = false) => {
+    try {
+      Speech.stop();
+      Speech.speak(text, { language: 'it-IT', rate: urgent ? 0.92 : 0.82, pitch: urgent ? 1.15 : 1.0 });
+    } catch (_e) {}
+  }, []);
+
+  // Warn if person disappears during BEATS
+  useEffect(() => {
+    if (phase !== 'beats' || !poseEngineReady) return;
+    if (!realLandmarks) {
+      // Person left frame
+      if (!repeatWarningRef.current) {
+        repeatWarningRef.current = setTimeout(() => {
+          repeatWarningRef.current = null;
+          speakCoach("Ripeti il movimento, non ti ho visto!", true);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+        }, 2000);
+      }
+    } else {
+      // Person returned
+      if (repeatWarningRef.current) {
+        clearTimeout(repeatWarningRef.current);
+        repeatWarningRef.current = null;
+      }
+    }
+  }, [phase, realLandmarks, poseEngineReady, speakCoach]);
+
+  // ===================================================================
+  // PHASE: BEATS (5 I-Beats) — Voice-coached, loud, readable at 3m
   // ===================================================================
   useEffect(() => {
     if (phase !== 'beats') return;
@@ -895,23 +932,46 @@ export default function NexusBioScan() {
     targetPoseRef.current = beat.targetPose;
     setBeatProgress(0);
 
-    const startTime = Date.now();
-    const progressInterval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const pct = Math.min(100, (elapsed / beat.duration) * 100);
-      setBeatProgress(Math.round(pct));
-      if (pct >= 100) {
-        clearInterval(progressInterval);
-        flashOpacity.value = withSequence(
-          withTiming(0.15, { duration: 100 }),
-          withTiming(0, { duration: 200 }),
-        );
-        setTimeout(() => setCurrentBeat(prev => prev + 1), 400);
-      }
-    }, 50);
+    // ── HAPTIC: colpo pesante all'inizio di ogni esercizio
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
 
-    return () => clearInterval(progressInterval);
-  }, [phase, currentBeat]);
+    // ── VOICE LEAD (1s before timer): "Beat X: ISTRUZIONE! Tra un secondo inizia."
+    const leadMsg = currentBeat === 0
+      ? `Attenzione! Beat uno: ${beat.instruction}. Inizia tra un secondo.`
+      : `Beat ${beat.id}: ${beat.label}! ${beat.instruction}.`;
+    speakCoach(leadMsg);
+
+    // ── 1 second lead pause before progress bar starts
+    let progressInterval: ReturnType<typeof setInterval> | null = null;
+    const leadTimeout = setTimeout(() => {
+      const startTime = Date.now();
+      progressInterval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const pct = Math.min(100, (elapsed / beat.duration) * 100);
+        setBeatProgress(Math.round(pct));
+        if (pct >= 100) {
+          if (progressInterval) clearInterval(progressInterval);
+          flashOpacity.value = withSequence(
+            withTiming(0.15, { duration: 100 }),
+            withTiming(0, { duration: 200 }),
+          );
+          // Announce next beat 400ms before it appears
+          if (currentBeat < BEATS.length - 1) {
+            const nextBeat = BEATS[currentBeat + 1];
+            setTimeout(() => speakCoach(`Prossimo: ${nextBeat.label}!`), 50);
+          } else {
+            speakCoach('Ottimo! Generazione DNA in corso.');
+          }
+          setTimeout(() => setCurrentBeat(prev => prev + 1), 400);
+        }
+      }, 50);
+    }, 1000);
+
+    return () => {
+      clearTimeout(leadTimeout);
+      if (progressInterval) clearInterval(progressInterval);
+    };
+  }, [phase, currentBeat, speakCoach]);
 
   // ===================================================================
   // APPROVAL — Quality Check → Gold Flash → Haptics → Save → Navigate
@@ -1684,8 +1744,14 @@ const s = StyleSheet.create({
   // Beats
   beatLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   beatDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF' },
-  beatLabel: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
-  beatInstruction: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 1, textAlign: 'center' },
+  beatLabel: { color: '#00F2FF', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
+  beatInstruction: {
+    color: '#FFFFFF', fontSize: 48, fontWeight: '900',
+    letterSpacing: -1, textAlign: 'center', lineHeight: 54,
+    textShadowColor: 'rgba(255,255,255,0.2)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+  },
   beatBar: { width: '100%', height: 4, backgroundColor: '#111', borderRadius: 2, overflow: 'hidden' },
   beatFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
   beatPct: { color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '900' },
