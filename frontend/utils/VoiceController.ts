@@ -30,6 +30,7 @@ export const NEXUS_VOICE_MAP: Record<string, any | null> = {
   SUCCESS:        null, // require('../../assets/voice/dna-generato.mp3'),
   REPEAT_WARN:    null, // require('../../assets/voice/ripeti.mp3'),
   NEXUS_ACTIVE:   null, // require('../../assets/voice/nexus-attivo.mp3'),
+  CHEAT_DETECTED: null, // require('../../assets/voice/cheat-detected.mp3'),
 };
 
 // ── TTS FALLBACK MESSAGES (italiano, voce di sistema)
@@ -59,6 +60,9 @@ export const NEXUS_TTS_FALLBACK: Record<string, string> = {
     'Ripeti il movimento, non ti ho visto!',
   NEXUS_ACTIVE:
     'Nexus attivo. Posizionati al centro della camera.',
+  CHEAT_DETECTED:
+    'Atleta non riconosciuto. Il Nexus ha rilevato un cambio di identità. Ritorna al centro.',
+
 };
 
 // ── TTS RATE (adjust per key for natural pacing)

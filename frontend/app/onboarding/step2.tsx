@@ -349,12 +349,19 @@ export default function NexusBioScan() {
   const usingRealDataRef     = useRef(false);
   const lastRealFrameRef     = useRef(0);
   // pendingApprovalRef: set by Score Engine when 3s hold completes.
-  // Checked by a useEffect placed AFTER handleApproval to avoid TDZ.
   const pendingApprovalRef   = useRef(false);
   // poseEngineReadyRef: when true, POSITIONING simulated loop must stop
   const poseEngineReadyRef   = useRef(false);
   // personEntrySinceRef: timestamp when person was first stably detected (3s entry gate)
   const personEntrySinceRef  = useRef<number | null>(null);
+
+  // ── BIOMETRIC IDENTITY LOCK
+  // Stores the body-proportion "fingerprint" captured during DETECTION_LOCK
+  const initialProportionsRef = useRef<{ swTh: number; llAl: number } | null>(null);
+  // Consecutive frames with proportion deviation > 15%
+  const cheatConsecutiveRef   = useRef(0);
+  const CHEAT_THRESHOLD       = 0.15;  // 15% max deviation
+  const CHEAT_FRAMES_TRIGGER  = 6;     // 6 bad frames (~250ms at 25fps)
 
   const [poseTimeout, setPoseTimeout]       = useState(false);
   const [koScore, setKoScore]               = useState(0);
@@ -447,8 +454,37 @@ export default function NexusBioScan() {
   }
 
   // ===================================================================
-  // REAL POSE DATA HANDLER — drives skeleton + Score Engine
+  // BIOMETRIC IDENTITY LOCK — proportion math
+  // All measurements use RATIOS (scale-invariant even if person moves
+  // closer/farther from camera). Different persons differ by ~20-30%.
   // ===================================================================
+  function computeProportions(lm: Array<LandmarkPoint | null>): { swTh: number; llAl: number } | null {
+    const p = (i: number) => lm?.[i];
+    const lS  = p(5),  rS  = p(6);   // left/right shoulder
+    const lH  = p(11), rH  = p(12);  // left/right hip
+    const lK  = p(13), rK  = p(14);  // left/right knee
+    const lA  = p(15), rA  = p(16);  // left/right ankle
+    const lEl = p(7),  rEl = p(8);   // left/right elbow
+    const lW  = p(9),  rW  = p(10);  // left/right wrist
+
+    if (!lS || !rS || !lH || !rH || !lK || !rK || !lA || !rA || !lEl || !rEl || !lW || !rW) return null;
+
+    // Shoulder Width
+    const sw = Math.hypot(rS.x - lS.x, rS.y - lS.y);
+    // Torso Height (mid-shoulders to mid-hips)
+    const th = Math.hypot((lH.x + rH.x) / 2 - (lS.x + rS.x) / 2, (lH.y + rH.y) / 2 - (lS.y + rS.y) / 2);
+    if (th < 0.005) return null;
+
+    // Leg Length (hip→knee + knee→ankle, avg both)
+    const ll = ((Math.hypot(lK.x - lH.x, lK.y - lH.y) + Math.hypot(lA.x - lK.x, lA.y - lK.y)) +
+                (Math.hypot(rK.x - rH.x, rK.y - rH.y) + Math.hypot(rA.x - rK.x, rA.y - rK.y))) / 2;
+    // Arm Length (shoulder→elbow + elbow→wrist, avg both)
+    const al = ((Math.hypot(lEl.x - lS.x, lEl.y - lS.y) + Math.hypot(lW.x - lEl.x, lW.y - lEl.y)) +
+                (Math.hypot(rEl.x - rS.x, rEl.y - rS.y) + Math.hypot(rW.x - rEl.x, rW.y - rEl.y))) / 2;
+    if (al < 0.005) return null;
+
+    return { swTh: sw / th, llAl: ll / al };
+  }
   const handlePoseData = useCallback(async (data: PoseData) => {
     // CDN TIMEOUT → show manual fallback
     if (data.type === 'timeout') {
@@ -527,8 +563,14 @@ export default function NexusBioScan() {
 
         if (elapsed >= ENTRY_HOLD_MS) {
           // ── 2s BIOMETRIC LOCK CONFIRMED
-          // Real mode: skip VERIFYING + POSE_CHECK (stability threshold blocks real-world movement)
-          // Go directly: LOCK → COUNTDOWN → BEATS (5 exercises) → GOLD FLASH
+          // Capture initial body proportions FINGERPRINT for this athlete
+          const props = computeProportions(landmarks);
+          if (props) {
+            initialProportionsRef.current = props;
+            cheatConsecutiveRef.current = 0;
+          }
+
+          // Real mode: skip VERIFYING + POSE_CHECK → direct to COUNTDOWN → BEATS
           personEntrySinceRef.current = null;
           setDetectedPoints(17);
           try {
@@ -571,6 +613,46 @@ export default function NexusBioScan() {
     stabilityRef.current = Math.round(stability * 100);
     setStability(Math.round(stability * 100));
     // ─────────────────────────────────────────────────────────────────
+
+    // ── BIOMETRIC IDENTITY LOCK — validate during BEATS phase
+    if (phaseRef.current === 'beats' && initialProportionsRef.current) {
+      const currentProps = computeProportions(landmarks);
+      if (currentProps) {
+        const init = initialProportionsRef.current;
+        const devSwTh = Math.abs(currentProps.swTh - init.swTh) / Math.max(init.swTh, 0.001);
+        const devLlAl = Math.abs(currentProps.llAl - init.llAl) / Math.max(init.llAl, 0.001);
+        const maxDev  = Math.max(devSwTh, devLlAl);
+
+        if (maxDev > CHEAT_THRESHOLD) {
+          cheatConsecutiveRef.current += 1;
+          if (cheatConsecutiveRef.current >= CHEAT_FRAMES_TRIGGER) {
+            // ── IDENTITY MISMATCH: different person entered frame
+            cheatConsecutiveRef.current = 0;
+            initialProportionsRef.current = null;
+            VoiceController.play('CHEAT_DETECTED').catch(() => {});
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+            // Restart protocol: back to loading
+            setTimeout(() => {
+              setPhase('loading');
+              setDetectedPoints(0);
+              setVisibleMask(new Array(17).fill(false));
+              setRealLandmarks(null);
+              setKoScore(0);
+              setHoldProgress(0);
+              stabilityBufferRef.current = [];
+              holdTimerRef.current = null;
+              personEntrySinceRef.current = null;
+              pendingApprovalRef.current = false;
+            }, 500);
+            return; // abort this frame
+          }
+        } else {
+          cheatConsecutiveRef.current = 0; // proportions OK — reset counter
+        }
+      }
+    }
+
+
 
     // ── 3-SECOND HOLD TRIGGER
     // Conditions: confidence > 80% overall AND centered AND in positioning/pose_check phase
