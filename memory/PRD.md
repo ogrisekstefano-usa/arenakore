@@ -1,4 +1,4 @@
-# ARENAKORE — PRD (Product Requirements Document) v10.0
+# ARENAKORE — PRD (Product Requirements Document) v11.0
 
 ## Overview
 **ARENAKORE** è la piattaforma mobile d'élite per atleti con analisi biometrica in tempo reale, sistema XP/Level, battle competitive, crew sociali e leaderboard globali. Estetica "Nike Elite / Chic-Tech / Cinema". Zero emoji. Solo Ionicons.
@@ -6,7 +6,7 @@
 **Stack Tecnico**: Expo React Native SDK 54 + FastAPI + MongoDB  
 **Bundle ID**: `com.arenakore.app`  
 **Data aggiornamento**: Marzo 2026  
-**Versione**: 10.0 — SPRINT 16: KORE SOCIAL PASSPORT
+**Versione**: 11.0 — SPRINT 16: NEXUS PROTOCOL v2 (Event-Driven + Biometric Wall)
 
 ---
 
