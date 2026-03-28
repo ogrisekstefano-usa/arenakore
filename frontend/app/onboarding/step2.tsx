@@ -434,6 +434,13 @@ export default function NexusBioScan() {
       return;
     }
 
+    // CAMERA DENIED → show explicit permission error, don't proceed without real data
+    if (data.type === 'camera_denied') {
+      setCameraPermDenied(true);
+      setPoseEngineReady(false);
+      return;
+    }
+
     if (data.type === 'ready') {
       setPoseEngineReady(true);
       setCameraReady(true);
@@ -457,7 +464,9 @@ export default function NexusBioScan() {
     usingRealDataRef.current = true;  // suppress simulated EMA
 
     if (!landmarks || landmarks.length === 0 || !person_detected) {
-      // No person → reset hold timer
+      // ── GHOST PREVENTION: ALWAYS clear stale landmarks when person leaves frame.
+      // This ensures realLandmarks=null → realPts=null → ZERO skeleton rendered.
+      setRealLandmarks(null);
       holdTimerRef.current = null;
       setHoldProgress(0);
       return;
@@ -1111,11 +1120,14 @@ export default function NexusBioScan() {
               stroke="rgba(0,242,255,0.04)" strokeWidth={0.5} />
           ))}
 
-          {/* ── Use REAL MediaPipe coords when available, simulated otherwise ── */}
+          {/* ── SKELETON — REAL data only when MediaPipe active. ZERO ghost fallback. ── */}
           {(() => {
-            const displayPts: [number, number][] = realPts
-              ? realPts.map((rp, i) => rp ? rp : pts[i] ?? [SCAN_W/2, SCAN_H/2])
-              : pts;
+            // PRODUCTION RULE: when poseEngine is active, ONLY render real confirmed data.
+            // realPts is null when person_detected=false → nothing rendered.
+            // When not in real mode (no WebView), render simulated pts for UX.
+            const displayPts: [number, number][] | null = poseEngineReady ? realPts : pts;
+
+            if (!displayPts) return null; // No person detected — no skeleton
 
             return (
               <>

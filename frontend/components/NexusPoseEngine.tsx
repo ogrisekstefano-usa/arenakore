@@ -1,54 +1,37 @@
 /**
- * ARENAKORE — NEXUS POSE ENGINE
- * MediaPipe Pose (LITE model) running inside a WebView.
- * Posts 17-point COCO landmark data to React Native via postMessage.
+ * ARENAKORE — NEXUS POSE ENGINE v2.0 (PRODUCTION)
  *
- * Works on:
- *  - Web preview (browser iframe)
- *  - iOS (WKWebView)
- *  - Android (Chrome WebView)
- *
- * No custom native build required.
+ * MediaPipe Pose LITE running inside a WebView.
+ * - Mounts ONLY when enabled=true (after Privacy Consent "ACCETTA")
+ * - Camera requested only via HTTPS (getUserMedia requirement)
+ * - Auto-restart WebView on any crash (key={restartKey})
+ * - Posts 17-point COCO landmark data via postMessage
+ * - Person NOT detected → posts empty landmarks → calling component shows NO skeleton
  */
-import React, { useCallback, useRef, useMemo } from 'react';
+import React, { useCallback, useRef, useState, useEffect, useMemo } from 'react';
 import { StyleSheet, View, Platform } from 'react-native';
 import WebView from 'react-native-webview';
 
 // ── MediaPipe 33 → COCO 17 landmark mapping
 const MP_TO_COCO: Record<number, number> = {
-  0: 0,   // nose
-  2: 1,   // left eye (outer)
-  5: 2,   // right eye (outer)
-  7: 3,   // left ear
-  8: 4,   // right ear
-  11: 5,  // left shoulder
-  12: 6,  // right shoulder
-  13: 7,  // left elbow
-  14: 8,  // right elbow
-  15: 9,  // left wrist
-  16: 10, // right wrist
-  23: 11, // left hip
-  24: 12, // right hip
-  25: 13, // left knee
-  26: 14, // right knee
-  27: 15, // left ankle
-  28: 16, // right ankle
+  0: 0,   2: 1,  5: 2,  7: 3,  8: 4,
+  11: 5, 12: 6, 13: 7, 14: 8, 15: 9, 16: 10,
+  23: 11, 24: 12, 25: 13, 26: 14, 27: 15, 28: 16,
 };
 
-// ── Types
 export interface LandmarkPoint {
-  x: number;   // normalized [0,1] — left to right as user sees
-  y: number;   // normalized [0,1] — top to bottom
-  v: number;   // visibility confidence [0,1]
+  x: number;
+  y: number;
+  v: number;
 }
 
 export interface PoseData {
-  type: 'pose' | 'ready' | 'error' | 'fps';
-  landmarks?: Array<LandmarkPoint | null>; // 17-point COCO
+  type: 'pose' | 'ready' | 'error' | 'timeout' | 'camera_denied';
+  landmarks?: Array<LandmarkPoint | null>;
   fps?: number;
-  centered?: boolean;        // nose x in [0.28, 0.72]
-  person_detected?: boolean; // >= 8 visible COCO points
-  visible_count?: number;    // how many of 17 COCO points visible
+  centered?: boolean;
+  person_detected?: boolean;
+  visible_count?: number;
   nose_x?: number;
   message?: string;
 }
@@ -59,7 +42,7 @@ interface Props {
 }
 
 // ===================================================================
-// HTML — MediaPipe Pose + Camera inside WebView
+// HTML — MediaPipe Pose LITE + Camera inside WebView
 // ===================================================================
 const MEDIAPIPE_HTML = `
 <!DOCTYPE html>
@@ -70,78 +53,78 @@ const MEDIAPIPE_HTML = `
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
     #video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-    #status { position: absolute; bottom: 8px; left: 8px; color: rgba(0,242,255,0.6); font-family: monospace; font-size: 10px; background: rgba(0,0,0,0.5); padding: 3px 7px; border-radius: 4px; z-index: 10; pointer-events: none; }
+    #status { position: absolute; bottom: 6px; left: 8px; right: 8px; color: rgba(0,242,255,0.7); font-family: monospace; font-size: 9px; background: rgba(0,0,0,0.6); padding: 3px 7px; border-radius: 4px; z-index: 10; pointer-events: none; text-align: center; }
+    #err { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.85); border: 1px solid rgba(255,59,48,0.4); border-radius: 12px; padding: 20px; text-align: center; color: #FF3B30; font-family: monospace; font-size: 12px; z-index: 20; width: 80%; }
   </style>
 </head>
 <body>
   <video id="video" autoplay playsinline muted></video>
-  <div id="status">NEXUS: LOADING MEDIAPIPE...</div>
+  <div id="status">NEXUS: LOADING MEDIAPIPE LITE...</div>
+  <div id="err"></div>
 
-  <!-- MediaPipe CDN — camera utils + pose -->
+  <!-- MediaPipe CDN — LITE model selected via modelComplexity: 0 -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 
   <script>
-    // ── postMessage helper (WebView + iframe fallback)
-    function postToRN(data) {
+    var postToRN = function(data) {
       try {
-        const msg = JSON.stringify(data);
-        if (window.ReactNativeWebView) {
-          window.ReactNativeWebView.postMessage(msg);
-        } else {
-          window.parent.postMessage(msg, '*');
-        }
+        var msg = JSON.stringify(data);
+        if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(msg);
+        else window.parent.postMessage(msg, '*');
       } catch(e) {}
-    }
-
-    // ── MediaPipe → COCO 17 mapping
-    const MP_TO_COCO = {
-      0:0, 2:1, 5:2, 7:3, 8:4,
-      11:5, 12:6, 13:7, 14:8, 15:9, 16:10,
-      23:11, 24:12, 25:13, 26:14, 27:15, 28:16
     };
 
-    let fpsHistory = [];
-    let lastTime = performance.now();
-    let lastCenterAlertTs = 0;
+    var setStatus = function(txt) {
+      var el = document.getElementById('status');
+      if (el) el.textContent = txt;
+    };
+
+    var showError = function(msg, isDenied) {
+      var el = document.getElementById('err');
+      if (el) {
+        el.style.display = 'block';
+        el.innerHTML = isDenied
+          ? 'PERMESSI CAMERA NEGATI<br><small>Impostazioni → ARENAKORE → Camera → Consenti</small>'
+          : 'CAMERA NON DISPONIBILE<br><small>' + msg + '</small>';
+      }
+      setStatus(isDenied ? 'PERMESSI NEGATI' : 'CAMERA ERROR');
+    };
+
+    // ── MP → COCO 17 mapping
+    var MP_TO_COCO = {0:0,2:1,5:2,7:3,8:4,11:5,12:6,13:7,14:8,15:9,16:10,23:11,24:12,25:13,26:14,27:15,28:16};
+
+    var fpsHistory = [];
+    var lastTime = performance.now();
+    var cameraStarted = false;
 
     function onResults(results) {
-      const now = performance.now();
-      const dt = Math.max(now - lastTime, 1);
+      var now = performance.now();
+      var dt = Math.max(now - lastTime, 1);
       lastTime = now;
 
-      // Rolling FPS (20-frame window, capped at 60)
       fpsHistory.push(Math.min(1000 / dt, 60));
       if (fpsHistory.length > 20) fpsHistory.shift();
-      const fps = Math.round(fpsHistory.reduce((a,b) => a+b, 0) / fpsHistory.length);
+      var fps = Math.round(fpsHistory.reduce(function(a,b){return a+b;},0) / fpsHistory.length);
 
-      document.getElementById('status').textContent = fps + ' FPS';
+      setStatus(fps + ' FPS — NEXUS ACTIVE');
 
       if (!results.poseLandmarks || results.poseLandmarks.length === 0) {
-        postToRN({ type: 'pose', landmarks: [], fps, centered: false, person_detected: false, visible_count: 0 });
+        postToRN({ type: 'pose', landmarks: [], fps: fps, centered: false, person_detected: false, visible_count: 0 });
         return;
       }
 
-      const mp_lm = results.poseLandmarks;
-
-      // Build COCO 17-point array
-      const coco17 = new Array(17).fill(null);
-      Object.entries(MP_TO_COCO).forEach(function([mp_idx_str, coco_idx]) {
-        const mp_idx = parseInt(mp_idx_str);
-        const lm = mp_lm[mp_idx];
-        if (lm) {
-          coco17[coco_idx] = { x: lm.x, y: lm.y, v: lm.visibility || 0 };
-        }
+      var mp_lm = results.poseLandmarks;
+      var coco17 = new Array(17).fill(null);
+      Object.keys(MP_TO_COCO).forEach(function(k) {
+        var lm = mp_lm[parseInt(k)];
+        if (lm) coco17[MP_TO_COCO[k]] = { x: lm.x, y: lm.y, v: lm.visibility || 0 };
       });
 
-      // Centering: nose (0) x in [0.28, 0.72]
-      const nose = mp_lm[0];
-      const noseX = nose ? nose.x : 0.5;
-      const centered = (noseX >= 0.28 && noseX <= 0.72);
-
-      // Count visible landmarks
-      const visible_count = coco17.filter(function(p) { return p && p.v > 0.4; }).length;
-      const person_detected = visible_count >= 8;
+      var noseX = mp_lm[0] ? mp_lm[0].x : 0.5;
+      var centered = (noseX >= 0.28 && noseX <= 0.72);
+      var visible_count = coco17.filter(function(p){ return p && p.v > 0.4; }).length;
+      var person_detected = (visible_count >= 8);
 
       postToRN({
         type: 'pose',
@@ -154,15 +137,15 @@ const MEDIAPIPE_HTML = `
       });
     }
 
-    // ── Pose model setup (LITE = best performance, ~30fps on device)
-    const pose = new Pose({
+    // ── Setup MediaPipe Pose LITE (modelComplexity: 0 = minimum RAM)
+    var pose = new Pose({
       locateFile: function(file) {
         return 'https://cdn.jsdelivr.net/npm/@mediapipe/pose/' + file;
       }
     });
 
     pose.setOptions({
-      modelComplexity: 0,           // 0=LITE, 1=FULL, 2=HEAVY
+      modelComplexity: 0,           // LITE — essential for device stability
       smoothLandmarks: true,
       enableSegmentation: false,
       smoothSegmentation: false,
@@ -172,12 +155,12 @@ const MEDIAPIPE_HTML = `
 
     pose.onResults(onResults);
 
-    // ── Start camera + inference loop
-    const videoEl = document.getElementById('video');
+    // ── Start camera (requires HTTPS on browsers, native WebView is fine)
+    var videoEl = document.getElementById('video');
 
-    const camera = new Camera(videoEl, {
-      onFrame: async function() {
-        try { await pose.send({ image: videoEl }); } catch(e) {}
+    var camera = new Camera(videoEl, {
+      onFrame: function() {
+        return pose.send({ image: videoEl });
       },
       width: 480,
       height: 640
@@ -185,40 +168,77 @@ const MEDIAPIPE_HTML = `
 
     camera.start()
       .then(function() {
-        document.getElementById('status').textContent = 'NEXUS ACTIVE';
+        cameraStarted = true;
+        setStatus('NEXUS ACTIVE');
         postToRN({ type: 'ready' });
       })
       .catch(function(err) {
-        document.getElementById('status').textContent = 'ERR: ' + (err.message || 'Camera denied');
-        postToRN({ type: 'error', message: err.message || 'Camera access denied' });
+        var isDenied = (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError');
+        var isNoCamera = (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError');
+        var type = isDenied ? 'camera_denied' : 'error';
+        showError(err.message || 'Errore camera', isDenied);
+        postToRN({ type: type, message: err.message || 'Camera non disponibile' });
       });
 
-    // CDN FALLBACK: if pose model not ready within 8s, notify parent
+    // ── CDN timeout: if Pose class not available after 10s, report timeout
     setTimeout(function() {
       if (typeof Pose === 'undefined') {
-        postToRN({ type: 'timeout', message: 'MediaPipe CDN load timeout — switch to manual mode' });
+        postToRN({ type: 'timeout', message: 'CDN MediaPipe timeout — usa scan manuale' });
+        setStatus('CDN TIMEOUT');
       }
-    }, 8000);
+    }, 10000);
+
+    // ── Global error catcher for WebView crashes
+    window.onerror = function(msg, src, line) {
+      postToRN({ type: 'error', message: 'WebView error: ' + msg });
+      return true;
+    };
   </script>
 </body>
 </html>
 `.trim();
 
 // ===================================================================
-// COMPONENT
+// COMPONENT — Production error boundary + auto-restart
 // ===================================================================
 export function NexusPoseEngine({ onPoseData, enabled = true }: Props) {
-  const webviewRef = useRef<any>(null);
+  // ── Auto-restart: increment key forces WebView unmount/remount
+  const [restartKey, setRestartKey] = useState(0);
+  const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const crashCountRef   = useRef(0);
 
+  const scheduleRestart = useCallback((delayMs = 500) => {
+    if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+    restartTimerRef.current = setTimeout(() => {
+      crashCountRef.current += 1;
+      setRestartKey(k => k + 1);
+    }, delayMs);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+    };
+  }, []);
+
+  // ── Message handler
   const handleMessage = useCallback((event: any) => {
     try {
       const raw = event.nativeEvent?.data ?? event.data;
       const data: PoseData = JSON.parse(raw);
+
+      if (data.type === 'error') {
+        // Auto-restart on non-fatal errors (backoff: max 3 restarts)
+        if (crashCountRef.current < 3) {
+          scheduleRestart(500);
+        }
+      }
+
       onPoseData(data);
     } catch (_) {}
-  }, [onPoseData]);
+  }, [onPoseData, scheduleRestart]);
 
-  // On Expo Web, listen for iframe postMessage too
+  // ── Web iframe message listener
   const handleWebMessage = useCallback((event: MessageEvent) => {
     if (typeof event.data === 'string') {
       try {
@@ -228,20 +248,20 @@ export function NexusPoseEngine({ onPoseData, enabled = true }: Props) {
     }
   }, [onPoseData]);
 
-  // Register window message listener for web
-  React.useEffect(() => {
+  useEffect(() => {
     if (Platform.OS === 'web') {
       window.addEventListener('message', handleWebMessage);
       return () => window.removeEventListener('message', handleWebMessage);
     }
   }, [handleWebMessage]);
 
+  // ── Don't mount until explicitly enabled (after "ACCETTA" click)
   if (!enabled) return null;
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       <WebView
-        ref={webviewRef}
+        key={restartKey}                       // ← auto-restart on crash
         source={{ html: MEDIAPIPE_HTML }}
         style={StyleSheet.absoluteFill}
         mediaPlaybackRequiresUserAction={false}
@@ -250,12 +270,14 @@ export function NexusPoseEngine({ onPoseData, enabled = true }: Props) {
         domStorageEnabled
         originWhitelist={['*']}
         onMessage={handleMessage}
-        // iOS: allow camera in WKWebView
-        allowsAirPlayForMediaPlayback={false}
+        // iOS: allow camera inside WKWebView
         mediaCapturePermissionGrantType="grant"
-        // Transparent background so dark overlay in step2 shows correctly
+        allowsAirPlayForMediaPlayback={false}
         backgroundColor="transparent"
         scrollEnabled={false}
+        // React-level error boundary
+        onError={() => { scheduleRestart(500); }}
+        onHttpError={() => { scheduleRestart(1000); }}
       />
     </View>
   );
