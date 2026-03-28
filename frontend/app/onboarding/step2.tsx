@@ -344,13 +344,16 @@ export default function NexusBioScan() {
   // ── SCORE ENGINE REFS & STATE
   // Rolling buffer: last 30 frames of normalized landmark positions (for stability calc)
   const stabilityBufferRef = useRef<Array<Array<{ x: number; y: number }>>>([]);
-  const holdTimerRef        = useRef<number | null>(null);  // timestamp when valid hold started
-  const usingRealDataRef    = useRef(false);                // suppresses simulated EMA when true
-  const lastRealFrameRef    = useRef(0);                    // timestamp of last MediaPipe frame
+  const holdTimerRef         = useRef<number | null>(null);
+  const usingRealDataRef     = useRef(false);
+  const lastRealFrameRef     = useRef(0);
+  // pendingApprovalRef: set by Score Engine when 3s hold completes.
+  // Checked by a useEffect placed AFTER handleApproval to avoid TDZ.
+  const pendingApprovalRef   = useRef(false);
 
-  const [poseTimeout, setPoseTimeout]   = useState(false);  // CDN failed → show manual fallback
-  const [koScore, setKoScore]           = useState(0);       // live KORE SCORE 0-100
-  const [holdProgress, setHoldProgress] = useState(0);       // 0-1, 3-second hold progress
+  const [poseTimeout, setPoseTimeout]       = useState(false);
+  const [koScore, setKoScore]               = useState(0);
+  const [holdProgress, setHoldProgress]     = useState(0);
   const [scoreBreakdown, setScoreBreakdown] = useState({ stability: 0, confidence: 0, amplitude: 0 });
 
   // Skeleton state
@@ -500,9 +503,10 @@ export default function NexusBioScan() {
 
       if (elapsed >= HOLD_DURATION_MS && phaseRef.current !== 'beats' && phaseRef.current !== 'approved') {
         // ── GOLD FLASH TRIGGER — 3s hold confirmed ──
+        // Set ref flag — checked by useEffect placed AFTER handleApproval to avoid TDZ
         holdTimerRef.current = null;
         setHoldProgress(0);
-        handleApproval();  // fires Gold Flash + DNA sync + navigation
+        pendingApprovalRef.current = true;
         return;
       }
     } else {
@@ -525,7 +529,11 @@ export default function NexusBioScan() {
         setTimeout(() => setCenteringWarning(false), 3000);
       }
     }
-  }, [handleApproval]); // eslint-disable-line
+  }, []); // stable — uses pendingApprovalRef instead of direct handleApproval call
+
+  // ── Dispatch approval when Score Engine sets the ref flag (avoids TDZ)
+  // NOTE: This useEffect intentionally left near handlePoseData so it's close to the trigger logic.
+  // The actual handleApproval call is hoisted to a separate effect placed after handleApproval definition.
 
   // ── Real-to-screen coordinates (MediaPipe normalized → screen pixels)
   const realPts = useMemo<[number, number][] | null>(() => {
@@ -892,6 +900,15 @@ export default function NexusBioScan() {
 
     setTimeout(() => router.push('/onboarding/step3'), 4000);
   }, []);
+
+  // ── Score Engine Gold Flash: fires handleApproval when pendingApprovalRef is set.
+  // Placed AFTER handleApproval declaration to avoid Temporal Dead Zone (TDZ) errors.
+  useEffect(() => {
+    if (pendingApprovalRef.current && phaseRef.current !== 'beats' && phaseRef.current !== 'approved') {
+      pendingApprovalRef.current = false;
+      handleApproval();
+    }
+  }, [phase, handleApproval]); // 'phase' change triggers re-check
 
   // ===================================================================
   // DERIVED RENDER STATE
