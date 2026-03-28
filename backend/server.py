@@ -3317,6 +3317,22 @@ async def nexus_scanner_page():
     var sendStart       = 0;
     var sendPending     = false;
 
+    // ── LOW-PASS FILTER: smooths landmark jitter (The Butter)
+    var prevSmoothed = null;
+    var SMOOTH_ALPHA = 0.55;  // 0=max smooth, 1=raw
+
+    function lpf(curr, prev, alpha) {
+      if (!prev || prev.length !== curr.length) return curr;
+      return curr.map(function(lm, i) {
+        var p = prev[i];
+        if (!lm) return null;
+        if (!p) return lm;
+        return { x: alpha*lm.x + (1-alpha)*p.x, y: alpha*lm.y + (1-alpha)*p.y,
+                 visibility: lm.visibility, z: lm.z||0 };
+      });
+    }
+
+
     function post(data) {
       try {
         var msg = JSON.stringify(data);
@@ -3469,15 +3485,29 @@ async def nexus_scanner_page():
 
       var mp_lm = results.poseLandmarks;
 
+      // ── GHOST MASKING: prioritize pose with nose closest to center
+      // If nose is far from center AND we have a previous smooth pose, keep it
+      var noseDistFromCenter = mp_lm[0] ? Math.abs(mp_lm[0].x - 0.5) : 1.0;
+      if (noseDistFromCenter > 0.35 && prevSmoothed) {
+        // Current detection is off-center — use smoothed previous (ghost masking)
+        var coco17b = drawSkeleton(prevSmoothed);
+        var vcb = coco17b.filter(function(p){return p!==null;}).length;
+        var now2 = Date.now();
+        if (!personFirstSeen) personFirstSeen = now2;
+        var stable2 = (now2 - personFirstSeen) >= STABLE_MS && vcb >= 7;
+        post({ type:'pose', landmarks: stable2 ? coco17b.map(function(p){return p?{x:p.x/canvas.width,y:p.y/canvas.height,v:p.v||1}:null;}) : [],
+               person_detected: stable2, visible_count: vcb, centered: false, fps: 30 });
+        return;
+      }
+
       // ── HIGHLANDER QUALITY GATE: getBestPose logic
-      // Rule 1: Average confidence of key body landmarks must be >= 60%
-      //         (Reflections have lower confidence — they fail this check)
+      // Rule 1: Average confidence of key body landmarks must be >= 55%
       var KEY_LM = [0, 5, 6, 11, 12, 13, 14, 15, 16]; // nose+shoulders+hips+knees+ankles
       var avgConf = KEY_LM.reduce(function(s, i) {
         return s + (mp_lm[i] ? (mp_lm[i].visibility || 0) : 0);
       }, 0) / KEY_LM.length;
 
-      if (avgConf < 0.55) {  // RELAXED: 55% avg confidence required
+      if (avgConf < 0.35) {  // SOFT: 35% avg — let it lock on easily
         // GHOST PURGE: confidence too low — real reflections can't reach 60%
         personFirstSeen = null;
         clearAndWait();
@@ -3500,7 +3530,7 @@ async def nexus_scanner_page():
         if (mp_lm[ki] && (mp_lm[ki].visibility || 0) >= 0.75) hiConfCount++;
       }
       // Need at least 12 high-confidence landmarks for a clean skeleton
-      if (hiConfCount < 10) {  // RELAXED: 10 high-confidence landmarks
+      if (hiConfCount < 7) {   // SOFT: only need 7 decent landmarks
         personFirstSeen = null;
         clearAndWait();
         post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
@@ -3523,7 +3553,7 @@ async def nexus_scanner_page():
         var boxArea = boxW * boxH;
 
         // ── RULE 1: BOX MAGNITUDE
-        if (boxArea < 0.08) {  // SOFT: allow athlete farther from camera
+        if (boxArea < 0.04) {  // MINIMAL: only reject truly tiny ghosts (<4%)
           personFirstSeen = null; clearAndWait();
           post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
           return;  // TOO SMALL
@@ -3595,22 +3625,19 @@ async def nexus_scanner_page():
         }
       }
 
-      // ── RULE: Z-INDEX DEPTH (poseWorldLandmarks if available)
-      // In world coords, shoulder-to-hip z-diff > 0.8m = 2D/ghost artifact
-      if (results.poseWorldLandmarks && results.poseWorldLandmarks.length > 0) {
-        var wLm = results.poseWorldLandmarks;
-        var wShZ = (((wLm[5]||{}).z||0) + ((wLm[6]||{}).z||0)) / 2;
-        var wHiZ = (((wLm[23]||{}).z||0) + ((wLm[24]||{}).z||0)) / 2;
-        if (Math.abs(wShZ - wHiZ) > 1.2) {  // RELAXED: 1.2m depth tolerance
-          // Extreme z-axis inconsistency — 3D structure invalid (ghost reflection)
-          personFirstSeen = null;
-          clearAndWait();
-          post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
-          return;  // Z-DEPTH INVALID
-        }
+      // Z-Depth check DISABLED — restored smooth demo feeling
+
+      // ── LOW-PASS FILTER: smooth the raw landmarks before drawing
+      var smoothed = lpf(mp_lm, prevSmoothed, SMOOTH_ALPHA);
+      prevSmoothed = smoothed;
+
+      // ── DYNAMIC CONFIDENCE: thicker lines + more smoothing in bright/noisy conditions
+      var dynamicAlpha = (avgConf < 0.50) ? 0.35 : SMOOTH_ALPHA;
+      if (dynamicAlpha !== SMOOTH_ALPHA) {
+        smoothed = lpf(smoothed, prevSmoothed, dynamicAlpha);
       }
 
-      var coco17 = drawSkeleton(mp_lm);
+      var coco17 = drawSkeleton(smoothed);
       // Count only CENTRAL points
       var vc = coco17.filter(function(p) {
         if (!p) return false;
@@ -3647,7 +3674,7 @@ async def nexus_scanner_page():
 
     // ── Init Pose
     var pose = new Pose({ locateFile: function(f){ return '/api/static/mediapipe/' + f; } });
-    pose.setOptions({ modelComplexity:0, smoothLandmarks:true, enableSegmentation:false, minDetectionConfidence:0.60, minTrackingConfidence:0.55 });
+    pose.setOptions({ modelComplexity:0, smoothLandmarks:true, enableSegmentation:false, minDetectionConfidence:0.45, minTrackingConfidence:0.45 });
     pose.onResults(onResults);
 
     // ── OOM / WASM abort parachute
@@ -3701,10 +3728,12 @@ async def nexus_scanner_page():
           if (frameSkip > 0 && (frameCounter % (frameSkip + 1)) !== 0) return;
           if (video.readyState < 2 || video.videoWidth === 0) return;
 
-          // ── M2 KEY FIX: draw to 256x256 first, send small canvas
-          // This cuts GPU/RAM usage dramatically vs raw video
+          // ── M2 KEY FIX + AUTO-CONTRASTO: draw 256x256 with contrast boost
+          // Contrast separates athlete from background (helps in bright daylight)
           smallCtx.clearRect(0, 0, 256, 256);
+          smallCtx.filter = 'contrast(1.3) brightness(1.05) saturate(0.8)';
           smallCtx.drawImage(video, 0, 0, 256, 256);
+          smallCtx.filter = 'none';
 
           sendPending = true;
           sendStart = performance.now();
