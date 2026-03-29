@@ -1850,10 +1850,10 @@ const s = StyleSheet.create({
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
   },
-  stepTxt: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  stepTxt: { color: '#00F2FF', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
   detectRow: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },
   detectDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
-  detectTxt: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  detectTxt: { color: '#00F2FF', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
 
   // Scan area
   scanArea: { position: 'relative', overflow: 'hidden' },
@@ -1894,17 +1894,17 @@ const s = StyleSheet.create({
   statusLabel: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
   detectBar: { width: '100%', height: 4, backgroundColor: '#111', borderRadius: 2, overflow: 'hidden' },
   detectFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
-  detectNote: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '800', letterSpacing: 1.5 },
-  detectCount: { color: '#00F2FF', fontSize: 26, fontWeight: '900', letterSpacing: 2 },
+  detectNote: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '400', letterSpacing: 1.5 },
+  detectCount: { color: '#00F2FF', fontSize: 26, fontWeight: '400', letterSpacing: 2 },
   positioningRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   positioningDot: {
     width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF',
   },
-  positioningTxt: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+  positioningTxt: { color: '#00F2FF', fontSize: 14, fontWeight: '400', letterSpacing: 3 },
 
   // Stabilizing
   stabilityRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' },
-  stabPct: { color: '#00F2FF', fontSize: 28, fontWeight: '900', width: 60, textAlign: 'center' as const },
+  stabPct: { color: '#00F2FF', fontSize: 28, fontWeight: '400', width: 60, textAlign: 'center' as const },
   stabBar: { flex: 1, height: 5, backgroundColor: '#111', borderRadius: 3, overflow: 'hidden' },
   stabFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 3 },
   tieneTxt: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
@@ -1938,7 +1938,7 @@ const s = StyleSheet.create({
   },
   beatBar: { width: '100%', height: 4, backgroundColor: '#111', borderRadius: 2, overflow: 'hidden' },
   beatFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
-  beatPct: { color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '900' },
+  beatPct: { color: 'rgba(255,255,255,0.60)', fontSize: 12, fontWeight: '900' },
 
   // Approved
   approvedWrap: { alignItems: 'center', gap: 8 },
@@ -2073,5 +2073,5 @@ const camErr$ = StyleSheet.create({
     marginHorizontal: 32,
   },
   title: { color: '#FF3B30', fontSize: 16, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
-  desc: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 1, textAlign: 'center', lineHeight: 18 },
+  desc: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '400', letterSpacing: 1, textAlign: 'center', lineHeight: 18 },
 });

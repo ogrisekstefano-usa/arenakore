@@ -306,7 +306,7 @@ const s = StyleSheet.create({
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   brand: { fontSize: 13, fontWeight: '900', letterSpacing: 4 },
   stepPill: { backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)' },
-  stepTxt: { color: GOLD, fontSize: 9, fontWeight: '900', letterSpacing: 3 },
+  stepTxt: { color: GOLD, fontSize: 11, fontWeight: '400', letterSpacing: 3 },
 
   // Card wrapper
   cardWrap: { flex: 1, maxHeight: 520, alignSelf: 'center' },
@@ -323,22 +323,22 @@ const s = StyleSheet.create({
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 16 },
   cardBrandArena: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   cardLabel: { color: 'rgba(212,175,55,0.5)', fontSize: 8, fontWeight: '900', letterSpacing: 3, marginTop: 2 },
-  cardDate: { color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
-  cardCity: { color: CYAN, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  cardDate: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '400', letterSpacing: 1 },
+  cardCity: { color: CYAN, fontSize: 11, fontWeight: '400', letterSpacing: 2 },
 
   // ID row
   idRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
   idBadge: { gap: 2 },
-  idLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '900', letterSpacing: 4 },
+  idLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '400', letterSpacing: 4 },
   idNum: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 2 },
   gradeBadge: { alignItems: 'flex-end', gap: 2 },
   gradeLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '900', letterSpacing: 4 },
-  gradeVal: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  gradeVal: { fontSize: 14, fontWeight: '400', letterSpacing: 2 },
 
   // DNA Score
   scoreWrap: { alignItems: 'center', paddingVertical: 12, gap: 4 },
   scoreBig: {
-    color: GOLD, fontSize: 80, fontWeight: '900', letterSpacing: -4, lineHeight: 84,
+    color: GOLD, fontSize: 80, fontWeight: '400', letterSpacing: -4, lineHeight: 84,
     textShadowColor: 'rgba(212,175,55,0.8)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 24,
   },
   scoreSubLabel: { color: 'rgba(212,175,55,0.6)', fontSize: 10, fontWeight: '900', letterSpacing: 5 },
@@ -353,7 +353,7 @@ const s = StyleSheet.create({
   locBadge: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
   locDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: CYAN, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4 },
   locTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
-  locSub: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '700', letterSpacing: 1, marginTop: 2 },
+  locSub: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '400', letterSpacing: 1, marginTop: 2 },
 
   // Scan pattern bottom
   scanLine: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 16, paddingBottom: 10, gap: 3, marginTop: 4 },
@@ -375,5 +375,5 @@ const s = StyleSheet.create({
     borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.3)', borderRadius: 10, paddingVertical: 14,
   },
   continueTxt: { color: CYAN, fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
-  footerNote: { color: 'rgba(255,255,255,0.50)', fontSize: 9, fontWeight: '700', textAlign: 'center', letterSpacing: 1 },
+  footerNote: { color: 'rgba(255,255,255,0.50)', fontSize: 11, fontWeight: '400', textAlign: 'center', letterSpacing: 1 },
 });

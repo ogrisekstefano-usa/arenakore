@@ -93,7 +93,7 @@ const hero$ = StyleSheet.create({
   blBracket: { position: 'absolute', bottom: 44, left: 12, width: 20, height: 20, borderBottomWidth: 2, borderLeftWidth: 2, borderColor: '#00F2FF', opacity: 0.25 },
   brBracket: { position: 'absolute', bottom: 44, right: 12, width: 20, height: 20, borderBottomWidth: 2, borderRightWidth: 2, borderColor: '#00F2FF', opacity: 0.25 },
   inner: { paddingHorizontal: 24, paddingTop: 28, paddingBottom: 20, alignItems: 'center', gap: 8 },
-  brandLine: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '900', letterSpacing: 6 },
+  brandLine: { color: 'rgba(255,255,255,0.60)', fontSize: 10, fontWeight: '900', letterSpacing: 6 },
   titleLine: { color: '#FFFFFF', fontSize: 38, fontWeight: '900', letterSpacing: 4, textAlign: 'center', lineHeight: 44 },
   cyanLine: { width: 60, height: 2, backgroundColor: '#00F2FF', borderRadius: 1, shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8 },
   tagLine: { color: 'rgba(255,255,255,0.35)', fontSize: 9, fontWeight: '800', letterSpacing: 4, textAlign: 'center' },
@@ -245,7 +245,7 @@ const edu$ = StyleSheet.create({
   action: { color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '700', letterSpacing: 1 },
   right: { alignItems: 'flex-end', gap: 2 },
   xp: { color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
-  time: { color: 'rgba(255,255,255,0.25)', fontSize: 8, fontWeight: '700', letterSpacing: 1 },
+  time: { color: 'rgba(255,255,255,0.60)', fontSize: 8, fontWeight: '700', letterSpacing: 1 },
   sep: { height: 1, backgroundColor: 'rgba(255,255,255,0.04)', marginLeft: 44 },
 });
 

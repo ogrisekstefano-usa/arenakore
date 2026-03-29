@@ -356,11 +356,11 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: 24, flexGrow: 1 },
 
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 32 },
-  backTxt: { color: CYAN, fontSize: 11, fontWeight: '800', letterSpacing: 2 },
+  backTxt: { color: CYAN, fontSize: 13, fontWeight: '400', letterSpacing: 2 },
 
   header: { marginBottom: 8 },
   brand: {
-    color: GOLD, fontSize: 14, fontWeight: '900', letterSpacing: 8, marginBottom: 4,
+    color: GOLD, fontSize: 14, fontWeight: '400', letterSpacing: 8, marginBottom: 4,
   },
   titleBig: {
     color: '#FFFFFF', fontSize: 42, fontWeight: '900', letterSpacing: 0.5,

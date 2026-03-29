@@ -464,7 +464,7 @@ const s = StyleSheet.create({
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
   },
-  stepTxt: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  stepTxt: { color: '#00F2FF', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
   progBar: {
     height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 28, overflow: 'hidden',
   },
@@ -502,7 +502,7 @@ const s = StyleSheet.create({
   // ── BODY TEXT — Off-White #E0E0E0
   bodyWrap: { marginBottom: 20 },
   bodyText: {
-    color: '#E0E0E0', fontSize: 12, fontWeight: '700',
+    color: '#E0E0E0', fontSize: 14, fontWeight: '400',
     letterSpacing: 0.5, lineHeight: 20,
   },
 
@@ -513,10 +513,10 @@ const s = StyleSheet.create({
   warningDot: {
     width: 8, height: 8, borderRadius: 4, backgroundColor: '#D4AF37',
   },
-  warningTxt: { color: '#D4AF37', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  warningTxt: { color: '#D4AF37', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
   specList: { gap: 7, marginBottom: 12 },
   specRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  specTxt: { color: '#888', fontSize: 10, fontWeight: '800', letterSpacing: 1.5 },
+  specTxt: { color: '#888', fontSize: 12, fontWeight: '400', letterSpacing: 1.5 },
 
   // Voice section — SALA COMANDI
   voiceSection: { gap: 6, marginBottom: 'auto' as any },
@@ -576,7 +576,7 @@ const s = StyleSheet.create({
     shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 10,
   },
   orLabel: {
-    color: 'rgba(255,255,255,0.50)', fontSize: 9, fontWeight: '800',
+    color: 'rgba(255,255,255,0.50)', fontSize: 11, fontWeight: '400',
     letterSpacing: 2, textAlign: 'center',
   },
 });

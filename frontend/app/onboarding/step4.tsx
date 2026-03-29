@@ -254,7 +254,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
   },
-  stepTxt: { color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  stepTxt: { color: CYAN, fontSize: 12, fontWeight: '400', letterSpacing: 2 },
   progBar: { height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 28, overflow: 'hidden' },
   progFill: {
     height: '100%', backgroundColor: CYAN, borderRadius: 2,

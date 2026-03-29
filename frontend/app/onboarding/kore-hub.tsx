@@ -239,12 +239,12 @@ const s = StyleSheet.create({
 
   // Back
   back: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 20 },
-  backTxt: { color: CYAN, fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  backTxt: { color: CYAN, fontSize: 13, fontWeight: '400', letterSpacing: 2 },
 
   // Header
   header: { marginBottom: 24, gap: 6 },
   iconBox: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  title: { color: CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 6 },
+  title: { color: CYAN, fontSize: 14, fontWeight: '400', letterSpacing: 6 },
   titleBig: { color: '#FFFFFF', fontSize: 44, fontWeight: '900', letterSpacing: 0.5, lineHeight: 48 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.7, shadowRadius: 6 },
   subtitle: { color: '#E0E0E0', fontSize: 14, fontWeight: '500', lineHeight: 24, letterSpacing: 0.3 },
@@ -269,7 +269,7 @@ const s = StyleSheet.create({
   submitBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: CYAN, borderRadius: 10, paddingVertical: 18, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 10 },
   submitBtnLoading: { backgroundColor: 'rgba(0,242,255,0.5)' },
   submitTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 3 },
-  disclaimerTxt: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '500', textAlign: 'center', lineHeight: 18 },
+  disclaimerTxt: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 18 },
 
   // Success
   successWrap: { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
@@ -278,9 +278,9 @@ const s = StyleSheet.create({
   successTitle: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
   successSub: { color: GOLD, fontSize: 16, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
   successDivider: { height: 1, width: '100%', backgroundColor: 'rgba(255,255,255,0.06)' },
-  successNote: { color: '#E0E0E0', fontSize: 12, fontWeight: '700', textAlign: 'center', lineHeight: 20, letterSpacing: 1 },
+  successNote: { color: '#E0E0E0', fontSize: 14, fontWeight: '400', textAlign: 'center', lineHeight: 20, letterSpacing: 1 },
   doneBtn: { marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 1.5, borderColor: CYAN, borderRadius: 10, paddingVertical: 14, paddingHorizontal: 32 },
-  doneBtnTxt: { color: CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 4 },
+  doneBtnTxt: { color: CYAN, fontSize: 14, fontWeight: '400', letterSpacing: 4 },
 
   // Modal
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'flex-end' },
@@ -289,6 +289,6 @@ const s = StyleSheet.create({
   modalDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginBottom: 8 },
   cityOption: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
   cityOptionActive: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 8, paddingHorizontal: 8 },
-  cityTxt: { flex: 1, color: 'rgba(255,255,255,0.45)', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
+  cityTxt: { flex: 1, color: 'rgba(255,255,255,0.45)', fontSize: 14, fontWeight: '400', letterSpacing: 1 },
   cityTxtActive: { color: CYAN },
 });

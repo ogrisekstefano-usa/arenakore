@@ -207,12 +207,12 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: 24 },
 
   back: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 20 },
-  backTxt: { color: CYAN, fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  backTxt: { color: CYAN, fontSize: 13, fontWeight: '400', letterSpacing: 2 },
 
   header: { marginBottom: 28, gap: 4, alignItems: 'flex-start' },
   shieldIcon: { width: 60, height: 60, borderRadius: 18, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  title: { color: CYAN, fontSize: 11, fontWeight: '900', letterSpacing: 6 },
-  titleBig: { color: '#FFFFFF', fontSize: 44, fontWeight: '900', letterSpacing: 0.5, lineHeight: 48 },
+  title: { color: CYAN, fontSize: 13, fontWeight: '400', letterSpacing: 6 },
+  titleBig: { color: '#FFFFFF', fontSize: 44, fontWeight: '400', letterSpacing: 0.5, lineHeight: 48 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6 },
   subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
 
@@ -227,17 +227,17 @@ const s = StyleSheet.create({
   ghostIconBox: { width: 40, height: 40, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' },
   ghostInfo: { flex: 1, gap: 2 },
   ghostTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  ghostDesc: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '500', lineHeight: 18 },
+  ghostDesc: { color: 'rgba(255,255,255,0.55)', fontSize: 14, fontWeight: '400', lineHeight: 18 },
   ghostActive: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(136,136,136,0.1)', borderRadius: 8, padding: 10 },
-  ghostActiveTxt: { color: '#888', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  ghostActiveTxt: { color: '#888', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
 
   wipeSection: { gap: 10, marginBottom: 28 },
-  wipeLabel: { color: '#FF3B30', fontSize: 9, fontWeight: '900', letterSpacing: 4 },
+  wipeLabel: { color: '#FF3B30', fontSize: 11, fontWeight: '400', letterSpacing: 4 },
   wipeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: 'rgba(255,59,48,0.06)', borderWidth: 1.5, borderColor: 'rgba(255,59,48,0.3)', borderRadius: 10, paddingVertical: 16 },
   wipeBtnLoading: { opacity: 0.5 },
   wipeBtnTxt: { color: '#FF3B30', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
-  wipeNote: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '500', textAlign: 'center', lineHeight: 18 },
+  wipeNote: { color: 'rgba(255,255,255,0.45)', fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 18 },
 
   footer: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center', paddingTop: 8 },
-  footerTxt: { color: 'rgba(0,242,255,0.2)', fontSize: 8, fontWeight: '700', letterSpacing: 2 },
+  footerTxt: { color: 'rgba(0,242,255,0.2)', fontSize: 8, fontWeight: '400', letterSpacing: 2 },
 });

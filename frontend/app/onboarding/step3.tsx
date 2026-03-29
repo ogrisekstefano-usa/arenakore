@@ -309,7 +309,7 @@ const s = StyleSheet.create({
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   brand: { color: GOLD, fontSize: 11, fontWeight: '900', letterSpacing: 6 },
   stepPill: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)' },
-  stepTxt: { color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  stepTxt: { color: CYAN, fontSize: 12, fontWeight: '400', letterSpacing: 2 },
 
   // Progress
   progBar: { height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 32, overflow: 'hidden' },
@@ -438,11 +438,11 @@ const s = StyleSheet.create({
   levelLabelActive: { color: CYAN },
   levelDesc: {
     color: '#A0A0A0',
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '400',
     letterSpacing: 0.2,
   },
-  levelDescActive: { color: 'rgba(0,242,255,0.8)', fontSize: 11, fontWeight: '600' },
+  levelDescActive: { color: 'rgba(0,242,255,0.8)', fontSize: 13, fontWeight: '400' },
   levelGlow: {
     width: 6, height: 6, borderRadius: 3, backgroundColor: CYAN,
     shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4,
@@ -462,7 +462,7 @@ const s = StyleSheet.create({
   ghostLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   ghostText: { flex: 1, gap: 2 },
   ghostTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  ghostDesc: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  ghostDesc: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '400', letterSpacing: 1 },
   cta: {
     backgroundColor: CYAN,
     borderRadius: 10,

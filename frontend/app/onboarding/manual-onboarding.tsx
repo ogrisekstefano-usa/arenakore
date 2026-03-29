@@ -147,7 +147,7 @@ const s = StyleSheet.create({
   root:    { flex: 1, backgroundColor: BG },
   content: { paddingHorizontal: 24 },
   back:    { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 20 },
-  backTxt: { color: CYAN, fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  backTxt: { color: CYAN, fontSize: 13, fontWeight: '400', letterSpacing: 2 },
 
   alertBanner: {
     flexDirection: 'row', gap: 12, alignItems: 'flex-start',
@@ -157,11 +157,11 @@ const s = StyleSheet.create({
   },
   alertBody: { flex: 1, gap: 4 },
   alertTitle: { color: GOLD, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  alertDesc:  { color: '#E0E0E0', fontSize: 11, fontWeight: '700', lineHeight: 18 },
+  alertDesc:  { color: '#E0E0E0', fontSize: 13, fontWeight: '400', lineHeight: 18 },
 
   header: { marginBottom: 28, gap: 4 },
-  title:  { color: CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 6 },
-  titleBig: { color: '#FFFFFF', fontSize: 38, fontWeight: '900', letterSpacing: 0.5, lineHeight: 42 },
+  title:  { color: CYAN, fontSize: 14, fontWeight: '400', letterSpacing: 6 },
+  titleBig: { color: '#FFFFFF', fontSize: 38, fontWeight: '400', letterSpacing: 0.5, lineHeight: 42 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: {width:0,height:0}, shadowOpacity:0.8, shadowRadius:6 },
   subtitle: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, lineHeight: 18 },
 
@@ -176,5 +176,5 @@ const s = StyleSheet.create({
   cta: { backgroundColor: GOLD, borderRadius: 10, paddingVertical: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, shadowColor: GOLD, shadowOffset: {width:0,height:0}, shadowOpacity:0.5, shadowRadius:12, elevation: 8 },
   ctaTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
 
-  note: { color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '700', textAlign: 'center', lineHeight: 16 },
+  note: { color: 'rgba(255,255,255,0.65)', fontSize: 11, fontWeight: '400', textAlign: 'center', lineHeight: 16 },
 });

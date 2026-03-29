@@ -107,7 +107,7 @@ const giant$ = StyleSheet.create({
     borderWidth: 1.5, minHeight: 170,
   },
   rankBadge: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  rankNum: { fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  rankNum: { fontSize: 13, fontWeight: '400', letterSpacing: 1 },
   avatarWrap: {
     width: 52, height: 52, borderRadius: 26, borderWidth: 2,
     alignItems: 'center', justifyContent: 'center',
@@ -230,11 +230,11 @@ const cr$ = StyleSheet.create({
   info: { flex: 1, gap: 3 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   name: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
-  tagline: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontStyle: 'italic' },
+  tagline: { color: 'rgba(255,255,255,0.45)', fontSize: 13, fontStyle: 'italic' },
   dnaRow: { flexDirection: 'row', gap: 8, marginTop: 2 },
-  dnaStat: { color: '#00F2FF', fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
+  dnaStat: { color: '#00F2FF', fontSize: 11, fontWeight: '400', letterSpacing: 0.5 },
   right: { alignItems: 'flex-end', gap: 2 },
-  xp: { color: '#D4AF37', fontSize: 14, fontWeight: '900' },
+  xp: { color: '#D4AF37', fontSize: 14, fontWeight: '400' },
   membersRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   members: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '700' },
 });

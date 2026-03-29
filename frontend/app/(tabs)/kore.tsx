@@ -61,7 +61,7 @@ function CityDropdown({ city, onSelect }: { city: string; onSelect: (c: string) 
               <ScrollView showsVerticalScrollIndicator={false}>
                 {CITIES.map(c => (
                   <TouchableOpacity key={c} style={[cd$.option, c === city && cd$.optionActive]} onPress={() => { onSelect(c); setOpen(false); }}>
-                    <Ionicons name="location-outline" size={12} color={c === city ? '#00F2FF' : 'rgba(255,255,255,0.35)'} />
+                    <Ionicons name="location-outline" size={12} color={c === city ? '#00F2FF' : 'rgba(255,255,255,0.65)'} />
                     <Text style={[cd$.optionText, c === city && cd$.optionTextActive]}>{c}</Text>
                     {c === city && <Ionicons name="checkmark" size={12} color="#00F2FF" />}
                   </TouchableOpacity>
@@ -255,11 +255,11 @@ const ri$ = StyleSheet.create({
   rankCard: { flex: 1, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
   rankInner: { padding: 14, alignItems: 'center', gap: 6 },
   rankIcon: { width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(0,242,255,0.65)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
-  rankType: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
-  rankNum: { color: '#00F2FF', fontSize: 36, fontWeight: '900', letterSpacing: 1 },
-  rankOf: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '800', letterSpacing: 1, marginTop: -4 },
+  rankType: { color: 'rgba(255,255,255,0.70)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  rankNum: { color: '#00F2FF', fontSize: 36, fontWeight: '400', letterSpacing: 1 },
+  rankOf: { color: 'rgba(255,255,255,0.65)', fontSize: 13, fontWeight: '400', letterSpacing: 1, marginTop: -4 },
   topBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, marginTop: 2 },
-  topText: { color: '#D4AF37', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  topText: { color: '#D4AF37', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
   domSection: { gap: 8, marginBottom: 8 },
   barWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   barLabel: { width: 70, fontSize: 9, fontWeight: '900', letterSpacing: 2, textAlign: 'right' },
@@ -267,7 +267,7 @@ const ri$ = StyleSheet.create({
   barFill: { height: '100%', borderRadius: 3 },
   barPct: { width: 42, fontSize: 11, fontWeight: '900', letterSpacing: 0.5, textAlign: 'right' },
   rivalRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, paddingLeft: 2 },
-  rivalText: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+  rivalText: { color: 'rgba(255,255,255,0.70)', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
 });
 
 // ========== AFFILIATIONS ==========
@@ -485,7 +485,7 @@ const ac$ = StyleSheet.create({
   itemSport: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
   itemXp: { color: '#D4AF37', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
   itemStatus: { color: '#00F2FF', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
-  itemFrom: { color: 'rgba(255,255,255,0.35)', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
+  itemFrom: { color: 'rgba(255,255,255,0.65)', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
 });
 
 // ========== KORE CARD + WALLET ==========
@@ -705,7 +705,7 @@ const kc$ = StyleSheet.create({
   scanLayer: { borderRadius: 18, backgroundColor: '#00F2FF', zIndex: 0 },
   cardTopGlow: { height: 2, backgroundColor: '#00F2FF', opacity: 0.6, marginHorizontal: -14, marginTop: -14 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  brandSm: { color: 'rgba(255,255,255,0.25)', fontSize: 8, fontWeight: '800', letterSpacing: 4 },
+  brandSm: { color: 'rgba(255,255,255,0.60)', fontSize: 8, fontWeight: '800', letterSpacing: 4 },
   cardType: { color: '#00F2FF', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
   founderBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 4, borderWidth: 1, borderColor: '#D4AF37', flexShrink: 0 },
   founderText: { color: '#D4AF37', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
@@ -721,14 +721,14 @@ const kc$ = StyleSheet.create({
   qrBox: { backgroundColor: '#070707', borderRadius: 8, padding: 5, borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)' },
   rightSide: { flex: 1, gap: 6 },
   bStat: { gap: 1 },
-  bStatLabel: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  bStatLabel: { color: 'rgba(255,255,255,0.65)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
   bStatVal: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: 1 },
   serial: { color: 'rgba(0,242,255,0.45)', fontSize: 10, fontWeight: '800', letterSpacing: 2 },
   walletRow: { flexDirection: 'row', gap: 8, marginHorizontal: 16, marginTop: 8 },
   appleBtn: { flex: 1, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
   googleBtn: { flex: 1, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(66,133,244,0.2)' },
   btnInner: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 12 },
-  btnSm: { color: 'rgba(255,255,255,0.35)', fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
+  btnSm: { color: 'rgba(255,255,255,0.65)', fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
   btnBig: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
 });
 
@@ -743,11 +743,11 @@ const wm$ = StyleSheet.create({
   subtitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 3, textAlign: 'center', marginTop: -4 },
   divider: { height: 1, width: '100%', backgroundColor: 'rgba(255,255,255,0.06)' },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', paddingHorizontal: 4 },
-  infoLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  infoLabel: { color: 'rgba(255,255,255,0.70)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
   infoVal: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
-  note: { color: 'rgba(0,242,255,0.7)', fontSize: 11, fontWeight: '800', letterSpacing: 1, textAlign: 'center' },
+  note: { color: 'rgba(0,242,255,0.7)', fontSize: 13, fontWeight: '400', letterSpacing: 1, textAlign: 'center' },
   closeBtn: { marginTop: 6, width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, borderRadius: 12, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)' },
-  closeTxt: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 4 },
+  closeTxt: { color: '#00F2FF', fontSize: 14, fontWeight: '400', letterSpacing: 4 },
 });
 
 // ========== CITY RANKING — REAL-TIME KORE_SCORE ==========
@@ -954,7 +954,7 @@ const cr$ = StyleSheet.create({
   sheetDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginBottom: 8 },
   cityOption: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 11, paddingHorizontal: 4 },
   cityOptionActive: { backgroundColor: 'rgba(212,175,55,0.05)', borderRadius: 8, paddingHorizontal: 10 },
-  cityOptionText: { flex: 1, color: 'rgba(255,255,255,0.45)', fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
+  cityOptionText: { flex: 1, color: 'rgba(255,255,255,0.45)', fontSize: 15, fontWeight: '400', letterSpacing: 1.5 },
   // Card
   card: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(212,175,55,0.12)' },
   cardInner: { paddingBottom: 8 },
@@ -964,7 +964,7 @@ const cr$ = StyleSheet.create({
   emptyText: { color: 'rgba(255,255,255,0.50)', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
   // "First athlete" motivating empty state
   emptyTitleFirst: {
-    color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '900',
+    color: 'rgba(255,255,255,0.65)', fontSize: 11, fontWeight: '900',
     letterSpacing: 3, textAlign: 'center', lineHeight: 18,
   },
   emptyCity: {
@@ -977,33 +977,33 @@ const cr$ = StyleSheet.create({
   // Meta
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 10 },
   metaCity: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
-  metaCount: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  metaCount: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
   // Athlete row
   athleteRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingHorizontal: 16, paddingVertical: 10,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.65)',
   },
   athleteRowMe: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 10, borderBottomWidth: 0, marginHorizontal: 6, marginVertical: 2 },
   medalBox: { width: 24, alignItems: 'center' },
-  rankNum: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '900' },
+  rankNum: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '400' },
   avatarDot: { width: 8, height: 8, borderRadius: 4 },
   athleteInfo: { flex: 1, gap: 2 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  athleteName: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1, flexShrink: 1 },
+  athleteName: { color: '#FFFFFF', fontSize: 15, fontWeight: '400', letterSpacing: 1, flexShrink: 1 },
   athleteNameMe: { color: '#00F2FF' },
   founderPill: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)' },
   founderPillText: { color: '#D4AF37', fontSize: 7, fontWeight: '900', letterSpacing: 1 },
   mePill: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)' },
   mePillText: { color: '#00F2FF', fontSize: 7, fontWeight: '900', letterSpacing: 1 },
-  athleteSub: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  athleteSub: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '400', letterSpacing: 1 },
   // Score
   scoreBox: { alignItems: 'flex-end', minWidth: 44 },
-  scoreVal: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
-  scoreLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
+  scoreVal: { color: '#FFFFFF', fontSize: 20, fontWeight: '400', letterSpacing: 1 },
+  scoreLabel: { color: 'rgba(255,255,255,0.65)', fontSize: 8, fontWeight: '400', letterSpacing: 2 },
   // My rank outside top10
   myRankRow: { paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.65)', alignItems: 'center' },
-  myRankText: { color: 'rgba(0,242,255,0.6)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  myRankText: { color: 'rgba(0,242,255,0.6)', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
 });
 
 // ========== XP PROGRESS ==========
@@ -1040,7 +1040,7 @@ const xp$ = StyleSheet.create({
   barFill: { height: '100%', backgroundColor: '#D4AF37', borderRadius: 3 },
   meta: { flexDirection: 'row', justifyContent: 'space-between' },
   current: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
-  next: { color: 'rgba(255,255,255,0.35)', fontSize: 9, fontWeight: '700' },
+  next: { color: 'rgba(255,255,255,0.65)', fontSize: 9, fontWeight: '700' },
 });
 
 // ========== MAIN KORE TAB ==========

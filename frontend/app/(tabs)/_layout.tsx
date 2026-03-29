@@ -140,7 +140,7 @@ const $ = StyleSheet.create({
     shadowOpacity: 1, shadowRadius: 8, elevation: 8,
   },
   label: {
-    color: 'rgba(255,255,255,0.28)', fontSize: 9, fontWeight: '900',
+    color: 'rgba(255,255,255,0.60)', fontSize: 9, fontWeight: '900',
     letterSpacing: 1.5, textTransform: 'uppercase',
   },
   labelActive: {
@@ -153,7 +153,7 @@ const $ = StyleSheet.create({
     flex: 1, alignItems: 'center', justifyContent: 'center',
   },
   centerLabel: {
-    color: 'rgba(255,255,255,0.28)', fontSize: 9, fontWeight: '900',
+    color: 'rgba(255,255,255,0.60)', fontSize: 9, fontWeight: '900',
     letterSpacing: 1.5, marginTop: 38,
   },
   nexusWrap: {

@@ -383,7 +383,7 @@ const s = StyleSheet.create({
   sub1: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '900',
+    fontWeight: '400',
     letterSpacing: 2,
     textShadowColor: 'rgba(255,255,255,0.3)',
     textShadowOffset: { width: 0, height: 0 },
@@ -392,7 +392,7 @@ const s = StyleSheet.create({
   sub2: {
     color: 'rgba(255,255,255,0.55)',
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: '400',
     letterSpacing: 2,
   },
 
@@ -431,22 +431,22 @@ const s = StyleSheet.create({
   partnerSection: { marginTop: 8, gap: 16 },
   partnerDivider: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   divLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.06)' },
-  divTxt: { color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '900', letterSpacing: 4 },
+  divTxt: { color: 'rgba(255,255,255,0.65)', fontSize: 11, fontWeight: '400', letterSpacing: 4 },
   partnerCard: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
   partnerGrad: { padding: 20, gap: 14 },
   partnerTopGlow: { height: 2, backgroundColor: CYAN, opacity: 0.5, marginHorizontal: -20, marginTop: -20, marginBottom: 6 },
   partnerHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  partnerLabel: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
-  partnerSub: { color: 'rgba(0,242,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
+  partnerLabel: { color: '#FFFFFF', fontSize: 16, fontWeight: '400', letterSpacing: 2 },
+  partnerSub: { color: 'rgba(0,242,255,0.5)', fontSize: 11, fontWeight: '400', letterSpacing: 3 },
   partnerCopy: {
     color: '#E0E0E0',
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '400',
     lineHeight: 22,
     letterSpacing: 0.5,
   },
   featRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  featTxt: { color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: '700', letterSpacing: 1, flex: 1 },
+  featTxt: { color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '400', letterSpacing: 1, flex: 1 },
   gymBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: CYAN,
@@ -459,5 +459,5 @@ const s = StyleSheet.create({
 
   // Footer
   footer: { alignItems: 'center', gap: 4, marginTop: 28, paddingBottom: 8 },
-  footerTxt: { color: 'rgba(255,255,255,0.50)', fontSize: 8, fontWeight: '700', letterSpacing: 2 },
+  footerTxt: { color: 'rgba(255,255,255,0.50)', fontSize: 8, fontWeight: '400', letterSpacing: 2 },
 });

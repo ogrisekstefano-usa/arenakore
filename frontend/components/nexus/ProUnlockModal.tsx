@@ -301,8 +301,8 @@ const styles = StyleSheet.create({
   },
   scoreLabel: {
     color: 'rgba(255,255,255,0.45)',
-    fontSize: 9,
-    fontWeight: '900',
+    fontSize: 11,
+    fontWeight: '400',
     letterSpacing: 2,
   },
   scoreValue: {
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.06)',
   },
   dividerLabel: {
-    color: 'rgba(255,255,255,0.25)',
+    color: 'rgba(255,255,255,0.60)',
     fontSize: 8,
     fontWeight: '800',
     letterSpacing: 2,

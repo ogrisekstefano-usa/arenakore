@@ -281,7 +281,7 @@ const cs$ = StyleSheet.create({
   createText: { color: '#050505', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   emptyState: { alignItems: 'center', paddingTop: 60, gap: 8 },
   emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
-  emptySub: { color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '600' },
+  emptySub: { color: 'rgba(255,255,255,0.60)', fontSize: 12, fontWeight: '600' },
   card: {
     backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: 16, gap: 10,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
@@ -297,7 +297,7 @@ const cs$ = StyleSheet.create({
   stat: { color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: '800' },
   cardDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontStyle: 'italic' },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  usesText: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '700' },
+  usesText: { color: 'rgba(255,255,255,0.60)', fontSize: 10, fontWeight: '700' },
   pushBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: 'rgba(212,175,55,0.12)', paddingHorizontal: 14, paddingVertical: 8,
