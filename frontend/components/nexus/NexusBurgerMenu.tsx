@@ -30,13 +30,13 @@ export function PulseTicker({ reduced }: { reduced?: boolean }) {
   const s = useAnimatedStyle(() => ({ transform: [{ translateX: scrollX.value }] }));
   if (reduced) {
     return (
-      <View style={{ height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.06)', justifyContent: 'center' }}>
+      <View style={{ height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.65)', justifyContent: 'center' }}>
         <Text numberOfLines={1} style={{ color: '#00F2FF', fontSize: 9, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.5, paddingHorizontal: 8 }}>[LIVE FEED] LONDON: ALEX_K PUNCH (98Q) {'\u2022'} TOKYO: WORLD RECORD</Text>
       </View>
     );
   }
   return (
-    <View style={{ height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.06)', justifyContent: 'center' }}>
+    <View style={{ height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.65)', justifyContent: 'center' }}>
       <Animated.View style={[{ flexDirection: 'row', width: SW * 6 }, s]}>
         <Text style={{ color: '#00F2FF', fontSize: 9, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.7 }}>{TXT}{TXT}</Text>
       </Animated.View>
@@ -173,8 +173,8 @@ const bm$ = StyleSheet.create({
   closeX: { color: '#555', fontSize: 22 },
   tierBadge: {
     marginHorizontal: 20, marginBottom: 16, paddingVertical: 8, paddingHorizontal: 14,
-    backgroundColor: 'rgba(0,242,255,0.04)', borderRadius: 8,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.08)', gap: 2,
+    backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 8,
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)', gap: 2,
   },
   tierLabel: { color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   tierSub: { color: '#555', fontSize: 8, fontWeight: '600', letterSpacing: 1 },

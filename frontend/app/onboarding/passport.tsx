@@ -357,7 +357,7 @@ const s = StyleSheet.create({
 
   // Scan pattern bottom
   scanLine: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 16, paddingBottom: 10, gap: 3, marginTop: 4 },
-  scanTick: { width: 2, height: 4, backgroundColor: 'rgba(0,242,255,0.15)', borderRadius: 1 },
+  scanTick: { width: 2, height: 4, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 1 },
   scanTickTall: { height: 10, backgroundColor: 'rgba(0,242,255,0.3)' },
 
   // CTAs
@@ -375,5 +375,5 @@ const s = StyleSheet.create({
     borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.3)', borderRadius: 10, paddingVertical: 14,
   },
   continueTxt: { color: CYAN, fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
-  footerNote: { color: 'rgba(255,255,255,0.15)', fontSize: 9, fontWeight: '700', textAlign: 'center', letterSpacing: 1 },
+  footerNote: { color: 'rgba(255,255,255,0.50)', fontSize: 9, fontWeight: '700', textAlign: 'center', letterSpacing: 1 },
 });

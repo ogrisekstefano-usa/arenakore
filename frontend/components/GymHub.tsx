@@ -44,7 +44,7 @@ function CoachCard({ coach, onRemove }: { coach: any; onRemove: (id: string) => 
     <Animated.View entering={FadeInDown.delay(50)}>
       <View style={cc$.cardOuter}>
         <LinearGradient
-          colors={['rgba(0,242,255,0.06)', 'rgba(5,5,5,0.95)', 'rgba(5,5,5,0.99)']}
+          colors={['rgba(0,242,255,0.65)', 'rgba(5,5,5,0.95)', 'rgba(5,5,5,0.99)']}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
           style={cc$.card}
         >
@@ -114,7 +114,7 @@ function EventCard({
         <LinearGradient
           colors={event.status === 'live'
             ? ['rgba(255,59,48,0.08)', 'rgba(10,10,10,0.98)', '#050505']
-            : ['rgba(0,242,255,0.05)', 'rgba(10,10,10,0.96)', '#050505']}
+            : ['rgba(0,242,255,0.65)', 'rgba(10,10,10,0.96)', '#050505']}
           start={{ x: 0, y: 0 }} end={{ x: 0.3, y: 1 }}
           style={ev$.card}
         >
@@ -188,7 +188,7 @@ function EventCard({
 const ev$ = StyleSheet.create({
   cardOuter: {
     borderRadius: 16, overflow: 'hidden', marginBottom: 12,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.08)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   card: {
     padding: 16, gap: 10,
@@ -212,7 +212,7 @@ const ev$ = StyleSheet.create({
   qrBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: 'rgba(0,242,255,0.1)', borderRadius: 10, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.25)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   qrBtnText: { color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   liveBtn: {
@@ -312,7 +312,7 @@ const qr$ = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   card: {
     width: '100%', maxWidth: 340, backgroundColor: '#0A0A0A', borderRadius: 24, padding: 24,
-    alignItems: 'center', gap: 10, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.15)',
+    alignItems: 'center', gap: 10, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)',
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   title: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
@@ -321,7 +321,7 @@ const qr$ = StyleSheet.create({
   metaText: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '600' },
   qrContainer: {
     width: 220, height: 220, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: 'rgba(0,242,255,0.03)', borderRadius: 16, padding: 8,
+    backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 16, padding: 8,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)', marginVertical: 8,
   },
   qrImage: { width: 200, height: 200, borderRadius: 8 },
@@ -483,14 +483,14 @@ const ce$ = StyleSheet.create({
   label: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
   input: {
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
-    color: '#FFF', fontSize: 14, fontWeight: '700', borderWidth: 1, borderColor: 'rgba(0,242,255,0.08)',
+    color: '#FFF', fontSize: 14, fontWeight: '700', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   exRow: { flexDirection: 'row', gap: 10 },
   exBtn: {
     flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', gap: 4,
     borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)',
   },
-  exBtnActive: { borderColor: '#00F2FF', backgroundColor: 'rgba(0,242,255,0.06)' },
+  exBtnActive: { borderColor: '#00F2FF', backgroundColor: 'rgba(0,242,255,0.65)' },
   exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
   diffRow: { flexDirection: 'row', gap: 6 },
   diffBtn: {
@@ -736,7 +736,7 @@ export function GymHub() {
 
             {events.length === 0 && (
               <View style={hub$.emptyState}>
-                <Ionicons name="radio-outline" size={48} color="rgba(255,255,255,0.15)" />
+                <Ionicons name="radio-outline" size={48} color="rgba(255,255,255,0.50)" />
                 <Text style={hub$.emptyTitle}>NESSUN EVENTO</Text>
                 <Text style={hub$.emptySub}>Crea il tuo primo evento live con QR-Core</Text>
               </View>
@@ -748,7 +748,7 @@ export function GymHub() {
         {activeSection === 'coaches' && (
           <View style={hub$.section}>
             <TouchableOpacity style={hub$.addCoachBtn} onPress={() => setShowAddCoach(true)} activeOpacity={0.85}>
-              <LinearGradient colors={['rgba(0,242,255,0.12)', 'rgba(0,242,255,0.04)']} style={hub$.addCoachGrad}>
+              <LinearGradient colors={['rgba(0,242,255,0.65)', 'rgba(0,242,255,0.65)']} style={hub$.addCoachGrad}>
                 <Ionicons name="person-add" size={18} color="#00F2FF" />
                 <Text style={hub$.addCoachText}>ASSOCIA NUOVO COACH</Text>
               </LinearGradient>
@@ -764,7 +764,7 @@ export function GymHub() {
               </>
             ) : (
               <View style={hub$.emptyState}>
-                <Ionicons name="people-outline" size={48} color="rgba(255,255,255,0.15)" />
+                <Ionicons name="people-outline" size={48} color="rgba(255,255,255,0.50)" />
                 <Text style={hub$.emptyTitle}>NESSUN COACH</Text>
                 <Text style={hub$.emptySub}>Associa coach alla tua palestra per creare un team</Text>
               </View>
@@ -821,7 +821,7 @@ const hub$ = StyleSheet.create({
   createEventGrad: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16 },
   createEventTitle: { color: '#FF3B30', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   createEventSub: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '600' },
-  addCoachBtn: { borderRadius: 14, overflow: 'hidden', marginBottom: 8, borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)' },
+  addCoachBtn: { borderRadius: 14, overflow: 'hidden', marginBottom: 8, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
   addCoachGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 14 },
   addCoachText: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   emptyState: { alignItems: 'center', paddingTop: 60, gap: 8 },

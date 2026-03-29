@@ -45,7 +45,7 @@ function MiniRadar({ stats, size = 120 }: { stats: DNAStats; size?: number }) {
       {axisEndpoints.map((p, i) => (
         <Line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="#2A2A2A" strokeWidth={0.5} />
       ))}
-      <Polygon points={dataPolygon} fill="rgba(0,242,255,0.15)" stroke="#00F2FF" strokeWidth={1.5} />
+      <Polygon points={dataPolygon} fill="rgba(0,242,255,0.65)" stroke="#00F2FF" strokeWidth={1.5} />
       {dataPoints.map((p, i) => (
         <Circle key={i} cx={p.x} cy={p.y} r={2.5} fill="#00F2FF" />
       ))}
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     borderWidth: 1.5,
-    borderColor: 'rgba(0,242,255,0.15)',
+    borderColor: 'rgba(0,242,255,0.65)',
     gap: 12,
   },
   cardHeader: {
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   xpBadge: { color: '#888', fontSize: 10, fontWeight: '700' },
   ovrCircle: {
     width: 52, height: 52, borderRadius: 26,
-    backgroundColor: 'rgba(0,242,255,0.08)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
     borderWidth: 2, borderColor: '#00F2FF',
     alignItems: 'center', justifyContent: 'center',
   },
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   qrContainer: {
     padding: 4,
     borderRadius: 6,
-    backgroundColor: 'rgba(0,242,255,0.04)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
     borderWidth: 1,
     borderColor: 'rgba(0,242,255,0.1)',
   },

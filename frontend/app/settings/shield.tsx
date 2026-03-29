@@ -210,9 +210,9 @@ const s = StyleSheet.create({
   backTxt: { color: CYAN, fontSize: 11, fontWeight: '900', letterSpacing: 2 },
 
   header: { marginBottom: 28, gap: 4, alignItems: 'flex-start' },
-  shieldIcon: { width: 60, height: 60, borderRadius: 18, backgroundColor: 'rgba(0,242,255,0.06)', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  shieldIcon: { width: 60, height: 60, borderRadius: 18, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   title: { color: CYAN, fontSize: 11, fontWeight: '900', letterSpacing: 6 },
-  titleBig: { color: '#FFFFFF', fontSize: 44, fontWeight: '900', letterSpacing: -2, lineHeight: 48 },
+  titleBig: { color: '#FFFFFF', fontSize: 44, fontWeight: '900', letterSpacing: 0.5, lineHeight: 48 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6 },
   subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
 
@@ -220,7 +220,7 @@ const s = StyleSheet.create({
   pillarIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   pillarBody: { flex: 1, gap: 6 },
   pillarTitle: { fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  pillarDesc: { color: '#E0E0E0', fontSize: 11, fontWeight: '600', lineHeight: 18 },
+  pillarDesc: { color: '#E0E0E0', fontSize: 11, fontWeight: '700', lineHeight: 18 },
 
   ghostCard: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 24, gap: 10 },
   ghostHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },

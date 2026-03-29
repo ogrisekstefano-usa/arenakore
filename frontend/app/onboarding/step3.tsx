@@ -21,7 +21,7 @@ const CYAN   = '#00F2FF';
 const GOLD   = '#D4AF37';
 const BG     = '#050505';
 const CARD   = 'rgba(0,242,255,0.025)';
-const BORDER = 'rgba(0,242,255,0.14)';
+const BORDER = 'rgba(0,242,255,0.65)';
 const BORDER_ACTIVE = CYAN;
 
 const LEVELS = [
@@ -172,7 +172,7 @@ export default function LegacyStep3() {
                 onFocus={() => onFocus('height')}
                 onBlur={onBlur}
                 placeholder="180"
-                placeholderTextColor="rgba(0,242,255,0.18)"
+                placeholderTextColor="rgba(0,242,255,0.65)"
                 keyboardType="decimal-pad"
                 maxLength={5}
                 selectionColor={CYAN}
@@ -188,7 +188,7 @@ export default function LegacyStep3() {
                 onFocus={() => onFocus('weight')}
                 onBlur={onBlur}
                 placeholder="75"
-                placeholderTextColor="rgba(0,242,255,0.18)"
+                placeholderTextColor="rgba(0,242,255,0.65)"
                 keyboardType="decimal-pad"
                 maxLength={5}
                 selectionColor={CYAN}
@@ -207,7 +207,7 @@ export default function LegacyStep3() {
               onFocus={() => onFocus('age')}
               onBlur={onBlur}
               placeholder="25"
-              placeholderTextColor="rgba(0,242,255,0.18)"
+              placeholderTextColor="rgba(0,242,255,0.65)"
               keyboardType="number-pad"
               maxLength={3}
               selectionColor={CYAN}
@@ -308,7 +308,7 @@ const s = StyleSheet.create({
   // Header
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   brand: { color: GOLD, fontSize: 11, fontWeight: '900', letterSpacing: 6 },
-  stepPill: { backgroundColor: 'rgba(0,242,255,0.08)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)' },
+  stepPill: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)' },
   stepTxt: { color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
 
   // Progress
@@ -331,7 +331,7 @@ const s = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 48,
     fontWeight: '900',
-    letterSpacing: -2,
+    letterSpacing: 0.5,
     lineHeight: 52,
     // Subtle gold shadow for depth
     textShadowColor: 'rgba(212,175,55,0.35)',
@@ -389,7 +389,7 @@ const s = StyleSheet.create({
   },
   inputFocused: {
     borderColor: CYAN,
-    backgroundColor: 'rgba(0,242,255,0.06)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
     shadowColor: CYAN,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
@@ -410,7 +410,7 @@ const s = StyleSheet.create({
   },
   levelCardActive: {
     borderColor: CYAN,
-    backgroundColor: 'rgba(0,242,255,0.05)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
     shadowColor: CYAN,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.25,
@@ -425,8 +425,8 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   levelIconBoxActive: {
-    backgroundColor: 'rgba(0,242,255,0.08)',
-    borderColor: 'rgba(0,242,255,0.25)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
+    borderColor: 'rgba(0,242,255,0.65)',
   },
   levelTextGroup: { gap: 3 },
   levelLabel: {
@@ -479,7 +479,7 @@ const s = StyleSheet.create({
   },
   ctaTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   ctaNote: {
-    color: 'rgba(255,255,255,0.15)',
+    color: 'rgba(255,255,255,0.50)',
     fontSize: 9,
     fontWeight: '800',
     letterSpacing: 2,

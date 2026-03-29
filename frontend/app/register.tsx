@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 24, flexGrow: 1 },
   backBtn: { marginBottom: 32 },
   backText: { color: '#00F2FF', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
-  title: { color: '#FFFFFF', fontSize: 40, fontWeight: '900', letterSpacing: -1.5 },
+  title: { color: '#FFFFFF', fontSize: 40, fontWeight: '900', letterSpacing: 0.5.5 },
   subtitle: { color: '#555555', fontSize: 14, marginTop: 6, marginBottom: 40 },
   form: { gap: 20 },
   fieldGroup: { gap: 8 },

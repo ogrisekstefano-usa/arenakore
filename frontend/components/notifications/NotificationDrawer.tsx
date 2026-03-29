@@ -126,7 +126,7 @@ export function NotificationDrawer({
             {/* List */}
             {notifications.length === 0 ? (
               <View style={styles.emptyState}>
-                <Ionicons name="notifications-off-outline" size={32} color="rgba(255,255,255,0.15)" />
+                <Ionicons name="notifications-off-outline" size={32} color="rgba(255,255,255,0.50)" />
                 <Text style={styles.emptyText}>NESSUNA NOTIFICA</Text>
                 <Text style={styles.emptySubText}>Le tue notifiche Bio-Evolution appariranno qui</Text>
               </View>
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     maxHeight: '75%',
     borderTopWidth: 1,
-    borderColor: 'rgba(0,242,255,0.12)',
+    borderColor: 'rgba(0,242,255,0.65)',
   },
   panelGradient: { paddingBottom: 40 },
   panelHeader: {
@@ -176,9 +176,9 @@ const styles = StyleSheet.create({
   unreadBadgeText: { color: '#000', fontSize: 9, fontWeight: '900' },
   panelActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   markAllBtn: {
-    backgroundColor: 'rgba(0,242,255,0.08)', borderRadius: 8,
+    backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 5,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   markAllText: { color: '#00F2FF', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
   closeBtn: { padding: 4 },
@@ -204,5 +204,5 @@ const styles = StyleSheet.create({
   separator: { height: 1, backgroundColor: 'rgba(255,255,255,0.04)', marginLeft: 72 },
   emptyState: { alignItems: 'center', paddingVertical: 48, gap: 10 },
   emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
-  emptySubText: { color: 'rgba(255,255,255,0.15)', fontSize: 11, textAlign: 'center', lineHeight: 18 },
+  emptySubText: { color: 'rgba(255,255,255,0.50)', fontSize: 11, textAlign: 'center', lineHeight: 18 },
 });

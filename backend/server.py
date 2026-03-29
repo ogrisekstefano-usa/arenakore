@@ -3359,7 +3359,7 @@ async def nexus_scanner_page():
         ctx.fillStyle = 'rgba(0,242,255,0.5)';
         ctx.font = '900 14px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('AWAITING ATHLETE', W/2, H/2);
+        ctx.letterSpacing = '3px'; ctx.fillText('AWAITING ATHLETE', W/2, H/2);
         post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
         return;
       }

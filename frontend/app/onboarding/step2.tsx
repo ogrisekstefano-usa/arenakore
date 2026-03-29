@@ -1470,11 +1470,11 @@ export default function NexusBioScan() {
           {/* Grid lines */}
           {[0.25, 0.5, 0.75].map(pct => (
             <Line key={`h-${pct}`} x1={0} y1={SCAN_H * pct} x2={SCAN_W} y2={SCAN_H * pct}
-              stroke="rgba(0,242,255,0.04)" strokeWidth={0.5} />
+              stroke="rgba(0,242,255,0.65)" strokeWidth={0.5} />
           ))}
           {[0.25, 0.5, 0.75].map(pct => (
             <Line key={`v-${pct}`} x1={SCAN_W * pct} y1={0} x2={SCAN_W * pct} y2={SCAN_H}
-              stroke="rgba(0,242,255,0.04)" strokeWidth={0.5} />
+              stroke="rgba(0,242,255,0.65)" strokeWidth={0.5} />
           ))}
 
           {/* ── SKELETON — Canvas WebView is sole renderer when poseEngineReady ── */}
@@ -1577,7 +1577,7 @@ export default function NexusBioScan() {
           {phase === 'positioning' && detectedPoints >= 15 && (
             <G>
               <Rect x={SCAN_W / 2 - 70} y={SCAN_H - 36} width={140} height={24} rx={6}
-                fill="rgba(0,242,255,0.08)" stroke="rgba(0,242,255,0.25)" strokeWidth={1} />
+                fill="rgba(0,242,255,0.65)" stroke="rgba(0,242,255,0.65)" strokeWidth={1} />
               <SvgText x={SCAN_W / 2} y={SCAN_H - 20}
                 fill="#00F2FF" fontSize={10} fontWeight="900" textAnchor="middle" letterSpacing={2}>
                 {detectedPoints}/17 RILEVATI
@@ -1846,7 +1846,7 @@ const s = StyleSheet.create({
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   brand: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
-    backgroundColor: 'rgba(0,242,255,0.08)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
   },
@@ -1860,8 +1860,8 @@ const s = StyleSheet.create({
   webCamFallback: { backgroundColor: '#0A0A0A' },
   gridOverlay: {
     ...StyleSheet.absoluteFillObject,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.04)',
-    backgroundColor: 'rgba(0,242,255,0.01)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
   },
   darkOverlay: { backgroundColor: 'rgba(0,0,0,0.35)' },
 
@@ -1930,7 +1930,8 @@ const s = StyleSheet.create({
   beatLabel: { color: '#00F2FF', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
   beatInstruction: {
     color: '#FFFFFF', fontSize: 48, fontWeight: '900',
-    letterSpacing: -1, textAlign: 'center', lineHeight: 54,
+    letterSpacing: 1.5,           // stacca le lettere in maiuscolo
+    textAlign: 'center', lineHeight: 56,
     textShadowColor: 'rgba(255,255,255,0.2)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 10,
@@ -1943,7 +1944,7 @@ const s = StyleSheet.create({
   approvedWrap: { alignItems: 'center', gap: 8 },
   approvedBig: {
     color: '#D4AF37', fontSize: 32, fontWeight: '900',
-    letterSpacing: -1, textAlign: 'center',
+    letterSpacing: 0.5, textAlign: 'center',
   },
   approvedSub: {
     color: '#FFFFFF', fontSize: 20, fontWeight: '900',
@@ -1986,7 +1987,7 @@ const fps$ = StyleSheet.create({
     position: 'absolute', top: 8, left: 8, zIndex: 25,
     backgroundColor: 'rgba(0,0,0,0.6)',
     borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   txt: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
   low: { color: '#FF453A' }, // red when below 20fps
@@ -2034,7 +2035,7 @@ const prv$ = StyleSheet.create({
     backgroundColor: '#0A0A0A',
     borderTopLeftRadius: 20, borderTopRightRadius: 20,
     padding: 24, gap: 14,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   topBar: { height: 2, backgroundColor: '#00F2FF', opacity: 0.6, marginHorizontal: -24, marginTop: -24, marginBottom: 8 },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },

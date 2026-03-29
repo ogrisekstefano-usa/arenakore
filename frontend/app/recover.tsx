@@ -363,7 +363,7 @@ const s = StyleSheet.create({
     color: GOLD, fontSize: 14, fontWeight: '900', letterSpacing: 8, marginBottom: 4,
   },
   titleBig: {
-    color: '#FFFFFF', fontSize: 42, fontWeight: '900', letterSpacing: -1,
+    color: '#FFFFFF', fontSize: 42, fontWeight: '900', letterSpacing: 0.5,
     lineHeight: 44,
   },
   cyanLine: {
@@ -455,7 +455,7 @@ const s = StyleSheet.create({
     shadowOpacity: 0.6, shadowRadius: 20,
   },
   doneTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 6 },
-  doneTitleBig: { color: GOLD, fontSize: 36, fontWeight: '900', letterSpacing: -1, marginTop: -8 },
+  doneTitleBig: { color: GOLD, fontSize: 36, fontWeight: '900', letterSpacing: 0.5, marginTop: -8 },
   doneDivider: { height: 1, width: '100%', backgroundColor: 'rgba(255,255,255,0.06)', marginVertical: 4 },
   doneBody: { color: '#555555', fontSize: 13, textAlign: 'center', lineHeight: 20 },
   doneBtn: {

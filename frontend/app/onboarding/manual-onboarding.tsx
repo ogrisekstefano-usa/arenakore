@@ -161,14 +161,14 @@ const s = StyleSheet.create({
 
   header: { marginBottom: 28, gap: 4 },
   title:  { color: CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 6 },
-  titleBig: { color: '#FFFFFF', fontSize: 38, fontWeight: '900', letterSpacing: -1.5, lineHeight: 42 },
+  titleBig: { color: '#FFFFFF', fontSize: 38, fontWeight: '900', letterSpacing: 0.5.5, lineHeight: 42 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: {width:0,height:0}, shadowOpacity:0.8, shadowRadius:6 },
   subtitle: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, lineHeight: 18 },
 
   form:  { gap: 16 },
   field: { gap: 8 },
   label: { color: '#E0E0E0', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
-  input: { backgroundColor: 'rgba(0,242,255,0.025)', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.15)', borderRadius: 10, padding: 16, color: CYAN, fontSize: 22, fontWeight: '900', letterSpacing: 1 },
+  input: { backgroundColor: 'rgba(0,242,255,0.025)', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)', borderRadius: 10, padding: 16, color: CYAN, fontSize: 22, fontWeight: '900', letterSpacing: 1 },
 
   errorBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,59,48,0.06)', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)' },
   errorTxt: { color: '#FF3B30', fontSize: 11, fontWeight: '800', letterSpacing: 1 },

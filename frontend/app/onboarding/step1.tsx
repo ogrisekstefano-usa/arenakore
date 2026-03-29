@@ -460,7 +460,7 @@ const s = StyleSheet.create({
   },
   brand: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
-    backgroundColor: 'rgba(0,242,255,0.08)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
   },
@@ -479,14 +479,14 @@ const s = StyleSheet.create({
   heroLine1: {
     color: '#00F2FF',              // NEXUS = CYAN (not gold)
     fontSize: 58, fontWeight: '900',
-    letterSpacing: -2, lineHeight: 60,
+    letterSpacing: 0.5, lineHeight: 60,
     textShadowColor: 'rgba(0,242,255,0.65)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 16,
   },
   heroLine2: {
     color: '#FFFFFF', fontSize: 42, fontWeight: '900',
-    letterSpacing: -1, lineHeight: 46,
+    letterSpacing: 0.5, lineHeight: 46,
     textShadowColor: 'rgba(212,175,55,0.35)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 12,
@@ -496,7 +496,7 @@ const s = StyleSheet.create({
     shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6,
   },
   // Legacy compatibility (unused but kept to avoid ref errors)
-  heroLine3: { color: '#FFFFFF', fontSize: 58, fontWeight: '900', letterSpacing: -2 },
+  heroLine3: { color: '#FFFFFF', fontSize: 58, fontWeight: '900', letterSpacing: 0.5 },
   cyanLine: { height: 2, width: 56, backgroundColor: '#00F2FF', marginBottom: 28 },
 
   // ── BODY TEXT — Off-White #E0E0E0
@@ -522,9 +522,9 @@ const s = StyleSheet.create({
   voiceSection: { gap: 6, marginBottom: 'auto' as any },
   voiceStatusRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(0,242,255,0.05)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
     borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
-    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.15)',
+    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)',
   },
   voiceStatusGold: {
     backgroundColor: 'rgba(212,175,55,0.06)',
@@ -540,7 +540,7 @@ const s = StyleSheet.create({
     letterSpacing: 3, textAlign: 'center',
   },
   transcript: {
-    color: 'rgba(255,255,255,0.12)', fontSize: 8, fontWeight: '700',
+    color: 'rgba(255,255,255,0.50)', fontSize: 8, fontWeight: '700',
     letterSpacing: 1, textAlign: 'center',
   },
 
@@ -566,8 +566,8 @@ const s = StyleSheet.create({
   },
   micBtn: {
     width: 58, height: 58, borderRadius: 10,
-    backgroundColor: 'rgba(0,242,255,0.06)',
-    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.25)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
+    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)',
     alignItems: 'center', justifyContent: 'center',
   },
   micBtnGold: {
@@ -576,7 +576,7 @@ const s = StyleSheet.create({
     shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 10,
   },
   orLabel: {
-    color: 'rgba(255,255,255,0.15)', fontSize: 9, fontWeight: '800',
+    color: 'rgba(255,255,255,0.50)', fontSize: 9, fontWeight: '800',
     letterSpacing: 2, textAlign: 'center',
   },
 });

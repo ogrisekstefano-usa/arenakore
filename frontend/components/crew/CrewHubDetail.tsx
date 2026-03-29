@@ -69,7 +69,7 @@ export function CrewHubDetail({ crew, onClose, token }: { crew: any; onClose: ()
           </View>
         </View>
 
-        <LinearGradient colors={[catCfg?.color ? `${catCfg.color}15` : 'rgba(0,242,255,0.06)', '#050505']} style={hub$.heroGrad}>
+        <LinearGradient colors={[catCfg?.color ? `${catCfg.color}15` : 'rgba(0,242,255,0.65)', '#050505']} style={hub$.heroGrad}>
           <View style={hub$.crewInfo}>
             {catCfg && (
               <View style={[hub$.catBadge, { backgroundColor: `${catCfg.color}20`, borderColor: `${catCfg.color}40` }]}>
@@ -162,7 +162,7 @@ const hub$ = StyleSheet.create({
   crewInfo: { gap: 6 },
   catBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1 },
   catBadgeText: { fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-  crewName: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: -1 },
+  crewName: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: 0.5 },
   crewTagline: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontStyle: 'italic' },
   statsRow: { flexDirection: 'row', gap: 24, marginTop: 10 },
   stat: { gap: 1 },

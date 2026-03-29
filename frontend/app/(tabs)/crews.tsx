@@ -231,7 +231,7 @@ const s = StyleSheet.create({
   emptySub: { color: 'rgba(255,255,255,0.3)', fontSize: 13, textAlign: 'center' },
   crewCard: {
     marginHorizontal: 16, marginBottom: 14, borderRadius: 18, overflow: 'hidden',
-    height: 180, borderWidth: 1, borderColor: 'rgba(0,242,255,0.08)',
+    height: 180, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   crewCardBg: { flex: 1 },
   crewCardImage: { borderRadius: 18 },

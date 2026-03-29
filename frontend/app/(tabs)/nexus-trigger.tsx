@@ -141,7 +141,7 @@ const bio$ = StyleSheet.create({
   overlay: { ...StyleSheet.absoluteFillObject, zIndex: 50, backgroundColor: 'rgba(5,5,5,0.94)', justifyContent: 'center', alignItems: 'center' },
   laserWrap: { position: 'absolute', left: 0, right: 0, height: 6, alignItems: 'center' },
   laserLine: { height: 2, width: '100%', backgroundColor: '#00F2FF' },
-  laserGlow: { height: 16, width: '85%', backgroundColor: 'rgba(0,242,255,0.25)', borderRadius: 8 },
+  laserGlow: { height: 16, width: '85%', backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 8 },
   center: { alignItems: 'center', gap: 14, paddingHorizontal: 32 },
   title: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 4 },
   phase: { color: '#D4AF37', fontSize: 10, fontWeight: '700', letterSpacing: 2 },
@@ -150,7 +150,7 @@ const bio$ = StyleSheet.create({
   bioLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 8, fontWeight: '700', letterSpacing: 2 },
   bioVal: { color: '#00F2FF', fontSize: 16, fontWeight: '900' },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: SW * 0.55, marginTop: 8 },
-  progressTrack: { flex: 1, height: 3, backgroundColor: 'rgba(0,242,255,0.15)', borderRadius: 2, overflow: 'hidden' },
+  progressTrack: { flex: 1, height: 3, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 2, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
   progressPct: { color: '#00F2FF', fontSize: 18, fontWeight: '900', fontVariant: ['tabular-nums'], width: 50 },
   matchLabel: { color: '#00F2FF', fontSize: 11, fontWeight: '700', letterSpacing: 4 },
@@ -250,7 +250,7 @@ const cn$ = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingBottom: 100 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 10 },
-  card: { width: (SW - 44) / 2, height: (SW - 44) / 2 * 1.15, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(0,242,255,0.08)' },
+  card: { width: (SW - 44) / 2, height: (SW - 44) / 2 * 1.15, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
   cardBg: { flex: 1 },
   cardImage: { borderRadius: 16 },
   cardGradient: { flex: 1, justifyContent: 'space-between', padding: 16 },
@@ -263,7 +263,7 @@ const cn$ = StyleSheet.create({
     borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
     borderWidth: 1, marginTop: 10, marginBottom: 2,
   },
-  eligBannerActive: { backgroundColor: 'rgba(0,242,255,0.05)', borderColor: 'rgba(0,242,255,0.18)' },
+  eligBannerActive: { backgroundColor: 'rgba(0,242,255,0.65)', borderColor: 'rgba(0,242,255,0.65)' },
   eligBannerLocked: { backgroundColor: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.07)' },
   eligText: { flex: 1, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
   eligTextActive: { color: '#00F2FF' },
@@ -374,7 +374,7 @@ const fg$ = StyleSheet.create({
   exRow: { flexDirection: 'row', gap: 12, width: '100%' },
   exCard: {
     flex: 1, alignItems: 'center', gap: 8, paddingVertical: 28,
-    backgroundColor: 'rgba(0,242,255,0.03)', borderRadius: 16, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.12)',
+    backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 16, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)',
   },
   exName: { color: '#00F2FF', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
   exDesc: { color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: '700' },
@@ -398,7 +398,7 @@ function MiniDNARadar({ dna, explosive }: { dna: any; explosive: boolean }) {
     <Animated.View style={[{ position: 'absolute', bottom: 130, left: 10, zIndex: 35 }, as]}>
       <Svg width={76} height={76}>
         {grid.map((g, i) => <Polygon key={i} points={g} fill="none" stroke="#00F2FF" strokeWidth={0.5} opacity={0.2} />)}
-        <Polygon points={pts} fill="rgba(0,242,255,0.08)" stroke="#00F2FF" strokeWidth={1.5} opacity={0.8} />
+        <Polygon points={pts} fill="rgba(0,242,255,0.65)" stroke="#00F2FF" strokeWidth={1.5} opacity={0.8} />
         {explosive && <Circle cx={cx + r * vals[5] * Math.cos(pAngle)} cy={cy + r * vals[5] * Math.sin(pAngle)} r={6} fill="#00F2FF" opacity={0.9} />}
       </Svg>
       <Text style={{ color: '#00F2FF', fontSize: 7, fontWeight: '800', letterSpacing: 2, textAlign: 'center', marginTop: -2 }}>DNA</Text>
@@ -592,7 +592,7 @@ const smv$ = StyleSheet.create({
   phaseLabel: { color: 'rgba(0,242,255,0.55)', fontSize: 11, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
   iconCircle: {
     width: 110, height: 110, borderRadius: 55,
-    backgroundColor: 'rgba(0,242,255,0.05)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
     borderWidth: 2.5, borderColor: '#00F2FF',
     alignItems: 'center', justifyContent: 'center',
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
@@ -606,7 +606,7 @@ const smv$ = StyleSheet.create({
   barPct: { fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   barBg: { height: 5, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2.5, overflow: 'hidden' },
   stabFill: { height: '100%', borderRadius: 2.5 },
-  progressBg: { height: 7, backgroundColor: 'rgba(0,242,255,0.06)', borderRadius: 3.5, overflow: 'hidden' },
+  progressBg: { height: 7, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 3.5, overflow: 'hidden' },
   progressFill: {
     height: '100%', borderRadius: 3.5, backgroundColor: '#00F2FF',
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
@@ -650,7 +650,7 @@ function Countdown({ onComplete }: { onComplete: () => void }) {
   const as = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }], opacity: opacity.value }));
   return (
     <View style={{ ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 25, backgroundColor: 'rgba(5,5,5,0.88)' }}>
-      <Animated.View style={[{ width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(0,242,255,0.06)', borderWidth: 3, borderColor: '#00F2FF', alignItems: 'center', justifyContent: 'center' }, as]}>
+      <Animated.View style={[{ width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 3, borderColor: '#00F2FF', alignItems: 'center', justifyContent: 'center' }, as]}>
         <Text style={{ color: '#00F2FF', fontSize: 64, fontWeight: '900' }}>{count === 0 ? 'GO' : count}</Text>
       </Animated.View>
       <Text style={{ color: '#888', fontSize: 12, fontWeight: '700', letterSpacing: 3, marginTop: 24 }}>{count > 0 ? 'PREPARATI' : 'NEXUS ATTIVATO'}</Text>
@@ -971,7 +971,7 @@ const hud$ = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   timerBar: {
-    width: 80, height: 2, backgroundColor: 'rgba(0,242,255,0.15)',
+    width: 80, height: 2, backgroundColor: 'rgba(0,242,255,0.65)',
     borderRadius: 1, overflow: 'hidden',
   },
   timerBarFill: {

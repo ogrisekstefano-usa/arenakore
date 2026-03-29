@@ -252,7 +252,7 @@ export default function HeroIndex() {
 
           <View style={s.partnerCard}>
             <LinearGradient
-              colors={['rgba(0,242,255,0.04)', 'rgba(0,242,255,0.01)']}
+              colors={['rgba(0,242,255,0.65)', 'rgba(0,242,255,0.65)']}
               style={s.partnerGrad}
             >
               <View style={s.partnerTopGlow} />
@@ -317,8 +317,8 @@ const s = StyleSheet.create({
   // Loading
   loadWrap: { flex: 1, backgroundColor: BG, alignItems: 'center', justifyContent: 'center', gap: 10 },
   loadRow: { flexDirection: 'row', gap: 6 },
-  loadArena: { fontWeight: '900', color: '#FFFFFF', letterSpacing: -2 },
-  loadKore: { fontWeight: '900', color: '#00B4D8', letterSpacing: -2 },
+  loadArena: { fontWeight: '900', color: '#FFFFFF', letterSpacing: 0.5 },
+  loadKore: { fontWeight: '900', color: '#00B4D8', letterSpacing: 0.5 },
   loadSub: { color: 'rgba(212,175,55,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 5 },
 
   // Scroll
@@ -329,8 +329,8 @@ const s = StyleSheet.create({
   topBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(0,242,255,0.06)',
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
     borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7,
     marginBottom: 12,
   },
@@ -432,7 +432,7 @@ const s = StyleSheet.create({
   partnerDivider: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   divLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.06)' },
   divTxt: { color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '900', letterSpacing: 4 },
-  partnerCard: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(0,242,255,0.12)' },
+  partnerCard: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
   partnerGrad: { padding: 20, gap: 14 },
   partnerTopGlow: { height: 2, backgroundColor: CYAN, opacity: 0.5, marginHorizontal: -20, marginTop: -20, marginBottom: 6 },
   partnerHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
@@ -459,5 +459,5 @@ const s = StyleSheet.create({
 
   // Footer
   footer: { alignItems: 'center', gap: 4, marginTop: 28, paddingBottom: 8 },
-  footerTxt: { color: 'rgba(255,255,255,0.12)', fontSize: 8, fontWeight: '700', letterSpacing: 2 },
+  footerTxt: { color: 'rgba(255,255,255,0.50)', fontSize: 8, fontWeight: '700', letterSpacing: 2 },
 });

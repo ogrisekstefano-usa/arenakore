@@ -109,7 +109,7 @@ export function RadarChart({ stats, size = 280, glowing = false, recordsBroken =
           ))}
           <Polygon
             points={dataPolygon}
-            fill={glowing ? "rgba(0,242,255,0.18)" : "rgba(0,229,255,0.12)"}
+            fill={glowing ? "rgba(0,242,255,0.65)" : "rgba(0,229,255,0.12)"}
             stroke={glowing ? "#00F2FF" : "#00F2FF"}
             strokeWidth={glowing ? 2.5 : 2}
           />

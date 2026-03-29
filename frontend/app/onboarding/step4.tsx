@@ -250,7 +250,7 @@ const s = StyleSheet.create({
   },
   brand: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
-    backgroundColor: 'rgba(0,242,255,0.08)', borderRadius: 20,
+    backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 20,
     paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
   },
@@ -262,7 +262,7 @@ const s = StyleSheet.create({
   },
   titleWrap: { marginBottom: 32 },
   titleSm: { color: '#333', fontSize: 12, fontWeight: '900', letterSpacing: 4 },
-  titleBig: { color: '#FFFFFF', fontSize: 52, fontWeight: '900', letterSpacing: -2, lineHeight: 54 },
+  titleBig: { color: '#FFFFFF', fontSize: 52, fontWeight: '900', letterSpacing: 0.5, lineHeight: 54 },
   cyanLine: {
     height: 2, width: 48, backgroundColor: CYAN, marginTop: 14,
     shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6,
@@ -286,7 +286,7 @@ const s = StyleSheet.create({
   mismatch: { color: '#FF3B30', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
   secNote: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(0,242,255,0.04)', borderRadius: 6,
+    backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 6,
     paddingHorizontal: 12, paddingVertical: 8,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)',
     marginBottom: 20,

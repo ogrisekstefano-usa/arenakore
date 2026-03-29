@@ -224,15 +224,15 @@ const st = StyleSheet.create({
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px) saturate(130%)', WebkitBackdropFilter: 'blur(20px) saturate(130%)' } as any : {}),
   },
   panel: { width: SW * 0.78, height: '100%' },
-  panelInner: { flex: 1, paddingTop: 60, borderLeftWidth: 1.5, borderLeftColor: 'rgba(0,242,255,0.06)' },
+  panelInner: { flex: 1, paddingTop: 60, borderLeftWidth: 1.5, borderLeftColor: 'rgba(0,242,255,0.65)' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 22, marginBottom: 16 },
   headerLeft: { flex: 1, gap: 2 },
   headerTitle: { color: WHITE, fontSize: 13, fontWeight: '800', letterSpacing: 4 },
   headerSub: { color: DIM2, fontSize: 9, fontWeight: '600', letterSpacing: 2, marginTop: 1 },
   tierBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 22, marginBottom: 20,
-    paddingVertical: 10, paddingHorizontal: 14, backgroundColor: 'rgba(0,242,255,0.03)',
-    borderRadius: 10, borderWidth: 1, borderColor: 'rgba(0,242,255,0.06)',
+    paddingVertical: 10, paddingHorizontal: 14, backgroundColor: 'rgba(0,242,255,0.65)',
+    borderRadius: 10, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   tierLabel: { color: CYAN, fontSize: 11, fontWeight: '800', letterSpacing: 2 },
   tierSub: { color: DIM, fontSize: 7, fontWeight: '600', letterSpacing: 1 },
@@ -261,7 +261,7 @@ const st = StyleSheet.create({
   segGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12, width: '100%' },
   segBtn: {
     width: '46%', alignItems: 'center', gap: 4, paddingVertical: 14, borderRadius: 12,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.12)', backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.50)', backgroundColor: 'rgba(255,255,255,0.04)',
   },
   segBtnActive: {
     borderColor: GOLD, backgroundColor: 'rgba(212,175,55,0.08)',
@@ -281,7 +281,7 @@ const st = StyleSheet.create({
   logoutItem: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 15, paddingHorizontal: 22, marginTop: 4 },
   logoutLabel: { color: 'rgba(255,69,58,0.6)', fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
   logoutSub: { color: 'rgba(255,69,58,0.3)', fontSize: 10 },
-  ticker: { height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.04)', justifyContent: 'center' },
+  ticker: { height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.65)', justifyContent: 'center' },
   tickerText: { color: CYAN, fontSize: 8, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.5 },
-  footer: { color: 'rgba(255,255,255,0.12)', fontSize: 9, fontWeight: '700', letterSpacing: 2, paddingHorizontal: 22, paddingBottom: 30 },
+  footer: { color: 'rgba(255,255,255,0.50)', fontSize: 9, fontWeight: '700', letterSpacing: 2, paddingHorizontal: 22, paddingBottom: 30 },
 });

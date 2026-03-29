@@ -132,7 +132,7 @@ export default function JoinEventScreen() {
       {(state === 'enrolled' || state === 'already') && (
         <View style={styles.center}>
           <Animated.View entering={FadeInDown.duration(500)} style={styles.successCard}>
-            <LinearGradient colors={['rgba(0,242,255,0.08)', 'rgba(0,242,255,0.02)']} style={styles.successGrad}>
+            <LinearGradient colors={['rgba(0,242,255,0.65)', 'rgba(0,242,255,0.65)']} style={styles.successGrad}>
               <View style={styles.successIconWrap}>
                 <Ionicons name={state === 'enrolled' ? 'checkmark-circle' : 'information-circle'} size={48} color={state === 'enrolled' ? '#00F2FF' : '#D4AF37'} />
               </View>
@@ -171,7 +171,7 @@ export default function JoinEventScreen() {
       {state === 'preview' && event && (
         <View style={styles.previewContainer}>
           <Animated.View entering={FadeInDown.duration(400)} style={styles.previewCard}>
-            <LinearGradient colors={['rgba(0,242,255,0.06)', '#0A0A0A']} style={styles.previewGrad}>
+            <LinearGradient colors={['rgba(0,242,255,0.65)', '#0A0A0A']} style={styles.previewGrad}>
               {/* Header */}
               <View style={styles.previewHeader}>
                 <Ionicons name="qr-code" size={20} color="#00F2FF" />
@@ -278,13 +278,13 @@ const styles = StyleSheet.create({
   loadingText: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '800', letterSpacing: 2, marginTop: 16 },
   enrollingCircle: {
     width: 80, height: 80, borderRadius: 40,
-    backgroundColor: 'rgba(0,242,255,0.06)', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(0,242,255,0.65)', alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: 'rgba(0,242,255,0.2)',
   },
   enrollingText: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 2, marginTop: 20 },
   enrollingSub: { color: 'rgba(255,255,255,0.4)', fontSize: 11, marginTop: 4 },
   // Success
-  successCard: { width: '100%', borderRadius: 20, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.15)' },
+  successCard: { width: '100%', borderRadius: 20, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)' },
   successGrad: { padding: 28, alignItems: 'center', gap: 12 },
   successIconWrap: { marginBottom: 4 },
   successTitle: { color: '#00F2FF', fontSize: 24, fontWeight: '900', letterSpacing: 4 },

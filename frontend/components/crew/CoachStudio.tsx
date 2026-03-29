@@ -284,7 +284,7 @@ const cs$ = StyleSheet.create({
   emptySub: { color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '600' },
   card: {
     backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: 16, gap: 10,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.06)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   cardTitleRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
@@ -323,14 +323,14 @@ const ct$ = StyleSheet.create({
   label: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
   input: {
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
-    color: '#FFF', fontSize: 14, fontWeight: '700', borderWidth: 1, borderColor: 'rgba(0,242,255,0.08)',
+    color: '#FFF', fontSize: 14, fontWeight: '700', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   exRow: { flexDirection: 'row', gap: 10 },
   exBtn: {
     flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', gap: 4,
     borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)',
   },
-  exBtnActive: { borderColor: '#00F2FF', backgroundColor: 'rgba(0,242,255,0.06)' },
+  exBtnActive: { borderColor: '#00F2FF', backgroundColor: 'rgba(0,242,255,0.65)' },
   exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
   diffRow: { flexDirection: 'row', gap: 6 },
   diffBtn: {

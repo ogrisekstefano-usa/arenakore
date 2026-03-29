@@ -74,7 +74,7 @@ function GlitchOverlay({ active }: { active: boolean }) {
 }
 
 const gStyles = StyleSheet.create({
-  tint: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,242,255,0.08)', zIndex: 50 },
+  tint: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,242,255,0.65)', zIndex: 50 },
   scanLine: {
     position: 'absolute', left: 0, right: 0, height: 2,
     backgroundColor: '#00F2FF', shadowColor: '#00F2FF',
@@ -82,7 +82,7 @@ const gStyles = StyleSheet.create({
     elevation: 10, zIndex: 51,
   },
   stripes: { ...StyleSheet.absoluteFillObject, zIndex: 50 },
-  stripe: { position: 'absolute', left: 0, right: 0, backgroundColor: 'rgba(0,242,255,0.12)' },
+  stripe: { position: 'absolute', left: 0, right: 0, backgroundColor: 'rgba(0,242,255,0.65)' },
 });
 
 function getRoleColor(role?: string) {
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
   heroGradient: { flex: 1, paddingTop: 16 },
   dnaHeader: { paddingHorizontal: 24, paddingBottom: 8, gap: 4 },
   dnaLabel: { color: '#00F2FF', fontSize: 10, fontWeight: '800', letterSpacing: 3 },
-  dnaSport: { color: '#FFFFFF', fontSize: 30, fontWeight: '900', letterSpacing: -1, textTransform: 'uppercase' },
+  dnaSport: { color: '#FFFFFF', fontSize: 30, fontWeight: '900', letterSpacing: 0.5, textTransform: 'uppercase' },
   roleBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, marginTop: 4 },
   roleText: { fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   chartGlass: {
@@ -535,17 +535,17 @@ const styles = StyleSheet.create({
   noData: { padding: 40, alignItems: 'center', gap: 12 },
   noDataIconWrap: {
     width: 72, height: 72, borderRadius: 36,
-    backgroundColor: 'rgba(0,242,255,0.06)',
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
     alignItems: 'center', justifyContent: 'center',
   },
   noDataTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
   noDataText: { color: 'rgba(255,255,255,0.45)', fontSize: 13, textAlign: 'center', lineHeight: 22 },
   firstScanCta: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(0,242,255,0.06)', borderRadius: 10,
+    backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 10,
     paddingHorizontal: 16, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.18)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
     marginTop: 4,
   },
   firstScanDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
@@ -558,8 +558,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   eligibilityBannerActive: {
-    backgroundColor: 'rgba(0,242,255,0.05)',
-    borderColor: 'rgba(0,242,255,0.18)',
+    backgroundColor: 'rgba(0,242,255,0.65)',
+    borderColor: 'rgba(0,242,255,0.65)',
   },
   eligibilityBannerLocked: {
     backgroundColor: 'rgba(255,255,255,0.02)',
@@ -577,13 +577,13 @@ const styles = StyleSheet.create({
   // Evolution glow banner
   evoBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    width: '100%', backgroundColor: 'rgba(0,242,255,0.06)',
+    width: '100%', backgroundColor: 'rgba(0,242,255,0.65)',
     borderRadius: 10, padding: 10, borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
     justifyContent: 'center', marginTop: 8,
   },
   evoBannerText: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   // Stat card improvement
-  statCardImproved: { borderColor: 'rgba(0,242,255,0.2)', backgroundColor: 'rgba(0,242,255,0.03)' },
+  statCardImproved: { borderColor: 'rgba(0,242,255,0.2)', backgroundColor: 'rgba(0,242,255,0.65)' },
   statCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   improvBadge: { borderRadius: 6, paddingHorizontal: 5, paddingVertical: 2 },
   improvPos: { backgroundColor: 'rgba(0,242,255,0.1)', borderWidth: 0.5, borderColor: 'rgba(0,242,255,0.3)' },
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   talosLogoT: {
-    color: '#D4AF37', fontSize: 22, fontWeight: '900', letterSpacing: -1,
+    color: '#D4AF37', fontSize: 22, fontWeight: '900', letterSpacing: 0.5,
   },
   talosLogoName: { color: '#FFFFFF', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
   talosLogoFit: { color: '#D4AF37', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
