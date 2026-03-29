@@ -103,11 +103,11 @@ function GiantCard({ item, medal }: { item: any; medal: typeof MEDAL_COLORS[1] }
 const giant$ = StyleSheet.create({
   card: {
     flex: 1, alignItems: 'center', gap: 4, paddingVertical: 16, paddingHorizontal: 6,
-    backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 16,
     borderWidth: 1.5, minHeight: 170,
   },
   rankBadge: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  rankNum: { fontSize: 13, fontWeight: '400', letterSpacing: 1 },
+  rankNum: { fontSize: 16, fontWeight: '400', letterSpacing: 1 },
   avatarWrap: {
     width: 52, height: 52, borderRadius: 26, borderWidth: 2,
     alignItems: 'center', justifyContent: 'center',
@@ -116,14 +116,14 @@ const giant$ = StyleSheet.create({
   avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#050505', fontSize: 18, fontWeight: '900' },
   sportRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  sport: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '700' },
+  sport: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '700' },
   xpBadge: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 3, marginTop: 2 },
-  xpText: { fontSize: 12, fontWeight: '900' },
+  xpText: { fontSize: 15, fontWeight: '900' },
   founderTag: {
     backgroundColor: 'rgba(212,175,55,0.15)', borderRadius: 4,
     paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(212,175,55,0.35)',
   },
-  founderText: { color: '#D4AF37', fontSize: 7, fontWeight: '900', letterSpacing: 1 },
+  founderText: { color: '#D4AF37', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
 });
 
 // REGULAR LEADERBOARD ROW
@@ -160,22 +160,22 @@ const row$ = StyleSheet.create({
   container: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingHorizontal: 16, paddingVertical: 10,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.45)',
   },
-  rank: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '900', width: 30, textAlign: 'center' },
+  rank: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '900', width: 30, textAlign: 'center' },
   avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#050505', fontSize: 14, fontWeight: '900' },
+  avatarText: { color: '#050505', fontSize: 17, fontWeight: '900' },
   info: { flex: 1, gap: 2 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  name: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  name: { color: '#FFFFFF', fontSize: 17, fontWeight: '800' },
   founderPill: {
     backgroundColor: 'rgba(212,175,55,0.2)', width: 16, height: 16,
     borderRadius: 8, alignItems: 'center', justifyContent: 'center',
   },
-  founderPillText: { color: '#D4AF37', fontSize: 8, fontWeight: '900' },
+  founderPillText: { color: '#D4AF37', fontSize: 11, fontWeight: '900' },
   sportRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  sport: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '600' },
-  xp: { color: '#D4AF37', fontSize: 14, fontWeight: '900' },
+  sport: { color: 'rgba(255,255,255,0.45)', fontSize: 14, fontWeight: '600' },
+  xp: { color: '#D4AF37', fontSize: 17, fontWeight: '900' },
 });
 
 // CREW LEADERBOARD ROW
@@ -223,20 +223,20 @@ const cr$ = StyleSheet.create({
   container: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.45)',
   },
   rankWrap: { width: 32, alignItems: 'center' },
   rank: { color: 'rgba(255,255,255,0.4)', fontSize: 16, fontWeight: '900', textAlign: 'center' },
   info: { flex: 1, gap: 3 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  name: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
-  tagline: { color: 'rgba(255,255,255,0.45)', fontSize: 13, fontStyle: 'italic' },
+  name: { color: '#FFFFFF', fontSize: 17, fontWeight: '900' },
+  tagline: { color: 'rgba(255,255,255,0.45)', fontSize: 16, fontStyle: 'italic' },
   dnaRow: { flexDirection: 'row', gap: 8, marginTop: 2 },
-  dnaStat: { color: '#00F2FF', fontSize: 11, fontWeight: '400', letterSpacing: 0.5 },
+  dnaStat: { color: '#00F2FF', fontSize: 14, fontWeight: '400', letterSpacing: 0.5 },
   right: { alignItems: 'flex-end', gap: 2 },
-  xp: { color: '#D4AF37', fontSize: 14, fontWeight: '400' },
+  xp: { color: '#D4AF37', fontSize: 17, fontWeight: '400' },
   membersRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  members: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '700' },
+  members: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '700' },
 });
 
 // MY STATUS BAR (Sticky Footer)
@@ -254,7 +254,7 @@ function MyStatusBar({ rankData }: { rankData: any }) {
   }, [isTop10]);
 
   const borderStyle = useAnimatedStyle(() => ({
-    borderColor: isTop10 ? `rgba(0,242,255,${pulseOpacity.value})` : 'rgba(255,255,255,0.06)',
+    borderColor: isTop10 ? `rgba(0,242,255,${pulseOpacity.value})` : 'rgba(255,255,255,0.45)',
   }));
 
   if (!rankData) return null;
@@ -288,7 +288,7 @@ function MyStatusBar({ rankData }: { rankData: any }) {
 }
 
 const status$ = StyleSheet.create({
-  container: { borderTopWidth: 2, borderColor: 'rgba(255,255,255,0.06)' },
+  container: { borderTopWidth: 2, borderColor: 'rgba(255,255,255,0.45)' },
   grad: { paddingHorizontal: 16, paddingVertical: 12 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   rankCircle: {
@@ -296,15 +296,15 @@ const status$ = StyleSheet.create({
     backgroundColor: 'rgba(212,175,55,0.12)', alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: 'rgba(212,175,55,0.3)',
   },
-  rankText: { color: '#D4AF37', fontSize: 14, fontWeight: '900' },
+  rankText: { color: '#D4AF37', fontSize: 17, fontWeight: '900' },
   textCol: { flex: 1, gap: 2 },
-  motiv: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
-  sub: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '600' },
+  motiv: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  sub: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '400' },
   topBadge: {
     backgroundColor: 'rgba(0,242,255,0.1)', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)',
   },
-  topText: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  topText: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
 });
 
 // ===========================
@@ -493,11 +493,11 @@ const gl$ = StyleSheet.create({
   title: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 3 },
   tabRow: {
     flexDirection: 'row', marginHorizontal: 16, gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: 3,
+    backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 12, padding: 3,
   },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
   tabActive: { backgroundColor: 'rgba(212,175,55,0.15)' },
-  tabText: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  tabText: { color: 'rgba(255,255,255,0.72)', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
   tabTextActive: { color: '#D4AF37' },
   catRow: { paddingHorizontal: 16, paddingVertical: 10, gap: 6 },
   catChip: {
@@ -506,18 +506,18 @@ const gl$ = StyleSheet.create({
     borderWidth: 1, borderColor: '#2A2A2A',
   },
   catChipActive: { borderColor: '#D4AF37', backgroundColor: 'rgba(212,175,55,0.1)' },
-  catChipText: { color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
+  catChipText: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   catChipTextActive: { color: '#D4AF37' },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10,
   },
   sectionTitle: {
-    color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 2,
+    color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 2,
   },
   giantsRow: { flexDirection: 'row', paddingHorizontal: 12, gap: 8 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
-  loadingText: { color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 8 },
+  loadingText: { color: 'rgba(255,255,255,0.4)', fontSize: 15, marginTop: 8 },
   emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 16, fontWeight: '800' },
-  emptySub: { color: 'rgba(255,255,255,0.3)', fontSize: 13 },
+  emptySub: { color: 'rgba(255,255,255,0.3)', fontSize: 16 },
 });

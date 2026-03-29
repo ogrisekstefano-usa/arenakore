@@ -175,7 +175,7 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
                           <Ionicons
                             name={ROLE_ICONS[role]}
                             size={22}
-                            color={isActive ? GOLD : 'rgba(255,255,255,0.35)'}
+                            color={isActive ? GOLD : 'rgba(255,255,255,0.72)'}
                           />
                           <Text style={[st.segLabel, isActive && st.segLabelActive]}>
                             {ROLE_LABELS[role]}
@@ -227,46 +227,46 @@ const st = StyleSheet.create({
   panelInner: { flex: 1, paddingTop: 60, borderLeftWidth: 1.5, borderLeftColor: 'rgba(0,242,255,0.65)' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 22, marginBottom: 16 },
   headerLeft: { flex: 1, gap: 2 },
-  headerTitle: { color: WHITE, fontSize: 13, fontWeight: '800', letterSpacing: 4 },
-  headerSub: { color: DIM2, fontSize: 9, fontWeight: '600', letterSpacing: 2, marginTop: 1 },
+  headerTitle: { color: WHITE, fontSize: 16, fontWeight: '800', letterSpacing: 4 },
+  headerSub: { color: DIM2, fontSize: 12, fontWeight: '400', letterSpacing: 2, marginTop: 1 },
   tierBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 22, marginBottom: 20,
     paddingVertical: 10, paddingHorizontal: 14, backgroundColor: 'rgba(0,242,255,0.65)',
     borderRadius: 10, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
-  tierLabel: { color: CYAN, fontSize: 11, fontWeight: '800', letterSpacing: 2 },
-  tierSub: { color: DIM, fontSize: 7, fontWeight: '600', letterSpacing: 1 },
+  tierLabel: { color: CYAN, fontSize: 14, fontWeight: '800', letterSpacing: 2 },
+  tierSub: { color: DIM, fontSize: 10, fontWeight: '400', letterSpacing: 1 },
   tierLiveDot: {
     width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF',
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4,
   },
   item: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 15, paddingHorizontal: 22 },
-  iconWrap: { width: 34, height: 34, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.04)', alignItems: 'center', justifyContent: 'center' },
+  iconWrap: { width: 34, height: 34, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.45)', alignItems: 'center', justifyContent: 'center' },
   itemText: { flex: 1, gap: 2 },
-  itemLabel: { color: WHITE, fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
-  itemSub: { color: DIM, fontSize: 10, fontWeight: '500' },
+  itemLabel: { color: WHITE, fontSize: 16, fontWeight: '800', letterSpacing: 1.5 },
+  itemSub: { color: DIM, fontSize: 13, fontWeight: '500' },
   section: { marginTop: 4 },
-  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.04)', marginHorizontal: 22, marginVertical: 8 },
-  sectionTitle: { color: GOLD, fontSize: 10, fontWeight: '900', letterSpacing: 3, paddingHorizontal: 22, marginBottom: 4 },
+  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.45)', marginHorizontal: 22, marginVertical: 8 },
+  sectionTitle: { color: GOLD, fontSize: 13, fontWeight: '900', letterSpacing: 3, paddingHorizontal: 22, marginBottom: 4 },
   founderPride: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     marginHorizontal: 22, marginTop: 12, padding: 14, borderRadius: 12,
     backgroundColor: 'rgba(255,215,0,0.04)', borderWidth: 1, borderColor: 'rgba(255,215,0,0.08)',
   },
-  founderQuote: { flex: 1, color: GOLD, fontSize: 10, fontWeight: '700', letterSpacing: 0.5, lineHeight: 16, opacity: 0.85 },
+  founderQuote: { flex: 1, color: GOLD, fontSize: 13, fontWeight: '700', letterSpacing: 0.5, lineHeight: 16, opacity: 0.85 },
   adminSection: { marginTop: 4, paddingHorizontal: 22 },
   adminHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
-  adminTitle: { color: '#FF453A', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
-  adminSub: { color: DIM, fontSize: 8, fontWeight: '700', letterSpacing: 1.5, marginBottom: 12 },
+  adminTitle: { color: '#FF453A', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
+  adminSub: { color: DIM, fontSize: 11, fontWeight: '400', letterSpacing: 1.5, marginBottom: 12 },
   segGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12, width: '100%' },
   segBtn: {
     width: '46%', alignItems: 'center', gap: 4, paddingVertical: 14, borderRadius: 12,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.50)', backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.50)', backgroundColor: 'rgba(255,255,255,0.45)',
   },
   segBtnActive: {
     borderColor: GOLD, backgroundColor: 'rgba(212,175,55,0.08)',
   },
-  segLabel: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5, color: 'rgba(255,255,255,0.45)' },
+  segLabel: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5, color: 'rgba(255,255,255,0.45)' },
   segLabelActive: { color: GOLD },
   segActiveDot: {
     width: 4, height: 4, borderRadius: 2, backgroundColor: GOLD,
@@ -277,11 +277,11 @@ const st = StyleSheet.create({
     paddingVertical: 8, borderRadius: 8, backgroundColor: 'rgba(212,175,55,0.04)',
     borderWidth: 1, borderColor: 'rgba(212,175,55,0.1)', marginBottom: 8,
   },
-  activeText: { fontSize: 9, fontWeight: '900', letterSpacing: 2, color: GOLD },
+  activeText: { fontSize: 12, fontWeight: '900', letterSpacing: 2, color: GOLD },
   logoutItem: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 15, paddingHorizontal: 22, marginTop: 4 },
-  logoutLabel: { color: 'rgba(255,69,58,0.6)', fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
-  logoutSub: { color: 'rgba(255,69,58,0.3)', fontSize: 10 },
+  logoutLabel: { color: 'rgba(255,69,58,0.6)', fontSize: 16, fontWeight: '800', letterSpacing: 1.5 },
+  logoutSub: { color: 'rgba(255,69,58,0.3)', fontSize: 13 },
   ticker: { height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.65)', justifyContent: 'center' },
-  tickerText: { color: CYAN, fontSize: 8, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.5 },
-  footer: { color: 'rgba(255,255,255,0.50)', fontSize: 9, fontWeight: '700', letterSpacing: 2, paddingHorizontal: 22, paddingBottom: 30 },
+  tickerText: { color: CYAN, fontSize: 11, fontWeight: '400', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.5 },
+  footer: { color: 'rgba(255,255,255,0.50)', fontSize: 12, fontWeight: '400', letterSpacing: 2, paddingHorizontal: 22, paddingBottom: 30 },
 });

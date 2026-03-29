@@ -143,19 +143,19 @@ const bio$ = StyleSheet.create({
   laserLine: { height: 2, width: '100%', backgroundColor: '#00F2FF' },
   laserGlow: { height: 16, width: '85%', backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 8 },
   center: { alignItems: 'center', gap: 14, paddingHorizontal: 32 },
-  title: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 4 },
-  phase: { color: '#D4AF37', fontSize: 10, fontWeight: '700', letterSpacing: 2 },
+  title: { color: '#00F2FF', fontSize: 17, fontWeight: '900', letterSpacing: 4 },
+  phase: { color: '#D4AF37', fontSize: 13, fontWeight: '700', letterSpacing: 2 },
   bioRow: { flexDirection: 'row', gap: 24, marginTop: 4 },
   bioItem: { alignItems: 'center', gap: 2 },
-  bioLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 8, fontWeight: '700', letterSpacing: 2 },
+  bioLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
   bioVal: { color: '#00F2FF', fontSize: 16, fontWeight: '900' },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: SW * 0.55, marginTop: 8 },
   progressTrack: { flex: 1, height: 3, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 2, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
   progressPct: { color: '#00F2FF', fontSize: 18, fontWeight: '900', fontVariant: ['tabular-nums'], width: 50 },
-  matchLabel: { color: '#00F2FF', fontSize: 11, fontWeight: '700', letterSpacing: 4 },
+  matchLabel: { color: '#00F2FF', fontSize: 14, fontWeight: '400', letterSpacing: 4 },
   matchText: { color: '#D4AF37', fontSize: 18, fontWeight: '900', letterSpacing: 2, fontVariant: ['tabular-nums'], textAlign: 'center' },
-  founderGlow: { color: '#D4AF37', fontSize: 12, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
+  founderGlow: { color: '#D4AF37', fontSize: 15, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
   bracket: { position: 'absolute' },
   bH: { width: 30, height: 2, backgroundColor: '#00F2FF', opacity: 0.5 },
   bV: { width: 2, height: 30, backgroundColor: '#00F2FF', opacity: 0.5 },
@@ -239,14 +239,14 @@ const cn$ = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
   safe: { flex: 1 },
   header: { alignItems: 'center', paddingTop: 16, paddingBottom: 8, gap: 2 },
-  brandLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 9, fontWeight: '800', letterSpacing: 4 },
+  brandLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: '800', letterSpacing: 4 },
   title: { color: '#D4AF37', fontSize: 32, fontWeight: '900', letterSpacing: 8 },
-  subtitle: { color: '#00F2FF', fontSize: 11, fontWeight: '700', letterSpacing: 4, opacity: 0.85 },
+  subtitle: { color: '#00F2FF', fontSize: 14, fontWeight: '400', letterSpacing: 4, opacity: 0.85 },
   founderBadge: { marginTop: 6, paddingHorizontal: 14, paddingVertical: 4, borderRadius: 12, borderWidth: 1, borderColor: '#D4AF37', backgroundColor: 'rgba(212,175,55,0.08)' },
-  founderText: { color: '#D4AF37', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  founderText: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   tierRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
   tierDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
-  tierText: { color: '#00F2FF', fontSize: 8, fontWeight: '800', letterSpacing: 2, opacity: 0.6 },
+  tierText: { color: '#00F2FF', fontSize: 11, fontWeight: '800', letterSpacing: 2, opacity: 0.6 },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingBottom: 100 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 10 },
@@ -256,7 +256,7 @@ const cn$ = StyleSheet.create({
   cardGradient: { flex: 1, justifyContent: 'space-between', padding: 16 },
   cardBottom: { gap: 4 },
   cardTitle: { color: '#D4AF37', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
-  cardSub: { color: '#00F2FF', fontSize: 8, fontWeight: '700', letterSpacing: 1.5, opacity: 0.7 },
+  cardSub: { color: '#00F2FF', fontSize: 11, fontWeight: '400', letterSpacing: 1.5, opacity: 0.7 },
   // BIO-SCAN ELIGIBILITY BANNER
   eligBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -264,8 +264,8 @@ const cn$ = StyleSheet.create({
     borderWidth: 1, marginTop: 10, marginBottom: 2,
   },
   eligBannerActive: { backgroundColor: 'rgba(0,242,255,0.65)', borderColor: 'rgba(0,242,255,0.65)' },
-  eligBannerLocked: { backgroundColor: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.07)' },
-  eligText: { flex: 1, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  eligBannerLocked: { backgroundColor: 'rgba(255,255,255,0.45)', borderColor: 'rgba(255,255,255,0.45)' },
+  eligText: { flex: 1, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   eligTextActive: { color: '#00F2FF' },
   eligTextLocked: { color: 'rgba(255,255,255,0.3)' },
   eligReadyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF', shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4 },
@@ -357,7 +357,7 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
 const fg$ = StyleSheet.create({
   container: { alignItems: 'center', gap: 12, paddingHorizontal: 16, width: '100%' },
   title: { color: '#FFFFFF', fontSize: 26, fontWeight: '900', letterSpacing: 5 },
-  sub: { color: 'rgba(255,255,255,0.55)', fontSize: 14, marginBottom: 4, fontWeight: '700' },
+  sub: { color: 'rgba(255,255,255,0.55)', fontSize: 17, marginBottom: 4, fontWeight: '400' },
   cardsCol: { width: '100%', gap: 10 },
   card: { width: '100%', height: 130, borderRadius: 16, overflow: 'hidden' },
   imageBg: { width: '100%', height: '100%' },
@@ -366,20 +366,20 @@ const fg$ = StyleSheet.create({
   cardTop: { alignSelf: 'flex-start' },
   cardBottom: { gap: 2 },
   cardTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
-  cardSub: { color: 'rgba(255,255,255,0.65)', fontSize: 14, fontWeight: '700' },
+  cardSub: { color: 'rgba(255,255,255,0.65)', fontSize: 17, fontWeight: '400' },
   iconRow: { flexDirection: 'row', alignItems: 'flex-start' },
   selectWrap: { alignItems: 'center', gap: 14, paddingHorizontal: 20, width: '100%' },
   selectTitle: { color: '#FFFFFF', fontSize: 30, fontWeight: '900', letterSpacing: 4 },
-  selectSub: { color: 'rgba(255,255,255,0.55)', fontSize: 14, textAlign: 'center', fontWeight: '700' },
+  selectSub: { color: 'rgba(255,255,255,0.55)', fontSize: 17, textAlign: 'center', fontWeight: '400' },
   exRow: { flexDirection: 'row', gap: 12, width: '100%' },
   exCard: {
     flex: 1, alignItems: 'center', gap: 8, paddingVertical: 28,
     backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 16, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)',
   },
   exName: { color: '#00F2FF', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
-  exDesc: { color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: '700' },
+  exDesc: { color: 'rgba(255,255,255,0.6)', fontSize: 17, fontWeight: '400' },
   backBtn: { marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  backText: { color: '#555', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
+  backText: { color: '#555', fontSize: 15, fontWeight: '800', letterSpacing: 1 },
 });
 
 // ========== MINI DNA RADAR ==========
@@ -401,7 +401,7 @@ function MiniDNARadar({ dna, explosive }: { dna: any; explosive: boolean }) {
         <Polygon points={pts} fill="rgba(0,242,255,0.65)" stroke="#00F2FF" strokeWidth={1.5} opacity={0.8} />
         {explosive && <Circle cx={cx + r * vals[5] * Math.cos(pAngle)} cy={cy + r * vals[5] * Math.sin(pAngle)} r={6} fill="#00F2FF" opacity={0.9} />}
       </Svg>
-      <Text style={{ color: '#00F2FF', fontSize: 7, fontWeight: '800', letterSpacing: 2, textAlign: 'center', marginTop: -2 }}>DNA</Text>
+      <Text style={{ color: '#00F2FF', fontSize: 10, fontWeight: '800', letterSpacing: 2, textAlign: 'center', marginTop: -2 }}>DNA</Text>
     </Animated.View>
   );
 }
@@ -589,7 +589,7 @@ const smv$ = StyleSheet.create({
   },
   flashGold: { backgroundColor: '#D4AF37', zIndex: 31 },
   content: { alignItems: 'center', gap: 22, paddingHorizontal: 32, width: '100%' },
-  phaseLabel: { color: 'rgba(0,242,255,0.55)', fontSize: 11, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
+  phaseLabel: { color: 'rgba(0,242,255,0.55)', fontSize: 14, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
   iconCircle: {
     width: 110, height: 110, borderRadius: 55,
     backgroundColor: 'rgba(0,242,255,0.65)',
@@ -599,12 +599,12 @@ const smv$ = StyleSheet.create({
     shadowOpacity: 0.9, shadowRadius: 28,
   },
   mainMsg: { fontSize: 34, fontWeight: '900', letterSpacing: 4, textAlign: 'center' },
-  hint: { color: 'rgba(0,242,255,0.65)', fontSize: 13, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center', marginTop: -8 },
+  hint: { color: 'rgba(0,242,255,0.65)', fontSize: 16, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center', marginTop: -8 },
   section: { width: '100%', gap: 8 },
   barRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  barLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  barLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   barPct: { fontSize: 15, fontWeight: '900', letterSpacing: 2 },
-  barBg: { height: 5, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2.5, overflow: 'hidden' },
+  barBg: { height: 5, backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 2.5, overflow: 'hidden' },
   stabFill: { height: '100%', borderRadius: 2.5 },
   progressBg: { height: 7, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 3.5, overflow: 'hidden' },
   progressFill: {
@@ -613,7 +613,7 @@ const smv$ = StyleSheet.create({
     shadowOpacity: 1, shadowRadius: 10,
   },
   progressPct: { color: '#00F2FF', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
-  progressNote: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center' },
+  progressNote: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center' },
   // Done state
   doneWrap: { alignItems: 'center', gap: 16, paddingHorizontal: 32 },
   doneCircle: {
@@ -627,7 +627,7 @@ const smv$ = StyleSheet.create({
   doneTitle: { color: '#D4AF37', fontSize: 38, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
   doneDivider: { width: 80, height: 2.5, backgroundColor: '#D4AF37', borderRadius: 1.5 },
   doneAccess: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
-  doneDesc: { color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: '800', letterSpacing: 3, textAlign: 'center' },
+  doneDesc: { color: 'rgba(255,255,255,0.45)', fontSize: 15, fontWeight: '800', letterSpacing: 3, textAlign: 'center' },
 });
 
 // ========== COUNTDOWN ==========
@@ -653,7 +653,7 @@ function Countdown({ onComplete }: { onComplete: () => void }) {
       <Animated.View style={[{ width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 3, borderColor: '#00F2FF', alignItems: 'center', justifyContent: 'center' }, as]}>
         <Text style={{ color: '#00F2FF', fontSize: 64, fontWeight: '900' }}>{count === 0 ? 'GO' : count}</Text>
       </Animated.View>
-      <Text style={{ color: '#888', fontSize: 12, fontWeight: '700', letterSpacing: 3, marginTop: 24 }}>{count > 0 ? 'PREPARATI' : 'NEXUS ATTIVATO'}</Text>
+      <Text style={{ color: '#888', fontSize: 15, fontWeight: '700', letterSpacing: 3, marginTop: 24 }}>{count > 0 ? 'PREPARATI' : 'NEXUS ATTIVATO'}</Text>
     </View>
   );
 }
@@ -947,7 +947,7 @@ const main$ = StyleSheet.create({
     zIndex: 1,
   },
   cancelWrap: { alignItems: 'center', marginTop: 20 },
-  cancelText: { color: '#555', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  cancelText: { color: '#555', fontSize: 15, fontWeight: '700', letterSpacing: 1 },
 });
 
 // SPRINT 5: Military/Tech Corner HUD
@@ -962,7 +962,7 @@ const hud$ = StyleSheet.create({
     gap: 3,
   },
   cornerLabel: {
-    color: 'rgba(0,242,255,0.5)', fontSize: 8, fontWeight: '900',
+    color: 'rgba(0,242,255,0.5)', fontSize: 11, fontWeight: '900',
     letterSpacing: 3,
   },
   timerVal: {
@@ -983,7 +983,7 @@ const hud$ = StyleSheet.create({
     alignItems: 'flex-end', gap: 3,
   },
   exerciseVal: {
-    color: '#FFFFFF', fontSize: 12, fontWeight: '900',
+    color: '#FFFFFF', fontSize: 15, fontWeight: '900',
     letterSpacing: 2,
   },
   modeBadge: {
@@ -993,7 +993,7 @@ const hud$ = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)',
   },
   modeText: {
-    color: '#D4AF37', fontSize: 8, fontWeight: '900', letterSpacing: 1.5,
+    color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 1.5,
   },
   // CENTER: Rep Feedback
   centerFeedback: {
@@ -1010,7 +1010,7 @@ const hud$ = StyleSheet.create({
     width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF',
   },
   repFeedbackText: {
-    color: '#00F2FF', fontSize: 12, fontWeight: '800', letterSpacing: 2,
+    color: '#00F2FF', fontSize: 15, fontWeight: '800', letterSpacing: 2,
   },
   phaseIndicator: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
@@ -1022,7 +1022,7 @@ const hud$ = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
   },
   phaseText: {
-    color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '800', letterSpacing: 2,
+    color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '800', letterSpacing: 2,
   },
   // BOTTOM-LEFT: Reps
   bottomLeft: {
@@ -1035,7 +1035,7 @@ const hud$ = StyleSheet.create({
     lineHeight: 50,
   },
   repsUnit: {
-    color: 'rgba(0,242,255,0.35)', fontSize: 7, fontWeight: '900', letterSpacing: 2,
+    color: 'rgba(0,242,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 2,
   },
   // BOTTOM-RIGHT: Quality
   bottomRight: {
@@ -1048,7 +1048,7 @@ const hud$ = StyleSheet.create({
     lineHeight: 50,
   },
   qualityUnit: {
-    color: 'rgba(0,242,255,0.35)', fontSize: 7, fontWeight: '900', letterSpacing: 2,
+    color: 'rgba(0,242,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 2,
   },
   // BOTTOM: Stop Button
   stopWrap: {
@@ -1063,6 +1063,6 @@ const hud$ = StyleSheet.create({
     width: 10, height: 10, borderRadius: 5, backgroundColor: '#FF453A',
   },
   stopText: {
-    color: '#FF453A', fontSize: 14, fontWeight: '900', letterSpacing: 3,
+    color: '#FF453A', fontSize: 17, fontWeight: '900', letterSpacing: 3,
   },
 });

@@ -241,19 +241,19 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
             <Text style={ct$.subtitle}>Invia "{pushTargetTemplate?.name}" a una Crew</Text>
             <ScrollView style={{ marginTop: 12 }}>
               {myCrews.length === 0 ? (
-                <Text style={{ color: 'rgba(255,255,255,0.4)', textAlign: 'center', marginTop: 20, fontWeight: '600' }}>Nessuna crew disponibile</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.4)', textAlign: 'center', marginTop: 20, fontWeight: '400' }}>Nessuna crew disponibile</Text>
               ) : (
                 myCrews.map((crew) => (
                   <TouchableOpacity key={crew.id} style={cs$.pushCrewItem} onPress={() => handlePush(crew.id)} disabled={pushing === crew.id} activeOpacity={0.8}>
                     <View style={{ flex: 1, gap: 2 }}>
-                      <Text style={{ color: '#FFF', fontSize: 14, fontWeight: '900' }}>{crew.name}</Text>
-                      <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '600' }}>{crew.members_count} membri {'\u00b7'} {crew.xp_total} XP</Text>
+                      <Text style={{ color: '#FFF', fontSize: 17, fontWeight: '900' }}>{crew.name}</Text>
+                      <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '600' }}>{crew.members_count} membri {'\u00b7'} {crew.xp_total} XP</Text>
                     </View>
                     {pushing === crew.id ? (
                       <ActivityIndicator color="#D4AF37" size="small" />
                     ) : (
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Text style={{ color: '#D4AF37', fontSize: 12, fontWeight: '900' }}>INVIA</Text>
+                        <Text style={{ color: '#D4AF37', fontSize: 15, fontWeight: '900' }}>INVIA</Text>
                         <Ionicons name="arrow-forward" size={14} color="#D4AF37" />
                       </View>
                     )}
@@ -275,38 +275,38 @@ const cs$ = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 16, gap: 12 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
   headerTitle: { color: '#D4AF37', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
-  headerSub: { color: 'rgba(255,255,255,0.45)', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  headerSub: { color: 'rgba(255,255,255,0.45)', fontSize: 13, fontWeight: '400', letterSpacing: 1 },
   createBtn: { borderRadius: 14, overflow: 'hidden' },
   createGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 16 },
-  createText: { color: '#050505', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  createText: { color: '#050505', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   emptyState: { alignItems: 'center', paddingTop: 60, gap: 8 },
-  emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
-  emptySub: { color: 'rgba(255,255,255,0.60)', fontSize: 12, fontWeight: '600' },
+  emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
+  emptySub: { color: 'rgba(255,255,255,0.60)', fontSize: 15, fontWeight: '400' },
   card: {
-    backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: 16, gap: 10,
+    backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 16, padding: 16, gap: 10,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   cardTitleRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   cardName: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
   diffBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1 },
-  diffText: { fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
+  diffText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   deleteBtn: { padding: 4 },
   cardStats: { flexDirection: 'row', gap: 14, flexWrap: 'wrap' },
   statItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  stat: { color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: '800' },
-  cardDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontStyle: 'italic' },
+  stat: { color: 'rgba(255,255,255,0.55)', fontSize: 14, fontWeight: '800' },
+  cardDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontStyle: 'italic' },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  usesText: { color: 'rgba(255,255,255,0.60)', fontSize: 10, fontWeight: '700' },
+  usesText: { color: 'rgba(255,255,255,0.60)', fontSize: 13, fontWeight: '400' },
   pushBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: 'rgba(212,175,55,0.12)', paddingHorizontal: 14, paddingVertical: 8,
     borderRadius: 8, borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)',
   },
-  pushText: { color: '#D4AF37', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  pushText: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
   pushCrewItem: {
     flexDirection: 'row', alignItems: 'center', paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.45)',
   },
 });
 
@@ -319,30 +319,30 @@ const ct$ = StyleSheet.create({
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   title: { color: '#D4AF37', fontSize: 18, fontWeight: '900', letterSpacing: 3 },
-  subtitle: { color: 'rgba(255,255,255,0.4)', fontSize: 12, textAlign: 'center', marginBottom: 8 },
-  label: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
+  subtitle: { color: 'rgba(255,255,255,0.4)', fontSize: 15, textAlign: 'center', marginBottom: 8 },
+  label: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
-    color: '#FFF', fontSize: 14, fontWeight: '700', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
+    color: '#FFF', fontSize: 17, fontWeight: '400', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   exRow: { flexDirection: 'row', gap: 10 },
   exBtn: {
     flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', gap: 4,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.45)', backgroundColor: 'rgba(255,255,255,0.45)',
   },
   exBtnActive: { borderColor: '#00F2FF', backgroundColor: 'rgba(0,242,255,0.65)' },
-  exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   diffRow: { flexDirection: 'row', gap: 6 },
   diffBtn: {
     flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', gap: 2,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.45)', backgroundColor: 'rgba(255,255,255,0.45)',
   },
-  diffLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 7, fontWeight: '900', letterSpacing: 1 },
+  diffLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
   numRow: { flexDirection: 'row', gap: 10 },
   numCol: { flex: 1 },
   saveBtn: { borderRadius: 12, overflow: 'hidden', marginTop: 8 },
   saveGrad: { paddingVertical: 16, alignItems: 'center' },
-  saveText: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  saveText: { color: '#050505', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   cancelBtn: { paddingVertical: 10, alignItems: 'center' },
-  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '700' },
+  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: '700' },
 });

@@ -33,7 +33,7 @@ const EX_CFG: Record<string, { label: string; icon: keyof typeof Ionicons.glyphM
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string }> = {
   upcoming:  { label: 'PROSSIMO', color: '#D4AF37', bg: 'rgba(212,175,55,0.15)' },
   live:      { label: 'LIVE',     color: '#FF3B30', bg: 'rgba(255,59,48,0.15)' },
-  completed: { label: 'CONCLUSO', color: 'rgba(255,255,255,0.45)', bg: 'rgba(255,255,255,0.06)' },
+  completed: { label: 'CONCLUSO', color: 'rgba(255,255,255,0.45)', bg: 'rgba(255,255,255,0.45)' },
 };
 
 // ============================
@@ -90,11 +90,11 @@ const cc$ = StyleSheet.create({
   },
   avatarText: { color: '#050505', fontSize: 18, fontWeight: '900' },
   info: { flex: 1, gap: 3 },
-  name: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
+  name: { color: '#FFFFFF', fontSize: 17, fontWeight: '900', letterSpacing: 1.5 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  meta: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
+  meta: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '400', letterSpacing: 0.5 },
   right: { alignItems: 'flex-end', gap: 8 },
-  xp: { color: '#D4AF37', fontSize: 14, fontWeight: '900' },
+  xp: { color: '#D4AF37', fontSize: 17, fontWeight: '900' },
   removeBtn: { padding: 2 },
 });
 
@@ -196,37 +196,37 @@ const ev$ = StyleSheet.create({
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
   liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FF3B30' },
-  statusText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  statusText: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   diffBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1 },
-  diffText: { fontSize: 8, fontWeight: '900', letterSpacing: 1 },
+  diffText: { fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   title: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 0.5 },
-  desc: { color: 'rgba(255,255,255,0.5)', fontSize: 14, lineHeight: 18 },
+  desc: { color: 'rgba(255,255,255,0.5)', fontSize: 17, lineHeight: 18 },
   infoRow: { flexDirection: 'row', gap: 14, flexWrap: 'wrap' },
   infoItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  infoText: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '400' },
+  infoText: { color: 'rgba(255,255,255,0.6)', fontSize: 16, fontWeight: '400' },
   statsRow: { flexDirection: 'row', gap: 20 },
   statBlock: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
   statVal: { color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
-  statLabel: { color: 'rgba(255,255,255,0.35)', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
+  statLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   actions: { flexDirection: 'row', gap: 8, marginTop: 4 },
   qrBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: 'rgba(0,242,255,0.1)', borderRadius: 10, paddingVertical: 10,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
-  qrBtnText: { color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  qrBtnText: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
   liveBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: 'rgba(255,59,48,0.1)', borderRadius: 10, paddingVertical: 10,
     borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)',
   },
-  liveBtnText: { color: '#FF3B30', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  liveBtnText: { color: '#FF3B30', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
   endBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 10, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 10, paddingVertical: 10,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)',
   },
-  endBtnText: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  endBtnText: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
 });
 
 // ============================
@@ -315,10 +315,10 @@ const qr$ = StyleSheet.create({
     alignItems: 'center', gap: 10, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)',
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#00F2FF', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
   eventTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', textAlign: 'center', letterSpacing: 0.5 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  metaText: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '600' },
+  metaText: { color: 'rgba(255,255,255,0.55)', fontSize: 15, fontWeight: '600' },
   qrContainer: {
     width: 220, height: 220, alignItems: 'center', justifyContent: 'center',
     backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 16, padding: 8,
@@ -331,18 +331,18 @@ const qr$ = StyleSheet.create({
   },
   qrPlaceholder: { width: 220, height: 220, alignItems: 'center', justifyContent: 'center' },
   codeContainer: { alignItems: 'center', gap: 3 },
-  codeLabel: { color: 'rgba(255,255,255,0.35)', fontSize: 9, fontWeight: '800', letterSpacing: 2 },
+  codeLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
   codeValue: { color: '#00F2FF', fontSize: 24, fontWeight: '900', letterSpacing: 6 },
-  instructions: { color: 'rgba(255,255,255,0.4)', fontSize: 11, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8 },
+  instructions: { color: 'rgba(255,255,255,0.4)', fontSize: 14, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8 },
   actionsRow: { flexDirection: 'row', gap: 10, width: '100%', marginTop: 4 },
   shareBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: 'rgba(212,175,55,0.12)', borderRadius: 12, paddingVertical: 12,
     borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)',
   },
-  shareBtnText: { color: '#D4AF37', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  shareBtnText: { color: '#D4AF37', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
   closeBtn: { paddingVertical: 8, marginTop: 4 },
-  closeBtnText: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '700' },
+  closeBtnText: { color: 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: '700' },
 });
 
 // ============================
@@ -479,33 +479,33 @@ const ce$ = StyleSheet.create({
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   title: { color: '#FF3B30', fontSize: 18, fontWeight: '900', letterSpacing: 3 },
-  subtitle: { color: 'rgba(255,255,255,0.4)', fontSize: 11, textAlign: 'center', marginBottom: 8 },
-  label: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
+  subtitle: { color: 'rgba(255,255,255,0.4)', fontSize: 14, textAlign: 'center', marginBottom: 8 },
+  label: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
-    color: '#FFF', fontSize: 14, fontWeight: '700', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
+    color: '#FFF', fontSize: 17, fontWeight: '400', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   exRow: { flexDirection: 'row', gap: 10 },
   exBtn: {
     flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', gap: 4,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.45)', backgroundColor: 'rgba(255,255,255,0.45)',
   },
   exBtnActive: { borderColor: '#00F2FF', backgroundColor: 'rgba(0,242,255,0.65)' },
-  exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   diffRow: { flexDirection: 'row', gap: 6 },
   diffBtn: {
     flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', gap: 2,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.45)', backgroundColor: 'rgba(255,255,255,0.45)',
   },
-  diffLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 7, fontWeight: '900', letterSpacing: 1 },
+  diffLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
   dateRow: { flexDirection: 'row', gap: 10 },
   dateCol: { flex: 1 },
   numRow: { flexDirection: 'row', gap: 10 },
   saveBtn: { borderRadius: 12, overflow: 'hidden', marginTop: 12 },
   saveGrad: { paddingVertical: 16, alignItems: 'center', justifyContent: 'center' },
-  saveText: { color: '#FFF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  saveText: { color: '#FFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   cancelBtn: { paddingVertical: 10, alignItems: 'center' },
-  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '700' },
+  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: '700' },
 });
 
 // ============================
@@ -537,7 +537,7 @@ function AddCoachModal({ visible, onClose, onAdded, token }: any) {
             <Ionicons name="person-add" size={18} color="#00F2FF" />
             <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1 }}>ASSOCIA COACH</Text>
           </View>
-          <Text style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, textAlign: 'center' }}>Inserisci lo username del coach da associare</Text>
+          <Text style={{ color: 'rgba(255,255,255,0.45)', fontSize: 15, textAlign: 'center' }}>Inserisci lo username del coach da associare</Text>
           <TextInput
             style={{
               backgroundColor: '#1A1A1A', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
@@ -554,10 +554,10 @@ function AddCoachModal({ visible, onClose, onAdded, token }: any) {
             onPress={handleAdd}
             disabled={!username.trim() || loading}
           >
-            {loading ? <ActivityIndicator color="#050505" /> : <Text style={{ color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 2 }}>ASSOCIA</Text>}
+            {loading ? <ActivityIndicator color="#050505" /> : <Text style={{ color: '#050505', fontSize: 17, fontWeight: '900', letterSpacing: 2 }}>ASSOCIA</Text>}
           </TouchableOpacity>
           <TouchableOpacity onPress={onClose} style={{ alignItems: 'center', paddingVertical: 8 }}>
-            <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '600' }}>Annulla</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '600' }}>Annulla</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -669,14 +669,14 @@ export function GymHub() {
             style={[hub$.tab, activeSection === 'events' && hub$.tabActive]}
             onPress={() => setActiveSection('events')}
           >
-            <Ionicons name="radio" size={14} color={activeSection === 'events' ? '#FF3B30' : 'rgba(255,255,255,0.35)'} />
+            <Ionicons name="radio" size={14} color={activeSection === 'events' ? '#FF3B30' : 'rgba(255,255,255,0.72)'} />
             <Text style={[hub$.tabText, activeSection === 'events' && hub$.tabTextActive]}>EVENTI LIVE</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[hub$.tab, activeSection === 'coaches' && hub$.tabActive]}
             onPress={() => setActiveSection('coaches')}
           >
-            <Ionicons name="people" size={14} color={activeSection === 'coaches' ? '#00F2FF' : 'rgba(255,255,255,0.35)'} />
+            <Ionicons name="people" size={14} color={activeSection === 'coaches' ? '#00F2FF' : 'rgba(255,255,255,0.72)'} />
             <Text style={[hub$.tabText, activeSection === 'coaches' && { color: '#00F2FF' }]}>I MIEI COACH</Text>
           </TouchableOpacity>
         </View>
@@ -784,7 +784,7 @@ export function GymHub() {
 const hub$ = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
-  loadingText: { color: 'rgba(255,255,255,0.4)', fontSize: 12 },
+  loadingText: { color: 'rgba(255,255,255,0.4)', fontSize: 15 },
   heroGrad: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24 },
   heroContent: { alignItems: 'center', gap: 8 },
   gymIconWrap: {
@@ -793,38 +793,38 @@ const hub$ = StyleSheet.create({
     borderWidth: 2, borderColor: 'rgba(212,175,55,0.3)',
   },
   gymName: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 2 },
-  gymAddress: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '600' },
+  gymAddress: { color: 'rgba(255,255,255,0.5)', fontSize: 15, fontWeight: '600' },
   gymStats: { flexDirection: 'row', alignItems: 'center', gap: 20, marginTop: 8 },
   gymStat: { alignItems: 'center', gap: 2 },
   gymStatVal: { color: '#D4AF37', fontSize: 22, fontWeight: '900' },
-  gymStatLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '800', letterSpacing: 2 },
-  gymStatDivider: { width: 1, height: 24, backgroundColor: 'rgba(255,255,255,0.08)' },
+  gymStatLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
+  gymStatDivider: { width: 1, height: 24, backgroundColor: 'rgba(255,255,255,0.45)' },
   tabRow: {
     flexDirection: 'row', marginHorizontal: 16, gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: 3, marginBottom: 12,
+    backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 12, padding: 3, marginBottom: 12,
   },
   tab: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     paddingVertical: 10, borderRadius: 10,
   },
-  tabActive: { backgroundColor: 'rgba(255,255,255,0.06)' },
-  tabText: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  tabActive: { backgroundColor: 'rgba(255,255,255,0.45)' },
+  tabText: { color: 'rgba(255,255,255,0.72)', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   tabTextActive: { color: '#FF3B30' },
   section: { paddingHorizontal: 16 },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingTop: 16, paddingBottom: 10,
   },
-  sectionTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  sectionTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   livePulse: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF3B30' },
   createEventBtn: { borderRadius: 14, overflow: 'hidden', marginBottom: 8, borderWidth: 1, borderColor: 'rgba(255,59,48,0.15)' },
   createEventGrad: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16 },
-  createEventTitle: { color: '#FF3B30', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  createEventSub: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '600' },
+  createEventTitle: { color: '#FF3B30', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
+  createEventSub: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '400' },
   addCoachBtn: { borderRadius: 14, overflow: 'hidden', marginBottom: 8, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
   addCoachGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 14 },
-  addCoachText: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
+  addCoachText: { color: '#00F2FF', fontSize: 15, fontWeight: '900', letterSpacing: 1.5 },
   emptyState: { alignItems: 'center', paddingTop: 60, gap: 8 },
-  emptyTitle: { color: 'rgba(255,255,255,0.35)', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
-  emptySub: { color: 'rgba(255,255,255,0.60)', fontSize: 12, fontWeight: '600', textAlign: 'center' },
+  emptyTitle: { color: 'rgba(255,255,255,0.72)', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
+  emptySub: { color: 'rgba(255,255,255,0.60)', fontSize: 15, fontWeight: '400', textAlign: 'center' },
 });
