@@ -5,8 +5,12 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
-// ── THEME TEST CHICAGO: comment this line to revert to default typography ──
-import './theme-test-chicago.css';
+// ── THEME TEST CHICAGO: disabled — breaks icons and bold formatting
+// import './theme-test-chicago.css';
+import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
+import * as SplashScreen from 'expo-splash-screen';
+
+SplashScreen.preventAutoHideAsync();
 
 const PENDING_EVENT_KEY = '@arenakore_pending_event';
 
@@ -65,6 +69,19 @@ function DeepLinkHandler() {
 }
 
 export default function RootLayout() {
+  // Load Inter font for body text (does not affect icons or title weights)
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
+  }, [fontsLoaded]);
+
+  // Render app even if fonts haven't loaded (falls back to system font)
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

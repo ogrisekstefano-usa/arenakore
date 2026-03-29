@@ -247,12 +247,12 @@ const s = StyleSheet.create({
   title: { color: CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 6 },
   titleBig: { color: '#FFFFFF', fontSize: 44, fontWeight: '900', letterSpacing: 0.5, lineHeight: 48 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.7, shadowRadius: 6 },
-  subtitle: { color: '#E0E0E0', fontSize: 13, fontWeight: '700', lineHeight: 22, letterSpacing: 0.5 },
+  subtitle: { color: '#E0E0E0', fontSize: 14, fontWeight: '500', lineHeight: 24, letterSpacing: 0.3 },
 
   // Pillars
   pillarsRow: { flexDirection: 'row', gap: 8, marginBottom: 28 },
   pillar: { flex: 1, alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)' },
-  pillarTxt: { color: 'rgba(255,255,255,0.5)', fontSize: 8, fontWeight: '900', letterSpacing: 1, textAlign: 'center' },
+  pillarTxt: { color: 'rgba(255,255,255,0.6)', fontSize: 9, fontWeight: '700', letterSpacing: 1, textAlign: 'center' },
 
   // Form
   form: { gap: 16 },
@@ -269,7 +269,7 @@ const s = StyleSheet.create({
   submitBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: CYAN, borderRadius: 10, paddingVertical: 18, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 10 },
   submitBtnLoading: { backgroundColor: 'rgba(0,242,255,0.5)' },
   submitTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 3 },
-  disclaimerTxt: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '700', textAlign: 'center', lineHeight: 16 },
+  disclaimerTxt: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '500', textAlign: 'center', lineHeight: 18 },
 
   // Success
   successWrap: { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },

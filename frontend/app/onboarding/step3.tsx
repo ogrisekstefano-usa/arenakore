@@ -437,12 +437,12 @@ const s = StyleSheet.create({
   },
   levelLabelActive: { color: CYAN },
   levelDesc: {
-    color: '#888888',               // visible gray — not invisible anymore
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1,
+    color: '#A0A0A0',
+    fontSize: 11,
+    fontWeight: '500',
+    letterSpacing: 0.2,
   },
-  levelDescActive: { color: 'rgba(0,242,255,0.6)' },
+  levelDescActive: { color: 'rgba(0,242,255,0.8)', fontSize: 11, fontWeight: '600' },
   levelGlow: {
     width: 6, height: 6, borderRadius: 3, backgroundColor: CYAN,
     shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4,

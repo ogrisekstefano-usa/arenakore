@@ -227,7 +227,7 @@ const s = StyleSheet.create({
   ghostIconBox: { width: 40, height: 40, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' },
   ghostInfo: { flex: 1, gap: 2 },
   ghostTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  ghostDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '700', lineHeight: 15 },
+  ghostDesc: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '500', lineHeight: 18 },
   ghostActive: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(136,136,136,0.1)', borderRadius: 8, padding: 10 },
   ghostActiveTxt: { color: '#888', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
 
@@ -236,7 +236,7 @@ const s = StyleSheet.create({
   wipeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: 'rgba(255,59,48,0.06)', borderWidth: 1.5, borderColor: 'rgba(255,59,48,0.3)', borderRadius: 10, paddingVertical: 16 },
   wipeBtnLoading: { opacity: 0.5 },
   wipeBtnTxt: { color: '#FF3B30', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
-  wipeNote: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '700', textAlign: 'center', lineHeight: 16 },
+  wipeNote: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '500', textAlign: 'center', lineHeight: 18 },
 
   footer: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center', paddingTop: 8 },
   footerTxt: { color: 'rgba(0,242,255,0.2)', fontSize: 8, fontWeight: '700', letterSpacing: 2 },
