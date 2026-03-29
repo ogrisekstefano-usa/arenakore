@@ -5,6 +5,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
+// ── THEME TEST CHICAGO: comment this line to revert to default typography ──
+import './theme-test-chicago.css';
 
 const PENDING_EVENT_KEY = '@arenakore_pending_event';
 

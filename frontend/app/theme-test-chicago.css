@@ -1,0 +1,68 @@
+/**
+ * ARENAKORE — THEME TEST CHICAGO
+ * Demo typography override — completely reversible.
+ * To revert: comment out the import in _layout.tsx (line marked THEME TEST)
+ *
+ * Applies to: Expo WEB preview only.
+ * Native (Expo Go): handled by themeOverride.ts
+ */
+
+/* 1. FONT FAMILY — Inter/Roboto instead of system default */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Roboto:wght@300;400;500;700;900&display=swap');
+
+body, p, span,
+div:not([role="button"]),
+.kore-text {
+    font-family: 'Inter', 'Roboto', -apple-system, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* 2. REMOVE CONDENSED DEFAULT + BASE SIZE */
+* {
+    font-family: 'Inter', 'Roboto', sans-serif;
+}
+
+/* 3. PARAGRAPHS — Clean, airy, readable */
+p,
+.kore-description,
+div[dir="auto"]:not([style*="font-weight: 700"]):not([style*="font-weight: 900"]) {
+    font-size: 18px !important;
+    line-height: 1.8 !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.3px;
+}
+
+/* 4. LETTER SPACING — React Native Web class */
+.r-letterSpacing-1ikidpy,
+[class*="letterSpacing"] {
+    letter-spacing: 0.9px !important;
+}
+
+/* 5. TITLES + BUTTONS */
+h1, h2, h3,
+[class*="title"],
+div[role="button"] {
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+}
+
+/* 6. SCALE-UP: +2.5px on body-level text */
+[role="paragraph"],
+[data-testid*="text"] {
+    font-size: calc(1em + 2px) !important;
+}
+
+/* 7. INPUT PLACEHOLDERS — higher opacity */
+input::placeholder,
+textarea::placeholder {
+    opacity: 0.65 !important;
+    color: rgba(0, 242, 255, 0.65) !important;
+}
+
+/* 8. BUTTONS — uppercase + spacing */
+[role="button"] span,
+button span {
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+}
