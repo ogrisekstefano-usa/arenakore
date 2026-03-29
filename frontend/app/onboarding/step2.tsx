@@ -1477,15 +1477,14 @@ export default function NexusBioScan() {
               stroke="rgba(0,242,255,0.04)" strokeWidth={0.5} />
           ))}
 
-          {/* ── SKELETON — NEXUS v3.0: ZERO SIMULATION POLICY ── */}
+          {/* ── SKELETON — Canvas WebView is sole renderer when poseEngineReady ── */}
           {(() => {
-            // NEXUS v3.0 RULE: NOTHING renders unless:
-            // 1. Real MediaPipe WebView is active (poseEngineReady = true)
-            // 2. Real landmarks have been confirmed (realPts !== null)
-            // If either condition fails → absolute black, no simulation, no fallback.
-            const displayPts: [number, number][] | null = poseEngineReady ? realPts : null;
+            // When poseEngineReady: WebView canvas draws video + skeleton → SVG disabled
+            // When NOT ready: no simulation
+            if (poseEngineReady) return null;  // Canvas handles ALL rendering
 
-            if (!displayPts) return null; // ZERO SIMULATION — black screen until real data
+            const displayPts: [number, number][] | null = realPts;
+            if (!displayPts) return null;
 
             return (
               <>

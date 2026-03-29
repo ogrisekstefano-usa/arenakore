@@ -3336,6 +3336,7 @@ async def nexus_scanner_page():
     }
 
     var personFirstSeen = null;
+    var prevBBoxArea = null;  // area consistency check
     var STABLE_MS = 2000;
     var lastTime  = 0;
     var sendPending = false;
@@ -3403,8 +3404,37 @@ async def nexus_scanner_page():
       ctx.globalAlpha = 1;
 
       var vc = coco17.filter(function(p){return p!==null;}).length;
+
+      // ── AREA CONSISTENCY CHECK (Gemini v3): if bounding box jumps > 45%, it's a ghost
+      if (vc >= 4) {
+        var xs = coco17.filter(function(p){return p!==null;}).map(function(p){return p.x;});
+        var ys = coco17.filter(function(p){return p!==null;}).map(function(p){return p.y;});
+        var bboxW = Math.max.apply(null,xs) - Math.min.apply(null,xs);
+        var bboxH = Math.max.apply(null,ys) - Math.min.apply(null,ys);
+        var bboxArea = bboxW * bboxH;
+        if (prevBBoxArea !== null && bboxArea > 100) {
+          var areaChange = Math.abs(bboxArea - prevBBoxArea) / Math.max(prevBBoxArea, 1);
+          if (areaChange > 0.45) {
+            // GHOST JUMP: area changed > 45% in one frame — keep previous
+            personFirstSeen = null;
+            post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+            return;
+          }
+        }
+        if (bboxArea > 100) prevBBoxArea = bboxArea;
+      }
+
+      // Soft centrality: if nose too far from center, reset timer but still draw
       var noseX = mp_lm[0] ? mp_lm[0].x : 0.5;
-      var centered = (noseX >= 0.25 && noseX <= 0.75);
+      if (noseX < 0.12 || noseX > 0.88) {
+        // Far-edge ghost — discard
+        personFirstSeen = null;
+        prevSmoothed = null;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        post({ type:'pose', landmarks:[], person_detected:false, visible_count:0, centered:false, fps:0 });
+        return;
+      }
+      var centered = (noseX >= 0.28 && noseX <= 0.72);
       var now = Date.now();
       if (!personFirstSeen) personFirstSeen = now;
       var stable = (now - personFirstSeen) >= STABLE_MS && vc >= 5;
