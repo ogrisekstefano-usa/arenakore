@@ -161,7 +161,7 @@ const s = StyleSheet.create({
 
   header: { marginBottom: 28, gap: 4 },
   title:  { color: CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 6 },
-  titleBig: { color: '#FFFFFF', fontSize: 38, fontWeight: '900', letterSpacing: 0.5.5, lineHeight: 42 },
+  titleBig: { color: '#FFFFFF', fontSize: 38, fontWeight: '900', letterSpacing: 0.5, lineHeight: 42 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: {width:0,height:0}, shadowOpacity:0.8, shadowRadius:6 },
   subtitle: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, lineHeight: 18 },
 
