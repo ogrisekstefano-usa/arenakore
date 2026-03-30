@@ -23,6 +23,7 @@ import { CoachStudio } from '../../components/crew/CoachStudio';
 import { CreateCrewModal } from '../../components/crew/CreateCrewModal';
 import { CrewHubDetail } from '../../components/crew/CrewHubDetail';
 import { CATEGORIES_MAP } from '../../components/crew/CreateCrewModal';
+import { ChallengeInviteModal } from '../../components/crew/ChallengeInviteModal';
 import { playAcceptPing, playDecline } from '../../utils/sounds';
 
 // WoW dramatic athlete group photos for immersive crew cards
@@ -41,6 +42,7 @@ export default function CrewsTab() {
   const [refreshing, setRefreshing] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedCrew, setSelectedCrew] = useState<any>(null);
+  const [challengeTarget, setChallengeTarget] = useState<any>(null);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
   const loadData = async () => {
@@ -175,6 +177,15 @@ export default function CrewsTab() {
                       </LinearGradient>
                     </ImageBackground>
                   </TouchableOpacity>
+                  {/* Challenge button */}
+                  <TouchableOpacity
+                    style={s.challengeBtn}
+                    onPress={() => setChallengeTarget(crew)}
+                    activeOpacity={0.85}
+                  >
+                    <Ionicons name="flash" size={12} color="#050505" />
+                    <Text style={s.challengeBtnText}>SFIDA</Text>
+                  </TouchableOpacity>
                 </Animated.View>
               );
             })
@@ -191,12 +202,23 @@ export default function CrewsTab() {
 
       <CreateCrewModal visible={showCreate} onClose={() => setShowCreate(false)} onCreated={loadData} token={token} />
       {selectedCrew && <CrewHubDetail crew={selectedCrew} onClose={() => { setSelectedCrew(null); loadData(); }} token={token!} />}
+      <ChallengeInviteModal
+        visible={!!challengeTarget}
+        crew={challengeTarget}
+        onClose={() => setChallengeTarget(null)}
+      />
     </ImageBackground>
   );
 }
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
+  challengeBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    marginHorizontal: 4, marginTop: 6, marginBottom: 4,
+    backgroundColor: '#D4AF37', borderRadius: 8, paddingVertical: 8,
+  },
+  challengeBtnText: { color: '#050505', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,

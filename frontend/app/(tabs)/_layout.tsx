@@ -9,13 +9,21 @@ import { playTabSwitch } from '../../utils/sounds';
 
 // Dynamic tab config based on active role
 function getTabConfig(activeRole: UserRole) {
-  return [
+  const isCoach = activeRole === 'COACH';
+  const isGym   = activeRole === 'GYM';
+  const tabs = [
     { name: 'arena', icon: 'map-outline', iconBold: 'map', label: 'ARENA' },
-    { name: 'kore', icon: 'shield-outline', iconBold: 'shield', label: 'KORE' },
+    // GYM role: replace 'kore' with 'gym-hub'
+    isGym
+      ? { name: 'gym-hub', icon: 'business-outline', iconBold: 'business', label: 'GYM HUB' }
+      : { name: 'kore', icon: 'shield-outline', iconBold: 'shield', label: 'KORE' },
     { name: 'nexus-trigger', icon: 'flash', iconBold: 'flash-sharp', label: 'NEXUS', isCenter: true },
     { name: 'dna', icon: 'analytics', iconBold: 'analytics-sharp', label: 'DNA' },
     { name: 'hall', icon: 'trophy', iconBold: 'trophy-sharp', label: 'RANK' },
+    // COACH role: add extra tab
+    ...(isCoach ? [{ name: 'my-athletes', icon: 'people-outline', iconBold: 'people', label: 'ATLETI' }] : []),
   ];
+  return tabs;
 }
 
 function GoldButton({ onPress, focused }: { onPress: () => void; focused: boolean }) {
