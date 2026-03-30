@@ -1,3 +1,4 @@
+import { TAB_BACKGROUNDS } from '../../utils/images';
 /**
  * ARENAKORE — NEXUS TRIGGER TAB v3.0 (Refactored)
  * Nike Elite Aesthetic — Motion tracking, Bio-scan, Challenge Forge
@@ -100,7 +101,7 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
   const gs = useAnimatedStyle(() => ({ opacity: laserGlow.value }));
 
   return (
-    <View style={bio$.overlay}>
+    <ImageBackground source={{ uri: TAB_BACKGROUNDS.nexus }} style={bio$.overlay} imageStyle={{ opacity: 0.10 }}>
       <Animated.View style={[bio$.laserWrap, ls]}>
         <Animated.View style={[bio$.laserGlow, gs]} />
         <View style={bio$.laserLine} />
@@ -133,7 +134,7 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
       <View style={[bio$.bracket, { top: 60, right: 20, transform: [{ scaleX: -1 }] }]}><View style={bio$.bH} /><View style={bio$.bV} /></View>
       <View style={[bio$.bracket, { bottom: 100, left: 20, transform: [{ scaleY: -1 }] }]}><View style={bio$.bH} /><View style={bio$.bV} /></View>
       <View style={[bio$.bracket, { bottom: 100, right: 20, transform: [{ scaleX: -1 }, { scaleY: -1 }] }]}><View style={bio$.bH} /><View style={bio$.bV} /></View>
-    </View>
+    </ImageBackground>
   );
 }
 

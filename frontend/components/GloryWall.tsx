@@ -357,7 +357,7 @@ export function HallOfKore() {
 
   return (
     <>
-    <ImageBackground source={{ uri: HALL_OF_KORE_BG }} style={gl$.container} imageStyle={{ opacity: 0.4 }} blurRadius={8}>
+    <ImageBackground source={{ uri: HALL_OF_KORE_BG }} style={gl$.container} imageStyle={{ opacity: 0.12 }}>
       <LinearGradient
         colors={['rgba(5,5,5,0.65)', 'rgba(5,5,5,0.88)', 'rgba(5,5,5,0.97)']}
         locations={[0, 0.25, 0.5]}

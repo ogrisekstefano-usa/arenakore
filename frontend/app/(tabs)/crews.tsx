@@ -17,6 +17,8 @@ import Animated, {
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { Header } from '../../components/Header';
+import { ImageBackground } from 'react-native';
+import { TAB_BACKGROUNDS } from '../../utils/images';
 import { GymHub } from '../../components/GymHub';
 import { CoachStudio } from '../../components/crew/CoachStudio';
 import { CreateCrewModal } from '../../components/crew/CreateCrewModal';
@@ -72,7 +74,7 @@ export default function CrewsTab() {
   }, [token]);
 
   return (
-    <View style={s.container} testID="crews-tab">
+    <ImageBackground source={{ uri: TAB_BACKGROUNDS.crews }} style={s.container} imageStyle={{ opacity: 0.10 }} testID="crews-tab">
       <StatusBar barStyle="light-content" />
       <Header title={activeRole === 'COACH' ? 'MY STUDIO' : activeRole === 'GYM_OWNER' ? 'GYM HUB' : 'LA TRIBU'} />
 
@@ -190,7 +192,7 @@ export default function CrewsTab() {
 
       <CreateCrewModal visible={showCreate} onClose={() => setShowCreate(false)} onCreated={loadData} token={token} />
       {selectedCrew && <CrewHubDetail crew={selectedCrew} onClose={() => { setSelectedCrew(null); loadData(); }} token={token!} />}
-    </View>
+    </ImageBackground>
   );
 }
 

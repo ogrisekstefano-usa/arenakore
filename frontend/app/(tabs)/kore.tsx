@@ -20,6 +20,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { Header } from '../../components/Header';
 import { useFocusEffect, useRouter } from 'expo-router';
+import { ImageBackground } from 'react-native';
+import { TAB_BACKGROUNDS } from '../../utils/images';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -1092,7 +1094,7 @@ export default function KoreTab() {
   };
 
   return (
-    <View style={s.container}>
+    <ImageBackground source={{ uri: TAB_BACKGROUNDS.kore }} style={s.container} imageStyle={{ opacity: 0.10, resizeMode: 'cover' }}>
       <StatusBar barStyle="light-content" />
       <Header title="KORE" />
       {loading ? (
@@ -1169,8 +1171,7 @@ export default function KoreTab() {
           )}
         </>
       )}
-    </View>
-  );
+    </ImageBackground>  );
 }
 
 const s = StyleSheet.create({

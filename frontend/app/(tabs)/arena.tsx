@@ -6,7 +6,7 @@
 import React, { useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar,
-  TouchableOpacity, Dimensions,
+  TouchableOpacity, Dimensions, ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +15,7 @@ import Animated, {
   withRepeat, withSequence, withTiming, useAnimatedStyle, Easing,
 } from 'react-native-reanimated';
 import { Header } from '../../components/Header';
+import { TAB_BACKGROUNDS } from '../../utils/images';
 
 const { width: SW } = Dimensions.get('window');
 
@@ -252,7 +253,7 @@ const edu$ = StyleSheet.create({
 // ========== MAIN ARENA TAB ==========
 export default function ArenaTab() {
   return (
-    <View style={s.container}>
+    <ImageBackground source={{ uri: TAB_BACKGROUNDS.arena }} style={s.container} imageStyle={{ opacity: 0.10 }}>
       <StatusBar barStyle="light-content" />
       <Header title="ARENA" />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
@@ -270,7 +271,7 @@ export default function ArenaTab() {
         </View>
         <EliteDivisionUpdates />
       </ScrollView>
-    </View>
+    </ImageBackground>
   );
 }
 

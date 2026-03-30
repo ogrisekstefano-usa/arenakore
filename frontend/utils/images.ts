@@ -25,6 +25,16 @@ export const DNA_HERO_IMAGE = 'https://images.unsplash.com/photo-1634152557768-b
 // Hall of KORE / Leaderboard background - empty stadium under spotlights
 export const HALL_OF_KORE_BG = 'https://images.unsplash.com/photo-1707898611072-bb5cbae75929?auto=compress&cs=tinysrgb&w=1200&q=60';
 
+// Per-tab background images
+export const TAB_BACKGROUNDS: Record<string, string> = {
+  arena:   'https://images.pexels.com/photos/1552106/pexels-photo-1552106.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60',  // athlete crowd dark stadium
+  kore:    'https://images.pexels.com/photos/3621106/pexels-photo-3621106.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60',  // dark gym silhouette
+  nexus:   'https://images.pexels.com/photos/4397840/pexels-photo-4397840.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60',  // dark fitness tech
+  crews:   'https://images.pexels.com/photos/3622622/pexels-photo-3622622.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60',  // team training dark
+  hall:    'https://images.unsplash.com/photo-1707898611072-bb5cbae75929?auto=compress&cs=tinysrgb&w=1200&q=60',        // stadium
+  dna:     DNA_HERO_IMAGE,
+};
+
 // Onboarding category images
 export const CATEGORY_IMAGES: Record<string, string> = {
   atletica: 'https://images.pexels.com/photos/5961768/pexels-photo-5961768.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
