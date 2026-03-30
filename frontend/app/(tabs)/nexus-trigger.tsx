@@ -264,7 +264,7 @@ const cn$ = StyleSheet.create({
     borderWidth: 1, marginTop: 10, marginBottom: 2,
   },
   eligBannerActive: { backgroundColor: 'rgba(0,242,255,0.65)', borderColor: 'rgba(0,242,255,0.65)' },
-  eligBannerLocked: { backgroundColor: 'rgba(255,255,255,0.45)', borderColor: 'rgba(255,255,255,0.45)' },
+  eligBannerLocked: { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.05)' },
   eligText: { flex: 1, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   eligTextActive: { color: '#00F2FF' },
   eligTextLocked: { color: 'rgba(255,255,255,0.3)' },
@@ -604,7 +604,7 @@ const smv$ = StyleSheet.create({
   barRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   barLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   barPct: { fontSize: 15, fontWeight: '900', letterSpacing: 2 },
-  barBg: { height: 5, backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 2.5, overflow: 'hidden' },
+  barBg: { height: 5, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 2.5, overflow: 'hidden' },
   stabFill: { height: '100%', borderRadius: 2.5 },
   progressBg: { height: 7, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 3.5, overflow: 'hidden' },
   progressFill: {

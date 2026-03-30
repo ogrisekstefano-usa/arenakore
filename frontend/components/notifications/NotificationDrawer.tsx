@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   },
   markAllText: { color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   closeBtn: { padding: 4 },
-  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.45)' },
+  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)' },
   list: { flexGrow: 0 },
   notifRow: {
     flexDirection: 'row', alignItems: 'flex-start',
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   unreadDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#00F2FF' },
   notifBody: { color: 'rgba(255,255,255,0.4)', fontSize: 15, lineHeight: 17, fontWeight: '500' },
   notifTime: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '700', letterSpacing: 1, marginTop: 2 },
-  separator: { height: 1, backgroundColor: 'rgba(255,255,255,0.45)', marginLeft: 72 },
+  separator: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginLeft: 72 },
   emptyState: { alignItems: 'center', paddingVertical: 48, gap: 10 },
   emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   emptySubText: { color: 'rgba(255,255,255,0.50)', fontSize: 14, textAlign: 'center', lineHeight: 18 },

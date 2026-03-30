@@ -241,12 +241,12 @@ const st = StyleSheet.create({
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4,
   },
   item: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 15, paddingHorizontal: 22 },
-  iconWrap: { width: 34, height: 34, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.45)', alignItems: 'center', justifyContent: 'center' },
+  iconWrap: { width: 34, height: 34, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' },
   itemText: { flex: 1, gap: 2 },
   itemLabel: { color: WHITE, fontSize: 16, fontWeight: '800', letterSpacing: 1.5 },
   itemSub: { color: DIM, fontSize: 13, fontWeight: '500' },
   section: { marginTop: 4 },
-  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.45)', marginHorizontal: 22, marginVertical: 8 },
+  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginHorizontal: 22, marginVertical: 8 },
   sectionTitle: { color: GOLD, fontSize: 13, fontWeight: '900', letterSpacing: 3, paddingHorizontal: 22, marginBottom: 4 },
   founderPride: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -261,7 +261,7 @@ const st = StyleSheet.create({
   segGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12, width: '100%' },
   segBtn: {
     width: '46%', alignItems: 'center', gap: 4, paddingVertical: 14, borderRadius: 12,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.50)', backgroundColor: 'rgba(255,255,255,0.45)',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.50)', backgroundColor: 'rgba(255,255,255,0.05)',
   },
   segBtnActive: {
     borderColor: GOLD, backgroundColor: 'rgba(212,175,55,0.08)',

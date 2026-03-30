@@ -103,7 +103,7 @@ function GiantCard({ item, medal }: { item: any; medal: typeof MEDAL_COLORS[1] }
 const giant$ = StyleSheet.create({
   card: {
     flex: 1, alignItems: 'center', gap: 4, paddingVertical: 16, paddingHorizontal: 6,
-    backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16,
     borderWidth: 1.5, minHeight: 170,
   },
   rankBadge: { flexDirection: 'row', alignItems: 'center', gap: 3 },
@@ -254,7 +254,7 @@ function MyStatusBar({ rankData }: { rankData: any }) {
   }, [isTop10]);
 
   const borderStyle = useAnimatedStyle(() => ({
-    borderColor: isTop10 ? `rgba(0,242,255,${pulseOpacity.value})` : 'rgba(255,255,255,0.45)',
+    borderColor: isTop10 ? `rgba(0,242,255,${pulseOpacity.value})` : 'rgba(255,255,255,0.05)',
   }));
 
   if (!rankData) return null;
@@ -288,7 +288,7 @@ function MyStatusBar({ rankData }: { rankData: any }) {
 }
 
 const status$ = StyleSheet.create({
-  container: { borderTopWidth: 2, borderColor: 'rgba(255,255,255,0.45)' },
+  container: { borderTopWidth: 2, borderColor: 'rgba(255,255,255,0.05)' },
   grad: { paddingHorizontal: 16, paddingVertical: 12 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   rankCircle: {
@@ -493,7 +493,7 @@ const gl$ = StyleSheet.create({
   title: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 3 },
   tabRow: {
     flexDirection: 'row', marginHorizontal: 16, gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 12, padding: 3,
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 3,
   },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
   tabActive: { backgroundColor: 'rgba(212,175,55,0.15)' },

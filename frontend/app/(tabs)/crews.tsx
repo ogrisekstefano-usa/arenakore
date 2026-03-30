@@ -207,8 +207,8 @@ const s = StyleSheet.create({
   },
   inviteCard: {
     marginHorizontal: 16, marginBottom: 10,
-    backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 14,
-    padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)',
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14,
+    padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
   },
   inviteHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
   inviteInfo: { flex: 1, gap: 1 },
@@ -222,9 +222,9 @@ const s = StyleSheet.create({
   },
   acceptText: { color: '#D4AF37', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
   declineBtn: {
-    width: 44, backgroundColor: 'rgba(255,255,255,0.45)',
+    width: 44, backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 10, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
   },
   emptyState: { alignItems: 'center', padding: 40, gap: 8 },
   emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 16, fontWeight: '800' },

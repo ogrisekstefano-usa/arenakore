@@ -283,7 +283,7 @@ const cs$ = StyleSheet.create({
   emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
   emptySub: { color: 'rgba(255,255,255,0.60)', fontSize: 15, fontWeight: '400' },
   card: {
-    backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 16, padding: 16, gap: 10,
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, gap: 10,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
@@ -322,20 +322,20 @@ const ct$ = StyleSheet.create({
   subtitle: { color: 'rgba(255,255,255,0.4)', fontSize: 15, textAlign: 'center', marginBottom: 8 },
   label: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
     color: '#FFF', fontSize: 17, fontWeight: '400', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   exRow: { flexDirection: 'row', gap: 10 },
   exBtn: {
     flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', gap: 4,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.45)', backgroundColor: 'rgba(255,255,255,0.45)',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.05)', backgroundColor: 'rgba(255,255,255,0.05)',
   },
   exBtnActive: { borderColor: '#00F2FF', backgroundColor: 'rgba(0,242,255,0.65)' },
   exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   diffRow: { flexDirection: 'row', gap: 6 },
   diffBtn: {
     flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', gap: 2,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.45)', backgroundColor: 'rgba(255,255,255,0.45)',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.05)', backgroundColor: 'rgba(255,255,255,0.05)',
   },
   diffLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
   numRow: { flexDirection: 'row', gap: 10 },
