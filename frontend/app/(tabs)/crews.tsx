@@ -17,7 +17,6 @@ import Animated, {
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { Header } from '../../components/Header';
-import { ImageBackground } from 'react-native';
 import { TAB_BACKGROUNDS } from '../../utils/images';
 import { GymHub } from '../../components/GymHub';
 import { CoachStudio } from '../../components/crew/CoachStudio';
