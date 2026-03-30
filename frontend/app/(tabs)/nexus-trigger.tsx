@@ -810,7 +810,7 @@ export default function NexusTriggerScreen() {
   const fmt = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
   if (phase === 'console') {
-    return <NexusConsole user={user} onScan={() => setPhase('bioscan')} onForge={() => setPhase('forge')} deviceTier={deviceTier} eligibility={eligibility} />;
+    return <NexusConsole user={user} onScan={() => router.push({ pathname: '/onboarding/step2', params: { mode: 'rescan' } })} onForge={() => setPhase('forge')} deviceTier={deviceTier} eligibility={eligibility} />;
   }
 
   if (phase === 'forge') {

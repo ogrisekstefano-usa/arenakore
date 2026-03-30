@@ -3198,36 +3198,48 @@ async def update_permissions(body: dict, current_user: dict = Depends(get_curren
 async def save_scan_result(body: dict, current_user: dict = Depends(get_current_user)):
     """
     Save NEXUS Bio-Scan result. Called after Gold Flash completes.
-    - Updates user DNA from scan metrics (stability, amplitude, kore_score)
+    - rescan_mode=True: ACCUMULATIVE scoring (70% old DNA + 30% new scan). DNA improves progressively.
+    - rescan_mode=False (default/onboarding): direct DNA mapping from scan metrics.
     - Awards XP: 150 + (kore_score * 0.5) points
-    - Forces city assignment so user appears in city rankings immediately
-    - Stores scan record in scan_results collection for history
     """
-    kore_score = min(100.0, max(0.0, float(body.get("kore_score", 74))))
-    stability  = min(100.0, max(0.0, float(body.get("stability", 50))))
-    amplitude  = min(100.0, max(0.0, float(body.get("amplitude", 50))))
-    city       = (body.get("city") or "CHICAGO").upper().strip()
-    scan_date  = body.get("scan_date") or datetime.now(timezone.utc).isoformat()
+    kore_score  = min(100.0, max(0.0, float(body.get("kore_score", 74))))
+    stability   = min(100.0, max(0.0, float(body.get("stability", 50))))
+    amplitude   = min(100.0, max(0.0, float(body.get("amplitude", 50))))
+    city        = (body.get("city") or "CHICAGO").upper().strip()
+    scan_date   = body.get("scan_date") or datetime.now(timezone.utc).isoformat()
+    rescan_mode = bool(body.get("rescan_mode", False))
 
     def clamp(v: float) -> float:
         return round(min(100, max(0, v)))
 
-    # ── DNA mapping from biometric scan:
-    # stability → endurance + mental focus
-    # amplitude → strength + agility + power
-    # kore_score → technique (overall quality)
-    dna_update = {
-        "dna.velocita":     clamp(stability * 0.72 + amplitude * 0.25 + random.uniform(-2, 2)),
-        "dna.forza":        clamp(amplitude * 0.90 + random.uniform(-2, 2)),
-        "dna.resistenza":   clamp(stability * 0.92 + random.uniform(-2, 2)),
-        "dna.agilita":      clamp(amplitude * 0.88 + random.uniform(-2, 2)),
-        "dna.tecnica":      clamp(kore_score * 0.90 + random.uniform(-2, 2)),
-        "dna.potenza":      clamp(amplitude * 0.85 + random.uniform(-2, 2)),
-        "dna.mentalita":    clamp(stability * 0.94 + random.uniform(-2, 2)),
-        "dna.flessibilita": clamp((stability + amplitude) / 2 * 0.82 + random.uniform(-2, 2)),
+    # DNA from raw scan metrics
+    scan_dna = {
+        "velocita":     clamp(stability * 0.72 + amplitude * 0.25 + random.uniform(-2, 2)),
+        "forza":        clamp(amplitude * 0.90 + random.uniform(-2, 2)),
+        "resistenza":   clamp(stability * 0.92 + random.uniform(-2, 2)),
+        "agilita":      clamp(amplitude * 0.88 + random.uniform(-2, 2)),
+        "tecnica":      clamp(kore_score * 0.90 + random.uniform(-2, 2)),
+        "potenza":      clamp(amplitude * 0.85 + random.uniform(-2, 2)),
+        "mentalita":    clamp(stability * 0.94 + random.uniform(-2, 2)),
+        "flessibilita": clamp((stability + amplitude) / 2 * 0.82 + random.uniform(-2, 2)),
     }
 
-    xp_reward = 150 + round(kore_score * 0.5)   # 150–200 XP per scan
+    if rescan_mode and current_user.get("dna"):
+        # ── ACCUMULATIVE: 70% existing DNA + 30% new scan
+        # DNA only improves — can't go below existing value
+        existing = current_user["dna"]
+        final_dna = {}
+        for k, new_v in scan_dna.items():
+            old_v = float(existing.get(k) or 0)
+            blended = round(old_v * 0.70 + new_v * 0.30)
+            final_dna[k] = max(blended, round(old_v))  # DNA never decreases
+    else:
+        final_dna = scan_dna
+
+    dna_update = {f"dna.{k}": v for k, v in final_dna.items()}
+
+    # XP reward: less for rescan (already earned baseline)
+    xp_reward = (100 + round(kore_score * 0.3)) if rescan_mode else (150 + round(kore_score * 0.5))
 
     await db.users.update_one(
         {"_id": current_user["_id"]},
@@ -3240,24 +3252,26 @@ async def save_scan_result(body: dict, current_user: dict = Depends(get_current_
     # Record scan history
     try:
         await db.scan_results.insert_one({
-            "user_id":    current_user["_id"],
-            "kore_score": kore_score,
-            "stability":  stability,
-            "amplitude":  amplitude,
-            "city":       city,
-            "scan_date":  scan_date,
-            "xp_earned":  xp_reward,
-            "created_at": datetime.now(timezone.utc),
+            "user_id":     current_user["_id"],
+            "kore_score":  kore_score,
+            "stability":   stability,
+            "amplitude":   amplitude,
+            "city":        city,
+            "scan_date":   scan_date,
+            "xp_earned":   xp_reward,
+            "rescan_mode": rescan_mode,
+            "dna_snapshot": final_dna,
+            "created_at":  datetime.now(timezone.utc),
         })
     except Exception:
-        pass  # scan_results failure never blocks the main response
+        pass
 
     updated_user = await db.users.find_one({"_id": current_user["_id"]})
     return {
-        "status":     "saved",
-        "kore_score": kore_score,
-        "stability":  stability,
-        "amplitude":  amplitude,
+        "status":      "saved",
+        "kore_score":  kore_score,
+        "stability":   stability,
+        "amplitude":   amplitude,
         "city":       city,
         "xp_earned":  xp_reward,
         "new_xp":     updated_user.get("xp", 0),

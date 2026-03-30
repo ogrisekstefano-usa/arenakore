@@ -8,7 +8,7 @@ import {
   View, Text, StyleSheet, StatusBar, useWindowDimensions, Platform,
   ActivityIndicator, TouchableOpacity, Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Line, Circle, Rect, Text as SvgText, G, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
 import Animated, {
@@ -294,6 +294,8 @@ const bi$ = StyleSheet.create({
 // ===================================================================
 export default function NexusBioScan() {
   const router = useRouter();
+  const { mode } = useLocalSearchParams<{ mode?: string }>();
+  const isRescan = mode === 'rescan';
   const insets = useSafeAreaInsets();
   const { width: SW, height: SH } = useWindowDimensions();
   const [permission, requestPermission] = useCameraPermissions();
@@ -1213,11 +1215,12 @@ export default function NexusBioScan() {
     // 2. Try API twice with token (if logged in)
     // 3. If API fails both times: data stays in AsyncStorage for next sync
     const scanPayload = {
-      kore_score: koScoreRef.current > 0 ? koScoreRef.current : 74,
-      stability:  Math.max(0, Math.min(100, Math.round(scoreBreakRef.current.stability * 100))),
-      amplitude:  Math.max(0, Math.min(100, Math.round(scoreBreakRef.current.amplitude * 100))),
-      city:       cityRef,
-      scan_date:  new Date().toISOString(),
+      kore_score:  koScoreRef.current > 0 ? koScoreRef.current : 74,
+      stability:   Math.max(0, Math.min(100, Math.round(scoreBreakRef.current.stability * 100))),
+      amplitude:   Math.max(0, Math.min(100, Math.round(scoreBreakRef.current.amplitude * 100))),
+      city:        cityRef,
+      scan_date:   new Date().toISOString(),
+      rescan_mode: isRescan,  // ← accumulative DNA scoring (70% old + 30% new)
     };
 
     try {
@@ -1251,8 +1254,14 @@ export default function NexusBioScan() {
       // Non-blocking: Gold Flash and navigation always proceed
     }
 
-    // ── Navigate to Athlete Passport (trofeo digitale) after gold flash
-    setTimeout(() => router.push('/onboarding/passport'), 4000);
+    // ── Navigate after Gold Flash
+    // Rescan mode: go back to KORE tab with updated scores
+    // Onboarding mode: go to passport
+    if (isRescan) {
+      setTimeout(() => router.replace('/(tabs)/kore'), 4000);
+    } else {
+      setTimeout(() => router.push('/onboarding/passport'), 4000);
+    }
   }, []);
 
   // ── Score Engine Gold Flash: fires handleApproval when pendingApprovalRef is set.
