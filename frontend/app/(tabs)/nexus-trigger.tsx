@@ -1067,3 +1067,8 @@ const hud$ = StyleSheet.create({
     color: '#FF453A', fontSize: 17, fontWeight: '900', letterSpacing: 3,
   },
 });
+const crewMsg$ = StyleSheet.create({
+  container: { marginHorizontal: 20, marginBottom: 16, padding: 12, backgroundColor: 'rgba(0,242,255,0.04)', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(0,242,255,0.12)' },
+  text: { color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 20 },
+  cta: { color: '#00F2FF', fontWeight: '700' },
+});

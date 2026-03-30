@@ -20,6 +20,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { Header } from '../../components/Header';
 import { useFocusEffect, useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { ImageBackground } from 'react-native';
 import { TAB_BACKGROUNDS } from '../../utils/images';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -1045,6 +1046,66 @@ const xp$ = StyleSheet.create({
   next: { color: 'rgba(255,255,255,0.65)', fontSize: 9, fontWeight: '700' },
 });
 
+
+// ── BIO-SCAN STATUS CARD
+function BioScanStatusCard({ user, router }: { user: any; router: any }) {
+  const lastScan = user?.baseline_scanned_at ? new Date(user.baseline_scanned_at) : null;
+  const daysSince = lastScan ? Math.floor((Date.now() - lastScan.getTime()) / 86400000) : 999;
+  const needsRescan = daysSince > 7;
+  return (
+    <Animated.View entering={FadeInDown.delay(120)} style={bsc$.card}>
+      <View style={bsc$.row}>
+        <Ionicons name="scan-circle" size={20} color={needsRescan ? '#FF453A' : '#00F2FF'} />
+        <View style={bsc$.info}>
+          <Text style={bsc$.label}>BIO-SCAN STATUS</Text>
+          <Text style={[bsc$.status, needsRescan && { color: '#FF453A' }]}>
+            {lastScan ? (needsRescan ? `${daysSince} GIORNI FA — SCADUTO` : 'CALIBRAZIONE RECENTE') : 'MAI ESEGUITO'}
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={[bsc$.btn, needsRescan && bsc$.btnRed]}
+          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(()=>{}); router.push('/onboarding/step2'); }}
+          activeOpacity={0.85}
+        >
+          <Text style={bsc$.btnText}>{needsRescan ? 'RECALIBRATE DNA' : 'SHARE PASSPORT'}</Text>
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  );
+}
+
+// ── GOALS SECTION
+function GoalsSection({ user }: { user: any }) {
+  const xp = user?.xp || 0;
+  const level = user?.level || 1;
+  const xpToNext = level * 500;
+  const xpProgress = Math.min(1, (xp % xpToNext) / xpToNext);
+  const goals = [
+    { label: 'LIVELLO ' + (level + 1), progress: xpProgress, value: `${xp % xpToNext}/${xpToNext} XP` },
+    { label: 'TOP 10 CHICAGO', progress: Math.min(1, xp / 8000), value: `${xp}/8000 XP` },
+    { label: 'DNA SCORE 90+', progress: Math.min(1, (user?.dna ? Object.values(user.dna as Record<string,number>).reduce((a:number,b:number)=>a+b,0)/Object.values(user.dna as Record<string,number>).length : 0)/90), value: '' },
+  ];
+  const closeGoal = goals.find(g => g.progress > 0.75 && g.progress < 1);
+  return (
+    <Animated.View entering={FadeInDown.delay(200)} style={goals$.card}>
+      <Text style={goals$.title}>GOALS</Text>
+      {goals.map((g, i) => (
+        <View key={i} style={goals$.row}>
+          <Text style={goals$.label}>{g.label}</Text>
+          <View style={goals$.track}><View style={[goals$.fill, { width: `${g.progress * 100}%` as any }]} /></View>
+          <Text style={goals$.val}>{Math.round(g.progress * 100)}%</Text>
+        </View>
+      ))}
+      {closeGoal && (
+        <TouchableOpacity style={goals$.pushBtn} onPress={() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(()=>{})} activeOpacity={0.85}>
+          <Ionicons name="trending-up" size={12} color="#050505" />
+          <Text style={goals$.pushText}>PUSH TO LEVEL UP</Text>
+        </TouchableOpacity>
+      )}
+    </Animated.View>
+  );
+}
+
 // ========== MAIN KORE TAB ==========
 export default function KoreTab() {
   const { user, token } = useAuth();
@@ -1109,7 +1170,13 @@ export default function KoreTab() {
             {/* 1. PASSPORT HEADER */}
             <PassportHeader user={user} />
 
-            {/* 2. RANK INFOGRAPHIC */}
+            {/* BIO-SCAN STATUS */}
+          <BioScanStatusCard user={user} router={router} />
+
+          {/* GOALS */}
+          <GoalsSection user={user} />
+
+          {/* 2. RANK INFOGRAPHIC */}
             <RankInfographic rankData={rankData} city={city} onCitySelect={handleCitySelect} />
 
             {/* 3. CITY RANKING — Real-Time KORE_SCORE */}
@@ -1208,3 +1275,27 @@ const hud$ = StyleSheet.create({
   score: { color: '#D4AF37', fontSize: 16, fontWeight: '900' },
   hint: { color: 'rgba(212,175,55,0.5)', fontSize: 8, fontWeight: '800', letterSpacing: 1, textAlign: 'center' },
 });
+
+const bsc$ = StyleSheet.create({
+  card: { marginHorizontal: 16, marginBottom: 10, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  info: { flex: 1, gap: 3 },
+  label: { color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  status: { color: '#00F2FF', fontSize: 13, fontWeight: '700' },
+  btn: { backgroundColor: '#00F2FF', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9 },
+  btnRed: { backgroundColor: '#FF453A' },
+  btnText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+});
+
+const goals$ = StyleSheet.create({
+  card: { marginHorizontal: 16, marginBottom: 10, backgroundColor: 'rgba(212,175,55,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(212,175,55,0.15)' },
+  title: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 4, marginBottom: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  label: { color: 'rgba(255,255,255,0.65)', fontSize: 11, fontWeight: '500', width: 130 },
+  track: { flex: 1, height: 5, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' },
+  fill: { height: 5, backgroundColor: '#D4AF37', borderRadius: 3 },
+  val: { color: 'rgba(212,175,55,0.8)', fontSize: 11, fontWeight: '700', width: 32, textAlign: 'right' },
+  pushBtn: { marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#D4AF37', borderRadius: 8, paddingVertical: 10 },
+  pushText: { color: '#050505', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+});
+

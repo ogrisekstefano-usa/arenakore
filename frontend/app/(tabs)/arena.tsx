@@ -1,9 +1,7 @@
 /**
- * ARENAKORE — ARENA TAB v2.0
- * COMMUNITY HUB — Nike Elite Feed
- * Zero emoji. Black/Cyan/White. Bold ALL-CAPS.
+ * ARENAKORE — ARENA TAB v3.0 — PROACTIVE GLOBAL COMPETITION
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar,
   TouchableOpacity, Dimensions, ImageBackground,
@@ -14,8 +12,12 @@ import Animated, {
   FadeIn, FadeInDown, useSharedValue,
   withRepeat, withSequence, withTiming, useAnimatedStyle, Easing,
 } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { Header } from '../../components/Header';
 import { TAB_BACKGROUNDS } from '../../utils/images';
+import { useAuth } from '../../contexts/AuthContext';
+import { api } from '../../utils/api';
+import { ChallengeInviteModal } from '../../components/crew/ChallengeInviteModal';
 
 const { width: SW } = Dimensions.get('window');
 
@@ -251,25 +253,103 @@ const edu$ = StyleSheet.create({
 });
 
 // ========== MAIN ARENA TAB ==========
+// ── LiveBattlesCard ──────────────────────────────────────────────
+function LiveBattlesCard() {
+  const { token } = useAuth();
+  const [battles, setBattles] = useState<any[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    if (!token) return;
+    api.getBattles(token).then(d => setBattles(Array.isArray(d) ? d.filter((b: any) => b.status === 'active') : [])).catch(() => {}).finally(() => setLoaded(true));
+  }, [token]);
+  const active = battles[0];
+  return (
+    <Animated.View entering={FadeInDown.delay(80)} style={live$.card}>
+      <View style={live$.topRow}>
+        <View style={live$.liveBadge}><Text style={live$.liveText}>LIVE</Text></View>
+        <Text style={live$.title}>GLOBAL BATTLES</Text>
+        <Text style={live$.count}>{battles.length} ACTIVE</Text>
+      </View>
+      {loaded && !active ? (
+        <View style={live$.emptyRow}>
+          <Text style={live$.emptyText}>NO ACTIVE BATTLES</Text>
+          <TouchableOpacity style={live$.ctaBtn} onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {})} activeOpacity={0.8}>
+            <Ionicons name="flash" size={12} color="#050505" /><Text style={live$.ctaText}>START A CHALLENGE</Text>
+          </TouchableOpacity>
+        </View>
+      ) : active ? (
+        <View style={live$.battleRow}>
+          <View style={live$.battleTeams}>
+            <Text style={live$.teamName}>{active.crew_a_name || 'CREW A'}</Text>
+            <Text style={live$.vsText}>VS</Text>
+            <Text style={live$.teamName}>{active.crew_b_name || 'CREW B'}</Text>
+          </View>
+          <View style={live$.battleCtas}>
+            <TouchableOpacity style={live$.joinBtn} onPress={() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {})}><Text style={live$.joinText}>JOIN NOW</Text></TouchableOpacity>
+            <TouchableOpacity style={live$.supportBtn}><Text style={live$.supportText}>SUPPORT YOUR CREW</Text></TouchableOpacity>
+          </View>
+        </View>
+      ) : null}
+    </Animated.View>
+  );
+}
+
+// ── EliteActivityFeed with Challenge CTA ─────────────────────────
+const ELITE_FEED = [
+  { id: '1', athlete: 'THUNDER_MAN', action: 'BATTLE VINTA', sport: 'ATLETICA', xp: '+220', dna: { velocita: 88, forza: 82, resistenza: 85, agilita: 80, tecnica: 84, potenza: 86 } },
+  { id: '2', athlete: 'MAYA_J', action: 'NUOVO RECORD', sport: 'MMA', xp: '+180', dna: { velocita: 79, forza: 91, resistenza: 83, agilita: 88, tecnica: 77, potenza: 90 } },
+  { id: '3', athlete: 'AXEL_V', action: 'SCAN COMPLETATO', sport: 'CROSSFIT', xp: '+150', dna: { velocita: 75, forza: 88, resistenza: 90, agilita: 72, tecnica: 80, potenza: 85 } },
+  { id: '4', athlete: 'TORO_94', action: 'CREW BATTLE', sport: 'BOXE', xp: '+200', dna: { velocita: 83, forza: 90, resistenza: 78, agilita: 82, tecnica: 86, potenza: 91 } },
+  { id: '5', athlete: 'SARA_K', action: 'DNA AGGIORNATO', sport: 'ATLETICA', xp: '+120', dna: { velocita: 86, forza: 74, resistenza: 88, agilita: 84, tecnica: 82, potenza: 76 } },
+];
+
+function EliteActivityFeed() {
+  const [challengeTarget, setChallengeTarget] = useState<any>(null);
+  return (
+    <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+      <View style={ef$.header}>
+        <Ionicons name="pulse" size={12} color="#00F2FF" />
+        <Text style={ef$.title}>ELITE ACTIVITY</Text>
+      </View>
+      {ELITE_FEED.map((item, idx) => (
+        <Animated.View key={item.id} entering={FadeInDown.delay(idx * 70)} style={ef$.row}>
+          <View style={ef$.left}>
+            <Text style={ef$.name}>{item.athlete}</Text>
+            <Text style={ef$.sub}>{item.action} · {item.sport} · <Text style={ef$.xp}>{item.xp}</Text></Text>
+          </View>
+          <TouchableOpacity style={ef$.challengeBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); setChallengeTarget({ name: item.athlete, weighted_dna: item.dna, id: item.id }); }} activeOpacity={0.8}>
+            <Ionicons name="flash-sharp" size={11} color="#050505" />
+            <Text style={ef$.challengeText}>SFIDA</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      ))}
+      <ChallengeInviteModal visible={!!challengeTarget} crew={challengeTarget} onClose={() => setChallengeTarget(null)} />
+    </View>
+  );
+}
+
 export default function ArenaTab() {
   return (
     <ImageBackground source={{ uri: TAB_BACKGROUNDS.arena }} style={s.container} imageStyle={{ opacity: 0.10 }}>
       <StatusBar barStyle="light-content" />
       <Header title="ARENA" />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        {/* LIVE GLOBAL BATTLES */}
+        <LiveBattlesCard />
+
         {/* HERO BANNER */}
         <HeroBanner />
 
         {/* KORE OF THE DAY */}
         <KoreOfTheDay />
 
-        {/* ELITE DIVISION UPDATES */}
+        {/* ELITE ACTIVITY FEED with Challenge CTAs */}
         <View style={s.dividerSection}>
           <View style={s.divLine} />
           <Ionicons name="radio" size={10} color="rgba(0,242,255,0.4)" />
           <View style={s.divLine} />
         </View>
-        <EliteDivisionUpdates />
+        <EliteActivityFeed />
       </ScrollView>
     </ImageBackground>
   );
@@ -279,4 +359,38 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#050505' },
   dividerSection: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 10 },
   divLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.05)' },
+});
+
+const live$ = StyleSheet.create({
+  card: { margin: 16, marginBottom: 8, backgroundColor: 'rgba(255,69,58,0.06)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,69,58,0.25)' },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+  liveBadge: { backgroundColor: '#FF453A', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 },
+  liveText: { color: '#FFF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  title: { flex: 1, color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+  count: { color: 'rgba(255,69,58,0.8)', fontSize: 11, fontWeight: '700' },
+  emptyRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  emptyText: { color: 'rgba(255,255,255,0.40)', fontSize: 12, fontWeight: '400' },
+  ctaBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#D4AF37', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 9 },
+  ctaText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  battleRow: { gap: 10 },
+  battleTeams: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  teamName: { flex: 1, color: '#FFF', fontSize: 13, fontWeight: '900', textAlign: 'center' },
+  vsText: { color: '#D4AF37', fontSize: 14, fontWeight: '900' },
+  battleCtas: { flexDirection: 'row', gap: 8 },
+  joinBtn: { flex: 1, backgroundColor: '#FF453A', borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
+  joinText: { color: '#FFF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  supportBtn: { flex: 1, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
+  supportText: { color: '#FFF', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
+});
+
+const ef$ = StyleSheet.create({
+  header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+  title: { color: 'rgba(0,242,255,0.6)', fontSize: 11, fontWeight: '900', letterSpacing: 4 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)' },
+  left: { flex: 1, gap: 2 },
+  name: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+  sub: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '400' },
+  xp: { color: '#00F2FF', fontWeight: '700' },
+  challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#D4AF37', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
+  challengeText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
 });

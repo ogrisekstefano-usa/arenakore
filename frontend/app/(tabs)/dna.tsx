@@ -11,7 +11,7 @@ import { RadarChart } from '../../components/RadarChart';
 import { RadarChartMulti, RadarMultiLegend } from '../../components/RadarChartMulti';
 import { NotificationDrawer } from '../../components/notifications/NotificationDrawer';
 import { TalentCard } from '../../components/TalentCard';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import Animated, {
   useSharedValue, withTiming, withSpring, withSequence,
   withDelay, useAnimatedStyle, Easing,
@@ -718,3 +718,23 @@ const styles = StyleSheet.create({
   timelineAvg: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '700', letterSpacing: 1 },
   timelineAvgVal: { color: 'rgba(255,255,255,0.65)', fontWeight: '900' },
 });
+
+const ins$ = StyleSheet.create({
+  card: { marginHorizontal: 16, marginBottom: 12, backgroundColor: 'rgba(212,175,55,0.05)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(212,175,55,0.18)' },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  title: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  insightText: { color: '#FFFFFF', fontSize: 14, fontWeight: '400', lineHeight: 20, marginBottom: 6 },
+  tipText: { color: 'rgba(255,255,255,0.60)', fontSize: 13, fontWeight: '400', lineHeight: 20, marginBottom: 10 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  statChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,69,58,0.3)', gap: 2 },
+  statLabel: { color: 'rgba(255,255,255,0.50)', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
+  statVal: { color: '#FF453A', fontSize: 13, fontWeight: '900' },
+  templateBtn: { flex: 1, backgroundColor: '#D4AF37', borderRadius: 8, paddingVertical: 9, alignItems: 'center' },
+  templateText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+});
+
+const pvp$ = StyleSheet.create({
+  btn: { marginHorizontal: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#00F2FF', borderRadius: 10, paddingVertical: 13 },
+  text: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+});
+

@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
+import { useRouter } from 'expo-router';
 import { api } from '../utils/api';
 import { playAcceptPing } from '../utils/sounds';
 import { HALL_OF_KORE_BG } from '../utils/images';
@@ -521,3 +522,21 @@ const gl$ = StyleSheet.create({
   emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 16, fontWeight: '800' },
   emptySub: { color: 'rgba(255,255,255,0.3)', fontSize: 16 },
 });
+
+const sw$ = StyleSheet.create({
+  row: { flexDirection: 'row', marginHorizontal: 16, marginBottom: 12, gap: 4 },
+  btn: { flex: 1, paddingVertical: 9, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', alignItems: 'center' },
+  btnActive: { backgroundColor: 'rgba(0,242,255,0.1)', borderColor: '#00F2FF' },
+  text: { color: 'rgba(255,255,255,0.50)', fontSize: 12, fontWeight: '700', letterSpacing: 1.5 },
+  textActive: { color: '#00F2FF', fontWeight: '900' },
+});
+
+const cr2$ = StyleSheet.create({
+  card: { marginHorizontal: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(0,242,255,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)' },
+  info: { flex: 1, gap: 2 },
+  label: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
+  sub: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '400' },
+  btn: { backgroundColor: '#00F2FF', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 9 },
+  btnText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+});
+
