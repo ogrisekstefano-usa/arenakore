@@ -1,4 +1,4 @@
-# ARENAKORE — PRD (Product Requirements Document) v11.0
+# ARENAKORE — PRD (Product Requirements Document) v12.0
 
 ## Overview
 **ARENAKORE** è la piattaforma mobile d'élite per atleti con analisi biometrica in tempo reale, sistema XP/Level, battle competitive, crew sociali e leaderboard globali. Estetica "Nike Elite / Chic-Tech / Cinema". Zero emoji. Solo Ionicons.
@@ -6,7 +6,16 @@
 **Stack Tecnico**: Expo React Native SDK 54 + FastAPI + MongoDB  
 **Bundle ID**: `com.arenakore.app`  
 **Data aggiornamento**: Marzo 2026  
-**Versione**: 11.0 — SPRINT 16: NEXUS PROTOCOL v2 (Event-Driven + Biometric Wall)
+**Versione**: 12.0 — SPRINT 17: UI REFRESH + NEXUS PROACTIVE ENGINE
+
+## CHANGELOG Sprint 17 (Marzo 2026)
+- **P0 - Sfondi Cyan → Nero**: Rimosso tutti i `backgroundColor: rgba(0,242,255,0.65)` → `rgba(0,242,255,0.07)` globalmente su nexus-trigger.tsx, kore.tsx, dna.tsx, arena.tsx, index.tsx. Cyan mantenuto solo per testo e bordi.
+- **P1 - Hall of Fame Live**: Già collegata a dati live via API (GloryWall.tsx usa `api.getLeaderboard()`).
+- **P1.5 - NEXUS Proactive CTAs**: Componente `NexusProactiveCTAs` con 6 card dinamiche in carousel orizzontale: SFIDA IL RIVALE, BOOST CREW, RE-CERTIFY DNA, SCALA LA CLASSIFICA, RISCATTA REWARD, PUSH AL COACH. Dati fetched da `getMyRank()` + `getMyCrews()`.
+- **P2 - Battle Modal**: `ChallengeInviteModal` già integrato nell'Arena tab — ogni atleta nel feed ha pulsante SFIDA che apre confronto DNA.
+- **P3 - Role-Based Nav**: Corretto bug critico `GYM` vs `GYM_OWNER`. CustomTabBar ora usa filtraggio per nome route invece di indici. Aggiunto `Tabs.Screen` per gym-hub e my-athletes con `href=null`.
+- **Fix Backend**: `trigger_live_battle` ora gestisce ID battaglia non-ObjectId (dati seeded legacy).
+- **Fix Fork**: Password Founder resettata (hash-mismatch nel nuovo ambiente fork).
 
 ---
 

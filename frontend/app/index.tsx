@@ -253,7 +253,7 @@ export default function HeroIndex() {
           <View style={s.partnerCard}>
             <LinearGradient
               colors={['rgba(0,0,0,0.0)', 'rgba(0,0,0,0.0)']}
-              style={[s.partnerGrad, { backgroundColor: 'rgba(0,242,255,0.06)', borderRadius: 16, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.3)' }]}
+              style={[s.partnerGrad, { backgroundColor: 'rgba(8,8,8,0.97)', borderRadius: 16, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.35)' }]}
             >
               <View style={s.partnerTopGlow} />
 
