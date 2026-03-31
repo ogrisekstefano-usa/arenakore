@@ -282,16 +282,16 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: 'rgba(0,242,255,0.65)',
     borderWidth: 1,
-    borderColor: 'rgba(0,242,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
 
   shareBtn: {
-    backgroundColor: 'rgba(0,242,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(0,242,255,0.3)',
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   shareBtnText: { color: '#00F2FF', fontSize: 14, fontWeight: '800', letterSpacing: 2 },
 });

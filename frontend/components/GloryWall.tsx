@@ -302,8 +302,8 @@ const status$ = StyleSheet.create({
   motiv: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
   sub: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '400' },
   topBadge: {
-    backgroundColor: 'rgba(0,242,255,0.1)', borderRadius: 8,
-    paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)',
+    backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)',
   },
   topText: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
 });
@@ -526,13 +526,13 @@ const gl$ = StyleSheet.create({
 const sw$ = StyleSheet.create({
   row: { flexDirection: 'row', marginHorizontal: 16, marginBottom: 12, gap: 4 },
   btn: { flex: 1, paddingVertical: 9, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', alignItems: 'center' },
-  btnActive: { backgroundColor: 'rgba(0,242,255,0.1)', borderColor: '#00F2FF' },
+  btnActive: { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: '#00F2FF' },
   text: { color: 'rgba(255,255,255,0.50)', fontSize: 12, fontWeight: '700', letterSpacing: 1.5 },
   textActive: { color: '#00F2FF', fontWeight: '900' },
 });
 
 const cr2$ = StyleSheet.create({
-  card: { marginHorizontal: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(0,242,255,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)' },
+  card: { marginHorizontal: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   info: { flex: 1, gap: 2 },
   label: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   sub: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '400' },

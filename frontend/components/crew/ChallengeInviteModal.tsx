@@ -215,7 +215,7 @@ const m$ = StyleSheet.create({
   dnaSection: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 12, marginBottom: 12 },
   dnaSectionTitle: { color: 'rgba(0,242,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 3, marginBottom: 10 },
   verdict: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 8, marginBottom: 14 },
-  verdictWin: { backgroundColor: 'rgba(0,242,255,0.06)' },
+  verdictWin: { backgroundColor: 'rgba(255,255,255,0.06)' },
   verdictLoss: { backgroundColor: 'rgba(255,149,0,0.06)' },
   verdictText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, flex: 1 },
   cta: {

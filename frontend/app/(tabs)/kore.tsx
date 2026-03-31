@@ -82,7 +82,7 @@ const cd$ = StyleSheet.create({
   cityText: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' },
   sheet: { maxHeight: '50%', borderTopLeftRadius: 20, borderTopRightRadius: 20, overflow: 'hidden' },
-  sheetInner: { padding: 20, borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)', borderTopLeftRadius: 20, borderTopRightRadius: 20 },
+  sheetInner: { padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderTopLeftRadius: 20, borderTopRightRadius: 20 },
   sheetTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 4, marginBottom: 12 },
   sheetDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginBottom: 8 },
   option: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 4 },
@@ -703,7 +703,7 @@ const kc$ = StyleSheet.create({
   container: { marginBottom: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingBottom: 10 },
   sectionTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 4 },
-  card: { marginHorizontal: 16, borderRadius: 18, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.1)' },
+  card: { marginHorizontal: 16, borderRadius: 18, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)' },
   cardInner: { padding: 14, gap: 10 },
   scanLayer: { borderRadius: 18, backgroundColor: '#00F2FF', zIndex: 0 },
   cardTopGlow: { height: 2, backgroundColor: '#00F2FF', opacity: 0.6, marginHorizontal: -14, marginTop: -14 },
@@ -721,7 +721,7 @@ const kc$ = StyleSheet.create({
   dnaVal: { fontSize: 12, fontWeight: '900', letterSpacing: 1, width: 26, textAlign: 'right' },
   divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)' },
   bottomRow: { flexDirection: 'row', gap: 14, alignItems: 'center' },
-  qrBox: { backgroundColor: '#070707', borderRadius: 8, padding: 5, borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)' },
+  qrBox: { backgroundColor: '#070707', borderRadius: 8, padding: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   rightSide: { flex: 1, gap: 6 },
   bStat: { gap: 1 },
   bStatLabel: { color: 'rgba(255,255,255,0.65)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
@@ -749,7 +749,7 @@ const wm$ = StyleSheet.create({
   infoLabel: { color: 'rgba(255,255,255,0.70)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
   infoVal: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   note: { color: 'rgba(0,242,255,0.7)', fontSize: 13, fontWeight: '400', letterSpacing: 1, textAlign: 'center' },
-  closeBtn: { marginTop: 6, width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, borderRadius: 12, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)' },
+  closeBtn: { marginTop: 6, width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, borderRadius: 12, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   closeTxt: { color: '#00F2FF', fontSize: 14, fontWeight: '400', letterSpacing: 4 },
 });
 
@@ -997,7 +997,7 @@ const cr$ = StyleSheet.create({
   athleteNameMe: { color: '#00F2FF' },
   founderPill: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)' },
   founderPillText: { color: '#D4AF37', fontSize: 7, fontWeight: '900', letterSpacing: 1 },
-  mePill: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)' },
+  mePill: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
   mePillText: { color: '#00F2FF', fontSize: 7, fontWeight: '900', letterSpacing: 1 },
   athleteSub: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '400', letterSpacing: 1 },
   // Score
@@ -1249,7 +1249,7 @@ const s = StyleSheet.create({
 // Privacy Shield link styles
 const ps$ = StyleSheet.create({
   wrap: { marginHorizontal: 16, marginBottom: 8 },
-  btn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)' },
+  btn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   txt: { flex: 1, color: 'rgba(0,242,255,0.7)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
 });
 

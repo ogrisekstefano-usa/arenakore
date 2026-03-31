@@ -252,7 +252,7 @@ const s = StyleSheet.create({
   stepPill: {
     backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 20,
     paddingHorizontal: 12, paddingVertical: 5,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
   stepTxt: { color: CYAN, fontSize: 12, fontWeight: '400', letterSpacing: 2 },
   progBar: { height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 28, overflow: 'hidden' },
@@ -288,7 +288,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 6,
     paddingHorizontal: 12, paddingVertical: 8,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
     marginBottom: 20,
   },
   secTxt: { color: 'rgba(0,242,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },

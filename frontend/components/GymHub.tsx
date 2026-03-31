@@ -77,7 +77,7 @@ function CoachCard({ coach, onRemove }: { coach: any; onRemove: (id: string) => 
 const cc$ = StyleSheet.create({
   cardOuter: {
     borderRadius: 14, overflow: 'hidden', marginBottom: 8,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
   },
   card: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -86,7 +86,7 @@ const cc$ = StyleSheet.create({
   avatar: {
     width: 48, height: 48, borderRadius: 24, backgroundColor: '#00F2FF',
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: 'rgba(0,242,255,0.4)',
+    borderWidth: 2, borderColor: 'rgba(255,255,255,0.4)',
   },
   avatarText: { color: '#050505', fontSize: 18, fontWeight: '900' },
   info: { flex: 1, gap: 3 },
@@ -211,7 +211,7 @@ const ev$ = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 8, marginTop: 4 },
   qrBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    backgroundColor: 'rgba(0,242,255,0.1)', borderRadius: 10, paddingVertical: 10,
+    backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 10, paddingVertical: 10,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
   qrBtnText: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
@@ -322,7 +322,7 @@ const qr$ = StyleSheet.create({
   qrContainer: {
     width: 220, height: 220, alignItems: 'center', justifyContent: 'center',
     backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 16, padding: 8,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)', marginVertical: 8,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', marginVertical: 8,
   },
   qrImage: { width: 200, height: 200, borderRadius: 8 },
   qrGlow: {
@@ -541,7 +541,7 @@ function AddCoachModal({ visible, onClose, onAdded, token }: any) {
           <TextInput
             style={{
               backgroundColor: '#1A1A1A', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-              color: '#FFF', fontSize: 15, borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)',
+              color: '#FFF', fontSize: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
             }}
             value={username}
             onChangeText={setUsername}

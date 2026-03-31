@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
   enrollingCircle: {
     width: 80, height: 80, borderRadius: 40,
     backgroundColor: 'rgba(0,242,255,0.65)', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: 'rgba(0,242,255,0.2)',
+    borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)',
   },
   enrollingText: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 2, marginTop: 20 },
   enrollingSub: { color: 'rgba(255,255,255,0.4)', fontSize: 11, marginTop: 4 },
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   nexusBtnText: { color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   // Preview
   previewContainer: { flex: 1, paddingHorizontal: 16, paddingBottom: 24, justifyContent: 'center' },
-  previewCard: { borderRadius: 20, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.1)' },
+  previewCard: { borderRadius: 20, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)' },
   previewGrad: { padding: 24, gap: 14 },
   previewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },
   previewHeaderText: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 3 },

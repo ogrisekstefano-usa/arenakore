@@ -1857,7 +1857,7 @@ const s = StyleSheet.create({
   stepPill: {
     backgroundColor: 'rgba(0,242,255,0.65)',
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
   stepTxt: { color: '#00F2FF', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
   detectRow: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },

@@ -101,7 +101,7 @@ const s = StyleSheet.create({
   sub: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '400' },
   stats: { alignItems: 'flex-end', gap: 4 },
   xp: { color: '#D4AF37', fontSize: 13, fontWeight: '900' },
-  dnaChip: { backgroundColor: 'rgba(0,242,255,0.1)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
+  dnaChip: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   dnaChipText: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
   actionBtn: { padding: 8 },
 });

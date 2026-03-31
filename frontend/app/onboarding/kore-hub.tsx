@@ -243,7 +243,7 @@ const s = StyleSheet.create({
 
   // Header
   header: { marginBottom: 24, gap: 6 },
-  iconBox: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  iconBox: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   title: { color: CYAN, fontSize: 14, fontWeight: '400', letterSpacing: 6 },
   titleBig: { color: '#FFFFFF', fontSize: 44, fontWeight: '900', letterSpacing: 0.5, lineHeight: 48 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.7, shadowRadius: 6 },
@@ -251,7 +251,7 @@ const s = StyleSheet.create({
 
   // Pillars
   pillarsRow: { flexDirection: 'row', gap: 8, marginBottom: 28 },
-  pillar: { flex: 1, alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)' },
+  pillar: { flex: 1, alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   pillarTxt: { color: 'rgba(255,255,255,0.6)', fontSize: 9, fontWeight: '700', letterSpacing: 1, textAlign: 'center' },
 
   // Form
@@ -284,7 +284,7 @@ const s = StyleSheet.create({
 
   // Modal
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'flex-end' },
-  modalSheet: { backgroundColor: '#0A0A0A', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, maxHeight: '55%', borderWidth: 1, borderColor: 'rgba(0,242,255,0.1)' },
+  modalSheet: { backgroundColor: '#0A0A0A', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, maxHeight: '55%', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   modalTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 4, marginBottom: 12 },
   modalDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginBottom: 8 },
   cityOption: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },

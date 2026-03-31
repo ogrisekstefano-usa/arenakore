@@ -1005,7 +1005,7 @@ const hud$ = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8,
     paddingHorizontal: 14, paddingVertical: 8,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
   repFeedbackDot: {
     width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF',
@@ -1068,7 +1068,7 @@ const hud$ = StyleSheet.create({
   },
 });
 const crewMsg$ = StyleSheet.create({
-  container: { marginHorizontal: 20, marginBottom: 16, padding: 12, backgroundColor: 'rgba(0,242,255,0.04)', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(0,242,255,0.12)' },
+  container: { marginHorizontal: 20, marginBottom: 16, padding: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   text: { color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 20 },
   cta: { color: '#00F2FF', fontWeight: '700' },
 });

@@ -422,7 +422,7 @@ const s = StyleSheet.create({
   outlineBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: 'transparent',
-    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.4)',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.4)',
     borderRadius: 10, paddingVertical: 14,
   },
   outlineBtnTxt: { color: CYAN, fontSize: 13, fontWeight: '900', letterSpacing: 2 },

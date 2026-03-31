@@ -308,7 +308,7 @@ const s = StyleSheet.create({
   // Header
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   brand: { color: GOLD, fontSize: 11, fontWeight: '900', letterSpacing: 6 },
-  stepPill: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)' },
+  stepPill: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   stepTxt: { color: CYAN, fontSize: 12, fontWeight: '400', letterSpacing: 2 },
 
   // Progress

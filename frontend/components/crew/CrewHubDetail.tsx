@@ -156,7 +156,7 @@ const hub$ = StyleSheet.create({
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, padding: 8 },
   backText: { color: '#00F2FF', fontSize: 15, fontWeight: '800', letterSpacing: 1 },
   headerRight: {},
-  inviteHdrBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,242,255,0.1)', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)' },
+  inviteHdrBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
   inviteHdrText: { color: '#00F2FF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   heroGrad: { paddingHorizontal: 20, paddingVertical: 20 },
   crewInfo: { gap: 6 },

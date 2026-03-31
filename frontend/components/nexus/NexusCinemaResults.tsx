@@ -93,7 +93,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
 
 const cin$ = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(5,5,5,0.96)' },
-  card: { width: SW * 0.9, maxHeight: SH * 0.85, backgroundColor: '#0A0A0A', borderRadius: 20, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.2)', shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.12, shadowRadius: 25 },
+  card: { width: SW * 0.9, maxHeight: SH * 0.85, backgroundColor: '#0A0A0A', borderRadius: 20, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)', shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.12, shadowRadius: 25 },
   scroll: { padding: 24, alignItems: 'center' },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 },
   title: { color: '#00F2FF', fontSize: 11, fontWeight: '800', letterSpacing: 4 },
@@ -114,7 +114,7 @@ const cin$ = StyleSheet.create({
   record: { width: '100%', backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: 10, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(212,175,55,0.3)', marginBottom: 8, gap: 3 },
   recordTitle: { color: '#D4AF37', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
   recordList: { color: '#D4AF37', fontSize: 10 },
-  level: { width: '100%', backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 10, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)', marginBottom: 8 },
+  level: { width: '100%', backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 10, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', marginBottom: 8 },
   levelText: { color: '#00F2FF', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   dnaRow: { flexDirection: 'row', gap: 10, marginVertical: 8 },
   dnaItem: { alignItems: 'center', gap: 1 },
