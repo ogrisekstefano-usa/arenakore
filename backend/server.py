@@ -139,6 +139,16 @@ class CrewInvite(BaseModel):
     username: str
 
 
+class CrewChallengeRequest(BaseModel):
+    crew_id: str
+    duration_hours: Optional[int] = 24
+
+
+class BattleContributeRequest(BaseModel):
+    quality_score: float
+    exercise_type: str = "squat"
+
+
 def user_to_response(user: dict) -> dict:
     return {
         "id": str(user["_id"]),
@@ -1204,7 +1214,296 @@ async def get_crew_battle_stats(crew_id: str, current_user: dict = Depends(get_c
     }
 
 
-@api_router.get("/users/search/{query}")
+# =====================================================================
+# CREW BATTLE ENGINE — LIVE BATTLES, MATCHMAKING & SCORING
+# =====================================================================
+
+def calculate_kore_battle_score(members_data: list, total_xp: int) -> float:
+    """
+    KORE Battle Score: prevents 'mass vs skill' battles.
+    Formula: weighted_dna_avg * 0.7 + xp_bonus_per_member * 0.3
+    Max score ≈ 100 (70 from DNA + 30 from XP)
+    """
+    if not members_data:
+        return 30.0
+    weighted_avg = calculate_crew_weighted_average(members_data)
+    dna_avg = sum(weighted_avg.values()) / len(weighted_avg) if weighted_avg else 50.0
+    # XP bonus capped at 30pts — avg XP per member / 500 (max 500 avg XP = full bonus)
+    avg_xp = total_xp / max(len(members_data), 1)
+    xp_bonus = min(30.0, avg_xp / 500 * 30)
+    return round(dna_avg * 0.7 + xp_bonus, 1)
+
+
+@api_router.get("/battles/crew/live")
+async def get_live_crew_battles(current_user: dict = Depends(get_current_user)):
+    """Live crew battle dashboard — returns active battles with real-time scores"""
+    battles = await db.crew_battles.find(
+        {"status": {"$in": ["live", "pending"]}}
+    ).sort("created_at", -1).to_list(10)
+
+    # Find user's crews
+    my_crews = await db.crews_v2.find({"members": current_user["_id"]}).to_list(5)
+    my_crew_ids = {str(c["_id"]) for c in my_crews}
+
+    result = []
+    now = datetime.utcnow()
+    for b in battles:
+        # Auto-complete expired battles
+        ends_at = b.get("ends_at")
+        if ends_at and now > ends_at and b.get("status") == "live":
+            crew_a_total = b.get("crew_a_kore_score", 50) + b.get("crew_a_contribution", 0)
+            crew_b_total = b.get("crew_b_kore_score", 50) + b.get("crew_b_contribution", 0)
+            winner_id = b["crew_a_id"] if crew_a_total >= crew_b_total else b["crew_b_id"]
+            await db.crew_battles.update_one(
+                {"_id": b["_id"]},
+                {"$set": {"status": "completed", "winner_crew_id": winner_id}}
+            )
+            continue  # Skip completed
+
+        crew_a_score = b.get("crew_a_kore_score", 50) + b.get("crew_a_contribution", 0)
+        crew_b_score = b.get("crew_b_kore_score", 50) + b.get("crew_b_contribution", 0)
+        total = (crew_a_score + crew_b_score) or 100
+
+        result.append({
+            "id": str(b["_id"]),
+            "status": b.get("status"),
+            "crew_a": {
+                "id": str(b["crew_a_id"]),
+                "name": b["crew_a_name"],
+                "score": round(crew_a_score, 1),
+                "pct": round(crew_a_score / total * 100, 1),
+                "is_my_crew": str(b["crew_a_id"]) in my_crew_ids,
+            },
+            "crew_b": {
+                "id": str(b["crew_b_id"]),
+                "name": b["crew_b_name"],
+                "score": round(crew_b_score, 1),
+                "pct": round(crew_b_score / total * 100, 1),
+                "is_my_crew": str(b["crew_b_id"]) in my_crew_ids,
+            },
+            "user_in_battle": str(b.get("crew_a_id")) in my_crew_ids or str(b.get("crew_b_id")) in my_crew_ids,
+            "ends_at": ends_at.isoformat() if ends_at else None,
+        })
+
+    return result
+
+
+@api_router.get("/battles/crew/matchmake")
+async def matchmake_crew_battle(current_user: dict = Depends(get_current_user)):
+    """AI Matchmaking: find crews with similar KORE Battle Score (±30% window)"""
+    my_crew = await db.crews_v2.find_one({"members": current_user["_id"]})
+
+    if not my_crew:
+        top_crews = await db.crews_v2.find().sort("xp_total", -1).limit(3).to_list(3)
+        return {
+            "has_crew": False,
+            "my_crew_name": None,
+            "my_kore_score": 0,
+            "suggestions": [
+                {"id": str(c["_id"]), "name": c["name"],
+                 "members_count": len(c.get("members", [])),
+                 "kore_battle_score": 50, "score_diff": 50,
+                 "is_stronger": True, "already_challenged": False}
+                for c in top_crews
+            ],
+        }
+
+    # My crew score
+    my_members = []
+    for mid in my_crew.get("members", []):
+        u = await db.users.find_one({"_id": mid})
+        if u:
+            my_members.append({"xp": u.get("xp", 0), "dna": u.get("dna")})
+    my_xp = sum(m.get("xp", 0) for m in my_members)
+    my_score = calculate_kore_battle_score(my_members, my_xp)
+
+    # Active battles to mark already-challenged crews
+    active = await db.crew_battles.find({
+        "$or": [{"crew_a_id": my_crew["_id"]}, {"crew_b_id": my_crew["_id"]}],
+        "status": {"$in": ["pending", "live"]}
+    }).to_list(20)
+    challenged_ids = {str(ab.get("crew_a_id")) for ab in active} | {str(ab.get("crew_b_id")) for ab in active}
+
+    # Find matching crews (±30%)
+    all_crews = await db.crews_v2.find({"_id": {"$ne": my_crew["_id"]}}).to_list(50)
+    matches = []
+    for crew in all_crews:
+        c_members = []
+        for mid in crew.get("members", []):
+            u = await db.users.find_one({"_id": mid})
+            if u:
+                c_members.append({"xp": u.get("xp", 0), "dna": u.get("dna")})
+        c_xp = sum(m.get("xp", 0) for m in c_members)
+        c_score = calculate_kore_battle_score(c_members, c_xp)
+        diff_pct = abs(c_score - my_score) / max(my_score, 1)
+
+        if diff_pct <= 0.35:  # 35% window for wider suggestions
+            matches.append({
+                "id": str(crew["_id"]),
+                "name": crew["name"],
+                "members_count": len(crew.get("members", [])),
+                "kore_battle_score": round(c_score, 1),
+                "score_diff": round(abs(c_score - my_score), 1),
+                "is_stronger": c_score > my_score,
+                "already_challenged": str(crew["_id"]) in challenged_ids,
+                "category": crew.get("category", ""),
+            })
+
+    matches.sort(key=lambda x: x["score_diff"])
+    return {
+        "has_crew": True,
+        "my_crew_id": str(my_crew["_id"]),
+        "my_crew_name": my_crew["name"],
+        "my_kore_score": round(my_score, 1),
+        "suggestions": matches[:3],
+    }
+
+
+@api_router.post("/battles/crew/challenge")
+async def challenge_crew_to_battle(data: CrewChallengeRequest, current_user: dict = Depends(get_current_user)):
+    """Challenge a crew to a live battle"""
+    my_crew = await db.crews_v2.find_one({"members": current_user["_id"]})
+    if not my_crew:
+        raise HTTPException(status_code=400, detail="Devi essere in una crew")
+
+    try:
+        opp_crew = await db.crews_v2.find_one({"_id": ObjectId(data.crew_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Crew non trovata")
+    if not opp_crew:
+        raise HTTPException(status_code=404, detail="Crew non trovata")
+    if str(my_crew["_id"]) == data.crew_id:
+        raise HTTPException(status_code=400, detail="Non puoi sfidare la tua crew")
+
+    existing = await db.crew_battles.find_one({
+        "$or": [
+            {"crew_a_id": my_crew["_id"], "crew_b_id": opp_crew["_id"]},
+            {"crew_a_id": opp_crew["_id"], "crew_b_id": my_crew["_id"]},
+        ],
+        "status": {"$in": ["pending", "live"]}
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Sfida già attiva con questa crew")
+
+    # Matchmaking guard: reject if KORE scores differ by >40%
+    my_members, opp_members = [], []
+    for mid in my_crew.get("members", []):
+        u = await db.users.find_one({"_id": mid})
+        if u:
+            my_members.append({"xp": u.get("xp", 0), "dna": u.get("dna")})
+    for mid in opp_crew.get("members", []):
+        u = await db.users.find_one({"_id": mid})
+        if u:
+            opp_members.append({"xp": u.get("xp", 0), "dna": u.get("dna")})
+
+    my_score = calculate_kore_battle_score(my_members, sum(m.get("xp", 0) for m in my_members))
+    opp_score = calculate_kore_battle_score(opp_members, sum(m.get("xp", 0) for m in opp_members))
+    diff_pct = abs(my_score - opp_score) / max(max(my_score, opp_score), 1)
+    if diff_pct > 0.45:
+        raise HTTPException(status_code=400, detail=f"Livelli troppo diversi — differenza {round(diff_pct*100)}%. Usa il Matchmaking AI.")
+
+    now = datetime.utcnow()
+    battle_doc = {
+        "crew_a_id": my_crew["_id"],
+        "crew_a_name": my_crew["name"],
+        "crew_a_kore_score": my_score,
+        "crew_a_contribution": 0.0,
+        "crew_b_id": opp_crew["_id"],
+        "crew_b_name": opp_crew["name"],
+        "crew_b_kore_score": opp_score,
+        "crew_b_contribution": 0.0,
+        "status": "live",
+        "created_by": current_user["_id"],
+        "started_at": now,
+        "ends_at": now + timedelta(hours=data.duration_hours),
+        "created_at": now,
+    }
+    result = await db.crew_battles.insert_one(battle_doc)
+
+    # Notify sleeping members of both crews
+    all_member_ids = list(my_crew.get("members", [])) + list(opp_crew.get("members", []))
+    for mid in all_member_ids:
+        if mid != current_user["_id"]:
+            await db.notifications.insert_one({
+                "user_id": mid,
+                "type": "battle_started",
+                "title": "BATTLE LIVE",
+                "message": f"{my_crew['name']} ha sfidato {opp_crew['name']}! Contribuisci ora.",
+                "icon": "flash",
+                "color": "#FF453A",
+                "read": False,
+                "created_at": now,
+            })
+
+    return {
+        "status": "battle_started",
+        "battle_id": str(result.inserted_id),
+        "crew_a": {"name": my_crew["name"], "score": my_score},
+        "crew_b": {"name": opp_crew["name"], "score": opp_score},
+        "ends_at": battle_doc["ends_at"].isoformat(),
+    }
+
+
+@api_router.post("/battles/crew/{battle_id}/contribute")
+async def contribute_to_crew_battle(battle_id: str, data: BattleContributeRequest, current_user: dict = Depends(get_current_user)):
+    """Log a NEXUS scan contribution to a live crew battle"""
+    try:
+        battle = await db.crew_battles.find_one({"_id": ObjectId(battle_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Battle non trovata")
+    if not battle or battle.get("status") != "live":
+        raise HTTPException(status_code=400, detail="Battle non è live")
+
+    now = datetime.utcnow()
+    if battle.get("ends_at") and now > battle["ends_at"]:
+        raise HTTPException(status_code=400, detail="Battle terminata")
+
+    in_a = await db.crews_v2.find_one({"_id": battle["crew_a_id"], "members": current_user["_id"]})
+    in_b = await db.crews_v2.find_one({"_id": battle["crew_b_id"], "members": current_user["_id"]})
+    if not in_a and not in_b:
+        raise HTTPException(status_code=403, detail="Non sei in nessuna delle due crew")
+
+    # Weighted contribution: quality × (1 + xp/10000) × 5pts base
+    user_xp = current_user.get("xp", 100)
+    contribution_pts = round((data.quality_score / 100) * (1 + user_xp / 10000) * 5, 2)
+    field = "crew_a_contribution" if in_a else "crew_b_contribution"
+    await db.crew_battles.update_one({"_id": ObjectId(battle_id)}, {"$inc": {field: contribution_pts}})
+
+    updated = await db.crew_battles.find_one({"_id": ObjectId(battle_id)})
+    a_score = updated.get("crew_a_kore_score", 0) + updated.get("crew_a_contribution", 0)
+    b_score = updated.get("crew_b_kore_score", 0) + updated.get("crew_b_contribution", 0)
+
+    # Proactive: if losing by >15pts, notify sleeping members
+    my_side_score = a_score if in_a else b_score
+    opp_score = b_score if in_a else a_score
+    if opp_score - my_side_score > 15:
+        losing_crew_id = battle["crew_a_id"] if in_a else battle["crew_b_id"]
+        losing_crew = await db.crews_v2.find_one({"_id": losing_crew_id})
+        if losing_crew:
+            for mid in losing_crew.get("members", []):
+                existing_notif = await db.notifications.find_one({
+                    "user_id": mid, "type": "battle_losing",
+                    "created_at": {"$gte": now - timedelta(hours=1)}
+                })
+                if not existing_notif:
+                    await db.notifications.insert_one({
+                        "user_id": mid, "type": "battle_losing",
+                        "title": "CREW IN PERICOLO",
+                        "message": f"La tua crew sta perdendo di {round(opp_score - my_side_score, 1)} punti! Fai un NEXUS Scan.",
+                        "icon": "warning", "color": "#FF9500",
+                        "read": False, "created_at": now,
+                    })
+
+    return {
+        "status": "contributed",
+        "contribution_pts": contribution_pts,
+        "crew_side": "A" if in_a else "B",
+        "crew_a_score": round(a_score, 1),
+        "crew_b_score": round(b_score, 1),
+    }
+
+
+
 async def search_users(query: str, current_user: dict = Depends(get_current_user)):
     """Search users by username for crew invites"""
     users = await db.users.find({
@@ -1230,7 +1529,7 @@ async def search_users(query: str, current_user: dict = Depends(get_current_user
 @api_router.get("/nexus/rescan-eligibility")
 async def get_rescan_eligibility(current_user: dict = Depends(get_current_user)):
     """The 48h/30d Bio-Scan Rule: Check if user can perform a bio-scan"""
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     dna = current_user.get("dna")
 
     # 1. No DNA at all → initial scan needed (onboarding not completed)

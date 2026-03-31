@@ -1,18 +1,19 @@
 /**
- * ARENAKORE — ARENA TAB v3.0 — PROACTIVE GLOBAL COMPETITION
+ * ARENAKORE — ARENA TAB v4.0 — CREW BATTLE ENGINE
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar,
-  TouchableOpacity, Dimensions, ImageBackground,
+  TouchableOpacity, Dimensions, ImageBackground, ActivityIndicator, Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn, FadeInDown, useSharedValue,
-  withRepeat, withSequence, withTiming, useAnimatedStyle, Easing,
+  withRepeat, withSequence, withTiming, useAnimatedStyle, Easing, withSpring,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 import { Header } from '../../components/Header';
 import { TAB_BACKGROUNDS } from '../../utils/images';
 import { useAuth } from '../../contexts/AuthContext';
@@ -252,47 +253,335 @@ const edu$ = StyleSheet.create({
   sep: { height: 1, backgroundColor: 'rgba(255,255,255,0.04)', marginLeft: 44 },
 });
 
-// ========== MAIN ARENA TAB ==========
-// ── LiveBattlesCard ──────────────────────────────────────────────
-function LiveBattlesCard() {
-  const { token } = useAuth();
-  const [battles, setBattles] = useState<any[]>([]);
-  const [loaded, setLoaded] = useState(false);
-  useEffect(() => {
-    if (!token) return;
-    api.getBattles(token).then(d => setBattles(Array.isArray(d) ? d.filter((b: any) => b.status === 'active') : [])).catch(() => {}).finally(() => setLoaded(true));
-  }, [token]);
-  const active = battles[0];
+// ========== LIVE BATTLE DASHBOARD ==========
+function BattleProgressBar({ pctA, isMyCrewA, isMyCrewB }: { pctA: number; isMyCrewA: boolean; isMyCrewB: boolean }) {
+  const width = useSharedValue(50);
+  useEffect(() => { width.value = withTiming(pctA, { duration: 800, easing: Easing.out(Easing.cubic) }); }, [pctA]);
+  const styleA = useAnimatedStyle(() => ({ width: `${width.value}%` as any }));
+  const isWinning = isMyCrewA ? pctA > 50 : isMyCrewB ? pctA < 50 : false;
   return (
-    <Animated.View entering={FadeInDown.delay(80)} style={live$.card}>
-      <View style={live$.topRow}>
-        <View style={live$.liveBadge}><Text style={live$.liveText}>LIVE</Text></View>
-        <Text style={live$.title}>GLOBAL BATTLES</Text>
-        <Text style={live$.count}>{battles.length} ACTIVE</Text>
-      </View>
-      {loaded && !active ? (
-        <View style={live$.emptyRow}>
-          <Text style={live$.emptyText}>NO ACTIVE BATTLES</Text>
-          <TouchableOpacity style={live$.ctaBtn} onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {})} activeOpacity={0.8}>
-            <Ionicons name="flash" size={12} color="#050505" /><Text style={live$.ctaText}>START A CHALLENGE</Text>
+    <View style={bp$.track}>
+      <Animated.View style={[bp$.fillA, styleA, isMyCrewA && { backgroundColor: '#00F2FF' }, !isMyCrewA && isMyCrewB && { backgroundColor: '#FF453A' }]} />
+    </View>
+  );
+}
+const bp$ = StyleSheet.create({
+  track: { height: 8, backgroundColor: 'rgba(255,69,58,0.3)', borderRadius: 4, overflow: 'hidden' },
+  fillA: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 4 },
+});
+
+function useCountdown(endsAt: string | null) {
+  const [remaining, setRemaining] = useState('');
+  useEffect(() => {
+    if (!endsAt) { setRemaining(''); return; }
+    const update = () => {
+      const diff = new Date(endsAt).getTime() - Date.now();
+      if (diff <= 0) { setRemaining('TERMINATA'); return; }
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setRemaining(h > 0 ? `${h}h ${m}m` : `${m}m ${s}s`);
+    };
+    update();
+    const iv = setInterval(update, 1000);
+    return () => clearInterval(iv);
+  }, [endsAt]);
+  return remaining;
+}
+
+function LiveBattleCard({ battle, onContribute }: { battle: any; onContribute: (id: string) => void }) {
+  const router = useRouter();
+  const countdown = useCountdown(battle.ends_at);
+  const { crew_a, crew_a: { pct: pctA }, crew_b } = battle;
+  const myCrewLabel = crew_a.is_my_crew ? crew_a.name : crew_b.is_my_crew ? crew_b.name : null;
+  const isWinning = (crew_a.is_my_crew && pctA > 50) || (crew_b.is_my_crew && pctA < 50);
+  const pulse = useSharedValue(1);
+  useEffect(() => { pulse.value = withRepeat(withSequence(withTiming(1.04, { duration: 900 }), withTiming(1, { duration: 900 })), -1, false); }, []);
+  const glow = useAnimatedStyle(() => ({ transform: [{ scale: pulse.value }] }));
+
+  return (
+    <Animated.View entering={FadeInDown.duration(300)} style={lbc$.card}>
+      <LinearGradient colors={['#0E0E0E', '#070707']} style={lbc$.inner}>
+        {/* Header */}
+        <View style={lbc$.header}>
+          <View style={lbc$.livePill}>
+            <Animated.View style={[lbc$.liveDot, glow]} />
+            <Text style={lbc$.liveText}>LIVE</Text>
+          </View>
+          <Text style={lbc$.timer}>{countdown || '24H'}</Text>
+        </View>
+
+        {/* Teams */}
+        <View style={lbc$.teamsRow}>
+          <View style={lbc$.teamSide}>
+            <Text style={[lbc$.teamName, crew_a.is_my_crew && lbc$.teamMine]} numberOfLines={1}>{crew_a.name}</Text>
+            <Text style={lbc$.teamScore}>{crew_a.score}</Text>
+          </View>
+          <View style={lbc$.vsCol}>
+            <Text style={lbc$.vsText}>VS</Text>
+          </View>
+          <View style={[lbc$.teamSide, { alignItems: 'flex-end' }]}>
+            <Text style={[lbc$.teamName, crew_b.is_my_crew && lbc$.teamMine]} numberOfLines={1}>{crew_b.name}</Text>
+            <Text style={lbc$.teamScore}>{crew_b.score}</Text>
+          </View>
+        </View>
+
+        {/* Progress Bar */}
+        <BattleProgressBar pctA={pctA} isMyCrewA={crew_a.is_my_crew} isMyCrewB={crew_b.is_my_crew} />
+        <View style={lbc$.pctRow}>
+          <Text style={lbc$.pctText}>{pctA}%</Text>
+          <Text style={lbc$.pctText}>{(100 - pctA).toFixed(1)}%</Text>
+        </View>
+
+        {/* Status */}
+        {myCrewLabel && (
+          <View style={[lbc$.statusPill, isWinning ? lbc$.statusWin : lbc$.statusLose]}>
+            <Ionicons name={isWinning ? 'trending-up' : 'warning'} size={11} color={isWinning ? '#00F2FF' : '#FF9500'} />
+            <Text style={[lbc$.statusText, isWinning ? { color: '#00F2FF' } : { color: '#FF9500' }]}>
+              {isWinning ? 'STA VINCENDO' : 'IN SVANTAGGIO — CONTRIBUISCI'}
+            </Text>
+          </View>
+        )}
+
+        {/* CTA */}
+        {battle.user_in_battle && (
+          <TouchableOpacity
+            style={lbc$.cta}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {}); router.push('/(tabs)/nexus-trigger'); }}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="flash-sharp" size={14} color="#050505" />
+            <Text style={lbc$.ctaText}>CONTRIBUISCI ORA</Text>
           </TouchableOpacity>
-        </View>
-      ) : active ? (
-        <View style={live$.battleRow}>
-          <View style={live$.battleTeams}>
-            <Text style={live$.teamName}>{active.crew_a_name || 'CREW A'}</Text>
-            <Text style={live$.vsText}>VS</Text>
-            <Text style={live$.teamName}>{active.crew_b_name || 'CREW B'}</Text>
-          </View>
-          <View style={live$.battleCtas}>
-            <TouchableOpacity style={live$.joinBtn} onPress={() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {})}><Text style={live$.joinText}>JOIN NOW</Text></TouchableOpacity>
-            <TouchableOpacity style={live$.supportBtn}><Text style={live$.supportText}>SUPPORT YOUR CREW</Text></TouchableOpacity>
-          </View>
-        </View>
-      ) : null}
+        )}
+      </LinearGradient>
     </Animated.View>
   );
 }
+
+const lbc$ = StyleSheet.create({
+  card: { marginHorizontal: 16, marginBottom: 10, borderRadius: 16, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(255,69,58,0.3)' },
+  inner: { padding: 14, gap: 10 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  livePill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,69,58,0.12)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(255,69,58,0.3)' },
+  liveDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FF453A' },
+  liveText: { color: '#FF453A', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  timer: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  teamsRow: { flexDirection: 'row', alignItems: 'center' },
+  teamSide: { flex: 1, gap: 2 },
+  teamName: { color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
+  teamMine: { color: '#00F2FF' },
+  teamScore: { color: '#D4AF37', fontSize: 22, fontWeight: '900', letterSpacing: 1 },
+  vsCol: { width: 40, alignItems: 'center' },
+  vsText: { color: '#D4AF37', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  pctRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  pctText: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
+  statusPill: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+  statusWin: { backgroundColor: 'rgba(0,242,255,0.07)', borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)' },
+  statusLose: { backgroundColor: 'rgba(255,149,0,0.07)', borderWidth: 1, borderColor: 'rgba(255,149,0,0.2)' },
+  statusText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#FF453A', borderRadius: 10, paddingVertical: 12, marginTop: 2 },
+  ctaText: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+});
+
+function LiveBattleDashboard() {
+  const { token } = useAuth();
+  const [battles, setBattles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    if (!token) return;
+    try {
+      const data = await api.getLiveCrewBattles(token);
+      setBattles(Array.isArray(data) ? data : []);
+    } catch (_) {}
+    finally { setLoading(false); }
+  }, [token]);
+
+  useEffect(() => {
+    load();
+    const iv = setInterval(load, 30000); // refresh every 30s
+    return () => clearInterval(iv);
+  }, [load]);
+
+  if (loading) return (
+    <View style={lbd$.loadWrap}>
+      <ActivityIndicator color="#FF453A" size="small" />
+    </View>
+  );
+
+  return (
+    <View style={lbd$.section}>
+      <View style={lbd$.sectionHeader}>
+        <Ionicons name="flash" size={12} color="#FF453A" />
+        <Text style={lbd$.sectionTitle}>BATTLE LIVE</Text>
+        <View style={lbd$.countBadge}><Text style={lbd$.countText}>{battles.length} ATTIVE</Text></View>
+      </View>
+      {battles.length === 0 ? (
+        <View style={lbd$.emptyCard}>
+          <Text style={lbd$.emptyTitle}>NESSUNA BATTLE ATTIVA</Text>
+          <Text style={lbd$.emptySub}>Usa il Matchmaking AI per trovare un avversario</Text>
+        </View>
+      ) : (
+        battles.map(b => <LiveBattleCard key={b.id} battle={b} onContribute={() => {}} />)
+      )}
+    </View>
+  );
+}
+
+const lbd$ = StyleSheet.create({
+  section: { marginBottom: 4 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingBottom: 10, paddingTop: 4 },
+  sectionTitle: { flex: 1, color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+  countBadge: { backgroundColor: 'rgba(255,69,58,0.15)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,69,58,0.3)' },
+  countText: { color: '#FF453A', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  loadWrap: { height: 60, alignItems: 'center', justifyContent: 'center' },
+  emptyCard: { marginHorizontal: 16, backgroundColor: 'rgba(255,69,58,0.04)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,69,58,0.1)', gap: 4 },
+  emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  emptySub: { color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '400' },
+});
+
+// ========== MATCHMAKING AI PANEL ==========
+function MatchmakingPanel() {
+  const { token } = useAuth();
+  const [data, setData] = useState<any>(null);
+  const [challenging, setChallengingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) return;
+    api.getCrewMatchmake(token)
+      .then(d => setData(d))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [token]);
+
+  const handleChallenge = async (crewId: string, crewName: string) => {
+    if (!token) return;
+    setChallengingId(crewId);
+    try {
+      await api.challengeCrew(crewId, token, 24);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      Alert.alert('SFIDA LANCIATA', `${crewName} è stata sfidato! La battle dura 24h. Fai un NEXUS Scan per contribuire.`);
+      // Refresh
+      const newData = await api.getCrewMatchmake(token);
+      setData(newData);
+    } catch (e: any) {
+      Alert.alert('SFIDA FALLITA', e?.message || 'Errore nell\'avviare la battle');
+    } finally {
+      setChallengingId(null);
+    }
+  };
+
+  if (loading) return null;
+  if (!data?.suggestions?.length) return null;
+
+  return (
+    <Animated.View entering={FadeInDown.delay(200).duration(400)} style={mp$.section}>
+      {/* Header */}
+      <View style={mp$.header}>
+        <View style={mp$.headerLeft}>
+          <Ionicons name="analytics" size={12} color="#D4AF37" />
+          <Text style={mp$.title}>MATCHMAKING AI</Text>
+        </View>
+        {data.has_crew && (
+          <View style={mp$.myScorePill}>
+            <Text style={mp$.myScoreLabel}>IL TUO KORE</Text>
+            <Text style={mp$.myScoreVal}>{data.my_kore_score}</Text>
+          </View>
+        )}
+      </View>
+
+      {!data.has_crew && (
+        <View style={mp$.noCrew}>
+          <Ionicons name="people" size={16} color="rgba(212,175,55,0.5)" />
+          <Text style={mp$.noCrewText}>Unisciti a una Crew per sfidare avversari compatibili</Text>
+        </View>
+      )}
+
+      {/* Suggested opponents */}
+      {data.suggestions.map((opp: any, idx: number) => {
+        const diff = opp.score_diff;
+        const matchLabel = diff <= 2 ? 'MATCH PERFETTO' : diff <= 8 ? 'MATCH BUONO' : 'MATCH ACCETTABILE';
+        const matchColor = diff <= 2 ? '#00F2FF' : diff <= 8 ? '#D4AF37' : '#FF9500';
+        return (
+          <Animated.View key={opp.id} entering={FadeInDown.delay(idx * 80).duration(300)} style={mp$.card}>
+            <View style={mp$.cardLeft}>
+              <View style={mp$.nameRow}>
+                <Text style={mp$.crewName}>{opp.name.toUpperCase()}</Text>
+                <View style={[mp$.matchPill, { borderColor: matchColor + '40' }]}>
+                  <Text style={[mp$.matchText, { color: matchColor }]}>{matchLabel}</Text>
+                </View>
+              </View>
+              <View style={mp$.metaRow}>
+                <Ionicons name="people" size={10} color="rgba(255,255,255,0.3)" />
+                <Text style={mp$.meta}>{opp.members_count} membri</Text>
+                <Text style={mp$.meta}>·</Text>
+                <Text style={mp$.meta}>KORE {opp.kore_battle_score}</Text>
+                {opp.is_stronger && <Text style={[mp$.meta, { color: '#FF9500' }]}>· +{diff} più forti</Text>}
+                {!opp.is_stronger && diff > 0 && <Text style={[mp$.meta, { color: '#00F2FF' }]}>· -{diff} più deboli</Text>}
+              </View>
+            </View>
+            {opp.already_challenged ? (
+              <View style={mp$.challenged}>
+                <Ionicons name="checkmark-circle" size={14} color="#34C759" />
+                <Text style={mp$.challengedText}>IN CORSO</Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={[mp$.challengeBtn, data.has_crew ? {} : mp$.challengeBtnDisabled]}
+                onPress={() => data.has_crew ? handleChallenge(opp.id, opp.name) : null}
+                disabled={!data.has_crew || challenging === opp.id}
+                activeOpacity={0.8}
+              >
+                {challenging === opp.id ? (
+                  <ActivityIndicator color="#050505" size="small" />
+                ) : (
+                  <>
+                    <Ionicons name="flash-sharp" size={12} color="#050505" />
+                    <Text style={mp$.challengeBtnText}>SFIDA</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+          </Animated.View>
+        );
+      })}
+
+      <Text style={mp$.footNote}>
+        <Ionicons name="shield-checkmark" size={10} color="rgba(0,242,255,0.4)" /> Matchmaking AI — differenza max 35% KORE Score
+      </Text>
+    </Animated.View>
+  );
+}
+
+const mp$ = StyleSheet.create({
+  section: { marginHorizontal: 16, marginBottom: 12, backgroundColor: 'rgba(212,175,55,0.04)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(212,175,55,0.14)' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  title: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
+  myScorePill: { alignItems: 'flex-end', gap: 1 },
+  myScoreLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  myScoreVal: { color: '#D4AF37', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
+  noCrew: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
+  noCrewText: { flex: 1, color: 'rgba(212,175,55,0.5)', fontSize: 12, fontWeight: '400', lineHeight: 17 },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  cardLeft: { flex: 1, gap: 4 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  crewName: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+  matchPill: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
+  matchText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  meta: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '400' },
+  challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#D4AF37', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, minWidth: 68 },
+  challengeBtnDisabled: { backgroundColor: 'rgba(212,175,55,0.3)' },
+  challengeBtnText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  challenged: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  challengedText: { color: '#34C759', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  footNote: { color: 'rgba(0,242,255,0.3)', fontSize: 10, fontWeight: '400', letterSpacing: 0.5, marginTop: 10, textAlign: 'center' },
+});
+
+
 
 // ── EliteActivityFeed with Challenge CTA ─────────────────────────
 const ELITE_FEED = [
@@ -334,8 +623,11 @@ export default function ArenaTab() {
       <StatusBar barStyle="light-content" />
       <Header title="ARENA" />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        {/* LIVE GLOBAL BATTLES */}
-        <LiveBattlesCard />
+        {/* BATTLE LIVE DASHBOARD */}
+        <LiveBattleDashboard />
+
+        {/* MATCHMAKING AI */}
+        <MatchmakingPanel />
 
         {/* HERO BANNER */}
         <HeroBanner />
@@ -361,27 +653,7 @@ const s = StyleSheet.create({
   divLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.05)' },
 });
 
-const live$ = StyleSheet.create({
-  card: { margin: 16, marginBottom: 8, backgroundColor: 'rgba(255,69,58,0.06)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,69,58,0.25)' },
-  topRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  liveBadge: { backgroundColor: '#FF453A', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 },
-  liveText: { color: '#FFF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-  title: { flex: 1, color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
-  count: { color: 'rgba(255,69,58,0.8)', fontSize: 11, fontWeight: '700' },
-  emptyRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  emptyText: { color: 'rgba(255,255,255,0.40)', fontSize: 12, fontWeight: '400' },
-  ctaBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#D4AF37', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 9 },
-  ctaText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
-  battleRow: { gap: 10 },
-  battleTeams: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  teamName: { flex: 1, color: '#FFF', fontSize: 13, fontWeight: '900', textAlign: 'center' },
-  vsText: { color: '#D4AF37', fontSize: 14, fontWeight: '900' },
-  battleCtas: { flexDirection: 'row', gap: 8 },
-  joinBtn: { flex: 1, backgroundColor: '#FF453A', borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
-  joinText: { color: '#FFF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  supportBtn: { flex: 1, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
-  supportText: { color: '#FFF', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-});
+const live$ = StyleSheet.create({ card: {} }); // legacy placeholder
 
 const ef$ = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },

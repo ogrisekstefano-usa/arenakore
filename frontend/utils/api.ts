@@ -184,6 +184,14 @@ export const api = {
 
   getActionCenter: (token: string) => request('/kore/action-center', {}, token),
 
+  // ========== CREW BATTLE ENGINE ==========
+  getLiveCrewBattles: (token: string) => request('/battles/crew/live', {}, token),
+  getCrewMatchmake: (token: string) => request('/battles/crew/matchmake', {}, token),
+  challengeCrew: (crewId: string, token: string, durationHours: number = 24) =>
+    request('/battles/crew/challenge', { method: 'POST', body: JSON.stringify({ crew_id: crewId, duration_hours: durationHours }) }, token),
+  contributeToCrewBattle: (battleId: string, qualityScore: number, exerciseType: string, token: string) =>
+    request(`/battles/crew/${battleId}/contribute`, { method: 'POST', body: JSON.stringify({ quality_score: qualityScore, exercise_type: exerciseType }) }, token),
+
   // ========== WALLET ENGINE — APPLE + GOOGLE ==========
   generateApplePass: (token: string) => request('/wallet/apple-pass', {}, token),
   generateGooglePass: (token: string) => request('/wallet/google-pass', {}, token),

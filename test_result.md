@@ -1177,3 +1177,16 @@ agent_communication:
       message: "GLOBAL UI BUG FIX — #0D0D0D REGRESSION. Root cause: previous session did global sed '#00F2FF' → '#0D0D0D' on ALL files, breaking buttons (Login ACCEDI, SALVA, AVVIA ORA, SHARE PASSPORT, PVP), progress bar fills (DNA stats, biometric fills), indicator dots (feedDot, crewDot, unreadDot, phaseDot), glow lines (topGlow, cardTopGlow, cyanLine, dot), avatars (arena KOTD), scan line (NexusVisuals). FIX: global sed '#0D0D0D' → '#00F2FF' across ALL tsx files, with intentional darks preserved (laserLine, scanLayer in kore, talosBottomLine, bio$ progressFill reverse-countdown). ALSO: beatInstruction text reduced 48px→32px, arena avatar changed to '#1A1A2E' with cyan text, notification badge changed to '#FF3B30' (red). All changes verified via testing agent — all 9 critical fixes confirmed working."
     - agent: "testing"
       message: "VISUAL REGRESSION FIX VERIFIED: All 9 critical invisible-text fixes confirmed. Login ACCEDI=cyan, DNA stat fills=cyan, KORE buttons=cyan, step1/step2 CTAs=cyan, beatInstruction=32px. All 5 tabs pass visual check. Remaining: DNA NaN OVR (pre-existing TalentCard calculation bug). App is in stable state."
+
+  - task: "Crew Battle Engine — Live Battles + Matchmaking AI + Weighted Score"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py, frontend/app/(tabs)/arena.tsx, frontend/utils/api.ts"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "BATTLE ENGINE IMPLEMENTED. Backend: (1) calculate_kore_battle_score() — weighted DNA avg * 0.7 + avg_xp_bonus * 0.3; (2) GET /api/battles/crew/live — live battles with real-time scores; (3) GET /api/battles/crew/matchmake — AI matchmaking ±35% KORE score; (4) POST /api/battles/crew/challenge — creates battle with matchmaking guard (>45% diff blocked); (5) POST /api/battles/crew/{id}/contribute — NEXUS scan contribution, proactive notifications when losing >15pts. Frontend: LiveBattleDashboard + MatchmakingPanel in Arena tab. PLEASE TEST: Login, go to ARENA tab, verify both sections visible. BASE URL: https://voice-coach-40.preview.emergentagent.com"
+
