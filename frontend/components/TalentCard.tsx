@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   statLabel: { color: '#555', fontSize: 12, fontWeight: '400', width: 28 },
   statLabelBroken: { color: '#D4AF37' },
   statBarOuter: { flex: 1, height: 3, backgroundColor: '#1A1A1A', borderRadius: 2, overflow: 'hidden' },
-  statBarInner: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
+  statBarInner: { height: '100%', backgroundColor: '#0D0D0D', borderRadius: 2 },
   statBarBroken: { backgroundColor: '#D4AF37' },
   statVal: { color: '#888', fontSize: 13, fontWeight: '800', width: 24, textAlign: 'right' },
   statValBroken: { color: '#D4AF37' },

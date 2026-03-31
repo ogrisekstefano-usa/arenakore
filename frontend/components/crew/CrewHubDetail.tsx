@@ -188,7 +188,7 @@ const hub$ = StyleSheet.create({
   memberXPLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
   emptyFeed: { color: 'rgba(255,255,255,0.3)', fontSize: 16, textAlign: 'center', padding: 24 },
   feedItem: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingVertical: 8 },
-  feedDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF', marginTop: 4 },
+  feedDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#0D0D0D', marginTop: 4 },
   feedContent: { flex: 1, gap: 2 },
   feedMsg: { color: 'rgba(255,255,255,0.7)', fontSize: 16, fontWeight: '600' },
   feedTime: { color: 'rgba(255,255,255,0.3)', fontSize: 13 },

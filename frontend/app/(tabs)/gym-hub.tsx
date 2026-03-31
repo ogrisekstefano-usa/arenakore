@@ -14,7 +14,7 @@ export default function GymHubTab() {
   return (
     <ImageBackground source={{ uri: TAB_BACKGROUNDS.crews }} style={s.root} imageStyle={{ opacity: 0.10 }}>
       <Header title="GYM HUB" />
-      <GymHub token={token || ''} />
+      <GymHub />
     </ImageBackground>
   );
 }

@@ -252,8 +252,8 @@ export default function HeroIndex() {
 
           <View style={s.partnerCard}>
             <LinearGradient
-              colors={['rgba(0,242,255,0.65)', 'rgba(0,242,255,0.65)']}
-              style={s.partnerGrad}
+              colors={['rgba(0,0,0,0.0)', 'rgba(0,0,0,0.0)']}
+              style={[s.partnerGrad, { backgroundColor: 'rgba(0,242,255,0.06)', borderRadius: 16, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.3)' }]}
             >
               <View style={s.partnerTopGlow} />
 
@@ -329,8 +329,8 @@ const s = StyleSheet.create({
   topBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(0,242,255,0.65)',
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(0,242,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.5)',
     borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7,
     marginBottom: 12,
   },

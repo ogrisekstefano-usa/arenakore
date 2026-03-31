@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   showHideText: { color: '#00F2FF', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
   error: { color: '#FF3B30', fontSize: 13, textAlign: 'center' },
   loginButton: {
-    backgroundColor: '#00F2FF', borderRadius: 8,
+    backgroundColor: '#0D0D0D', borderRadius: 8,
     paddingVertical: 18, alignItems: 'center', marginTop: 8,
   },
   loginButtonText: { color: '#050505', fontSize: 16, fontWeight: '800', letterSpacing: 2 },

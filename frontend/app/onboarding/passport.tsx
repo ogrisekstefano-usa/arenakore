@@ -129,7 +129,7 @@ export default function PassportScreen() {
       } else {
         // Fallback: native Share sheet
         await Share.share({
-          message: `ARENAKORE — KORE DNA PASSPORT\n\nDNA SCORE: ${result?.kore_score}/100\nSTABILITÀ: ${result?.stability}% | AMPIEZZA: ${result?.amplitude}%\nCERTIFIED IN ${result?.city}\n${result ? formatDate(result.scan_date) : ''}\n\nhttps://kore-biometric-scan.preview.emergentagent.com`,
+          message: `ARENAKORE — KORE DNA PASSPORT\n\nDNA SCORE: ${result?.kore_score}/100\nSTABILITÀ: ${result?.stability}% | AMPIEZZA: ${result?.amplitude}%\nCERTIFIED IN ${result?.city}\n${result ? formatDate(result.scan_date) : ''}\n\nhttps://voice-coach-40.preview.emergentagent.com`,
           title: 'KORE DNA PASSPORT',
         });
       }

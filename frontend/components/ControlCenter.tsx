@@ -237,7 +237,7 @@ const st = StyleSheet.create({
   tierLabel: { color: CYAN, fontSize: 14, fontWeight: '800', letterSpacing: 2 },
   tierSub: { color: DIM, fontSize: 10, fontWeight: '400', letterSpacing: 1 },
   tierLiveDot: {
-    width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF',
+    width: 6, height: 6, borderRadius: 3, backgroundColor: '#0D0D0D',
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4,
   },
   item: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 15, paddingHorizontal: 22 },

@@ -141,7 +141,7 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
 const bio$ = StyleSheet.create({
   overlay: { ...StyleSheet.absoluteFillObject, zIndex: 50, backgroundColor: 'rgba(5,5,5,0.94)', justifyContent: 'center', alignItems: 'center' },
   laserWrap: { position: 'absolute', left: 0, right: 0, height: 6, alignItems: 'center' },
-  laserLine: { height: 2, width: '100%', backgroundColor: '#00F2FF' },
+  laserLine: { height: 2, width: '100%', backgroundColor: '#0D0D0D' },
   laserGlow: { height: 16, width: '85%', backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 8 },
   center: { alignItems: 'center', gap: 14, paddingHorizontal: 32 },
   title: { color: '#00F2FF', fontSize: 17, fontWeight: '900', letterSpacing: 4 },
@@ -151,20 +151,150 @@ const bio$ = StyleSheet.create({
   bioLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
   bioVal: { color: '#00F2FF', fontSize: 16, fontWeight: '900' },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: SW * 0.55, marginTop: 8 },
-  progressTrack: { flex: 1, height: 3, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 2, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
+  progressTrack: { flex: 1, height: 3, backgroundColor: 'rgba(0,242,255,0.15)', borderRadius: 2, overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: '#0D0D0D', borderRadius: 2 },
   progressPct: { color: '#00F2FF', fontSize: 18, fontWeight: '900', fontVariant: ['tabular-nums'], width: 50 },
   matchLabel: { color: '#00F2FF', fontSize: 14, fontWeight: '400', letterSpacing: 4 },
   matchText: { color: '#D4AF37', fontSize: 18, fontWeight: '900', letterSpacing: 2, fontVariant: ['tabular-nums'], textAlign: 'center' },
   founderGlow: { color: '#D4AF37', fontSize: 15, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
   bracket: { position: 'absolute' },
-  bH: { width: 30, height: 2, backgroundColor: '#00F2FF', opacity: 0.5 },
-  bV: { width: 2, height: 30, backgroundColor: '#00F2FF', opacity: 0.5 },
+  bH: { width: 30, height: 2, backgroundColor: '#0D0D0D', opacity: 0.5 },
+  bV: { width: 2, height: 30, backgroundColor: '#0D0D0D', opacity: 0.5 },
+});
+
+// ========== NEXUS PROACTIVE ENGINE — 6 CTA CARDS ==========
+interface ProactiveCTACard {
+  id: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconColor: string;
+  borderColor: string;
+  title: string;
+  subtitle: string;
+  cta: string;
+  ctaColor: string;
+  action: () => void;
+}
+
+function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavigate }: {
+  user: any; eligibility: any; myRank: any; myCrews: any[]; onScan: () => void;
+  onNavigate: (r: string) => void;
+}) {
+  const cards: ProactiveCTACard[] = [];
+
+  // 1. SFIDA IL RIVALE — solo se c'è un utente sopra in classifica
+  if (myRank?.next_username) {
+    cards.push({
+      id: 'rival', icon: 'flash-sharp', iconColor: '#D4AF37', borderColor: '#D4AF37',
+      title: 'SFIDA IL RIVALE',
+      subtitle: `${myRank.next_username.toUpperCase()} · ${myRank.xp_gap || '?'} XP sopra di te`,
+      cta: 'SFIDA ORA', ctaColor: '#D4AF37',
+      action: () => onNavigate('/(tabs)/arena'),
+    });
+  }
+
+  // 2. BOOST YOUR CREW — se sei in una crew
+  if (myCrews && myCrews.length > 0) {
+    cards.push({
+      id: 'crew', icon: 'people', iconColor: '#FF6B00', borderColor: '#FF6B00',
+      title: 'BOOST CREW',
+      subtitle: `${(myCrews[0]?.name || 'TUA CREW').toUpperCase()} · Contribuisci al ranking globale`,
+      cta: 'CONTRIBUISCI', ctaColor: '#FF6B00',
+      action: () => onNavigate('/(tabs)/kore'),
+    });
+  }
+
+  // 3. RE-CERTIFY DNA — se scan > 7 giorni fa o mai fatto
+  const daysSince = eligibility?.days_since_last_scan;
+  const needsRecert = daysSince === undefined || daysSince === null || daysSince >= 7;
+  if (needsRecert) {
+    cards.push({
+      id: 'recertify', icon: 'scan', iconColor: '#FF9500', borderColor: '#FF9500',
+      title: daysSince >= 7 ? `DNA SCADUTO · ${daysSince}G` : 'CERTIFICA IL DNA',
+      subtitle: daysSince >= 7 ? 'Bio-Signature non aggiornata. Ricertifica ora.' : 'Effettua il tuo primo BIO-SCAN',
+      cta: 'RICERTIFICA', ctaColor: '#FF9500',
+      action: onScan,
+    });
+  }
+
+  // 4. SYNC TO GLOBAL RANK — mostra sempre il gap al rank successivo
+  if (myRank?.rank && myRank.rank > 1) {
+    cards.push({
+      id: 'sync', icon: 'trending-up', iconColor: '#00F2FF', borderColor: '#00F2FF',
+      title: 'SCALA LA CLASSIFICA',
+      subtitle: `Rank #${myRank.rank} · ${myRank.xp_gap || '?'} XP alla vetta della Hall`,
+      cta: 'GUADAGNA XP', ctaColor: '#00F2FF',
+      action: () => onNavigate('/(tabs)/hall'),
+    });
+  }
+
+  // 5. CLAIM YOUR REWARD — badge e medaglie
+  cards.push({
+    id: 'reward', icon: 'medal', iconColor: '#AF52DE', borderColor: '#AF52DE',
+    title: 'RISCATTA REWARD',
+    subtitle: 'Badge eksklusivi · Medaglie KORE disponibili',
+    cta: 'RISCATTA', ctaColor: '#AF52DE',
+    action: () => onNavigate('/(tabs)/kore'),
+  });
+
+  // 6. PUSH TO COACH
+  cards.push({
+    id: 'coach', icon: 'send', iconColor: '#34C759', borderColor: '#34C759',
+    title: 'PUSH AL COACH',
+    subtitle: myCrews && myCrews.length > 0
+      ? 'Invia la tua Bio-Signature al Coach per il workout'
+      : 'Unisciti a una Crew con un Coach KORE',
+    cta: myCrews && myCrews.length > 0 ? 'INVIA DATI' : 'TROVA CREW',
+    ctaColor: '#34C759',
+    action: () => onNavigate('/(tabs)/kore'),
+  });
+
+  if (cards.length === 0) return null;
+
+  return (
+    <View style={pro$.section}>
+      <View style={pro$.sectionHeader}>
+        <View style={pro$.sectionDot} />
+        <Text style={pro$.sectionTitle}>AZIONI PROATTIVE</Text>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={pro$.scroll}>
+        {cards.map((card) => (
+          <TouchableOpacity key={card.id} style={[pro$.card, { borderLeftColor: card.borderColor }]} onPress={card.action} activeOpacity={0.82}>
+            <Ionicons name={card.icon} size={18} color={card.iconColor} />
+            <Text style={pro$.cardTitle}>{card.title}</Text>
+            <Text style={pro$.cardSub} numberOfLines={2}>{card.subtitle}</Text>
+            <View style={[pro$.ctaBtn, { borderColor: card.ctaColor }]}>
+              <Text style={[pro$.ctaText, { color: card.ctaColor }]}>{card.cta}</Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
+const pro$ = StyleSheet.create({
+  section: { marginTop: 12, marginBottom: 4 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, marginBottom: 10 },
+  sectionDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#00F2FF',
+    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
+  sectionTitle: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  scroll: { paddingHorizontal: 16, gap: 10, paddingBottom: 4 },
+  card: {
+    width: SW * 0.68, backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 14, padding: 14,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    borderLeftWidth: 3, gap: 6,
+  },
+  cardTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  cardSub: { color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: '400', lineHeight: 16 },
+  ctaBtn: { marginTop: 6, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 6, paddingHorizontal: 12, paddingVertical: 5 },
+  ctaText: { fontSize: 11, fontWeight: '900', letterSpacing: 2 },
 });
 
 // ========== NEXUS CONSOLE ==========
-function NexusConsole({ user, onScan, onForge, deviceTier, eligibility }: {
+function NexusConsole({ user, onScan, onForge, deviceTier, eligibility, myRank, myCrews }: {
   user: any; onScan: () => void; onForge: () => void; deviceTier: DeviceTier; eligibility: any;
+  myRank: any; myCrews: any[];
 }) {
   const router = useRouter();
   const isFounder = user?.is_founder || user?.is_admin;
@@ -230,6 +360,14 @@ function NexusConsole({ user, onScan, onForge, deviceTier, eligibility }: {
               </TouchableOpacity>
             ))}
           </View>
+          <NexusProactiveCTAs
+            user={user}
+            eligibility={eligibility}
+            myRank={myRank}
+            myCrews={myCrews}
+            onScan={onScan}
+            onNavigate={(r) => router.push(r as any)}
+          />
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -246,7 +384,7 @@ const cn$ = StyleSheet.create({
   founderBadge: { marginTop: 6, paddingHorizontal: 14, paddingVertical: 4, borderRadius: 12, borderWidth: 1, borderColor: '#D4AF37', backgroundColor: 'rgba(212,175,55,0.08)' },
   founderText: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   tierRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
-  tierDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
+  tierDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#0D0D0D' },
   tierText: { color: '#00F2FF', fontSize: 11, fontWeight: '800', letterSpacing: 2, opacity: 0.6 },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingBottom: 100 },
@@ -264,12 +402,12 @@ const cn$ = StyleSheet.create({
     borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
     borderWidth: 1, marginTop: 10, marginBottom: 2,
   },
-  eligBannerActive: { backgroundColor: 'rgba(0,242,255,0.65)', borderColor: 'rgba(0,242,255,0.65)' },
+  eligBannerActive: { backgroundColor: 'rgba(0,242,255,0.07)', borderColor: '#00F2FF' },
   eligBannerLocked: { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.05)' },
   eligText: { flex: 1, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   eligTextActive: { color: '#00F2FF' },
   eligTextLocked: { color: 'rgba(255,255,255,0.3)' },
-  eligReadyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF', shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4 },
+  eligReadyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#0D0D0D', shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4 },
 });
 
 // ========== CHALLENGE FORGE ==========
@@ -375,7 +513,7 @@ const fg$ = StyleSheet.create({
   exRow: { flexDirection: 'row', gap: 12, width: '100%' },
   exCard: {
     flex: 1, alignItems: 'center', gap: 8, paddingVertical: 28,
-    backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 16, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(0,242,255,0.05)', borderRadius: 16, borderWidth: 1.5, borderColor: '#00F2FF',
   },
   exName: { color: '#00F2FF', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
   exDesc: { color: 'rgba(255,255,255,0.6)', fontSize: 17, fontWeight: '400' },
@@ -593,7 +731,7 @@ const smv$ = StyleSheet.create({
   phaseLabel: { color: 'rgba(0,242,255,0.55)', fontSize: 14, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
   iconCircle: {
     width: 110, height: 110, borderRadius: 55,
-    backgroundColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(0,242,255,0.06)',
     borderWidth: 2.5, borderColor: '#00F2FF',
     alignItems: 'center', justifyContent: 'center',
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
@@ -607,9 +745,9 @@ const smv$ = StyleSheet.create({
   barPct: { fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   barBg: { height: 5, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 2.5, overflow: 'hidden' },
   stabFill: { height: '100%', borderRadius: 2.5 },
-  progressBg: { height: 7, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 3.5, overflow: 'hidden' },
+  progressBg: { height: 7, backgroundColor: 'rgba(0,242,255,0.15)', borderRadius: 3.5, overflow: 'hidden' },
   progressFill: {
-    height: '100%', borderRadius: 3.5, backgroundColor: '#00F2FF',
+    height: '100%', borderRadius: 3.5, backgroundColor: '#0D0D0D',
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1, shadowRadius: 10,
   },
@@ -651,7 +789,7 @@ function Countdown({ onComplete }: { onComplete: () => void }) {
   const as = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }], opacity: opacity.value }));
   return (
     <View style={{ ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 25, backgroundColor: 'rgba(5,5,5,0.88)' }}>
-      <Animated.View style={[{ width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 3, borderColor: '#00F2FF', alignItems: 'center', justifyContent: 'center' }, as]}>
+      <Animated.View style={[{ width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(5,5,5,0.95)', borderWidth: 3, borderColor: '#00F2FF', alignItems: 'center', justifyContent: 'center' }, as]}>
         <Text style={{ color: '#00F2FF', fontSize: 64, fontWeight: '900' }}>{count === 0 ? 'GO' : count}</Text>
       </Animated.View>
       <Text style={{ color: '#888', fontSize: 15, fontWeight: '700', letterSpacing: 3, marginTop: 24 }}>{count > 0 ? 'PREPARATI' : 'NEXUS ATTIVATO'}</Text>
@@ -679,6 +817,8 @@ export default function NexusTriggerScreen() {
   const [eligibility, setEligibility] = useState<any>(null);
   const [showProUnlock, setShowProUnlock] = useState(false);
   const [bioscanResult, setBioscanResult] = useState<any>(null);
+  const [myRank, setMyRank] = useState<any>(null);
+  const [myCrews, setMyCrews] = useState<any[]>([]);
 
   const analyzerRef = useRef<MotionAnalyzer | null>(null);
   const startTimeRef = useRef(0);
@@ -694,6 +834,12 @@ export default function NexusTriggerScreen() {
     if (!token) return;
     api.getRescanEligibility(token)
       .then(data => setEligibility(data))
+      .catch(() => {});
+    api.getMyRank(token)
+      .then(data => setMyRank(data))
+      .catch(() => {});
+    api.getMyCrews(token)
+      .then(data => setMyCrews(Array.isArray(data) ? data : (data?.crews || [])))
       .catch(() => {});
   }, [token]);
 
@@ -810,7 +956,7 @@ export default function NexusTriggerScreen() {
   const fmt = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
   if (phase === 'console') {
-    return <NexusConsole user={user} onScan={() => router.push({ pathname: '/onboarding/step2', params: { mode: 'rescan' } })} onForge={() => setPhase('forge')} deviceTier={deviceTier} eligibility={eligibility} />;
+    return <NexusConsole user={user} onScan={() => router.push({ pathname: '/onboarding/step2', params: { mode: 'rescan' } })} onForge={() => setPhase('forge')} deviceTier={deviceTier} eligibility={eligibility} myRank={myRank} myCrews={myCrews} />;
   }
 
   if (phase === 'forge') {
@@ -897,7 +1043,7 @@ export default function NexusTriggerScreen() {
               </Animated.View>
             ) : (
               <View style={hud$.phaseIndicator}>
-                <View style={[hud$.phaseDot, motionActive && { backgroundColor: '#00F2FF' }]} />
+                <View style={[hud$.phaseDot, motionActive && { backgroundColor: '#0D0D0D' }]} />
                 <Text style={[hud$.phaseText, motionActive && { color: '#00F2FF' }]}>
                   {motionActive ? 'TRACKING ACTIVE' : 'AWAITING MOTION'}
                 </Text>
@@ -976,7 +1122,7 @@ const hud$ = StyleSheet.create({
     borderRadius: 1, overflow: 'hidden',
   },
   timerBarFill: {
-    height: '100%', backgroundColor: '#00F2FF', borderRadius: 1,
+    height: '100%', backgroundColor: '#0D0D0D', borderRadius: 1,
   },
   // TOP-RIGHT: Exercise & Mode
   topRight: {
@@ -1008,7 +1154,7 @@ const hud$ = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
   repFeedbackDot: {
-    width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF',
+    width: 6, height: 6, borderRadius: 3, backgroundColor: '#0D0D0D',
   },
   repFeedbackText: {
     color: '#00F2FF', fontSize: 15, fontWeight: '800', letterSpacing: 2,

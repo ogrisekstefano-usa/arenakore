@@ -536,7 +536,7 @@ const cr2$ = StyleSheet.create({
   info: { flex: 1, gap: 2 },
   label: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   sub: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '400' },
-  btn: { backgroundColor: '#00F2FF', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 9 },
+  btn: { backgroundColor: '#0D0D0D', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 9 },
   btnText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
 });
 

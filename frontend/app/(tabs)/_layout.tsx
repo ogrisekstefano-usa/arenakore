@@ -10,7 +10,7 @@ import { playTabSwitch } from '../../utils/sounds';
 // Dynamic tab config based on active role
 function getTabConfig(activeRole: UserRole) {
   const isCoach = activeRole === 'COACH';
-  const isGym   = activeRole === 'GYM';
+  const isGym   = activeRole === 'GYM_OWNER';
   const tabs = [
     { name: 'arena', icon: 'map-outline', iconBold: 'map', label: 'ARENA' },
     // GYM role: replace 'kore' with 'gym-hub'
@@ -122,9 +122,11 @@ export default function TabsLayout() {
     <Tabs tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false }}>
       <Tabs.Screen name="arena" />
       <Tabs.Screen name="kore" />
+      <Tabs.Screen name="gym-hub" options={{ href: null }} />
       <Tabs.Screen name="nexus-trigger" />
       <Tabs.Screen name="dna" />
       <Tabs.Screen name="hall" />
+      <Tabs.Screen name="my-athletes" options={{ href: null }} />
     </Tabs>
   );
 }
@@ -143,7 +145,7 @@ const $ = StyleSheet.create({
   },
   glowDot: {
     position: 'absolute', top: -2, width: 5, height: 5, borderRadius: 2.5,
-    backgroundColor: '#00F2FF',
+    backgroundColor: '#0D0D0D',
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1, shadowRadius: 8, elevation: 8,
   },

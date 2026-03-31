@@ -55,7 +55,7 @@ const dna$ = StyleSheet.create({
   bars: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 },
   barWrap: { flex: 1, height: 5, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' },
   bar: { height: 5, borderRadius: 3, position: 'absolute', top: 0 },
-  barMine: { backgroundColor: '#00F2FF', right: 0 },
+  barMine: { backgroundColor: '#0D0D0D', right: 0 },
   barTheir: { backgroundColor: '#FF453A', left: 0 },
   barWin: { opacity: 1 },
   val: { color: 'rgba(255,255,255,0.65)', fontSize: 12, fontWeight: '900', width: 26, textAlign: 'center' },

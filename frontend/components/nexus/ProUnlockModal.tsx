@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   },
   borderFillCyan: {
     height: '100%',
-    backgroundColor: '#00F2FF',
+    backgroundColor: '#0D0D0D',
     shadowColor: '#00F2FF',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   },
   statusDot: {
     width: 6, height: 6, borderRadius: 3,
-    backgroundColor: '#00F2FF',
+    backgroundColor: '#0D0D0D',
     shadowColor: '#00F2FF',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,

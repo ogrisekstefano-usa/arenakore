@@ -1,0 +1,67 @@
+{
+  "summary": "Frontend testing of ARENAKORE app for v12 changes: background colors, NEXUS proactive CTAs, ChallengeInviteModal, and role-based navigation. Login confirmed working for Stefano (FOUNDER, LVL 20, Global #1). Critical navigation bug found: tab bar routing is off by 1 due to gym-hub route inclusion in state.routes. All tab backgrounds are correctly BLACK (#050505). ChallengeInviteModal works perfectly. Landing page FOR COACHES & GYMS section still appears visually cyan. NEXUS shows 3/6 CTAs for rank #1 user (correct conditional behavior).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/battles/live/{crew_id}",
+        "issue": "Returns 500 when triggering a live battle challenge from ChallengeInviteModal. UI handles gracefully (shows SFIDA INVIATA anyway).",
+        "priority": "MEDIUM"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "CustomTabBar (_layout.tsx)",
+        "issue": "CRITICAL: Tab navigation is broken for ALL users. NEXUS gold button navigates to /gym-hub, DNA button navigates to /nexus-trigger, RANK button navigates to /dna. Root cause: <Tabs.Screen name='gym-hub' options={{ href: null }} /> is at index 2 in the Expo Router Tabs definition, so state.routes[2]='gym-hub'. CustomTabBar maps state.routes[index] to TAB_CONFIG[index], causing all tabs after kore to be offset by 1. The /hall route is unreachable via tab bar tap.",
+        "testID": "nexus-trigger-tab, tab-dna, tab-hall",
+        "priority": "CRITICAL"
+      },
+      {
+        "component": "index.tsx - partnerCard (FOR COACHES & GYMS)",
+        "issue": "FOR COACHES & GYMS card section visually appears cyan/teal, not dark. Root causes: (1) LinearGradient inline style has backgroundColor: 'rgba(0,242,255,0.06)', (2) gymBtn (BECOME A KORE HUB) uses solid CYAN background '#00F2FF', (3) partnerTopGlow uses 2px solid cyan line. Combined effect makes the card look predominantly cyan rather than dark. Requirement says it should have dark background.",
+        "testID": "N/A",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "NEXUS proactive CTAs carousel",
+        "issue": "Only 3 of 6 CTAs shown for the test user (rank #1, no crew). SFIDA IL RIVALE hidden (requires next_username from rank below, N/A for #1), SCALA LA CLASSIFICA hidden (requires rank > 1), BOOST CREW hidden (requires crew membership). These are correct conditional behaviors per code, but test expectation said all 6 should be visible. Needs a non-rank-1 test account to validate all 6 CTAs.",
+        "affected_testIDs": ["azioni-carousel"]
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "index.tsx landing",
+        "issues": [
+          "FOR COACHES & GYMS card has cyan-tinted background and solid cyan BECOME A KORE HUB button making the entire section appear teal/cyan instead of dark",
+          "Requirement states dark background for this section"
+        ]
+      }
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "CRITICAL FIX: _layout.tsx CustomTabBar - filter state.routes to skip routes that don't match any entry in the current role's TAB_CONFIG. OR move <Tabs.Screen name='gym-hub'> and <Tabs.Screen name='my-athletes'> to after <Tabs.Screen name='hall'> so their indices don't interfere with the tab mapping. Currently clicking NEXUS goes to /gym-hub, DNA goes to /nexus-trigger, RANK goes to /dna, and /hall is unreachable.",
+    "Fix index.tsx partnerCard FOR COACHES & GYMS: change LinearGradient inline backgroundColor from 'rgba(0,242,255,0.06)' to 'rgba(5,5,5,0.9)' or fully dark. Keep cyan only for border and text. The gymBtn (BECOME A KORE HUB) solid cyan button is acceptable as a CTA but the card container background should be dark.",
+    "Optional: Create a non-rank-1 test user to fully verify all 6 NEXUS proactive CTAs are displayed when conditions are met (user not #1, has crew, DNA scan age > 7 days).",
+    "Optional: Investigate 500 error on POST /api/battles/live/{crew_id} - the endpoint is returning server error when creating a live battle challenge."
+  ],
+  "critical_code_review_comments": [
+    "_layout.tsx: The CustomTabBar iterates state.routes with positional index mapping to TAB_CONFIG. Since Expo Router includes ALL registered <Tabs.Screen> in state.routes (even those with href: null), adding gym-hub at index 2 (before nexus-trigger) causes a fatal off-by-1 offset in tab navigation. Fix: filter state.routes to only routes whose names exist in current TAB_CONFIG, or reorder Tabs.Screen definitions to put hidden routes (gym-hub, my-athletes) AFTER the last visible route (hall).",
+    "index.tsx: The partnerGrad LinearGradient uses colors: ['rgba(0,0,0,0.0)', 'rgba(0,0,0,0.0)'] (fully transparent gradient) with backgroundColor: 'rgba(0,242,255,0.06)'. On Expo web, the transparent gradient allows the backgroundColor to show. Combined with partnerTopGlow (2px solid cyan) and gymBtn (solid '#00F2FF'), the section appears visually cyan."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "70% (login, NEXUS content, ARENA, ChallengeInviteModal, HALL, DNA all working; tab navigation broken for all users; landing page cyan background issue)"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Critical bug: Tab navigation is completely broken due to gym-hub route in state.routes. After main agent fixes, test by: (1) clicking tab bar buttons (not direct URL) for NEXUS, DNA, RANK and verifying correct URLs. (2) Verify /hall is reachable via RANK tab click. (3) Verify landing page FOR COACHES & GYMS card has dark/black background. The login works fine with ogrisek.stefano@gmail.com / Founder@KORE2026!. Use page.goto() to direct navigate around the tab bug for testing other features.",
+  "rca_of_issue": "TAB NAVIGATION BUG RCA: In _layout.tsx, the Tabs component registers screens in order: arena(0), kore(1), gym-hub(2, href:null), nexus-trigger(3), dna(4), hall(5), my-athletes(6, href:null). Expo Router includes ALL screens in state.routes regardless of href:null. The CustomTabBar does state.routes.map((route, index) => TAB_CONFIG[index]). For ATHLETE role, TAB_CONFIG has 5 items [arena, kore, nexus-trigger, dna, hall]. So: route[2]='gym-hub' maps to cfg[2]='nexus-trigger' (renders NEXUS button but navigates to gym-hub). route[3]='nexus-trigger' maps to cfg[3]='dna' (renders DNA button but navigates to nexus-trigger). route[4]='dna' maps to cfg[4]='hall' (renders RANK button but navigates to dna). route[5]='hall' maps to cfg[5]=undefined (not rendered). FIX: Move gym-hub and my-athletes <Tabs.Screen> definitions to AFTER hall in the Tabs definition, OR filter state.routes in CustomTabBar to skip routes not in TAB_CONFIG."
+}

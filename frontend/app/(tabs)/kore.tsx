@@ -78,7 +78,7 @@ function CityDropdown({ city, onSelect }: { city: string; onSelect: (c: string) 
   );
 }
 const cd$ = StyleSheet.create({
-  trigger: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)', alignSelf: 'flex-start' },
+  trigger: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,242,255,0.07)', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)', alignSelf: 'flex-start' },
   cityText: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' },
   sheet: { maxHeight: '50%', borderTopLeftRadius: 20, borderTopRightRadius: 20, overflow: 'hidden' },
@@ -86,7 +86,7 @@ const cd$ = StyleSheet.create({
   sheetTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 4, marginBottom: 12 },
   sheetDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginBottom: 8 },
   option: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 4 },
-  optionActive: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 8, paddingHorizontal: 10 },
+  optionActive: { backgroundColor: 'rgba(0,242,255,0.07)', borderRadius: 8, paddingHorizontal: 10 },
   optionText: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
   optionTextActive: { color: '#00F2FF' },
 });
@@ -146,7 +146,7 @@ function PassportHeader({ user }: { user: any }) {
 const ph$ = StyleSheet.create({
   container: { marginHorizontal: 16, marginTop: 8, marginBottom: 10 },
   card: { borderRadius: 18, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)' },
-  topGlow: { height: 2, backgroundColor: '#00F2FF', opacity: 0.6 },
+  topGlow: { height: 2, backgroundColor: '#0D0D0D', opacity: 0.6 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16 },
   avatar: { width: 54, height: 54, borderRadius: 27, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)' },
   avatarLetter: { color: '#050505', fontSize: 20, fontWeight: '900' },
@@ -157,7 +157,7 @@ const ph$ = StyleSheet.create({
   founderText: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   sport: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
   badgeRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  lvlBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
+  lvlBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(0,242,255,0.07)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
   lvlText: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(212,175,55,0.07)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(212,175,55,0.15)' },
   proText: { color: '#D4AF37', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
@@ -252,12 +252,12 @@ function RankInfographic({ rankData, city, onCitySelect }: { rankData: any; city
 const ri$ = StyleSheet.create({
   container: { marginHorizontal: 16, marginBottom: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#0D0D0D' },
   title: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 4 },
   cardsRow: { flexDirection: 'row', gap: 10, marginBottom: 12 },
   rankCard: { flex: 1, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
   rankInner: { padding: 14, alignItems: 'center', gap: 6 },
-  rankIcon: { width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(0,242,255,0.65)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
+  rankIcon: { width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(0,242,255,0.07)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
   rankType: { color: 'rgba(255,255,255,0.70)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
   rankNum: { color: '#00F2FF', fontSize: 36, fontWeight: '400', letterSpacing: 1 },
   rankOf: { color: 'rgba(255,255,255,0.65)', fontSize: 13, fontWeight: '400', letterSpacing: 1, marginTop: -4 },
@@ -372,17 +372,17 @@ const af$ = StyleSheet.create({
   container: { marginHorizontal: 16, marginBottom: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   title: { flex: 1, color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 4 },
-  editBtn: { padding: 8, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 8, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
+  editBtn: { padding: 8, backgroundColor: 'rgba(0,242,255,0.07)', borderRadius: 8, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
   infoRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   infoCard: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   infoText: { color: 'rgba(255,255,255,0.45)', fontSize: 10, fontWeight: '800', letterSpacing: 1.5, flex: 1 },
   input: { flex: 1, color: '#FFFFFF', fontSize: 11, fontWeight: '800', letterSpacing: 1, paddingVertical: 0, borderBottomWidth: 1, borderBottomColor: 'rgba(0,242,255,0.2)' },
-  saveBtn: { alignSelf: 'flex-end', backgroundColor: '#00F2FF', borderRadius: 8, paddingHorizontal: 20, paddingVertical: 8, marginBottom: 8 },
+  saveBtn: { alignSelf: 'flex-end', backgroundColor: '#0D0D0D', borderRadius: 8, paddingHorizontal: 20, paddingVertical: 8, marginBottom: 8 },
   saveTxt: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   crewSection: { gap: 6, marginTop: 4 },
   crewLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 4 },
   crewRow: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)' },
-  crewDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF' },
+  crewDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#0D0D0D' },
   crewName: { flex: 1, color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
   crewMeta: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   ownerBadge: { backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)' },
@@ -705,8 +705,8 @@ const kc$ = StyleSheet.create({
   sectionTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 4 },
   card: { marginHorizontal: 16, borderRadius: 18, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)' },
   cardInner: { padding: 14, gap: 10 },
-  scanLayer: { borderRadius: 18, backgroundColor: '#00F2FF', zIndex: 0 },
-  cardTopGlow: { height: 2, backgroundColor: '#00F2FF', opacity: 0.6, marginHorizontal: -14, marginTop: -14 },
+  scanLayer: { borderRadius: 18, backgroundColor: '#0D0D0D', zIndex: 0 },
+  cardTopGlow: { height: 2, backgroundColor: '#0D0D0D', opacity: 0.6, marginHorizontal: -14, marginTop: -14 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   brandSm: { color: 'rgba(255,255,255,0.60)', fontSize: 8, fontWeight: '800', letterSpacing: 4 },
   cardType: { color: '#00F2FF', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
@@ -740,8 +740,8 @@ const wm$ = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.88)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
   card: { width: '100%', maxWidth: 380, borderRadius: 20, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)' },
   cardInner: { padding: 24, alignItems: 'center', gap: 12 },
-  topGlow: { height: 2, width: '110%', backgroundColor: '#00F2FF', opacity: 0.6, marginHorizontal: -24, marginTop: -24, marginBottom: 8 },
-  iconCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 2, borderColor: '#00F2FF', alignItems: 'center', justifyContent: 'center' },
+  topGlow: { height: 2, width: '110%', backgroundColor: '#0D0D0D', opacity: 0.6, marginHorizontal: -24, marginTop: -24, marginBottom: 8 },
+  iconCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(0,242,255,0.07)', borderWidth: 2, borderColor: '#00F2FF', alignItems: 'center', justifyContent: 'center' },
   title: { color: '#00F2FF', fontSize: 24, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
   subtitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 3, textAlign: 'center', marginTop: -4 },
   divider: { height: 1, width: '100%', backgroundColor: 'rgba(255,255,255,0.06)' },
@@ -749,7 +749,7 @@ const wm$ = StyleSheet.create({
   infoLabel: { color: 'rgba(255,255,255,0.70)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
   infoVal: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   note: { color: 'rgba(0,242,255,0.7)', fontSize: 13, fontWeight: '400', letterSpacing: 1, textAlign: 'center' },
-  closeBtn: { marginTop: 6, width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, borderRadius: 12, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  closeBtn: { marginTop: 6, width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, borderRadius: 12, backgroundColor: 'rgba(0,242,255,0.07)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   closeTxt: { color: '#00F2FF', fontSize: 14, fontWeight: '400', letterSpacing: 4 },
 });
 
@@ -944,7 +944,7 @@ const cr$ = StyleSheet.create({
   title: { flex: 1, color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 4 },
   cityBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 8,
+    backgroundColor: 'rgba(0,242,255,0.07)', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
@@ -987,7 +987,7 @@ const cr$ = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 10,
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.65)',
   },
-  athleteRowMe: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 10, borderBottomWidth: 0, marginHorizontal: 6, marginVertical: 2 },
+  athleteRowMe: { backgroundColor: 'rgba(0,242,255,0.07)', borderRadius: 10, borderBottomWidth: 0, marginHorizontal: 6, marginVertical: 2 },
   medalBox: { width: 24, alignItems: 'center' },
   rankNum: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '400' },
   avatarDot: { width: 8, height: 8, borderRadius: 4 },
@@ -997,7 +997,7 @@ const cr$ = StyleSheet.create({
   athleteNameMe: { color: '#00F2FF' },
   founderPill: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)' },
   founderPillText: { color: '#D4AF37', fontSize: 7, fontWeight: '900', letterSpacing: 1 },
-  mePill: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
+  mePill: { backgroundColor: 'rgba(0,242,255,0.07)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
   mePillText: { color: '#00F2FF', fontSize: 7, fontWeight: '900', letterSpacing: 1 },
   athleteSub: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '400', letterSpacing: 1 },
   // Score
@@ -1249,7 +1249,7 @@ const s = StyleSheet.create({
 // Privacy Shield link styles
 const ps$ = StyleSheet.create({
   wrap: { marginHorizontal: 16, marginBottom: 8 },
-  btn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  btn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(0,242,255,0.07)', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   txt: { flex: 1, color: 'rgba(0,242,255,0.7)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
 });
 
@@ -1282,7 +1282,7 @@ const bsc$ = StyleSheet.create({
   info: { flex: 1, gap: 3 },
   label: { color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
   status: { color: '#00F2FF', fontSize: 13, fontWeight: '700' },
-  btn: { backgroundColor: '#00F2FF', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9 },
+  btn: { backgroundColor: '#0D0D0D', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9 },
   btnRed: { backgroundColor: '#FF453A' },
   btnText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
 });
