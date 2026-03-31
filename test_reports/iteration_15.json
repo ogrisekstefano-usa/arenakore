@@ -1,0 +1,126 @@
+{
+  "summary": "Full visual audit after cyan→transparent background change. Confirmed multiple invisible-text bugs where buttons now have near-black (#0D0D0D) background with near-black (#050505) text. These buttons were previously meant to have bright cyan backgrounds so dark text would be readable. The change broke them by replacing strong cyan with near-black. Also confirmed DNA stat bars are near-invisible (dark fill on dark track). ARENA KORE OF THE DAY avatar letter is invisible.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Login page — ACCEDI button",
+        "issue": "COMPLETELY INVISIBLE TEXT: loginButton { backgroundColor: '#0D0D0D' } + loginButtonText { color: '#050505' } = black text on black bg. Computed: bg=rgb(13,13,13), text=rgb(5,5,5). The button rectangle is barely distinguishable from the page background.",
+        "file": "frontend/app/login.tsx:154-158",
+        "fix": "Change loginButton.backgroundColor to '#00F2FF' (solid cyan) so dark text is readable, or change text color to '#FFFFFF'",
+        "priority": "CRITICAL"
+      },
+      {
+        "component": "ARENA — KORE OF THE DAY avatar circle (THUNDER_MAN)",
+        "issue": "Avatar letter 'T' is INVISIBLE: kotd$.avatar { backgroundColor: '#0D0D0D' } + avatarLetter { color: '#050505' } = black letter on black circle. Computed confirmed: bg=rgb(13,13,13), color=rgb(0,0,0), 52x52px.",
+        "file": "frontend/app/(tabs)/arena.tsx:180-195",
+        "fix": "Avatar bg should use user's avatar_color from API (like kore.tsx passport avatar), or change avatarLetter color to '#FFFFFF'",
+        "priority": "CRITICAL"
+      },
+      {
+        "component": "DNA tab — Stat bar fills (VELOCITA, FORZA, RESISTENZA, TECNICA, AGILITA, POTENZA)",
+        "issue": "Progress bar fills are NEAR-INVISIBLE: statFill { backgroundColor: '#0D0D0D' } on statBar { backgroundColor: 'rgba(255,255,255,0.05)' } — both are essentially black on dark card. Computed confirmed: fill=rgb(13,13,13) w=78px h=3px on track=rgba(255,255,255,0.05) w=89px h=3px. No visual progress is shown.",
+        "file": "frontend/app/(tabs)/dna.tsx:605",
+        "fix": "statFill.backgroundColor should use the attribute's color prop (cyan/white/red etc.) passed per stat, similar to how kc$.dnaFill uses dynamic color",
+        "priority": "CRITICAL"
+      },
+      {
+        "component": "KORE tab — BioScanStatusCard normal button ('SHARE PASSPORT' state)",
+        "issue": "INVISIBLE TEXT when needsRescan=false: bsc$.btn { backgroundColor: '#0D0D0D' } + bsc$.btnText { color: '#050505' }. Not currently triggered (user has never scanned) but affects all users who scanned within 7 days.",
+        "file": "frontend/app/(tabs)/kore.tsx:1283-1287",
+        "fix": "Change bsc$.btn.backgroundColor to '#00F2FF' (cyan) to match brand or change btnText color to '#FFFFFF'",
+        "priority": "HIGH"
+      },
+      {
+        "component": "KORE tab — Affiliations SAVE button ('SALVA')",
+        "issue": "INVISIBLE TEXT when edit mode active: saveBtn { backgroundColor: '#0D0D0D' } + saveTxt { color: '#050505' }. Button label 'SALVA' cannot be read.",
+        "file": "frontend/app/(tabs)/kore.tsx:380-381",
+        "fix": "Change saveBtn.backgroundColor to '#00F2FF' or '#D4AF37', or change saveTxt color to '#FFFFFF'",
+        "priority": "HIGH"
+      },
+      {
+        "component": "DNA tab — PVP challenge button",
+        "issue": "INVISIBLE TEXT: pvp$.btn { backgroundColor: '#0D0D0D' } + pvp$.text { color: '#050505' } = black text on black bg.",
+        "file": "frontend/app/(tabs)/dna.tsx:737-738",
+        "fix": "Change btn.backgroundColor to '#00F2FF' (cyan) or '#D4AF37' (gold) for the PVP challenge CTA",
+        "priority": "HIGH"
+      },
+      {
+        "component": "Onboarding step2 — 'AVVIA ORA' accept button",
+        "issue": "INVISIBLE TEXT: prv$.acceptBtn { backgroundColor: '#0D0D0D' } + prv$.acceptTxt { color: '#050505' } = completely invisible button label in the privacy/camera permission modal.",
+        "file": "frontend/app/onboarding/step2.tsx:2055-2059",
+        "fix": "Change acceptBtn.backgroundColor to '#00F2FF' (solid cyan) so 'AVVIA ORA' label is readable",
+        "priority": "HIGH"
+      },
+      {
+        "component": "Onboarding step1 — CTA button (NEXUS activated state)",
+        "issue": "INVISIBLE TEXT when NEXUS scan activates: ctaActivated { backgroundColor: '#0D0D0D', comment says 'Cyan when NEXUS activated' } overrides cta { backgroundColor: '#D4AF37' }. But ctaTxt { color: '#050505' } becomes invisible on #0D0D0D. Comment confirms this was supposed to be cyan.",
+        "file": "frontend/app/onboarding/step1.tsx:557-565",
+        "fix": "Change ctaActivated.backgroundColor from '#0D0D0D' back to '#00F2FF' (solid cyan) as the comment indicates",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "All tabs",
+        "issues": [
+          "Many decorative 'glow dots' (ri$.dot, kotd$.dot, firstScanDot, crewDot etc.) have backgroundColor: '#0D0D0D' — on web these render as invisible near-black dots against dark background. The glow only works on native via shadow. On web they are invisible decorative elements.",
+          "NEXUS eligibility locked banner: text color rgba(255,255,255,0.3) is only 30% opacity — extremely faint. May be intentional for 'locked' state but borderline readable.",
+          "DNA 'cyanLine' decorators and 'topGlow' lines use backgroundColor: '#0D0D0D' — invisible on web (designed for native CSS box-shadow glow only)"
+        ]
+      },
+      {
+        "screen": "DNA tab — Hero section",
+        "issues": [
+          "NaN shown in OVR badge (pre-existing bug from NaN calculation, not related to this change)"
+        ]
+      }
+    ],
+    "react_native_issues": []
+  },
+
+  "rca_of_issue": {
+    "root_cause": "The fix that changed 'rgba(0,242,255,0.07)' to 'transparent' ALSO incorrectly changed buttons that previously had solid bright cyan backgrounds (backgroundColor: '#00F2FF' or similar strong cyan) to '#0D0D0D' (near-black). These buttons all use color: '#050505' (near-black text) which was correct when background was bright cyan, but is now completely invisible against the near-black background.",
+    "evidence": [
+      "login.tsx ctaActivated comment says 'Cyan when NEXUS activated' but has backgroundColor: '#0D0D0D'",
+      "Computed style confirmed: login ACCEDI button btnBg='rgb(13,13,13)', textColor='rgb(5,5,5)'",
+      "Computed style confirmed: ARENA avatar bg=rgb(13,13,13), color=rgb(0,0,0)",
+      "All affected buttons have color:'#050505' — a value only valid on bright (cyan/gold) backgrounds"
+    ],
+    "pattern": "Any element with backgroundColor: '#0D0D0D' + color: '#050505' is a candidate for this bug. The background should be '#00F2FF' (solid cyan) for all CTA/action buttons that use dark text.",
+    "reproduction": "1. Go to login page. 2. See ACCEDI button — text is invisible (same color as button background).",
+    "mitigation": "Replace backgroundColor: '#0D0D0D' with backgroundColor: '#00F2FF' on all action buttons that have color: '#050505' text. Affected files: login.tsx, step1.tsx (ctaActivated), step2.tsx (acceptBtn), kore.tsx (saveBtn, bsc$.btn), dna.tsx (pvp$.btn), arena.tsx (kotd$.avatar)"
+  },
+
+  "test_report_links": [],
+  "action_items": [
+    "CRITICAL: Fix login ACCEDI button — change loginButton.backgroundColor from '#0D0D0D' to '#00F2FF' (login.tsx:155)",
+    "CRITICAL: Fix ARENA KORE OF THE DAY avatar — change kotd$.avatar.backgroundColor from '#0D0D0D' to use avatar_color from API data, OR fix avatarLetter color (arena.tsx:194-195)",
+    "CRITICAL: Fix DNA stat bar fills — change statFill.backgroundColor from '#0D0D0D' to use the per-stat attribute color (cyan for VELOCITA etc.) (dna.tsx:605)",
+    "HIGH: Fix KORE BioScanStatusCard 'SHARE PASSPORT' button — change bsc$.btn.backgroundColor from '#0D0D0D' to '#00F2FF' (kore.tsx:1283)",
+    "HIGH: Fix KORE Affiliations SAVE button — change saveBtn.backgroundColor from '#0D0D0D' to '#00F2FF' or '#D4AF37' (kore.tsx:380)",
+    "HIGH: Fix DNA PVP challenge button — change pvp$.btn.backgroundColor from '#0D0D0D' to '#00F2FF' (dna.tsx:737)",
+    "HIGH: Fix Onboarding step2 AVVIA ORA button — change acceptBtn.backgroundColor from '#0D0D0D' to '#00F2FF' (step2.tsx:2057)",
+    "HIGH: Fix Onboarding step1 ctaActivated — change backgroundColor from '#0D0D0D' back to '#00F2FF' per the code comment (step1.tsx:558)",
+    "SEARCH: Run global search for all elements matching pattern { backgroundColor: '#0D0D0D' } + nearby { color: '#050505' } and fix each instance — there may be more in crews.tsx and join/[code].tsx"
+  ],
+  "critical_code_review_comments": [
+    "Pattern anti-bug: Buttons with color:'#050505' (near-black text) REQUIRE a bright background. Any backgroundColor:'#0D0D0D' paired with color:'#050505' creates invisible text. All CTA buttons should use '#00F2FF' (cyan) or '#D4AF37' (gold) as background.",
+    "DNA statFill has no dynamic color — it should receive the attribute color as a prop so bars show progress in the correct color (cyan, white, red per attribute type)"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A",
+    "frontend": "60% — Core tabs load and display correctly, but multiple critical invisible-text bugs and non-functional UI elements found"
+  },
+  "seed_data_creation": "None — used existing test account ogrisek.stefano@gmail.com",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "After E1 fixes the #0D0D0D button backgrounds (should be #00F2FF for cyan CTAs), re-verify: 1) login ACCEDI button text visible, 2) DNA stat bars show progress in correct colors, 3) ARENA KORE OF THE DAY avatar letter visible, 4) KORE SALVA button visible in edit mode, 5) step2 AVVIA ORA button visible. Also check join/[code].tsx nexusBtnText and loginBtnText which may have same issue."
+}
