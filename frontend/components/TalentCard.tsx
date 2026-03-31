@@ -66,7 +66,7 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
   const qrData = `arenakore://athlete/${user.id}`;
   const avgStat = dna
     ? Math.round(
-        (dna.velocita + dna.forza + dna.resistenza + dna.agilita + dna.tecnica + dna.potenza) / 6
+        ((dna.velocita||0) + (dna.forza||0) + (dna.resistenza||0) + (dna.agilita||0) + (dna.tecnica||0) + (dna.potenza||0)) / 6
       )
     : 0;
   const showFounder = isFounder || user.is_admin;
