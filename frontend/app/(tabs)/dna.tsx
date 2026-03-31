@@ -414,12 +414,12 @@ export default function DNATab() {
           </Animated.View>
         )}
 
-        {/* GLORY SHOT */}
+        {/* ATHLETE PASSPORT */}
         {user && dna && (
           <View style={styles.talentSection}>
             <View style={styles.sectionRow}>
-              <Ionicons name="flash" size={14} color="#00F2FF" />
-              <Text style={styles.sectionTitle}>GLORY SHOT</Text>
+              <Ionicons name="flash" size={14} color="rgba(255,255,255,0.4)" />
+              <Text style={styles.sectionTitle}>ATHLETE PASSPORT</Text>
             </View>
             <TalentCard
               user={user}

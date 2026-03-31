@@ -3,35 +3,29 @@
 
 // Battle card backgrounds (KORE tab)
 export const BATTLE_IMAGES: Record<string, string> = {
-  // Sprint/Atletica
   'Atletica': 'https://images.pexels.com/photos/796545/pexels-photo-796545.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
   'Sprint': 'https://images.pexels.com/photos/796545/pexels-photo-796545.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
-  // Powerlifting
-  'Powerlifting': 'https://images.unsplash.com/photo-1613845205719-8c87760ab728?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDB8MHwxfHNlYXJjaHwxfHx3ZWlnaHRsaWZ0aW5nJTIwZGFya3xlbnwwfHx8YmxhY2t8MTc3NDYyMjUyM3ww&ixlib=rb-4.1.0&q=85',
-  // CrossFit
-  'CrossFit': 'https://images.unsplash.com/photo-1576913105965-1d0b6a19a482?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHxjcm9zc2ZpdCUyMGRhcmt8ZW58MHx8fGJsYWNrfDE3NzQ2MjI1Mzd8MA&ixlib=rb-4.1.0&q=85',
-  // Combat/Boxing
+  'Powerlifting': 'https://images.unsplash.com/photo-1613845205719-8c87760ab728?crop=entropy&cs=srgb&fm=jpg&q=75&w=800',
+  'CrossFit': 'https://images.unsplash.com/photo-1576913105965-1d0b6a19a482?crop=entropy&cs=srgb&fm=jpg&q=75&w=800',
   'Boxe': 'https://images.pexels.com/photos/4761341/pexels-photo-4761341.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
   'MMA': 'https://images.pexels.com/photos/4761341/pexels-photo-4761341.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
-  // Basket
-  'Basket': 'https://images.unsplash.com/flagged/photo-1577415924271-5364c9fd41f2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzB8MHwxfHNlYXJjaHwxfHxiYXNrZXRiYWxsJTIwcGxheWVyfGVufDB8fHxibGFja3wxNzc0NjIyNjEwfDA&ixlib=rb-4.1.0&q=85',
-  // Default fallback
-  'default': 'https://images.unsplash.com/photo-1698966137466-704c2c346e35?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHwyfHxkcmFtYXRpYyUyMHNwb3J0c3xlbnwwfHx8YmxhY2t8MTc3NDYyMjUwNXww&ixlib=rb-4.1.0&q=85',
+  'Basket': 'https://images.unsplash.com/flagged/photo-1577415924271-5364c9fd41f2?crop=entropy&cs=srgb&fm=jpg&q=75&w=800',
+  'default': 'https://images.pexels.com/photos/17956257/pexels-photo-17956257.jpeg?auto=compress&cs=tinysrgb&w=800&q=60',
 };
 
-// DNA hero background
-export const DNA_HERO_IMAGE = 'https://images.unsplash.com/photo-1634152557768-b5bb22302a56?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNzl8MHwxfHNlYXJjaHwyfHxhdGhsZXRlJTIwc2lsaG91ZXR0ZXxlbnwwfHx8YmxhY2t8MTc3NDYyMjUxMHww&ixlib=rb-4.1.0&q=85';
+// DNA hero background — athlete silhouette, powerful mood
+export const DNA_HERO_IMAGE = 'https://images.pexels.com/photos/17956257/pexels-photo-17956257.jpeg?auto=compress&cs=tinysrgb&w=800&q=60';
 
-// Hall of KORE / Leaderboard background - empty stadium under spotlights
-export const HALL_OF_KORE_BG = 'https://images.unsplash.com/photo-1707898611072-bb5cbae75929?auto=compress&cs=tinysrgb&w=1200&q=60';
+// Hall of KORE / Leaderboard background — city skyline at night, competitive
+export const HALL_OF_KORE_BG = 'https://images.pexels.com/photos/15830350/pexels-photo-15830350.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60';
 
 // Per-tab background images
 export const TAB_BACKGROUNDS: Record<string, string> = {
-  arena:   'https://images.pexels.com/photos/1552106/pexels-photo-1552106.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60',  // athlete crowd dark stadium
+  arena:   'https://images.pexels.com/photos/17956257/pexels-photo-17956257.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60', // athlete silhouette dramatic
   kore:    'https://images.pexels.com/photos/3621106/pexels-photo-3621106.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60',  // dark gym silhouette
   nexus:   'https://images.pexels.com/photos/4397840/pexels-photo-4397840.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60',  // dark fitness tech
   crews:   'https://images.pexels.com/photos/3622622/pexels-photo-3622622.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60',  // team training dark
-  hall:    'https://images.unsplash.com/photo-1707898611072-bb5cbae75929?auto=compress&cs=tinysrgb&w=1200&q=60',        // stadium
+  hall:    'https://images.pexels.com/photos/15830350/pexels-photo-15830350.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60', // city night competitive
   dna:     DNA_HERO_IMAGE,
 };
 

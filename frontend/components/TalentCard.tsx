@@ -194,7 +194,7 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
 
       {/* Share button */}
       <TouchableOpacity style={styles.shareBtn} onPress={handleShare} testID="talent-card-share">
-        <Text style={styles.shareBtnText}>↑ CONDIVIDI GLORY SHOT</Text>
+        <Text style={styles.shareBtnText}>↑ CONDIVIDI ATHLETE PASSPORT</Text>
       </TouchableOpacity>
     </View>
   );

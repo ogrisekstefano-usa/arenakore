@@ -170,7 +170,7 @@ const row$ = StyleSheet.create({
   container: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingHorizontal: 16, paddingVertical: 10,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.45)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)',
   },
   rank: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '900', width: 30, textAlign: 'center' },
   avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
@@ -236,7 +236,7 @@ const cr$ = StyleSheet.create({
   container: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.45)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)',
   },
   rankWrap: { width: 32, alignItems: 'center' },
   rank: { color: 'rgba(255,255,255,0.4)', fontSize: 16, fontWeight: '900', textAlign: 'center' },
@@ -371,7 +371,7 @@ export function HallOfKore() {
 
   return (
     <>
-    <ImageBackground source={{ uri: HALL_OF_KORE_BG }} style={gl$.container} imageStyle={{ opacity: 0.12 }}>
+    <ImageBackground source={{ uri: HALL_OF_KORE_BG }} style={gl$.container} imageStyle={{ opacity: 0.18 }}>
       <LinearGradient
         colors={['rgba(5,5,5,0.65)', 'rgba(5,5,5,0.88)', 'rgba(5,5,5,0.97)']}
         locations={[0, 0.25, 0.5]}

@@ -70,7 +70,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
               ))}</View>
             )}
             <TouchableOpacity style={cin$.shareBtn} onPress={() => setShowShare(!showShare)} activeOpacity={0.85}>
-              <Text style={cin$.shareBtnText}>{'\u2191'} SHARE GLORY SHOT</Text>
+              <Text style={cin$.shareBtnText}>{'\u2191'} SHARE ATHLETE PASSPORT</Text>
             </TouchableOpacity>
             {showShare && (
               <Animated.View entering={FadeInDown.duration(300)} style={cin$.shareCard}>

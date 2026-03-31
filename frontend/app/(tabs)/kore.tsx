@@ -1074,34 +1074,39 @@ function BioScanStatusCard({ user, router }: { user: any; router: any }) {
   );
 }
 
-// ── GOALS SECTION
+// ── GOALS SECTION — Icon Badges
 function GoalsSection({ user }: { user: any }) {
   const xp = user?.xp || 0;
   const level = user?.level || 1;
   const xpToNext = level * 500;
   const xpProgress = Math.min(1, (xp % xpToNext) / xpToNext);
-  const goals = [
-    { label: 'LIVELLO ' + (level + 1), progress: xpProgress, value: `${xp % xpToNext}/${xpToNext} XP` },
-    { label: 'TOP 10 CHICAGO', progress: Math.min(1, xp / 8000), value: `${xp}/8000 XP` },
-    { label: 'DNA SCORE 90+', progress: Math.min(1, (user?.dna ? Object.values(user.dna as Record<string,number>).reduce((a:number,b:number)=>a+b,0)/Object.values(user.dna as Record<string,number>).length : 0)/90), value: '' },
+  const dnaAvg = user?.dna
+    ? Math.round(Object.values(user.dna as Record<string, number>).reduce((a: number, b: number) => a + b, 0) / 6)
+    : 0;
+
+  const badges = [
+    { icon: 'trophy', label: 'LVL ' + (level + 1), done: xpProgress >= 1, pct: Math.round(xpProgress * 100), color: '#D4AF37' },
+    { icon: 'location', label: 'TOP 10 CITY', done: xp >= 8000, pct: Math.min(100, Math.round(xp / 80)), color: '#00F2FF' },
+    { icon: 'analytics', label: 'DNA 90+', done: dnaAvg >= 90, pct: Math.min(100, Math.round(dnaAvg / 0.9)), color: '#AF52DE' },
+    { icon: 'flash', label: 'SCAN COMPLETO', done: !!(user?.dna), pct: user?.dna ? 100 : 0, color: '#FF9500' },
   ];
-  const closeGoal = goals.find(g => g.progress > 0.75 && g.progress < 1);
+
   return (
     <Animated.View entering={FadeInDown.delay(200)} style={goals$.card}>
-      <Text style={goals$.title}>GOALS</Text>
-      {goals.map((g, i) => (
-        <View key={i} style={goals$.row}>
-          <Text style={goals$.label}>{g.label}</Text>
-          <View style={goals$.track}><View style={[goals$.fill, { width: `${g.progress * 100}%` as any }]} /></View>
-          <Text style={goals$.val}>{Math.round(g.progress * 100)}%</Text>
-        </View>
-      ))}
-      {closeGoal && (
-        <TouchableOpacity style={goals$.pushBtn} onPress={() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(()=>{})} activeOpacity={0.85}>
-          <Ionicons name="trending-up" size={12} color="#050505" />
-          <Text style={goals$.pushText}>PUSH TO LEVEL UP</Text>
-        </TouchableOpacity>
-      )}
+      <Text style={goals$.title}>OBIETTIVI</Text>
+      <View style={goals$.grid}>
+        {badges.map((b, i) => (
+          <View key={i} style={[goals$.badge, b.done && goals$.badgeDone]}>
+            <Ionicons
+              name={b.done ? 'checkmark-circle' : b.icon as any}
+              size={20}
+              color={b.done ? b.color : 'rgba(255,255,255,0.25)'}
+            />
+            <Text style={[goals$.badgeLabel, b.done && { color: b.color }]}>{b.label}</Text>
+            {!b.done && <Text style={goals$.badgePct}>{b.pct}%</Text>}
+          </View>
+        ))}
+      </View>
     </Animated.View>
   );
 }
@@ -1288,14 +1293,12 @@ const bsc$ = StyleSheet.create({
 });
 
 const goals$ = StyleSheet.create({
-  card: { marginHorizontal: 16, marginBottom: 10, backgroundColor: 'rgba(212,175,55,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(212,175,55,0.15)' },
-  title: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 4, marginBottom: 12 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  label: { color: 'rgba(255,255,255,0.65)', fontSize: 11, fontWeight: '500', width: 130 },
-  track: { flex: 1, height: 5, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' },
-  fill: { height: 5, backgroundColor: '#D4AF37', borderRadius: 3 },
-  val: { color: 'rgba(212,175,55,0.8)', fontSize: 11, fontWeight: '700', width: 32, textAlign: 'right' },
-  pushBtn: { marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#D4AF37', borderRadius: 8, paddingVertical: 10 },
-  pushText: { color: '#050505', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  card: { marginHorizontal: 16, marginBottom: 10, backgroundColor: 'rgba(212,175,55,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(212,175,55,0.12)' },
+  title: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '900', letterSpacing: 4, marginBottom: 14 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  badge: { flex: 1, minWidth: '44%', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  badgeDone: { borderColor: 'rgba(212,175,55,0.15)', backgroundColor: 'rgba(212,175,55,0.04)' },
+  badgeLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, textAlign: 'center' },
+  badgePct: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '300', letterSpacing: 1 },
 });
 

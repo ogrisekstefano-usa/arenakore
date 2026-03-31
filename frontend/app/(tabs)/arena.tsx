@@ -107,144 +107,154 @@ const hero$ = StyleSheet.create({
 });
 
 // ========== KORE OF THE DAY ==========
+const KORE_HERO = 'https://images.pexels.com/photos/17956257/pexels-photo-17956257.jpeg?auto=compress&cs=tinysrgb&w=800&q=60';
+
 function KoreOfTheDay() {
-  const glow = useSharedValue(0.4);
-  useEffect(() => {
-    glow.value = withRepeat(
-      withSequence(withTiming(0.9, { duration: 1800, easing: Easing.inOut(Easing.ease) }), withTiming(0.4, { duration: 1800 })), -1, false
-    );
-  }, []);
-  const glowStyle = useAnimatedStyle(() => ({
-    shadowOpacity: glow.value,
-    borderColor: `rgba(0,242,255,${glow.value * 0.5})`,
-  }));
-
   return (
-    <Animated.View entering={FadeInDown.delay(150)} style={kotd$.container}>
-      <View style={kotd$.sectionRow}>
-        <View style={kotd$.dot} />
-        <Text style={kotd$.sectionTitle}>KORE OF THE DAY</Text>
-        <View style={kotd$.livePill}>
-          <View style={kotd$.liveDot} />
-          <Text style={kotd$.liveText}>LIVE</Text>
-        </View>
-      </View>
-
-      <Animated.View style={[kotd$.card, glowStyle]}>
-        <LinearGradient colors={['#0E0E0E', '#080808']} style={kotd$.cardGrad}>
-          {/* Badge */}
-          <View style={kotd$.badge}>
-            <Ionicons name="star" size={10} color="#00F2FF" />
-            <Text style={kotd$.badgeText}>ATLETA DEL GIORNO</Text>
+    <Animated.View entering={FadeInDown.delay(100)} style={kotd$.container}>
+      <ImageBackground source={{ uri: KORE_HERO }} style={kotd$.card} imageStyle={kotd$.cardImage}>
+        <LinearGradient
+          colors={['rgba(0,0,0,0)', 'rgba(5,5,5,0.6)', 'rgba(5,5,5,0.97)']}
+          locations={[0, 0.45, 0.85]}
+          style={kotd$.grad}
+        >
+          <View style={kotd$.livePill}>
+            <View style={kotd$.liveDot} />
+            <Text style={kotd$.liveText}>KORE OF THE DAY</Text>
           </View>
 
-          {/* Identity */}
-          <View style={kotd$.identRow}>
+          <View style={kotd$.bottom}>
             <View style={kotd$.avatar}>
               <Text style={kotd$.avatarLetter}>T</Text>
             </View>
-            <View style={kotd$.identInfo}>
-              <Text style={kotd$.userName}>{KORE_OF_DAY.username}</Text>
-              <Text style={kotd$.userSport}>{KORE_OF_DAY.sport} · LVL {KORE_OF_DAY.level}</Text>
-              <View style={kotd$.rankPill}>
-                <Text style={kotd$.rankText}>RANK {KORE_OF_DAY.rank}</Text>
-              </View>
+            <View style={kotd$.info}>
+              <Text style={kotd$.name}>{KORE_OF_DAY.username}</Text>
+              <Text style={kotd$.sport}>{KORE_OF_DAY.sport} · RANK {KORE_OF_DAY.rank}</Text>
             </View>
-            <View style={kotd$.xpPill}>
-              <Text style={kotd$.xpVal}>{KORE_OF_DAY.xp}</Text>
+            <View style={kotd$.record}>
+              <Text style={kotd$.recordVal}>{KORE_OF_DAY.value}</Text>
+              <Text style={kotd$.recordLabel}>{KORE_OF_DAY.achievement}</Text>
             </View>
-          </View>
-
-          {/* Achievement */}
-          <View style={kotd$.achievement}>
-            <Ionicons name="flash" size={12} color="#00F2FF" />
-            <Text style={kotd$.achieveLabel}>{KORE_OF_DAY.achievement}</Text>
-            <View style={{ flex: 1 }} />
-            <Text style={kotd$.achieveVal}>{KORE_OF_DAY.value}</Text>
-            <Text style={kotd$.achieveExer}>{KORE_OF_DAY.exercise}</Text>
           </View>
         </LinearGradient>
-      </Animated.View>
+      </ImageBackground>
     </Animated.View>
   );
 }
 
 const kotd$ = StyleSheet.create({
-  container: { marginBottom: 8 },
-  sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingBottom: 10 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF', shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 5 },
-  sectionTitle: { flex: 1, color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
-  livePill: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,69,58,0.1)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,69,58,0.25)' },
+  container: { marginHorizontal: 16, marginBottom: 8 },
+  card: { height: 180, borderRadius: 20, overflow: 'hidden' },
+  cardImage: { borderRadius: 20 },
+  grad: { flex: 1, justifyContent: 'space-between', padding: 16 },
+  livePill: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
   liveDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FF453A' },
-  liveText: { color: '#FF453A', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-  card: {
-    marginHorizontal: 16, borderRadius: 16, overflow: 'hidden',
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)',
-    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowRadius: 16,
-  },
-  cardGrad: { padding: 16, gap: 14 },
-  badge: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'transparent', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(0,242,255,0.25)' },
-  badgeText: { color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
-  identRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#1A1A2E', alignItems: 'center', justifyContent: 'center' },
-  avatarLetter: { color: '#00F2FF', fontSize: 20, fontWeight: '900' },
-  identInfo: { flex: 1, gap: 3 },
-  userName: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
-  userSport: { color: 'rgba(255,255,255,0.65)', fontSize: 13, fontWeight: '500', letterSpacing: 1 },
-  rankPill: { alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 },
-  rankText: { color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
-  xpPill: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-  xpVal: { color: '#00F2FF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  achievement: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  achieveLabel: { color: 'rgba(255,255,255,0.70)', fontSize: 13, fontWeight: '600', letterSpacing: 1 },
-  achieveVal: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
-  achieveExer: { color: 'rgba(0,242,255,0.85)', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  liveText: { color: 'rgba(255,255,255,0.8)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  bottom: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
+  avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center' },
+  avatarLetter: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
+  info: { flex: 1, gap: 3 },
+  name: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 1 },
+  sport: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '300', letterSpacing: 1.5 },
+  record: { alignItems: 'flex-end' },
+  recordVal: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', letterSpacing: 0.5 },
+  recordLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '300', letterSpacing: 1.5 },
 });
 
-// ========== ELITE DIVISION UPDATES ==========
-function EliteDivisionUpdates() {
-  return (
-    <Animated.View entering={FadeInDown.delay(300)} style={edu$.container}>
-      <View style={edu$.sectionRow}>
-        <Ionicons name="radio" size={12} color="#FFFFFF" />
-        <Text style={edu$.sectionTitle}>ELITE DIVISION UPDATES</Text>
-      </View>
+// ========== ELITE ACTIVITY FEED — Visual Cards ==========
+const FEED_IMAGES = [
+  'https://images.pexels.com/photos/35005240/pexels-photo-35005240.jpeg?auto=compress&cs=tinysrgb&w=800&q=60',
+  'https://images.unsplash.com/photo-1473091540282-9b846e7965e3?crop=entropy&cs=srgb&fm=jpg&q=75&w=800',
+  'https://images.unsplash.com/photo-1528720208104-3d9bd03cc9d4?crop=entropy&cs=srgb&fm=jpg&q=75&w=800',
+  'https://images.pexels.com/photos/5930091/pexels-photo-5930091.jpeg?auto=compress&cs=tinysrgb&w=800&q=60',
+  'https://images.unsplash.com/photo-1589104666851-dffe3a15aace?crop=entropy&cs=srgb&fm=jpg&q=75&w=800',
+];
 
-      {DIVISION_UPDATES.map((item, i) => (
-        <Animated.View key={item.id} entering={FadeInDown.delay(350 + i * 50)}>
-          <TouchableOpacity style={edu$.row} activeOpacity={0.75}>
-            <View style={edu$.iconWrap}>
-              <Ionicons name={item.icon} size={14} color="rgba(255,255,255,0.6)" />
-            </View>
-            <View style={edu$.info}>
-              <Text style={edu$.athlete}>{item.athlete}</Text>
-              <Text style={edu$.action}>{item.action} · {item.sport}</Text>
-            </View>
-            <View style={edu$.right}>
-              <Text style={edu$.xp}>{item.xp}</Text>
-              <Text style={edu$.time}>{item.time}</Text>
-            </View>
-          </TouchableOpacity>
-          {i < DIVISION_UPDATES.length - 1 && <View style={edu$.sep} />}
-        </Animated.View>
-      ))}
-    </Animated.View>
+const ACTION_COLORS: Record<string, string> = {
+  'BATTLE VINTA': '#D4AF37',
+  'NUOVO RECORD': '#00F2FF',
+  'LVL 12 RAGGIUNTO': '#AF52DE',
+  'CREW BATTLE': '#FF453A',
+  'DNA AGGIORNATO': '#34C759',
+};
+
+function EliteActivityFeed() {
+  const [challengeTarget, setChallengeTarget] = useState<any>(null);
+  return (
+    <View style={{ paddingBottom: 8 }}>
+      <View style={ef$.header}>
+        <Text style={ef$.title}>ELITE ACTIVITY</Text>
+        <View style={ef$.liveLine} />
+      </View>
+      {ELITE_FEED.map((item, idx) => {
+        const acColor = ACTION_COLORS[item.action] || '#FFFFFF';
+        return (
+          <Animated.View key={item.id} entering={FadeInDown.delay(idx * 90).duration(350)}>
+            <ImageBackground
+              source={{ uri: FEED_IMAGES[idx % FEED_IMAGES.length] }}
+              style={ef$.card}
+              imageStyle={ef$.cardImage}
+            >
+              <LinearGradient
+                colors={['rgba(0,0,0,0)', 'rgba(5,5,5,0.55)', 'rgba(5,5,5,0.96)']}
+                locations={[0, 0.3, 0.75]}
+                style={ef$.cardGrad}
+              >
+                {/* Action badge */}
+                <View style={[ef$.actionBadge, { borderColor: acColor + '40' }]}>
+                  <Text style={[ef$.actionText, { color: acColor }]}>{item.action}</Text>
+                </View>
+
+                {/* Bottom row */}
+                <View style={ef$.cardBottom}>
+                  <View style={ef$.avatarWrap}>
+                    <Text style={ef$.avatarLetter}>{item.athlete[0]}</Text>
+                  </View>
+                  <View style={ef$.cardInfo}>
+                    <Text style={ef$.athleteName}>{item.athlete}</Text>
+                    <Text style={ef$.athleteSub}>{item.sport}</Text>
+                  </View>
+                  <View style={ef$.cardRight}>
+                    <Text style={ef$.xpText}>{item.xp}</Text>
+                    <TouchableOpacity
+                      style={ef$.challengeBtn}
+                      onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); setChallengeTarget({ name: item.athlete, weighted_dna: item.dna, id: item.id }); }}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="flash-sharp" size={11} color="#050505" />
+                      <Text style={ef$.challengeText}>1v1</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </LinearGradient>
+            </ImageBackground>
+          </Animated.View>
+        );
+      })}
+      <ChallengeInviteModal visible={!!challengeTarget} crew={challengeTarget} onClose={() => setChallengeTarget(null)} />
+    </View>
   );
 }
 
-const edu$ = StyleSheet.create({
-  container: { marginHorizontal: 16, marginBottom: 12 },
-  sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  sectionTitle: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
-  iconWrap: { width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.04)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
-  info: { flex: 1, gap: 2 },
-  athlete: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
-  action: { color: 'rgba(255,255,255,0.65)', fontSize: 12, fontWeight: '400', letterSpacing: 0.5 },
-  right: { alignItems: 'flex-end', gap: 2 },
-  xp: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
-  time: { color: 'rgba(255,255,255,0.60)', fontSize: 11, fontWeight: '400', letterSpacing: 0.5 },
-  sep: { height: 1, backgroundColor: 'rgba(255,255,255,0.04)', marginLeft: 44 },
+const ef$ = StyleSheet.create({
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingBottom: 12, paddingTop: 4 },
+  title: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 4 },
+  liveLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.06)' },
+  card: { marginHorizontal: 16, marginBottom: 10, height: 130, borderRadius: 16, overflow: 'hidden' },
+  cardImage: { borderRadius: 16, opacity: 0.55 },
+  cardGrad: { flex: 1, justifyContent: 'space-between', padding: 14 },
+  actionBadge: { alignSelf: 'flex-start', borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, backgroundColor: 'rgba(0,0,0,0.3)' },
+  actionText: { fontSize: 10, fontWeight: '900', letterSpacing: 2.5 },
+  cardBottom: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
+  avatarWrap: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center' },
+  avatarLetter: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
+  cardInfo: { flex: 1, gap: 2 },
+  athleteName: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 0.5 },
+  athleteSub: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '300', letterSpacing: 1 },
+  cardRight: { alignItems: 'flex-end', gap: 6 },
+  xpText: { color: '#D4AF37', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+  challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#D4AF37', borderRadius: 7, paddingHorizontal: 10, paddingVertical: 6 },
+  challengeText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
 });
 
 // ========== LIVE BATTLE DASHBOARD ==========
@@ -586,53 +596,19 @@ const ELITE_FEED = [
   { id: '5', athlete: 'SARA_K', action: 'DNA AGGIORNATO', sport: 'ATLETICA', xp: '+120', dna: { velocita: 86, forza: 74, resistenza: 88, agilita: 84, tecnica: 82, potenza: 76 } },
 ];
 
-function EliteActivityFeed() {
-  const [challengeTarget, setChallengeTarget] = useState<any>(null);
-  return (
-    <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
-      <View style={ef$.header}>
-        <Ionicons name="pulse" size={12} color="#00F2FF" />
-        <Text style={ef$.title}>ELITE ACTIVITY</Text>
-      </View>
-      {ELITE_FEED.map((item, idx) => (
-        <Animated.View key={item.id} entering={FadeInDown.delay(idx * 70)} style={ef$.row}>
-          <View style={ef$.left}>
-            <Text style={ef$.name}>{item.athlete}</Text>
-            <Text style={ef$.sub}>{item.action} · {item.sport} · <Text style={ef$.xp}>{item.xp}</Text></Text>
-          </View>
-          <TouchableOpacity style={ef$.challengeBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); setChallengeTarget({ name: item.athlete, weighted_dna: item.dna, id: item.id }); }} activeOpacity={0.8}>
-            <Ionicons name="flash-sharp" size={11} color="#050505" />
-            <Text style={ef$.challengeText}>SFIDA</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      ))}
-      <ChallengeInviteModal visible={!!challengeTarget} crew={challengeTarget} onClose={() => setChallengeTarget(null)} />
-    </View>
-  );
-}
-
 export default function ArenaTab() {
   return (
-    <ImageBackground source={{ uri: TAB_BACKGROUNDS.arena }} style={s.container} imageStyle={{ opacity: 0.10 }}>
+    <ImageBackground source={{ uri: TAB_BACKGROUNDS.arena }} style={s.container} imageStyle={{ opacity: 0.12 }}>
       <StatusBar barStyle="light-content" />
       <Header title="ARENA" />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        {/* BATTLE LIVE DASHBOARD */}
         <LiveBattleDashboard />
-
-        {/* MATCHMAKING AI */}
         <MatchmakingPanel />
-
-        {/* HERO BANNER */}
         <HeroBanner />
-
-        {/* KORE OF THE DAY */}
         <KoreOfTheDay />
-
-        {/* ELITE ACTIVITY FEED with Challenge CTAs */}
         <View style={s.dividerSection}>
           <View style={s.divLine} />
-          <Ionicons name="radio" size={10} color="rgba(0,242,255,0.4)" />
+          <Ionicons name="radio" size={10} color="rgba(255,255,255,0.15)" />
           <View style={s.divLine} />
         </View>
         <EliteActivityFeed />
@@ -648,15 +624,3 @@ const s = StyleSheet.create({
 });
 
 const live$ = StyleSheet.create({ card: {} }); // legacy placeholder
-
-const ef$ = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  title: { color: 'rgba(0,242,255,0.6)', fontSize: 11, fontWeight: '900', letterSpacing: 4 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)' },
-  left: { flex: 1, gap: 2 },
-  name: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
-  sub: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '400' },
-  xp: { color: '#00F2FF', fontWeight: '700' },
-  challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#D4AF37', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
-  challengeText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
-});
