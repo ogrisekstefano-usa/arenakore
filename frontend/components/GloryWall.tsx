@@ -16,6 +16,7 @@ import { api } from '../utils/api';
 import { playAcceptPing } from '../utils/sounds';
 import { HALL_OF_KORE_BG } from '../utils/images';
 import { ControlCenter } from './ControlCenter';
+import { PvPChallengeModal } from './pvp/PvPChallengeModal';
 
 const MEDAL_COLORS: Record<number, { bg: string; border: string; text: string; glow: string }> = {
   1: { bg: 'rgba(212,175,55,0.2)', border: 'rgba(212,175,55,0.5)', text: '#D4AF37', glow: '#D4AF37' },
@@ -128,7 +129,7 @@ const giant$ = StyleSheet.create({
 });
 
 // REGULAR LEADERBOARD ROW
-function LeaderRow({ item, index }: { item: any; index: number }) {
+function LeaderRow({ item, index, onChallenge }: { item: any; index: number; onChallenge?: (item: any) => void }) {
   const sportCfg = item.category ? SPORT_ICON_MAP[item.category] : null;
   return (
     <Animated.View entering={FadeInDown.delay(index * 40).duration(250)}>
@@ -151,7 +152,15 @@ function LeaderRow({ item, index }: { item: any; index: number }) {
             <Text style={row$.sport}>{item.sport || '\u2014'} {'\u00b7'} LVL {item.level}</Text>
           </View>
         </View>
-        <Text style={row$.xp}>{item.xp?.toLocaleString()}</Text>
+        <View style={row$.right}>
+          <Text style={row$.xp}>{item.xp?.toLocaleString()}</Text>
+          {onChallenge && (
+            <TouchableOpacity style={row$.challengeBtn} onPress={() => onChallenge(item)} activeOpacity={0.8}>
+              <Ionicons name="flash-sharp" size={10} color="#050505" />
+              <Text style={row$.challengeText}>1v1</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </Animated.View>
   );
@@ -176,7 +185,10 @@ const row$ = StyleSheet.create({
   founderPillText: { color: '#D4AF37', fontSize: 11, fontWeight: '900' },
   sportRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   sport: { color: 'rgba(255,255,255,0.45)', fontSize: 14, fontWeight: '600' },
+  right: { alignItems: 'flex-end', gap: 4 },
   xp: { color: '#D4AF37', fontSize: 17, fontWeight: '900' },
+  challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FF453A', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
+  challengeText: { color: '#050505', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
 });
 
 // CREW LEADERBOARD ROW
@@ -322,6 +334,7 @@ export function HallOfKore() {
   const [refreshing, setRefreshing] = useState(false);
   const hasPlayedTop10 = useRef(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [challengeTarget, setChallengeTarget] = useState<any>(null);
 
   const loadData = useCallback(async () => {
     if (!token) return;
@@ -463,7 +476,7 @@ export function HallOfKore() {
                     <Text style={gl$.sectionTitle}>THE HUNT</Text>
                   </View>
                 )}
-                {rest.map((item, i) => <LeaderRow key={item.id} item={item} index={i} />)}
+                {rest.map((item, i) => <LeaderRow key={item.id} item={item} index={i} onChallenge={item.id !== user?.id ? (it) => setChallengeTarget({ id: it.id, username: it.username, xp: it.xp, level: it.level }) : undefined} />)}
               </>
             )}
             <View style={{ height: 80 }} />
@@ -479,6 +492,12 @@ export function HallOfKore() {
       </LinearGradient>
     </ImageBackground>
     <ControlCenter visible={menuOpen} onClose={() => setMenuOpen(false)} />
+    <PvPChallengeModal
+      visible={!!challengeTarget}
+      opponent={challengeTarget}
+      onClose={() => setChallengeTarget(null)}
+      onChallengeSent={() => setChallengeTarget(null)}
+    />
     </>
   );
 }

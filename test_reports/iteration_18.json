@@ -1,0 +1,74 @@
+{
+  "summary": "Sprint 19 — PvP Challenge Engine full test: backend (16/16 pytest) + frontend (all 5 tabs verified). 1v1 buttons in RANK/Hall of Kore, PvPChallengeModal, SFIDE PVP in NEXUS, T.BUTLER pending challenge, anti-cheat validation — all verified and passing.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/me",
+        "issue": "Endpoint does not exist (returns 404). No way to get current authenticated user's profile/ID directly. Self-challenge test was skipped due to missing endpoint. API returns user in login response but has no standalone /me route.",
+        "priority": "LOW"
+      }
+    ]
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {
+        "component": "KORE tab / DNA tab — STEFANO profile",
+        "issue": "STEFANO DNA missing 'agilita' and 'potenza' keys (shows 0 for AGILITA and POTENZA). Pre-existing data gap from seeding — not a code bug, cosmetic only. Noted in iteration_17."
+      }
+    ]
+  },
+
+  "test_report_links": [
+    "/app/backend/tests/test_sprint19_pvp_challenge_engine.py",
+    "/app/test_reports/pytest/sprint19_pvp_results.xml"
+  ],
+
+  "action_items": [
+    "LOW: Consider adding GET /api/auth/me or GET /api/users/me endpoint to retrieve own user profile including ID — useful for self-challenge validation in tests and frontend",
+    "CARRY-OVER MEDIUM: Fix datetime.utcnow() -> datetime.now(timezone.utc) in crew battle endpoints (lines 1249, 1405, 1457) from iteration_17 — intermittent 500 risk"
+  ],
+
+  "critical_code_review_comments": [
+    "All PvP endpoints (pvp/challenge, pvp/pending, pvp/challenges/{id}, pvp/challenges/{id}/accept, pvp/challenges/{id}/decline, pvp/challenges/{id}/submit) are working correctly.",
+    "Anti-cheat logic in validate_scan_anti_cheat() correctly detects: REP_RATE_TOO_HIGH (reps=100/dur=5 → rate=20 > 1.8), DURATION_TOO_SHORT (5/30 = 0.17 < 0.5) giving score=25 (invalid).",
+    "PvPPendingCard correctly shows 'Sfida inviata a T.BUTLER · POWER · 100 XP' in NEXUS console."
+  ],
+
+  "verified_features": {
+    "rank_tab_hall_of_kore_loads": "PASS — Hall of Kore loads correctly at /hall. THE GIANTS section (top 3) and THE HUNT section (positions 4-16) visible.",
+    "1v1_buttons_in_hunt": "PASS — 13 red '1v1' buttons visible in THE HUNT section for each athlete row (excluding own row which has no challenge button)",
+    "pvp_challenge_modal_opens": "PASS — Tapping 1v1 opens PvPChallengeModal bottom sheet with SlideInDown animation",
+    "pvp_modal_content": "PASS — Modal shows: SFIDA PVP header, opponent VS YOUR NAME row (AXEL_V LVL 13 · 7,100 XP VS STEFANO LVL 20 · 9,999 XP), 3 discipline cards (POWER/AGILITY/ENDURANCE), 4 stake buttons (50/100/200/500 XP), LANCIA LA SFIDA · 100 XP red CTA button",
+    "nexus_sfide_pvp_section": "PASS — SFIDE PVP section visible in NEXUS console below AZIONI PROATTIVE",
+    "nexus_tbutler_pending": "PASS — 'Sfida inviata a T.BUTLER · POWER · 100 XP' visible as sent challenge in NEXUS SFIDE PVP",
+    "ghost_session_pvp_trigger": "PASS — Navigating to /nexus-trigger?pvpChallengeId=69cc0016c81424e911636f68 auto-triggers ChallengeForge mode (pvpChallenge data fetched, phase set to 'forge')",
+    "arena_tab_battle_live": "PASS — BATTLE LIVE shows SHADOW SQUAD (82.4) vs IRON WOLVES (87.5), 22h remaining, CONTRIBUISCI ORA button",
+    "arena_tab_matchmaking_ai": "PASS — MATCHMAKING AI with IL TUO KORE 82.4, NEXUS ELITE (IN CORSO), IRON WOLVES (IN CORSO)",
+    "all_5_tabs_no_crash": "PASS — ARENA, KORE, NEXUS, DNA, RANK tabs all load without crash",
+    "backend_pvp_pending_200": "PASS — GET /api/pvp/pending returns 200 with sent=[T.BUTLER challenge], received=[], active=[]",
+    "backend_anti_cheat_rejects_cheat": "PASS — reps=100/duration=5 → REP_RATE_TOO_HIGH + DURATION_TOO_SHORT, score=25, valid=False, status=rejected",
+    "backend_duplicate_challenge_blocked": "PASS — Second challenge to T.BUTLER returns 400",
+    "backend_invalid_discipline_rejected": "PASS — POST /pvp/challenge with invalid discipline returns 400"
+  },
+
+  "updated_files": [
+    "/app/backend/tests/test_sprint19_pvp_challenge_engine.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (16/16 pytest tests passing)",
+    "frontend": "100% — All 5 tabs, PvPChallengeModal, SFIDE PVP section, T.BUTLER pending, GhostSession trigger all verified"
+  },
+
+  "seed_data_creation": "None created during this test run. Existing T.BUTLER challenge (ID: 69cc0016c81424e911636f68) was used for testing.",
+
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "PvP Challenge Engine fully functional and verified. RANK tab (Hall of Kore at /hall) has 1v1 buttons in THE HUNT section. PvPChallengeModal works on 1v1 tap. NEXUS shows SFIDE PVP with T.BUTLER pending challenge. Anti-cheat catches reps=100/dur=5 correctly. All 5 tabs load without crash. One carry-over medium bug: datetime.utcnow() in crew battle endpoints (iteration_17). No /api/me endpoint exists. Tab navigation in web preview: use data-testid='tab-hall' not text='RANK' (ambiguous)."
+}

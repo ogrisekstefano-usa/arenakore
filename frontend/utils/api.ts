@@ -184,6 +184,18 @@ export const api = {
 
   getActionCenter: (token: string) => request('/kore/action-center', {}, token),
 
+  // ========== PvP CHALLENGE ENGINE ==========
+  sendPvPChallenge: (userId: string, discipline: string, xpStake: number, token: string) =>
+    request('/pvp/challenge', { method: 'POST', body: JSON.stringify({ challenged_user_id: userId, discipline, xp_stake: xpStake }) }, token),
+  getPvPPending: (token: string) => request('/pvp/pending', {}, token),
+  getPvPChallenge: (challengeId: string, token: string) => request(`/pvp/challenges/${challengeId}`, {}, token),
+  acceptPvPChallenge: (challengeId: string, token: string) =>
+    request(`/pvp/challenges/${challengeId}/accept`, { method: 'POST' }, token),
+  declinePvPChallenge: (challengeId: string, token: string) =>
+    request(`/pvp/challenges/${challengeId}/decline`, { method: 'POST' }, token),
+  submitPvPResult: (challengeId: string, data: { reps: number; quality_score: number; duration_seconds: number; peak_acceleration?: number }, token: string) =>
+    request(`/pvp/challenges/${challengeId}/submit`, { method: 'POST', body: JSON.stringify(data) }, token),
+
   // ========== CREW BATTLE ENGINE ==========
   getLiveCrewBattles: (token: string) => request('/battles/crew/live', {}, token),
   getCrewMatchmake: (token: string) => request('/battles/crew/matchmake', {}, token),

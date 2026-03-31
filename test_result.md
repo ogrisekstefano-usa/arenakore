@@ -1190,3 +1190,16 @@ agent_communication:
         agent: "main"
         comment: "BATTLE ENGINE IMPLEMENTED. Backend: (1) calculate_kore_battle_score() — weighted DNA avg * 0.7 + avg_xp_bonus * 0.3; (2) GET /api/battles/crew/live — live battles with real-time scores; (3) GET /api/battles/crew/matchmake — AI matchmaking ±35% KORE score; (4) POST /api/battles/crew/challenge — creates battle with matchmaking guard (>45% diff blocked); (5) POST /api/battles/crew/{id}/contribute — NEXUS scan contribution, proactive notifications when losing >15pts. Frontend: LiveBattleDashboard + MatchmakingPanel in Arena tab. PLEASE TEST: Login, go to ARENA tab, verify both sections visible. BASE URL: https://voice-coach-40.preview.emergentagent.com"
 
+
+  - task: "PvP Challenge Engine — Invite Flow + Ghost Session + Anti-Cheat AI"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py, frontend/components/pvp/, frontend/components/GloryWall.tsx, frontend/app/(tabs)/nexus-trigger.tsx"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "PVP ENGINE BUILT. 6 backend endpoints + anti-cheat AI + PvPChallengeModal + PvPPendingCard + GhostSessionHUD. PLEASE TEST: (A) Login, go to RANK tab, scroll to THE HUNT, tap 1v1 button on any athlete - PvPChallengeModal should open, (B) NEXUS tab should show SFIDE PVP section with pending challenge (T.BUTLER pending), (C) Backend: GET /api/pvp/pending should return challenge to T.BUTLER."
+

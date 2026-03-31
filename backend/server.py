@@ -149,6 +149,19 @@ class BattleContributeRequest(BaseModel):
     exercise_type: str = "squat"
 
 
+class PvPChallengeRequest(BaseModel):
+    challenged_user_id: str
+    discipline: str  # "power" | "agility" | "endurance"
+    xp_stake: int = 100  # 50 | 100 | 200 | 500
+
+
+class PvPSubmitRequest(BaseModel):
+    reps: int
+    quality_score: float
+    duration_seconds: int
+    peak_acceleration: Optional[float] = 0.0
+
+
 def user_to_response(user: dict) -> dict:
     return {
         "id": str(user["_id"]),
@@ -1520,6 +1533,376 @@ async def search_users(query: str, current_user: dict = Depends(get_current_user
         }
         for u in users
     ]
+
+
+# ====================================
+# PVP CHALLENGE ENGINE — SPRINT 19
+# ====================================
+
+DISCIPLINE_CONFIG = {
+    "power":     {"exercise": "squat",  "duration": 30,  "label": "POWER",     "xp_multiplier": 1.2, "dna_keys": ["forza", "potenza"]},
+    "agility":   {"exercise": "punch",  "duration": 30,  "label": "AGILITY",   "xp_multiplier": 1.2, "dna_keys": ["velocita", "agilita"]},
+    "endurance": {"exercise": "squat",  "duration": 60,  "label": "ENDURANCE", "xp_multiplier": 1.5, "dna_keys": ["resistenza", "potenza"]},
+}
+
+
+def validate_scan_anti_cheat(reps: int, quality_score: float, duration_seconds: int, target_duration: int) -> dict:
+    """AI Anti-Cheat: validates scan integrity. Returns score 0-100 + issues."""
+    issues = []
+    score = 100
+
+    # Rep rate check (reasonable: 0.2–1.5 reps/sec)
+    if duration_seconds > 0:
+        rep_rate = reps / max(duration_seconds, 1)
+        if rep_rate > 1.8:
+            issues.append("REP_RATE_TOO_HIGH")
+            score -= 40
+        elif rep_rate < 0.08 and reps > 5:
+            issues.append("REP_RATE_INCONSISTENT")
+            score -= 20
+
+    # Perfect quality is suspicious when paired with high reps
+    if quality_score >= 97 and reps >= 15:
+        issues.append("QUALITY_TOO_PERFECT")
+        score -= 25
+
+    # Duration must be within ±30% of target
+    if target_duration > 0:
+        ratio = duration_seconds / target_duration
+        if ratio < 0.5:
+            issues.append("DURATION_TOO_SHORT")
+            score -= 35
+        elif ratio > 2.5:
+            issues.append("DURATION_TOO_LONG")
+            score -= 10
+
+    # Minimum effort check
+    if duration_seconds >= 20 and reps < 2:
+        issues.append("TOO_FEW_REPS")
+        score -= 20
+
+    return {"score": max(0, score), "issues": issues, "valid": max(0, score) >= 60}
+
+
+def pvp_challenge_to_response(ch: dict) -> dict:
+    return {
+        "id": str(ch["_id"]),
+        "challenger_id": str(ch["challenger_id"]),
+        "challenger_username": ch.get("challenger_username", "?"),
+        "challenged_id": str(ch["challenged_id"]),
+        "challenged_username": ch.get("challenged_username", "?"),
+        "discipline": ch["discipline"],
+        "discipline_label": DISCIPLINE_CONFIG.get(ch["discipline"], {}).get("label", ch["discipline"].upper()),
+        "xp_stake": ch.get("xp_stake", 100),
+        "status": ch.get("status"),
+        "challenger_result": ch.get("challenger_result"),
+        "challenged_result": ch.get("challenged_result"),
+        "winner_id": str(ch["winner_id"]) if ch.get("winner_id") else None,
+        "winner_username": ch.get("winner_username"),
+        "created_at": ch["created_at"].isoformat() if ch.get("created_at") else None,
+        "expires_at": ch["expires_at"].isoformat() if ch.get("expires_at") else None,
+    }
+
+
+@api_router.post("/pvp/challenge")
+async def send_pvp_challenge(data: PvPChallengeRequest, current_user: dict = Depends(get_current_user)):
+    """Send a PvP challenge to another athlete"""
+    if data.discipline not in DISCIPLINE_CONFIG:
+        raise HTTPException(status_code=400, detail=f"Disciplina non valida. Scegli: {list(DISCIPLINE_CONFIG.keys())}")
+    if data.xp_stake not in [50, 100, 200, 500]:
+        raise HTTPException(status_code=400, detail="XP stake non valido. Scegli: 50, 100, 200 o 500")
+
+    try:
+        challenged = await db.users.find_one({"_id": ObjectId(data.challenged_user_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    if not challenged:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    if str(challenged["_id"]) == str(current_user["_id"]):
+        raise HTTPException(status_code=400, detail="Non puoi sfidare te stesso")
+
+    # Check user has enough XP to stake
+    if current_user.get("xp", 0) < data.xp_stake:
+        raise HTTPException(status_code=400, detail=f"XP insufficienti. Hai {current_user.get('xp', 0)} XP, ne servono {data.xp_stake}")
+
+    # Check no active challenge between these users
+    existing = await db.pvp_challenges.find_one({
+        "$or": [
+            {"challenger_id": current_user["_id"], "challenged_id": challenged["_id"]},
+            {"challenger_id": challenged["_id"], "challenged_id": current_user["_id"]},
+        ],
+        "status": {"$in": ["pending", "accepted", "challenger_done"]},
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Sfida già attiva con questo atleta")
+
+    now = datetime.utcnow()
+    challenge_doc = {
+        "challenger_id": current_user["_id"],
+        "challenger_username": current_user["username"],
+        "challenged_id": challenged["_id"],
+        "challenged_username": challenged["username"],
+        "discipline": data.discipline,
+        "xp_stake": data.xp_stake,
+        "status": "pending",
+        "challenger_result": None,
+        "challenged_result": None,
+        "winner_id": None,
+        "winner_username": None,
+        "created_at": now,
+        "expires_at": now + timedelta(hours=48),
+    }
+    result = await db.pvp_challenges.insert_one(challenge_doc)
+
+    # Notify challenged user
+    disc = DISCIPLINE_CONFIG[data.discipline]
+    await db.notifications.insert_one({
+        "user_id": challenged["_id"],
+        "type": "pvp_challenge",
+        "title": "SFIDA PVP RICEVUTA",
+        "message": f"{current_user['username']} ti sfida in {disc['label']} · {data.xp_stake} XP in palio",
+        "icon": "flash", "color": "#FF453A",
+        "read": False, "created_at": now,
+        "meta": {"challenge_id": str(result.inserted_id)},
+    })
+
+    return {
+        "status": "challenge_sent",
+        "challenge_id": str(result.inserted_id),
+        "opponent": challenged["username"],
+        "discipline": data.discipline,
+        "xp_stake": data.xp_stake,
+    }
+
+
+@api_router.get("/pvp/pending")
+async def get_pvp_pending(current_user: dict = Depends(get_current_user)):
+    """Get pending PvP challenges (received + sent)"""
+    received = await db.pvp_challenges.find({
+        "challenged_id": current_user["_id"],
+        "status": "pending",
+    }).sort("created_at", -1).to_list(10)
+
+    sent = await db.pvp_challenges.find({
+        "challenger_id": current_user["_id"],
+        "status": {"$in": ["pending", "accepted", "challenger_done"]},
+    }).sort("created_at", -1).to_list(10)
+
+    active = await db.pvp_challenges.find({
+        "$or": [
+            {"challenger_id": current_user["_id"], "status": "accepted"},
+            {"challenged_id": current_user["_id"], "status": {"$in": ["accepted", "challenger_done"]}},
+        ]
+    }).to_list(5)
+
+    return {
+        "received": [pvp_challenge_to_response(c) for c in received],
+        "sent": [pvp_challenge_to_response(c) for c in sent],
+        "active": [pvp_challenge_to_response(c) for c in active],
+    }
+
+
+@api_router.post("/pvp/challenges/{challenge_id}/accept")
+async def accept_pvp_challenge(challenge_id: str, current_user: dict = Depends(get_current_user)):
+    """Accept a PvP challenge"""
+    try:
+        ch = await db.pvp_challenges.find_one({"_id": ObjectId(challenge_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    if not ch or ch["challenged_id"] != current_user["_id"]:
+        raise HTTPException(status_code=403, detail="Non autorizzato")
+    if ch["status"] != "pending":
+        raise HTTPException(status_code=400, detail="Sfida non più in attesa")
+
+    await db.pvp_challenges.update_one({"_id": ch["_id"]}, {"$set": {"status": "accepted"}})
+
+    # Notify challenger
+    await db.notifications.insert_one({
+        "user_id": ch["challenger_id"],
+        "type": "pvp_accepted",
+        "title": "SFIDA ACCETTATA",
+        "message": f"{current_user['username']} ha accettato la tua sfida {DISCIPLINE_CONFIG[ch['discipline']]['label']}! Fai il tuo scan.",
+        "icon": "checkmark-circle", "color": "#00F2FF",
+        "read": False, "created_at": datetime.utcnow(),
+        "meta": {"challenge_id": challenge_id},
+    })
+    return {"status": "accepted", "challenge_id": challenge_id}
+
+
+@api_router.post("/pvp/challenges/{challenge_id}/decline")
+async def decline_pvp_challenge(challenge_id: str, current_user: dict = Depends(get_current_user)):
+    """Decline a PvP challenge"""
+    try:
+        ch = await db.pvp_challenges.find_one({"_id": ObjectId(challenge_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    if not ch or ch["challenged_id"] != current_user["_id"]:
+        raise HTTPException(status_code=403, detail="Non autorizzato")
+    if ch["status"] not in ["pending"]:
+        raise HTTPException(status_code=400, detail="Non puoi rifiutare questa sfida")
+
+    await db.pvp_challenges.update_one({"_id": ch["_id"]}, {"$set": {"status": "declined"}})
+    return {"status": "declined"}
+
+
+@api_router.get("/pvp/challenges/{challenge_id}")
+async def get_pvp_challenge(challenge_id: str, current_user: dict = Depends(get_current_user)):
+    """Get PvP challenge details (for Ghost Session)"""
+    try:
+        ch = await db.pvp_challenges.find_one({"_id": ObjectId(challenge_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    if not ch:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+
+    user_is_challenger = ch["challenger_id"] == current_user["_id"]
+    user_is_challenged = ch["challenged_id"] == current_user["_id"]
+    if not user_is_challenger and not user_is_challenged:
+        raise HTTPException(status_code=403, detail="Non sei in questa sfida")
+
+    resp = pvp_challenge_to_response(ch)
+    disc_cfg = DISCIPLINE_CONFIG.get(ch["discipline"], {})
+    resp["exercise"] = disc_cfg.get("exercise", "squat")
+    resp["target_duration"] = disc_cfg.get("duration", 30)
+    resp["your_role"] = "challenger" if user_is_challenger else "challenged"
+
+    # Ghost data: show opponent result if they already submitted
+    ghost = None
+    if user_is_challenged and ch.get("challenger_result"):
+        ghost = {
+            "username": ch.get("challenger_username"),
+            "reps": ch["challenger_result"].get("reps", 0),
+            "quality_score": ch["challenger_result"].get("quality_score", 0),
+            "duration_seconds": ch["challenger_result"].get("duration_seconds", 0),
+        }
+    elif user_is_challenger and ch.get("challenged_result"):
+        ghost = {
+            "username": ch.get("challenged_username"),
+            "reps": ch["challenged_result"].get("reps", 0),
+            "quality_score": ch["challenged_result"].get("quality_score", 0),
+            "duration_seconds": ch["challenged_result"].get("duration_seconds", 0),
+        }
+    resp["ghost"] = ghost
+    return resp
+
+
+@api_router.post("/pvp/challenges/{challenge_id}/submit")
+async def submit_pvp_result(challenge_id: str, data: PvPSubmitRequest, current_user: dict = Depends(get_current_user)):
+    """Submit scan result for PvP challenge with anti-cheat validation"""
+    try:
+        ch = await db.pvp_challenges.find_one({"_id": ObjectId(challenge_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    if not ch:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+
+    user_is_challenger = ch["challenger_id"] == current_user["_id"]
+    user_is_challenged = ch["challenged_id"] == current_user["_id"]
+    if not user_is_challenger and not user_is_challenged:
+        raise HTTPException(status_code=403, detail="Non sei in questa sfida")
+
+    valid_statuses = ["accepted", "challenger_done"] if user_is_challenged else ["accepted"]
+    if user_is_challenger and ch["status"] == "pending":
+        valid_statuses = ["pending", "accepted"]
+    if ch["status"] not in valid_statuses and ch["status"] not in ["pending", "accepted", "challenger_done"]:
+        raise HTTPException(status_code=400, detail=f"Sfida non in stato valido: {ch['status']}")
+
+    # Anti-cheat validation
+    disc_cfg = DISCIPLINE_CONFIG.get(ch["discipline"], {})
+    target_duration = disc_cfg.get("duration", 30)
+    anti_cheat = validate_scan_anti_cheat(data.reps, data.quality_score, data.duration_seconds, target_duration)
+
+    result_doc = {
+        "reps": data.reps,
+        "quality_score": data.quality_score,
+        "duration_seconds": data.duration_seconds,
+        "peak_acceleration": data.peak_acceleration,
+        "anti_cheat_score": anti_cheat["score"],
+        "anti_cheat_issues": anti_cheat["issues"],
+        "validated": anti_cheat["valid"],
+        "submitted_at": datetime.utcnow(),
+    }
+
+    if not anti_cheat["valid"]:
+        return {
+            "status": "rejected",
+            "reason": "SCAN NON VALIDO — Anti-Cheat AI ha rilevato irregolarità",
+            "anti_cheat": anti_cheat,
+        }
+
+    # Determine PvP score (reps * quality_weight)
+    pvp_score = round(data.reps * (0.5 + data.quality_score / 200), 1)
+    result_doc["pvp_score"] = pvp_score
+
+    now = datetime.utcnow()
+    if user_is_challenger:
+        await db.pvp_challenges.update_one(
+            {"_id": ch["_id"]},
+            {"$set": {"challenger_result": result_doc, "status": "challenger_done"}}
+        )
+        return {"status": "submitted", "pvp_score": pvp_score, "anti_cheat": anti_cheat, "waiting_for": "opponent"}
+
+    # Challenged user submitted — determine winner
+    await db.pvp_challenges.update_one(
+        {"_id": ch["_id"]},
+        {"$set": {"challenged_result": result_doc}}
+    )
+    ch_refreshed = await db.pvp_challenges.find_one({"_id": ch["_id"]})
+    challenger_score = ch_refreshed.get("challenger_result", {}).get("pvp_score", 0) if ch_refreshed.get("challenger_result") else 0
+    challenged_score = pvp_score
+
+    if challenger_score > challenged_score:
+        winner_id = ch["challenger_id"]
+        winner_username = ch.get("challenger_username")
+        loser_id = ch["challenged_id"]
+        winner_xp_gain = ch["xp_stake"]
+        loser_xp_loss = min(ch["xp_stake"], current_user.get("xp", 0))
+    elif challenged_score > challenger_score:
+        winner_id = ch["challenged_id"]
+        winner_username = ch.get("challenged_username")
+        loser_id = ch["challenger_id"]
+        winner_xp_gain = ch["xp_stake"]
+        loser_xp_loss = min(ch["xp_stake"], (await db.users.find_one({"_id": ch["challenger_id"]}) or {}).get("xp", 0))
+    else:
+        # Tie: nobody loses XP
+        await db.pvp_challenges.update_one({"_id": ch["_id"]}, {"$set": {"status": "tie"}})
+        return {"status": "tie", "pvp_score": pvp_score, "opponent_score": challenger_score}
+
+    # Apply XP transfer + mark as completed
+    await db.pvp_challenges.update_one(
+        {"_id": ch["_id"]},
+        {"$set": {"status": "completed", "winner_id": winner_id, "winner_username": winner_username}}
+    )
+    await db.users.update_one({"_id": winner_id}, {"$inc": {"xp": winner_xp_gain}})
+    await db.users.update_one({"_id": loser_id}, {"$inc": {"xp": -loser_xp_loss}})
+
+    # Notify both
+    is_winner = winner_id == current_user["_id"]
+    await db.notifications.insert_one({
+        "user_id": winner_id,
+        "type": "pvp_won",
+        "title": "SFIDA VINTA",
+        "message": f"Hai battuto {winner_username if winner_username != winner_id else '?'} in {disc_cfg.get('label', '')}! +{winner_xp_gain} XP",
+        "icon": "trophy", "color": "#D4AF37",
+        "read": False, "created_at": now,
+    })
+    await db.notifications.insert_one({
+        "user_id": loser_id,
+        "type": "pvp_lost",
+        "title": "SFIDA PERSA",
+        "message": f"Hai perso contro {winner_username} in {disc_cfg.get('label', '')}. -{loser_xp_loss} XP. Allenati di più!",
+        "icon": "alert-circle", "color": "#FF453A",
+        "read": False, "created_at": now,
+    })
+
+    return {
+        "status": "completed",
+        "result": "won" if is_winner else "lost",
+        "your_score": pvp_score,
+        "opponent_score": challenger_score,
+        "xp_change": winner_xp_gain if is_winner else -loser_xp_loss,
+        "anti_cheat": anti_cheat,
+    }
 
 
 # ====================================

@@ -10,7 +10,7 @@ import {
   Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput,
 } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming,
   useAnimatedStyle, withSpring, withDelay, Easing, interpolate,
@@ -31,6 +31,7 @@ import { CyberGrid, DigitalShadow, ScanLine } from '../../components/nexus/Nexus
 import { BurgerMenu } from '../../components/nexus/NexusBurgerMenu';
 import { CinemaResults } from '../../components/nexus/NexusCinemaResults';
 import { ProUnlockModal } from '../../components/nexus/ProUnlockModal';
+import { PvPPendingCard } from '../../components/pvp/PvPPendingCard';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -291,6 +292,71 @@ const pro$ = StyleSheet.create({
   ctaText: { fontSize: 11, fontWeight: '900', letterSpacing: 2 },
 });
 
+// ========== GHOST SESSION HUD (PvP Mode) ==========
+function GhostSessionHUD({ ghost, currentReps, currentQuality, exercise }: {
+  ghost: { username: string; reps: number; quality_score: number };
+  currentReps: number;
+  currentQuality: number;
+  exercise: ExerciseType;
+}) {
+  const isLeading = currentReps > ghost.reps || (currentReps === ghost.reps && currentQuality >= ghost.quality_score);
+  const leadPulse = useSharedValue(1);
+  useEffect(() => {
+    leadPulse.value = withRepeat(withSequence(withTiming(1.08, { duration: 600 }), withTiming(1, { duration: 600 })), -1, false);
+  }, []);
+  const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: leadPulse.value }] }));
+
+  return (
+    <Animated.View entering={FadeIn.duration(400)} style={ghost$.container}>
+      {/* Ghost indicator */}
+      <View style={ghost$.ghostRow}>
+        <Ionicons name="eye" size={11} color="rgba(0,242,255,0.6)" />
+        <Text style={ghost$.ghostLabel}>GHOST: {ghost.username.toUpperCase()}</Text>
+      </View>
+      {/* Target reps */}
+      <View style={ghost$.compRow}>
+        <View style={ghost$.statCol}>
+          <Text style={ghost$.statLabel}>TUO</Text>
+          <Text style={[ghost$.statVal, { color: isLeading ? '#00F2FF' : '#FF453A' }]}>{currentReps}</Text>
+        </View>
+        <View style={ghost$.divider} />
+        <View style={ghost$.statCol}>
+          <Text style={ghost$.statLabel}>GHOST</Text>
+          <Text style={[ghost$.statVal, { color: 'rgba(255,255,255,0.4)' }]}>{ghost.reps}</Text>
+        </View>
+      </View>
+      {/* Status badge */}
+      <Animated.View style={[ghost$.statusBadge, isLeading ? ghost$.statusWin : ghost$.statusLose, pulseStyle]}>
+        <Ionicons name={isLeading ? 'trending-up' : 'trending-down'} size={10} color={isLeading ? '#00F2FF' : '#FF453A'} />
+        <Text style={[ghost$.statusText, { color: isLeading ? '#00F2FF' : '#FF453A' }]}>
+          {isLeading
+            ? currentReps > ghost.reps ? `+${currentReps - ghost.reps} AVANTI` : 'IN PARITÀ'
+            : `${ghost.reps - currentReps} DA RECUPERARE`}
+        </Text>
+      </Animated.View>
+    </Animated.View>
+  );
+}
+
+const ghost$ = StyleSheet.create({
+  container: {
+    position: 'absolute', bottom: 170, right: 10, zIndex: 35,
+    backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 12, padding: 10,
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)', gap: 6, minWidth: 120,
+  },
+  ghostRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  ghostLabel: { color: 'rgba(0,242,255,0.6)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  compRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  statCol: { alignItems: 'center', gap: 1, flex: 1 },
+  statLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
+  statVal: { fontSize: 22, fontWeight: '900', letterSpacing: 1 },
+  divider: { width: 1, height: 30, backgroundColor: 'rgba(255,255,255,0.1)' },
+  statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
+  statusWin: { backgroundColor: 'rgba(0,242,255,0.08)' },
+  statusLose: { backgroundColor: 'rgba(255,69,58,0.08)' },
+  statusText: { fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+});
+
 // ========== NEXUS CONSOLE ==========
 function NexusConsole({ user, onScan, onForge, deviceTier, eligibility, myRank, myCrews }: {
   user: any; onScan: () => void; onForge: () => void; deviceTier: DeviceTier; eligibility: any;
@@ -368,6 +434,7 @@ function NexusConsole({ user, onScan, onForge, deviceTier, eligibility, myRank, 
             onScan={onScan}
             onNavigate={(r) => router.push(r as any)}
           />
+          <PvPPendingCard />
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -819,6 +886,9 @@ export default function NexusTriggerScreen() {
   const [bioscanResult, setBioscanResult] = useState<any>(null);
   const [myRank, setMyRank] = useState<any>(null);
   const [myCrews, setMyCrews] = useState<any[]>([]);
+  // PvP Ghost Session
+  const { pvpChallengeId } = useLocalSearchParams<{ pvpChallengeId?: string }>();
+  const [pvpChallenge, setPvpChallenge] = useState<any>(null);
 
   const analyzerRef = useRef<MotionAnalyzer | null>(null);
   const startTimeRef = useRef(0);
@@ -842,6 +912,20 @@ export default function NexusTriggerScreen() {
       .then(data => setMyCrews(Array.isArray(data) ? data : (data?.crews || [])))
       .catch(() => {});
   }, [token]);
+
+  // PvP: fetch challenge details if pvpChallengeId param is present
+  useEffect(() => {
+    if (!pvpChallengeId || !token) return;
+    api.getPvPChallenge(pvpChallengeId, token)
+      .then(data => {
+        setPvpChallenge(data);
+        // Auto-set exercise from discipline
+        if (data.exercise) setExercise(data.exercise as ExerciseType);
+        // Auto-start forge flow
+        setPhase('forge');
+      })
+      .catch(() => {});
+  }, [pvpChallengeId, token]);
 
   // Web camera & motion detection — SPRINT 5: Camera VISIBLE, overlay reduced
   useEffect(() => {
@@ -937,6 +1021,22 @@ export default function NexusTriggerScreen() {
     const dur = Math.floor((Date.now() - startTimeRef.current) / 1000);
     const reps = motionState?.reps || 0, qual = motionState?.quality || 50, peak = motionState?.peakAcceleration || 0, avg = motionState?.avgAmplitude || 0;
     if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    // PvP Mode: submit to PvP endpoint instead of regular session
+    if (pvpChallengeId && token) {
+      try {
+        const pvpResult = await api.submitPvPResult(pvpChallengeId, {
+          reps, quality_score: qual, duration_seconds: dur, peak_acceleration: peak,
+        }, token);
+        setScanResult({ ...pvpResult, pvp_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: pvpResult.xp_change || 0 });
+        playAcceptPing();
+      } catch (_) {
+        setScanResult({ pvp_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: 0 });
+      }
+      setPhase('results');
+      return;
+    }
+
     try {
       if (token && sessionId) {
         const r = await api.completeNexusSession(sessionId, { exercise_type: exercise, reps_completed: reps, quality_score: qual, duration_seconds: dur, peak_acceleration: peak, avg_amplitude: avg }, token);
@@ -983,6 +1083,15 @@ export default function NexusTriggerScreen() {
       <DigitalShadow pose={skeleton} exercise={exercise} goldFlash={goldFlash} motionActive={motionActive} deviceTier={deviceTier} />
       <ScanLine active={phase === 'scanning'} />
       {phase === 'scanning' && <MiniDNARadar dna={user?.dna} explosive={motionActive} />}
+      {/* PvP Ghost Session HUD */}
+      {phase === 'scanning' && pvpChallenge?.ghost && (
+        <GhostSessionHUD
+          ghost={pvpChallenge.ghost}
+          currentReps={motionState?.reps || 0}
+          currentQuality={motionState?.quality || 0}
+          exercise={exercise}
+        />
+      )}
 
       {/* PUPPET-MOTION-DECK: SMOOTH VALIDATION */}
       {phase === 'stabilizing' && (
