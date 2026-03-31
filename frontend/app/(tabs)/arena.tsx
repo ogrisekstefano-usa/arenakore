@@ -33,14 +33,8 @@ const KORE_OF_DAY = {
   level: 14,
 };
 
-const DIVISION_UPDATES = [
-  { id: '1', athlete: 'MAYA_J',   action: 'BATTLE VINTA',        sport: 'ATLETICA', xp: '+180 XP', time: '14M FA', icon: 'trophy' as const },
-  { id: '2', athlete: 'TORO_94',  action: 'NUOVO RECORD',        sport: 'MMA',       xp: '+280 XP', time: '41M FA', icon: 'flash' as const },
-  { id: '3', athlete: 'SASHA_V',  action: 'LVL 12 RAGGIUNTO',   sport: 'NUOTO',     xp: '+500 XP', time: '1H FA',  icon: 'arrow-up-circle' as const },
-  { id: '4', athlete: 'KIRA_M',   action: 'CREW FONDATA',        sport: 'CROSSFIT',  xp: '+120 XP', time: '2H FA',  icon: 'shield' as const },
-  { id: '5', athlete: 'ALEX_K',   action: 'DNA AGGIORNATO',      sport: 'BOXE',      xp: '+200 XP', time: '3H FA',  icon: 'analytics' as const },
-  { id: '6', athlete: 'MANU_B',   action: 'SFIDA COMPLETATA',    sport: 'JUDO',      xp: '+160 XP', time: '5H FA',  icon: 'checkmark-circle' as const },
-];
+// DIVISION_UPDATES removed - EliteDivisionUpdates replaced by LiveBattleDashboard
+
 
 // ========== HERO BANNER ==========
 function HeroBanner() {

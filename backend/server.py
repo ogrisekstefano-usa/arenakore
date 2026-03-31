@@ -1529,7 +1529,7 @@ async def search_users(query: str, current_user: dict = Depends(get_current_user
 @api_router.get("/nexus/rescan-eligibility")
 async def get_rescan_eligibility(current_user: dict = Depends(get_current_user)):
     """The 48h/30d Bio-Scan Rule: Check if user can perform a bio-scan"""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     dna = current_user.get("dna")
 
     # 1. No DNA at all → initial scan needed (onboarding not completed)
@@ -1604,7 +1604,10 @@ async def get_rescan_eligibility(current_user: dict = Depends(get_current_user))
                 "message": "VALIDATION SCAN DISPONIBILE"}
 
     # 5. Has validation → check 30-day lock
-    days_since_validation = (now - validation_scanned_at).days
+    # Normalize timezones for comparison (MongoDB returns naive UTC)
+    _now = now.replace(tzinfo=None) if hasattr(now, 'tzinfo') and now.tzinfo else now
+    _vs = validation_scanned_at.replace(tzinfo=None) if validation_scanned_at.tzinfo else validation_scanned_at
+    days_since_validation = (_now - _vs).days
     days_remaining = max(0, 30 - days_since_validation)
 
     if days_remaining > 0:
