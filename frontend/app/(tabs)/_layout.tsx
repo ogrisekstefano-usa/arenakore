@@ -73,12 +73,17 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
     }
   }, [state.index]);
 
+  // Filter routes to only those defined in current TAB_CONFIG (excludes hidden screens like gym-hub, my-athletes)
+  const visibleRoutes = state.routes.filter((route: any) =>
+    TAB_CONFIG.some((cfg) => cfg.name === route.name)
+  );
+
   return (
     <View style={[$.bar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
-      {state.routes.map((route: any, index: number) => {
-        const cfg = TAB_CONFIG[index];
+      {visibleRoutes.map((route: any) => {
+        const cfg = TAB_CONFIG.find((c) => c.name === route.name);
         if (!cfg) return null;
-        const focused = state.index === index;
+        const focused = state.routes[state.index]?.name === route.name;
         const onPress = () => {
           const ev = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
           if (!focused && !ev.defaultPrevented) navigation.navigate(route.name);

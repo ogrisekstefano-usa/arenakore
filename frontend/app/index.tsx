@@ -291,7 +291,7 @@ export default function HeroIndex() {
                 onPress={() => router.push('/onboarding/kore-hub')}
                 activeOpacity={0.85}
               >
-                <Ionicons name="business-outline" size={16} color={BG} />
+                <Ionicons name="business-outline" size={16} color={CYAN} />
                 <Text style={s.gymBtnTxt}>BECOME A KORE HUB</Text>
               </TouchableOpacity>
             </LinearGradient>
@@ -449,13 +449,14 @@ const s = StyleSheet.create({
   featTxt: { color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '400', letterSpacing: 1, flex: 1 },
   gymBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: CYAN,
+    backgroundColor: 'rgba(0,242,255,0.07)',
     borderRadius: 10, paddingVertical: 16,
     marginTop: 4,
-    shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 10,
+    borderWidth: 1.5, borderColor: '#00F2FF',
+    shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 10,
     elevation: 8,
   },
-  gymBtnTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+  gymBtnTxt: { color: CYAN, fontSize: 14, fontWeight: '900', letterSpacing: 3 },
 
   // Footer
   footer: { alignItems: 'center', gap: 4, marginTop: 28, paddingBottom: 8 },

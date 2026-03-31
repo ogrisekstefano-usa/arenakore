@@ -674,19 +674,22 @@ async def complete_battle(battle_id: str, current_user: dict = Depends(get_curre
 
 @api_router.post("/battles/{battle_id}/trigger-live")
 async def trigger_live_battle(battle_id: str, current_user: dict = Depends(get_current_user)):
-    battle = await db.battles.find_one({"_id": ObjectId(battle_id)})
+    # Handle both ObjectId and legacy string IDs (seeded data)
+    try:
+        battle = await db.battles.find_one({"_id": ObjectId(battle_id)})
+        battle_filter = {"_id": ObjectId(battle_id)}
+        battle_parts_filter = {"battle_id": ObjectId(battle_id)}
+    except Exception:
+        battle = await db.battles.find_one({"id": battle_id})
+        battle_filter = {"id": battle_id}
+        battle_parts_filter = {"battle_id": battle_id}
     if not battle:
         raise HTTPException(status_code=404, detail="Battle non trovata")
 
-    await db.battles.update_one(
-        {"_id": ObjectId(battle_id)},
-        {"$set": {"status": "live"}}
-    )
+    await db.battles.update_one(battle_filter, {"$set": {"status": "live"}})
 
     # Get all participants' push tokens for notification
-    participants = await db.battle_participants.find(
-        {"battle_id": ObjectId(battle_id)}
-    ).to_list(100)
+    participants = await db.battle_participants.find(battle_parts_filter).to_list(100)
 
     tokens = []
     for p in participants:

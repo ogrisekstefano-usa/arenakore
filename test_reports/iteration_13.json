@@ -1,0 +1,55 @@
+{
+  "summary": "Frontend testing of ARENAKORE v13: Tab navigation bug fix verification, NEXUS AZIONI PROATTIVE, ARENA ChallengeInviteModal, HALL OF KORE, Landing page FOR COACHES section. Critical finding: Metro cache was stale — the tab navigation fix WAS in the source code but the OLD bundle was still being served. Cleared Metro cache (rm -rf /app/frontend/.metro-cache/cache/*) and restarted Expo to deploy the fix. After cache clear, ALL 5 TABS NAVIGATE CORRECTLY. NEXUS shows 3 CTAs for rank-1 user (correct). ChallengeInviteModal works with DNA bars. Hall of Kore loads correctly via RANK tab.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "index.tsx partnerCard (FOR COACHES section)",
+        "issue": "Pre-existing issue (iteration 12): card container has rgba(0,242,255,0.06) background + strong cyan border (65% opacity) + partnerTopGlow (2px solid cyan). Combined makes section appear visually cyan rather than dark/black. Not fixed by E1 in this iteration. The BECOME A KORE HUB button is now correctly dark bg (rgba(0,242,255,0.07)) with cyan border (not solid cyan) — button requirement is met.",
+        "testID": "gym-hub-btn",
+        "priority": "LOW"
+      },
+      {
+        "component": "NexusConsole TAB_BACKGROUNDS.nexus image",
+        "issue": "The full-screen athlete background image occupies most of the viewport below the eligibility banner, hiding the 4 console cards and AZIONI PROATTIVE section which require scrolling. Cards are present in DOM but not immediately visible. Minor UX concern — not a bug.",
+        "testID": "nexus-console",
+        "priority": "INFO"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "index.tsx landing",
+        "issues": [
+          "FOR COACHES & GYMS card has rgba(0,242,255,0.06) container background + 65% opacity cyan border making section appear visually teal/cyan rather than dark. Pre-existing, not fixed this iteration."
+        ]
+      }
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "DEPLOYMENT NOTE: Metro cache was stale after tab navigation code fix. Main agent must ensure Metro cache is cleared after code changes OR verify bundle content after restart. Command: rm -rf /app/frontend/.metro-cache/cache/* && sudo supervisorctl restart expo",
+    "OPTIONAL: Fix index.tsx partnerCard FOR COACHES background — change inline backgroundColor in partnerGrad from rgba(0,242,255,0.06) to rgba(5,5,5,0.9) to make it truly dark. Border can stay cyan.",
+    "OPTIONAL: For non-rank-1 test users, verify all 6 NEXUS AZIONI PROATTIVE CTAs appear (rank-1 user correctly shows only 3: CERTIFICA IL DNA, RISCATTA REWARD, PUSH AL COACH)"
+  ],
+  "critical_code_review_comments": [
+    "Metro bundle cache was serving old code (TAB_CONFIG[index] mapping) despite source code having the fix (TAB_CONFIG.find by name). Always verify bundle content after code changes by checking the deployed bundle URL.",
+    "index.tsx partnerGrad: LinearGradient has colors=['rgba(0,0,0,0)','rgba(0,0,0,0)'] (transparent) with inline backgroundColor='rgba(0,242,255,0.06)'. On web, the transparent gradient exposes the cyan background. Should use rgba(5,5,5,0.9) for a truly dark card."
+  ],
+  "updated_files": [
+    "/app/frontend/.metro-cache/cache/ (cleared to force bundle rebuild)"
+  ],
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "95% — all 5 tabs navigate correctly, NEXUS AZIONI PROATTIVE works (3/3 always-visible CTAs), ChallengeInviteModal with DNA bars, Hall of Kore loads correctly. Only minor pre-existing FOR COACHES background color issue remains."
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Tab navigation is NOW FIXED and working correctly after Metro cache clear. All 5 tabs navigate to correct screens: ARENA→/arena, KORE→/kore, NEXUS→/nexus-trigger, DNA→/dna, RANK→/hall. The Metro cache stale issue was the root cause of the bug appearing to not be fixed. Credentials: ogrisek.stefano@gmail.com / Founder@KORE2026! — Stefano is rank #1 globally with 9,999 XP, LVL 20, PRO, FOUNDER status. For NEXUS test: AZIONI PROATTIVE shows 3 cards for rank-1 user (CERTIFICA IL DNA, RISCATTA REWARD, PUSH AL COACH). The landinge page FOR COACHES card has pre-existing cyan bg issue but button is correctly styled.",
+  "rca_of_issue": "METRO CACHE STALE BUG: Main agent (E1) correctly fixed the tab navigation in /app/frontend/app/(tabs)/_layout.tsx by adding visibleRoutes filter (TAB_CONFIG.some(cfg => cfg.name === route.name)) and replacing TAB_CONFIG[index] with TAB_CONFIG.find(c => c.name === route.name). However, Metro bundler was still serving the OLD cached bundle (built March 28) because the cache at /app/frontend/.metro-cache/cache/ was not invalidated. The bundle served TAB_CONFIG[index] (old code) instead of the new name-based filter. Fix: cleared Metro cache with 'rm -rf /app/frontend/.metro-cache/cache/*' and restarted Expo. After restart, the new bundle correctly includes the visibleRoutes filter and all 5 tabs navigate correctly."
+}
