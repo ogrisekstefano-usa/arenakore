@@ -188,7 +188,7 @@ const kotd$ = StyleSheet.create({
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowRadius: 16,
   },
   cardGrad: { padding: 16, gap: 14 },
-  badge: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'rgba(0,242,255,0.07)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(0,242,255,0.25)' },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'transparent', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(0,242,255,0.25)' },
   badgeText: { color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   identRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#0D0D0D', alignItems: 'center', justifyContent: 'center' },

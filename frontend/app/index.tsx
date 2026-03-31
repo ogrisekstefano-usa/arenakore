@@ -329,7 +329,7 @@ const s = StyleSheet.create({
   topBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(0,242,255,0.07)',
+    backgroundColor: 'transparent',
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.5)',
     borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7,
     marginBottom: 12,
@@ -449,7 +449,7 @@ const s = StyleSheet.create({
   featTxt: { color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '400', letterSpacing: 1, flex: 1 },
   gymBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: 'rgba(0,242,255,0.07)',
+    backgroundColor: 'transparent',
     borderRadius: 10, paddingVertical: 16,
     marginTop: 4,
     borderWidth: 1.5, borderColor: '#00F2FF',

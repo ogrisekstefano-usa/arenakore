@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
   noData: { padding: 40, alignItems: 'center', gap: 12 },
   noDataIconWrap: {
     width: 72, height: 72, borderRadius: 36,
-    backgroundColor: 'rgba(0,242,255,0.07)',
+    backgroundColor: 'transparent',
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
     alignItems: 'center', justifyContent: 'center',
   },
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
   noDataText: { color: 'rgba(255,255,255,0.45)', fontSize: 16, textAlign: 'center', lineHeight: 22 },
   firstScanCta: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(0,242,255,0.07)', borderRadius: 10,
+    backgroundColor: 'transparent', borderRadius: 10,
     paddingHorizontal: 16, paddingVertical: 10,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
     marginTop: 4,
@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   eligibilityBannerActive: {
-    backgroundColor: 'rgba(0,242,255,0.07)',
+    backgroundColor: 'transparent',
     borderColor: 'rgba(0,242,255,0.65)',
   },
   eligibilityBannerLocked: {
@@ -577,13 +577,13 @@ const styles = StyleSheet.create({
   // Evolution glow banner
   evoBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    width: '100%', backgroundColor: 'rgba(0,242,255,0.07)',
+    width: '100%', backgroundColor: 'transparent',
     borderRadius: 10, padding: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center', marginTop: 8,
   },
   evoBannerText: { color: '#00F2FF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   // Stat card improvement
-  statCardImproved: { borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'rgba(0,242,255,0.07)' },
+  statCardImproved: { borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'transparent' },
   statCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   improvBadge: { borderRadius: 6, paddingHorizontal: 5, paddingVertical: 2 },
   improvPos: { backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.3)' },

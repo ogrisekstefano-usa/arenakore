@@ -402,7 +402,7 @@ const cn$ = StyleSheet.create({
     borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
     borderWidth: 1, marginTop: 10, marginBottom: 2,
   },
-  eligBannerActive: { backgroundColor: 'rgba(0,242,255,0.07)', borderColor: '#00F2FF' },
+  eligBannerActive: { backgroundColor: 'transparent', borderColor: '#00F2FF' },
   eligBannerLocked: { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.05)' },
   eligText: { flex: 1, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   eligTextActive: { color: '#00F2FF' },
