@@ -127,6 +127,11 @@ class ChallengeComplete(BaseModel):
     battle_id: Optional[str] = None
     performance_score: Optional[float] = None
     duration_seconds: Optional[int] = None
+    # Training Session extensions
+    template_push_id: Optional[str] = None
+    reps_completed: Optional[int] = None
+    quality_score: Optional[float] = None
+    ai_feedback_score: Optional[float] = None  # 0-100 — AI assessment of form quality
 
 
 class CrewCreate(BaseModel):
@@ -730,7 +735,9 @@ async def trigger_live_battle(battle_id: str, current_user: dict = Depends(get_c
 
 @api_router.post("/challenges/complete")
 async def complete_challenge(data: ChallengeComplete, current_user: dict = Depends(get_current_user)):
-    """Complete a nexus trigger challenge (scan-based) without a specific battle"""
+    """Complete a nexus trigger challenge (scan-based) without a specific battle.
+    Optionally attached to a coach template push (template_push_id).
+    """
     performance = data.performance_score or random.uniform(65, 98)
     duration = data.duration_seconds or random.randint(15, 60)
 
@@ -765,6 +772,53 @@ async def complete_challenge(data: ChallengeComplete, current_user: dict = Depen
         {"$set": {"xp": new_xp, "level": new_level, "dna": new_dna}}
     )
 
+    # ── Coach Template Session completion ──
+    coach_notified = False
+    if data.template_push_id:
+        try:
+            push_oid = ObjectId(data.template_push_id)
+            push_doc = await db.challenge_pushes.find_one({"_id": push_oid})
+            if push_doc:
+                completion_record = {
+                    "user_id": current_user["_id"],
+                    "username": current_user.get("username"),
+                    "reps_completed": data.reps_completed,
+                    "quality_score": data.quality_score,
+                    "ai_feedback_score": data.ai_feedback_score,
+                    "performance_score": round(performance, 1),
+                    "duration_seconds": duration,
+                    "xp_earned": total_xp,
+                    "completed_at": datetime.utcnow(),
+                }
+                await db.challenge_pushes.update_one(
+                    {"_id": push_oid},
+                    {"$push": {"completions": completion_record}}
+                )
+                # Notify Coach
+                coach_id = push_doc.get("coach_id")
+                if coach_id:
+                    await db.notifications.insert_one({
+                        "user_id": coach_id,
+                        "type": "training_completed",
+                        "title": "SESSIONE COMPLETATA",
+                        "message": (
+                            f"{current_user.get('username')} ha completato '{push_doc.get('template_name')}' "
+                            f"· {data.reps_completed or '?'} rep · Q{round(data.quality_score or 0)}% "
+                            f"· AI Score: {round(data.ai_feedback_score or 0)}"
+                        ),
+                        "icon": "checkmark-circle",
+                        "color": "#00F2FF",
+                        "read": False,
+                        "created_at": datetime.utcnow(),
+                        "meta": {
+                            "template_name": push_doc.get("template_name"),
+                            "athlete_id": str(current_user["_id"]),
+                        },
+                    })
+                    coach_notified = True
+        except Exception:
+            pass  # Non-blocking — session still succeeds
+
     updated = await db.users.find_one({"_id": current_user["_id"]})
 
     return {
@@ -781,6 +835,7 @@ async def complete_challenge(data: ChallengeComplete, current_user: dict = Depen
         "new_level": new_level,
         "records_broken": records_broken,
         "new_dna": new_dna,
+        "coach_notified": coach_notified,
         "user": user_to_response(updated),
     }
 
@@ -2764,6 +2819,78 @@ def template_to_response(t: dict) -> dict:
         "coach_name": t.get("coach_name", ""),
         "uses_count": t.get("uses_count", 0),
         "created_at": t["created_at"].isoformat() if t.get("created_at") else None,
+    }
+
+
+@api_router.get("/my-template")
+async def get_my_template(current_user: dict = Depends(get_current_user)):
+    """Get the most recent active coach template for the current user (from their crew's pushes).
+    Also includes user's DNA potential for Bio-Feedback calibration.
+    """
+    # Find user's crews
+    user_crews = await db.crews_v2.find({"members": current_user["_id"]}).to_list(10)
+    crew_ids = [c["_id"] for c in user_crews]
+
+    if not crew_ids:
+        # Try legacy crews collection
+        user_crews_legacy = await db.crews.find({"members": current_user["_id"]}).to_list(10)
+        crew_ids = [c["_id"] for c in user_crews_legacy]
+
+    if not crew_ids:
+        return {"template": None, "message": "Nessuna crew — chiedi al tuo Coach di aggiungerti"}
+
+    # Get latest active push for user's crews
+    push = await db.challenge_pushes.find_one(
+        {"crew_id": {"$in": crew_ids}, "status": "active"},
+        sort=[("pushed_at", -1)]
+    )
+
+    if not push:
+        return {"template": None, "message": "Nessun template attivo — il Coach non ha ancora inviato sessioni"}
+
+    # Check if user already completed this push today
+    today = datetime.utcnow().date()
+    already_done = any(
+        c.get("user_id") == current_user["_id"] and
+        c.get("completed_at") and
+        c["completed_at"].date() == today
+        for c in push.get("completions", [])
+    )
+
+    # Calculate DNA potential (avg of user's 6 attributes → bio-feedback baseline)
+    dna = current_user.get("dna") or {}
+    dna_keys = ["velocita", "forza", "resistenza", "agilita", "tecnica", "potenza"]
+    dna_values = [dna.get(k, 50) for k in dna_keys]
+    dna_potential = round(sum(dna_values) / len(dna_values), 1)
+
+    # Discipline-to-DNA mapping for feedback
+    exercise_dna_map = {
+        "squat": ["forza", "resistenza", "potenza"],
+        "punch": ["velocita", "agilita", "potenza"],
+    }
+    relevant_dna = exercise_dna_map.get(push.get("exercise", "squat"), dna_keys[:3])
+    relevant_potential = round(
+        sum(dna.get(k, 50) for k in relevant_dna) / len(relevant_dna), 1
+    )
+
+    return {
+        "template": {
+            "push_id": str(push["_id"]),
+            "name": push["template_name"],
+            "exercise": push["exercise"],
+            "target_time": push["target_time"],
+            "target_reps": push["target_reps"],
+            "xp_reward": push["xp_reward"],
+            "difficulty": push["difficulty"],
+            "coach_name": push.get("coach_name", "Coach"),
+            "pushed_at": push["pushed_at"].isoformat() if push.get("pushed_at") else None,
+            "completions_count": len(push.get("completions", [])),
+            "already_done_today": already_done,
+        },
+        "dna_potential": dna_potential,
+        "relevant_potential": relevant_potential,
+        "dna": dna,
+        "message": "TEMPLATE DEL GIORNO DISPONIBILE" if not already_done else "SESSIONE GIÀ COMPLETATA OGGI",
     }
 
 

@@ -32,6 +32,8 @@ import { BurgerMenu } from '../../components/nexus/NexusBurgerMenu';
 import { CinemaResults } from '../../components/nexus/NexusCinemaResults';
 import { ProUnlockModal } from '../../components/nexus/ProUnlockModal';
 import { PvPPendingCard } from '../../components/pvp/PvPPendingCard';
+import { TrainingTemplateCard } from '../../components/training/TrainingTemplateCard';
+import { BioFeedbackHUD, BioFeedbackState } from '../../components/training/BioFeedbackHUD';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -435,6 +437,7 @@ function NexusConsole({ user, onScan, onForge, deviceTier, eligibility, myRank, 
             onNavigate={(r) => router.push(r as any)}
           />
           <PvPPendingCard />
+          <TrainingTemplateCard />
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -889,6 +892,16 @@ export default function NexusTriggerScreen() {
   // PvP Ghost Session
   const { pvpChallengeId } = useLocalSearchParams<{ pvpChallengeId?: string }>();
   const [pvpChallenge, setPvpChallenge] = useState<any>(null);
+  // Training Session (Coach Template)
+  const params = useLocalSearchParams<{
+    trainingPushId?: string; trainingExercise?: string;
+    trainingTargetReps?: string; trainingTargetTime?: string;
+    trainingName?: string; trainingXp?: string; dnaPotential?: string;
+  }>();
+  const isTrainingMode = !!params.trainingPushId;
+  const trainingTargetReps = parseInt(params.trainingTargetReps || '20', 10);
+  const trainingTargetTime = parseInt(params.trainingTargetTime || '60', 10);
+  const dnaPotential = parseFloat(params.dnaPotential || '70');
 
   const analyzerRef = useRef<MotionAnalyzer | null>(null);
   const startTimeRef = useRef(0);
@@ -926,6 +939,14 @@ export default function NexusTriggerScreen() {
       })
       .catch(() => {});
   }, [pvpChallengeId, token]);
+
+  // Training session: auto-set exercise and go to forge on mount
+  useEffect(() => {
+    if (!isTrainingMode) return;
+    if (params.trainingExercise) setExercise(params.trainingExercise as ExerciseType);
+    setForgeMode('personal');
+    setPhase('countdown');
+  }, [isTrainingMode]);
 
   // Web camera & motion detection — SPRINT 5: Camera VISIBLE, overlay reduced
   useEffect(() => {
@@ -1022,6 +1043,30 @@ export default function NexusTriggerScreen() {
     const reps = motionState?.reps || 0, qual = motionState?.quality || 50, peak = motionState?.peakAcceleration || 0, avg = motionState?.avgAmplitude || 0;
     if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
+    // Training Session Mode: submit to /challenges/complete with template data
+    if (isTrainingMode && token && params.trainingPushId) {
+      const repEff = Math.min(1, reps / Math.max(trainingTargetReps, 1));
+      const aiFeedbackScore = Math.round(qual * 0.6 + repEff * 100 * 0.4);
+      try {
+        const r = await api.completeTrainingSession({
+          template_push_id: params.trainingPushId,
+          reps_completed: reps,
+          quality_score: qual,
+          duration_seconds: dur,
+          ai_feedback_score: aiFeedbackScore,
+          performance_score: qual,
+        }, token);
+        setScanResult({ ...r, training_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, ai_feedback_score: aiFeedbackScore, training_name: params.trainingName });
+        if (r.user) updateUser(r.user);
+        if (r.coach_notified) playBioMatchPing(); else playAcceptPing();
+      } catch (_) {
+        setScanResult({ training_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: 0 });
+        playAcceptPing();
+      }
+      setPhase('results');
+      return;
+    }
+
     // PvP Mode: submit to PvP endpoint instead of regular session
     if (pvpChallengeId && token) {
       try {
@@ -1091,6 +1136,18 @@ export default function NexusTriggerScreen() {
           currentQuality={motionState?.quality || 0}
           exercise={exercise}
         />
+      )}
+      {/* Training Session Bio-Feedback HUD */}
+      {phase === 'scanning' && isTrainingMode && (
+        <BioFeedbackHUD state={{
+          currentReps: motionState?.reps || 0,
+          currentQuality: motionState?.quality || 0,
+          elapsedSeconds: timer,
+          targetReps: trainingTargetReps,
+          targetTime: trainingTargetTime,
+          dnaPotential,
+          isActive: true,
+        }} />
       )}
 
       {/* PUPPET-MOTION-DECK: SMOOTH VALIDATION */}

@@ -184,6 +184,18 @@ export const api = {
 
   getActionCenter: (token: string) => request('/kore/action-center', {}, token),
 
+  // ========== TRAINING SESSION (Coach Templates) ==========
+  getMyTemplate: (token: string) => request('/my-template', {}, token),
+  completeTrainingSession: (data: {
+    template_push_id: string;
+    reps_completed: number;
+    quality_score: number;
+    duration_seconds: number;
+    ai_feedback_score: number;
+    performance_score?: number;
+  }, token: string) =>
+    request('/challenges/complete', { method: 'POST', body: JSON.stringify(data) }, token),
+
   // ========== PvP CHALLENGE ENGINE ==========
   sendPvPChallenge: (userId: string, discipline: string, xpStake: number, token: string) =>
     request('/pvp/challenge', { method: 'POST', body: JSON.stringify({ challenged_user_id: userId, discipline, xp_stake: xpStake }) }, token),
