@@ -158,8 +158,8 @@ const bio$ = StyleSheet.create({
   matchText: { color: '#D4AF37', fontSize: 18, fontWeight: '900', letterSpacing: 2, fontVariant: ['tabular-nums'], textAlign: 'center' },
   founderGlow: { color: '#D4AF37', fontSize: 15, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
   bracket: { position: 'absolute' },
-  bH: { width: 30, height: 2, backgroundColor: '#0D0D0D', opacity: 0.5 },
-  bV: { width: 2, height: 30, backgroundColor: '#0D0D0D', opacity: 0.5 },
+  bH: { width: 30, height: 2, backgroundColor: '#00F2FF', opacity: 0.5 },
+  bV: { width: 2, height: 30, backgroundColor: '#00F2FF', opacity: 0.5 },
 });
 
 // ========== NEXUS PROACTIVE ENGINE — 6 CTA CARDS ==========
@@ -384,7 +384,7 @@ const cn$ = StyleSheet.create({
   founderBadge: { marginTop: 6, paddingHorizontal: 14, paddingVertical: 4, borderRadius: 12, borderWidth: 1, borderColor: '#D4AF37', backgroundColor: 'rgba(212,175,55,0.08)' },
   founderText: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   tierRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
-  tierDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#0D0D0D' },
+  tierDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
   tierText: { color: '#00F2FF', fontSize: 11, fontWeight: '800', letterSpacing: 2, opacity: 0.6 },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingBottom: 100 },
@@ -407,7 +407,7 @@ const cn$ = StyleSheet.create({
   eligText: { flex: 1, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   eligTextActive: { color: '#00F2FF' },
   eligTextLocked: { color: 'rgba(255,255,255,0.3)' },
-  eligReadyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#0D0D0D', shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4 },
+  eligReadyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF', shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4 },
 });
 
 // ========== CHALLENGE FORGE ==========
@@ -747,7 +747,7 @@ const smv$ = StyleSheet.create({
   stabFill: { height: '100%', borderRadius: 2.5 },
   progressBg: { height: 7, backgroundColor: 'rgba(0,242,255,0.15)', borderRadius: 3.5, overflow: 'hidden' },
   progressFill: {
-    height: '100%', borderRadius: 3.5, backgroundColor: '#0D0D0D',
+    height: '100%', borderRadius: 3.5, backgroundColor: '#00F2FF',
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1, shadowRadius: 10,
   },
@@ -1043,7 +1043,7 @@ export default function NexusTriggerScreen() {
               </Animated.View>
             ) : (
               <View style={hud$.phaseIndicator}>
-                <View style={[hud$.phaseDot, motionActive && { backgroundColor: '#0D0D0D' }]} />
+                <View style={[hud$.phaseDot, motionActive && { backgroundColor: '#00F2FF' }]} />
                 <Text style={[hud$.phaseText, motionActive && { color: '#00F2FF' }]}>
                   {motionActive ? 'TRACKING ACTIVE' : 'AWAITING MOTION'}
                 </Text>
@@ -1118,11 +1118,11 @@ const hud$ = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   timerBar: {
-    width: 80, height: 2, backgroundColor: 'rgba(0,242,255,0.65)',
+    width: 80, height: 2, backgroundColor: 'rgba(255,255,255,0.15)',
     borderRadius: 1, overflow: 'hidden',
   },
   timerBarFill: {
-    height: '100%', backgroundColor: '#0D0D0D', borderRadius: 1,
+    height: '100%', backgroundColor: '#00F2FF', borderRadius: 1,
   },
   // TOP-RIGHT: Exercise & Mode
   topRight: {
@@ -1154,7 +1154,7 @@ const hud$ = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
   repFeedbackDot: {
-    width: 6, height: 6, borderRadius: 3, backgroundColor: '#0D0D0D',
+    width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF',
   },
   repFeedbackText: {
     color: '#00F2FF', fontSize: 15, fontWeight: '800', letterSpacing: 2,

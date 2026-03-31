@@ -128,6 +128,6 @@ const cin$ = StyleSheet.create({
   shareLine: { width: 40, height: 1, backgroundColor: 'rgba(212,175,55,0.3)', marginVertical: 6 },
   shareScore: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
   shareFounder: { color: '#D4AF37', fontSize: 10, fontWeight: '600', fontStyle: 'italic', textAlign: 'center' },
-  closeBtn: { width: '100%', backgroundColor: '#0D0D0D', borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: 10 },
+  closeBtn: { width: '100%', backgroundColor: '#00F2FF', borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: 10 },
   closeBtnText: { color: '#050505', fontSize: 14, fontWeight: '800', letterSpacing: 2 },
 });

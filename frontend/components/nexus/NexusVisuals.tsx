@@ -235,7 +235,7 @@ export function ScanLine({ active }: { active: boolean }) {
   const s = useAnimatedStyle(() => ({ transform: [{ translateY: ty.value }], opacity: active ? 0.45 : 0 }));
   return (
     <Animated.View style={[{ position: 'absolute', left: 0, right: 0, height: 2, zIndex: 10 }, s]} pointerEvents="none">
-      <View style={{ flex: 1, backgroundColor: '#0D0D0D' }} />
+      <View style={{ flex: 1, backgroundColor: '#00F2FF' }} />
     </Animated.View>
   );
 }

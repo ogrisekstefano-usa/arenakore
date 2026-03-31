@@ -84,7 +84,7 @@ const cc$ = StyleSheet.create({
     padding: 14,
   },
   avatar: {
-    width: 48, height: 48, borderRadius: 24, backgroundColor: '#0D0D0D',
+    width: 48, height: 48, borderRadius: 24, backgroundColor: '#00F2FF',
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: 'rgba(255,255,255,0.4)',
   },
@@ -550,7 +550,7 @@ function AddCoachModal({ visible, onClose, onAdded, token }: any) {
             autoCapitalize="none"
           />
           <TouchableOpacity
-            style={[{ backgroundColor: '#0D0D0D', borderRadius: 12, paddingVertical: 16, alignItems: 'center' }, !username.trim() && { opacity: 0.3 }]}
+            style={[{ backgroundColor: '#00F2FF', borderRadius: 12, paddingVertical: 16, alignItems: 'center' }, !username.trim() && { opacity: 0.3 }]}
             onPress={handleAdd}
             disabled={!username.trim() || loading}
           >

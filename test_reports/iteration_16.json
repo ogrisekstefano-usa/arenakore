@@ -1,0 +1,118 @@
+{
+  "summary": "Full visual regression re-test after E1's global #0D0D0D→#00F2FF fix. All critical invisible-text buttons confirmed FIXED via code inspection + browser automation. Screenshots taken of all 6 tabs. All major issues from iteration_15 resolved.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "DNA tab — TalentCard 'Glory Shot' OVR badge",
+        "issue": "NaN shown in OVR badge (pre-existing calculation bug, not related to this sprint's changes)",
+        "priority": "LOW",
+        "testID": "glory-shot-ovr"
+      },
+      {
+        "component": "NEXUS BioScan progress bar",
+        "issue": "bio$.progressFill backgroundColor: '#0D0D0D' — dark fill on translucent cyan track. Main agent confirmed this is intentional. May appear invisible on web but is preserved by design.",
+        "priority": "INTENTIONAL",
+        "testID": "nexus-bioscan-progress"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "NEXUS tab — Eligibility banner (locked state)",
+        "issues": [
+          "Locked eligibility text color rgba(255,255,255,0.3) is 30% opacity — borderline readable. Intentional 'locked/unavailable' visual treatment. Message: 'PROSSIMA EVOLUZIONE TRA: 30 GIORNI'"
+        ]
+      }
+    ],
+    "react_native_issues": []
+  },
+
+  "fixes_confirmed": {
+    "login_accedi_button": {
+      "status": "FIXED",
+      "verified_by": "Browser automation computed style: rgb(0, 242, 255) background",
+      "file": "login.tsx:155"
+    },
+    "arena_kotd_avatar": {
+      "status": "FIXED",
+      "verified_by": "Browser automation: Text node color rgb(0, 242, 255) on bg rgb(26,26,46) #1A1A2E",
+      "file": "arena.tsx:194-195"
+    },
+    "dna_stat_fills": {
+      "status": "FIXED",
+      "verified_by": "Browser automation: fill bars show rgb(0, 242, 255) CYAN fills at correct widths",
+      "file": "dna.tsx:605"
+    },
+    "kore_bioscan_button": {
+      "status": "FIXED",
+      "verified_by": "Code: bsc$.btn backgroundColor='#00F2FF' at kore.tsx:1285",
+      "file": "kore.tsx:1285"
+    },
+    "kore_salva_button": {
+      "status": "FIXED",
+      "verified_by": "Code: af$.saveBtn backgroundColor='#00F2FF' at kore.tsx:380",
+      "file": "kore.tsx:380"
+    },
+    "dna_pvp_button": {
+      "status": "FIXED",
+      "verified_by": "Code: pvp$.btn backgroundColor='#00F2FF' at dna.tsx:737",
+      "file": "dna.tsx:737"
+    },
+    "step1_cta_activated": {
+      "status": "FIXED",
+      "verified_by": "Code: ctaActivated backgroundColor='#00F2FF' at step1.tsx:558",
+      "file": "step1.tsx:557-562"
+    },
+    "step2_avvia_ora_button": {
+      "status": "FIXED",
+      "verified_by": "Code: acceptBtn backgroundColor='#00F2FF' at step2.tsx:2057",
+      "file": "step2.tsx:2055-2058"
+    },
+    "beat_instruction_font_size": {
+      "status": "FIXED",
+      "verified_by": "Code: beatInstruction fontSize=32 at step2.tsx:1941 (was 48)",
+      "file": "step2.tsx:1940-1947"
+    }
+  },
+
+  "tabs_visual_verification": {
+    "login": "ACCEDI button CYAN (rgb(0,242,255)), text dark readable. PASS",
+    "arena": "KOTD avatar 'T' CYAN letter on #1A1A2E bg. Section labels readable. Stats row visible. SFIDA buttons GOLD. ELITE ACTIVITY feed readable. PASS",
+    "kore": "Passport card with CYAN top glow line, LVL badge visible, FOUNDER badge visible, City ranking readable. PASS",
+    "nexus": "4 console cards all readable (gold titles + cyan subtitles). AZIONI PROATTIVE carousel visible with CERTIFICA IL DNA and RISCATTA REWARD cards. PASS",
+    "dna": "CYAN stat fills confirmed via DOM (rgb(0,242,255)). Radar chart visible. PASS",
+    "rank": "Hall of Fame loads correctly. Rank #1 S (STEFANO/FOUNDER), #2 T (THUNDER_MAN), #3 M (MAYA_J) all visible. Gold/silver/bronze medals. PASS",
+    "onboarding_step1": "INIZIA CALIBRAZIONE button GOLD (initial state, correct). ctaActivated confirmed CYAN in code for NEXUS-triggered state. PASS"
+  },
+
+  "test_report_links": [],
+  "action_items": [
+    "LOW: DNA NaN OVR badge in TalentCard — pre-existing calculation bug",
+    "INFO: bio$.progressFill backgroundColor #0D0D0D intentionally preserved per problem statement — may want to reconsider for web visibility"
+  ],
+  "critical_code_review_comments": [
+    "Global fix confirmed: all former '#0D0D0D' button backgrounds changed to '#00F2FF' for CTA buttons. Only intentional decorative darks (laserLine, scanLayer, talosBottomLine, progressFill in bio scan) preserved as per agent instructions.",
+    "All elements with color:'#050505' (dark text) now properly paired with bright backgrounds (#00F2FF cyan or #D4AF37 gold) — no more invisible text pattern.",
+    "ARENA KOTD avatar: changed from backgroundColor:'#0D0D0D'+color:'#050505' to backgroundColor:'#1A1A2E'+color:'#00F2FF' — fully readable CYAN letter on dark navy bg."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A — frontend-only test",
+    "frontend": "97% — All 9 critical fixes verified. Only 1 pre-existing NaN bug and 1 intentional dark remain."
+  },
+  "seed_data_creation": "None — used existing test account ogrisek.stefano@gmail.com",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All critical invisible-text bugs from iteration_15 are fixed. Both the global color fix (#0D0D0D→#00F2FF for CTAs) and the beatInstruction font-size reduction (48→32px) are confirmed. Pre-existing issues: (1) DNA NaN OVR in TalentCard, (2) bio scan progress fill dark on dark track (intentional). App is in stable state.",
+  "rca_of_issue": {
+    "root_cause": "Previous sprint incorrectly changed all rgba transparent backgrounds to #0D0D0D (near-black), including CTA buttons that previously had bright cyan (#00F2FF) backgrounds. This made dark text (#050505) invisible against near-black backgrounds.",
+    "resolution": "Global fix applied: all backgroundColor:'#0D0D0D' that were formerly bright cyan CTAs reverted to '#00F2FF'. Intentional darks (laserLine, scanLayer, talosBottomLine, bio progressFill) preserved.",
+    "verification": "9 specific fixes confirmed via code inspection + browser automation computed style queries."
+  }
+}

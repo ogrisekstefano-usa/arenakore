@@ -98,7 +98,7 @@ const hero$ = StyleSheet.create({
   inner: { paddingHorizontal: 24, paddingTop: 28, paddingBottom: 20, alignItems: 'center', gap: 8 },
   brandLine: { color: 'rgba(255,255,255,0.60)', fontSize: 13, fontWeight: '900', letterSpacing: 5 },
   titleLine: { color: '#FFFFFF', fontSize: 38, fontWeight: '900', letterSpacing: 4, textAlign: 'center', lineHeight: 44 },
-  cyanLine: { width: 60, height: 2, backgroundColor: '#0D0D0D', borderRadius: 1, shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8 },
+  cyanLine: { width: 60, height: 2, backgroundColor: '#00F2FF', borderRadius: 1, shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8 },
   tagLine: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '700', letterSpacing: 3, textAlign: 'center' },
   statsRow: {
     flexDirection: 'row', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)',
@@ -177,7 +177,7 @@ function KoreOfTheDay() {
 const kotd$ = StyleSheet.create({
   container: { marginBottom: 8 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingBottom: 10 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#0D0D0D', shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 5 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF', shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 5 },
   sectionTitle: { flex: 1, color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   livePill: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,69,58,0.1)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,69,58,0.25)' },
   liveDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FF453A' },
@@ -191,8 +191,8 @@ const kotd$ = StyleSheet.create({
   badge: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'transparent', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(0,242,255,0.25)' },
   badgeText: { color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   identRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#0D0D0D', alignItems: 'center', justifyContent: 'center' },
-  avatarLetter: { color: '#050505', fontSize: 20, fontWeight: '900' },
+  avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#1A1A2E', alignItems: 'center', justifyContent: 'center' },
+  avatarLetter: { color: '#00F2FF', fontSize: 20, fontWeight: '900' },
   identInfo: { flex: 1, gap: 3 },
   userName: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
   userSport: { color: 'rgba(255,255,255,0.65)', fontSize: 13, fontWeight: '500', letterSpacing: 1 },

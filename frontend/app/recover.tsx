@@ -392,7 +392,7 @@ const s = StyleSheet.create({
   otpRow: { flexDirection: 'row', justifyContent: 'space-between' },
   otpBox: {
     borderRadius: 8,
-    backgroundColor: '#0D0D0D', borderWidth: 2, borderColor: '#1A1A1A',
+    backgroundColor: '#00F2FF', borderWidth: 2, borderColor: '#1A1A1A',
     color: '#00F2FF', fontSize: 26, fontWeight: '900', textAlign: 'center',
   },
   otpBoxFilled: {

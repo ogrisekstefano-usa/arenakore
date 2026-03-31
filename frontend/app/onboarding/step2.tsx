@@ -285,7 +285,7 @@ const bi$ = StyleSheet.create({
   row: { flexDirection: 'row', gap: 8, justifyContent: 'center', marginTop: 4 },
   dot: { width: 8, height: 8, borderRadius: 4 },
   dotDone: { backgroundColor: '#D4AF37' },
-  dotActive: { backgroundColor: '#0D0D0D', shadowColor: '#00F2FF', shadowOpacity: 1, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } },
+  dotActive: { backgroundColor: '#00F2FF', shadowColor: '#00F2FF', shadowOpacity: 1, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } },
   dotPending: { backgroundColor: 'rgba(255,255,255,0.1)' },
 });
 
@@ -1861,7 +1861,7 @@ const s = StyleSheet.create({
   },
   stepTxt: { color: '#00F2FF', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
   detectRow: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },
-  detectDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#0D0D0D' },
+  detectDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
   detectTxt: { color: '#00F2FF', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
 
   // Scan area
@@ -1902,12 +1902,12 @@ const s = StyleSheet.create({
   // Detecting / Positioning
   statusLabel: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
   detectBar: { width: '100%', height: 4, backgroundColor: '#111', borderRadius: 2, overflow: 'hidden' },
-  detectFill: { height: '100%', backgroundColor: '#0D0D0D', borderRadius: 2 },
+  detectFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
   detectNote: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '400', letterSpacing: 1.5 },
   detectCount: { color: '#00F2FF', fontSize: 26, fontWeight: '400', letterSpacing: 2 },
   positioningRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   positioningDot: {
-    width: 8, height: 8, borderRadius: 4, backgroundColor: '#0D0D0D',
+    width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF',
   },
   positioningTxt: { color: '#00F2FF', fontSize: 14, fontWeight: '400', letterSpacing: 3 },
 
@@ -1915,7 +1915,7 @@ const s = StyleSheet.create({
   stabilityRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' },
   stabPct: { color: '#00F2FF', fontSize: 28, fontWeight: '400', width: 60, textAlign: 'center' as const },
   stabBar: { flex: 1, height: 5, backgroundColor: '#111', borderRadius: 3, overflow: 'hidden' },
-  stabFill: { height: '100%', backgroundColor: '#0D0D0D', borderRadius: 3 },
+  stabFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 3 },
   tieneTxt: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
 
   // Countdown
@@ -1928,25 +1928,25 @@ const s = StyleSheet.create({
   poseSubCommand: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 3, textAlign: 'center' as const },
   poseTimerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, width: '100%' },
   poseTimerBg: { flex: 1, height: 6, backgroundColor: '#111', borderRadius: 3, overflow: 'hidden' },
-  poseTimerFill: { height: '100%', backgroundColor: '#0D0D0D', borderRadius: 3 },
+  poseTimerFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 3 },
   poseTimerText: { color: '#00F2FF', fontSize: 14, fontWeight: '900', width: 80, textAlign: 'right' as const },
   poseWarning: { color: '#FF453A', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
   poseOk: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
 
   // Beats
   beatLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  beatDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#0D0D0D' },
+  beatDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF' },
   beatLabel: { color: '#00F2FF', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
   beatInstruction: {
-    color: '#FFFFFF', fontSize: 48, fontWeight: '900',
-    letterSpacing: 1.5,           // stacca le lettere in maiuscolo
-    textAlign: 'center', lineHeight: 56,
+    color: '#FFFFFF', fontSize: 32, fontWeight: '900',
+    letterSpacing: 1.5,
+    textAlign: 'center', lineHeight: 38,
     textShadowColor: 'rgba(255,255,255,0.2)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 10,
   },
   beatBar: { width: '100%', height: 4, backgroundColor: '#111', borderRadius: 2, overflow: 'hidden' },
-  beatFill: { height: '100%', backgroundColor: '#0D0D0D', borderRadius: 2 },
+  beatFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
   beatPct: { color: 'rgba(255,255,255,0.60)', fontSize: 12, fontWeight: '900' },
 
   // Approved
@@ -2046,7 +2046,7 @@ const prv$ = StyleSheet.create({
     padding: 24, gap: 14,
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
   },
-  topBar: { height: 2, backgroundColor: '#0D0D0D', opacity: 0.6, marginHorizontal: -24, marginTop: -24, marginBottom: 8 },
+  topBar: { height: 2, backgroundColor: '#00F2FF', opacity: 0.6, marginHorizontal: -24, marginTop: -24, marginBottom: 8 },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   label: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   msg: { color: '#E0E0E0', fontSize: 13, fontWeight: '600', lineHeight: 22 },
@@ -2054,7 +2054,7 @@ const prv$ = StyleSheet.create({
   row: { gap: 10 },
   acceptBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#0D0D0D', borderRadius: 10, paddingVertical: 14,
+    backgroundColor: '#00F2FF', borderRadius: 10, paddingVertical: 14,
   },
   acceptTxt: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   cancelBtn: {

@@ -150,7 +150,7 @@ const $ = StyleSheet.create({
   },
   glowDot: {
     position: 'absolute', top: -2, width: 5, height: 5, borderRadius: 2.5,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: '#00F2FF',
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1, shadowRadius: 8, elevation: 8,
   },

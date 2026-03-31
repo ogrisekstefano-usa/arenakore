@@ -98,7 +98,7 @@ const inv$ = StyleSheet.create({
   userInfo: { flex: 1, gap: 2 },
   userName: { color: '#FFF', fontSize: 17, fontWeight: '800' },
   userXP: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '600' },
-  inviteBtn: { backgroundColor: '#0D0D0D', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
+  inviteBtn: { backgroundColor: '#00F2FF', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
   inviteBtnText: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   noResults: { color: 'rgba(255,255,255,0.4)', fontSize: 16, textAlign: 'center', padding: 20 },
   closeBtn: { marginTop: 12, alignItems: 'center', paddingVertical: 10 },

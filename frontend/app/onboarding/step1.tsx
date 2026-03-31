@@ -497,7 +497,7 @@ const s = StyleSheet.create({
   },
   // Legacy compatibility (unused but kept to avoid ref errors)
   heroLine3: { color: '#FFFFFF', fontSize: 58, fontWeight: '900', letterSpacing: 0.5 },
-  cyanLine: { height: 2, width: 56, backgroundColor: '#0D0D0D', marginBottom: 28 },
+  cyanLine: { height: 2, width: 56, backgroundColor: '#00F2FF', marginBottom: 28 },
 
   // ── BODY TEXT — Off-White #E0E0E0
   bodyWrap: { marginBottom: 20 },
@@ -555,7 +555,7 @@ const s = StyleSheet.create({
     elevation: 8,
   },
   ctaActivated: {
-    backgroundColor: '#0D0D0D',         // Cyan when NEXUS activated
+    backgroundColor: '#00F2FF',         // Cyan when NEXUS activated
     shadowColor: '#00F2FF',
     shadowOpacity: 0.55,
     shadowRadius: 14,

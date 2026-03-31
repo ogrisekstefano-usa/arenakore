@@ -272,12 +272,12 @@ const s = StyleSheet.create({
   fieldLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
   charCount: { color: '#222', fontSize: 10, fontWeight: '700' },
   input: {
-    backgroundColor: '#0D0D0D', borderWidth: 1.5, borderColor: '#1A1A1A',
+    backgroundColor: '#00F2FF', borderWidth: 1.5, borderColor: '#1A1A1A',
     borderRadius: 8, padding: 16, color: '#FFFFFF', fontSize: 16, fontWeight: '800',
   },
   pwdRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#0D0D0D', borderWidth: 1.5, borderColor: '#1A1A1A', borderRadius: 8,
+    backgroundColor: '#00F2FF', borderWidth: 1.5, borderColor: '#1A1A1A', borderRadius: 8,
   },
   pwdInput: { flex: 1, padding: 16, color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
   eye: { paddingHorizontal: 16 },

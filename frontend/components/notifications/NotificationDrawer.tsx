@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   panelTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   panelTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
   unreadBadge: {
-    backgroundColor: '#0D0D0D', borderRadius: 8,
+    backgroundColor: '#00F2FF', borderRadius: 8,
     paddingHorizontal: 7, paddingVertical: 2,
     minWidth: 20, alignItems: 'center',
   },
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   notifTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   notifTitle: { flex: 1, color: 'rgba(255,255,255,0.55)', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
   notifTitleUnread: { color: '#FFFFFF' },
-  unreadDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#0D0D0D' },
+  unreadDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#00F2FF' },
   notifBody: { color: 'rgba(255,255,255,0.4)', fontSize: 15, lineHeight: 17, fontWeight: '500' },
   notifTime: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '700', letterSpacing: 1, marginTop: 2 },
   separator: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginLeft: 72 },

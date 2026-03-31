@@ -77,7 +77,7 @@ const gStyles = StyleSheet.create({
   tint: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,242,255,0.18)', zIndex: 50 },
   scanLine: {
     position: 'absolute', left: 0, right: 0, height: 2,
-    backgroundColor: '#0D0D0D', shadowColor: '#00F2FF',
+    backgroundColor: '#00F2FF', shadowColor: '#00F2FF',
     shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.9, shadowRadius: 12,
     elevation: 10, zIndex: 51,
   },
@@ -548,7 +548,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
     marginTop: 4,
   },
-  firstScanDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#0D0D0D' },
+  firstScanDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
   firstScanCtaText: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   // Eligibility Banner
   eligibilityBanner: {
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
   statValue: { color: '#FFFFFF', fontSize: 24, fontWeight: '900' },
   statValueBroken: { color: '#D4AF37' },
   statBar: { height: 3, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden', marginTop: 2 },
-  statFill: { height: '100%', backgroundColor: '#0D0D0D', borderRadius: 2 },
+  statFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
   statFillBroken: { backgroundColor: '#D4AF37' },
   newRecordRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
   newRecordBadge: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
@@ -679,12 +679,12 @@ const styles = StyleSheet.create({
   notifBell: { position: 'relative', padding: 4 },
   notifBellBadge: {
     position: 'absolute', top: 0, right: 0,
-    backgroundColor: '#0D0D0D', borderRadius: 7,
+    backgroundColor: '#FF3B30', borderRadius: 7,
     minWidth: 14, height: 14,
     alignItems: 'center', justifyContent: 'center',
     paddingHorizontal: 3,
   },
-  notifBellBadgeText: { color: '#000', fontSize: 11, fontWeight: '900' },
+  notifBellBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '900' },
   // History Section
   historySectionWrap: {
     marginHorizontal: 14, marginTop: 16,
@@ -734,7 +734,7 @@ const ins$ = StyleSheet.create({
 });
 
 const pvp$ = StyleSheet.create({
-  btn: { marginHorizontal: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#0D0D0D', borderRadius: 10, paddingVertical: 13 },
+  btn: { marginHorizontal: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#00F2FF', borderRadius: 10, paddingVertical: 13 },
   text: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
 });
 
