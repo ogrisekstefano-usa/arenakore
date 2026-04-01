@@ -184,6 +184,19 @@ export const api = {
 
   getActionCenter: (token: string) => request('/kore/action-center', {}, token),
 
+  // ========== COACH STUDIO ENGINE ==========
+  getCoachAthletes: (token: string, sortBy?: string, sortOrder?: string, minScore?: number) => {
+    const params = new URLSearchParams();
+    if (sortBy) params.append('sort_by', sortBy);
+    if (sortOrder) params.append('sort_order', sortOrder);
+    if (minScore !== undefined) params.append('min_score', String(minScore));
+    return request(`/coach/athletes?${params.toString()}`, {}, token);
+  },
+  getCoachCompliance: (token: string) => request('/coach/compliance', {}, token),
+  getCoachRadar: (ids: string[], token: string) => request(`/coach/radar?ids=${ids.join(',')}`, {}, token),
+  getCoachAISuggestion: (athleteIds: string[], token: string, focus?: string) =>
+    request('/coach/ai-suggestion', { method: 'POST', body: JSON.stringify({ athlete_ids: athleteIds, focus_attribute: focus }) }, token),
+
   // ========== TRAINING SESSION (Coach Templates) ==========
   getMyTemplate: (token: string) => request('/my-template', {}, token),
   completeTrainingSession: (data: {

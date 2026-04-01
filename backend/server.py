@@ -1639,7 +1639,267 @@ def validate_scan_anti_cheat(reps: int, quality_score: float, duration_seconds: 
     return {"score": max(0, score), "issues": issues, "valid": max(0, score) >= 60}
 
 
-def pvp_challenge_to_response(ch: dict) -> dict:
+# ================================================================
+# COACH STUDIO ENGINE — Desktop Command Center
+# ================================================================
+
+DNA_KEYS = ["velocita", "forza", "resistenza", "agilita", "tecnica", "potenza"]
+DNA_LABELS = {"velocita": "Velocità", "forza": "Forza", "resistenza": "Resistenza",
+              "agilita": "Agilità", "tecnica": "Tecnica", "potenza": "Potenza"}
+
+EXERCISE_DNA_MAP = {
+    "squat":   ["forza", "resistenza", "potenza"],
+    "punch":   ["velocita", "agilita", "potenza"],
+    "lunge":   ["resistenza", "agilita", "tecnica"],
+    "press":   ["forza", "potenza", "tecnica"],
+    "plank":   ["resistenza", "tecnica", "forza"],
+    "sprint":  ["velocita", "potenza", "agilita"],
+}
+
+
+def build_athlete_profile(user: dict, last_scan: dict | None = None, compliance_pct: float = 0) -> dict:
+    dna = user.get("dna") or {}
+    dna_avg = round(sum(dna.get(k, 50) for k in DNA_KEYS) / len(DNA_KEYS), 1) if dna else 0
+    return {
+        "id": str(user["_id"]),
+        "username": user.get("username", ""),
+        "level": user.get("level", 1),
+        "xp": user.get("xp", 0),
+        "sport": user.get("sport", "—"),
+        "role": user.get("role", "ATHLETE"),
+        "dna": {k: dna.get(k, 50) for k in DNA_KEYS},
+        "dna_avg": dna_avg,
+        "kore_score": dna_avg,
+        "avatar_color": user.get("avatar_color", "#00F2FF"),
+        "last_scan_at": last_scan.get("scanned_at").isoformat() if last_scan and last_scan.get("scanned_at") else None,
+        "days_since_scan": (datetime.utcnow() - last_scan["scanned_at"]).days if last_scan and last_scan.get("scanned_at") else None,
+        "compliance_pct": round(compliance_pct, 1),
+    }
+
+
+@api_router.get("/coach/athletes")
+async def get_coach_athletes(
+    sort_by: str = "dna_avg",
+    sort_order: str = "desc",
+    min_score: Optional[float] = None,
+    max_score: Optional[float] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Coach Studio — Athlete analytics table with filters"""
+    # Get all crews where current user is coach/owner
+    coach_crews = await db.crews_v2.find({"owner_id": current_user["_id"]}).to_list(20)
+    all_member_ids = list({mid for crew in coach_crews for mid in crew.get("members", [])})
+
+    # Fallback: if no crew, return sample athletes for demo
+    if not all_member_ids:
+        athletes = await db.users.find({"_id": {"$ne": current_user["_id"]}}).limit(12).to_list(12)
+    else:
+        athletes = await db.users.find({"_id": {"$in": all_member_ids}}).to_list(50)
+
+    # Get compliance data
+    pushes = await db.challenge_pushes.find(
+        {"coach_id": current_user["_id"], "status": "active"}
+    ).to_list(20)
+
+    profiles = []
+    for user in athletes:
+        # Last scan
+        last_scan = await db.scan_results.find_one(
+            {"user_id": user["_id"]}, sort=[("scanned_at", -1)]
+        )
+        # Compliance: how many pushed templates did this athlete complete?
+        completed = sum(
+            1 for push in pushes
+            for completion in push.get("completions", [])
+            if completion.get("user_id") == user["_id"]
+        )
+        compliance_pct = (completed / max(len(pushes), 1)) * 100 if pushes else 0
+        profiles.append(build_athlete_profile(user, last_scan, compliance_pct))
+
+    # Filter
+    if min_score is not None:
+        profiles = [p for p in profiles if p["dna_avg"] >= min_score]
+    if max_score is not None:
+        profiles = [p for p in profiles if p["dna_avg"] <= max_score]
+
+    # Sort
+    reverse = sort_order == "desc"
+    profiles.sort(key=lambda p: p.get(sort_by, 0) or 0, reverse=reverse)
+
+    return {
+        "athletes": profiles,
+        "total": len(profiles),
+        "crew_count": len(coach_crews),
+    }
+
+
+@api_router.get("/coach/compliance")
+async def get_coach_compliance(current_user: dict = Depends(get_current_user)):
+    """Coach Studio — Template compliance chart data"""
+    pushes = await db.challenge_pushes.find(
+        {"coach_id": current_user["_id"]}
+    ).sort("pushed_at", -1).to_list(20)
+
+    result = []
+    for push in pushes:
+        crew = await db.crews_v2.find_one({"_id": push.get("crew_id")})
+        total_athletes = len(crew.get("members", [])) if crew else 1
+        completions = push.get("completions", [])
+        unique_completers = len({str(c.get("user_id")) for c in completions})
+        pct = round((unique_completers / max(total_athletes, 1)) * 100, 1)
+        avg_quality = round(
+            sum(c.get("quality_score", 0) for c in completions) / max(len(completions), 1), 1
+        ) if completions else 0
+        avg_reps = round(
+            sum(c.get("reps_completed", 0) for c in completions) / max(len(completions), 1), 1
+        ) if completions else 0
+        result.append({
+            "push_id": str(push["_id"]),
+            "template_name": push.get("template_name", "—"),
+            "crew_name": crew["name"] if crew else "—",
+            "pushed_at": push["pushed_at"].isoformat() if push.get("pushed_at") else None,
+            "total_athletes": total_athletes,
+            "completers": unique_completers,
+            "compliance_pct": pct,
+            "avg_quality": avg_quality,
+            "avg_reps": avg_reps,
+            "completions": [
+                {"username": c.get("username", "?"), "quality": c.get("quality_score", 0),
+                 "reps": c.get("reps_completed", 0), "ai_score": c.get("ai_feedback_score", 0)}
+                for c in completions
+            ],
+        })
+
+    return {"templates": result, "total": len(result)}
+
+
+@api_router.get("/coach/radar")
+async def get_coach_radar(
+    ids: str = "",
+    current_user: dict = Depends(get_current_user)
+):
+    """Coach Studio — DNA Radar data for up to 4 athletes comparison"""
+    id_list = [i.strip() for i in ids.split(",") if i.strip()][:4]
+    athletes = []
+    for aid in id_list:
+        try:
+            user = await db.users.find_one({"_id": ObjectId(aid)})
+            if user:
+                dna = user.get("dna") or {}
+                athletes.append({
+                    "id": str(user["_id"]),
+                    "username": user.get("username"),
+                    "avatar_color": user.get("avatar_color", "#00F2FF"),
+                    "dna": {k: dna.get(k, 50) for k in DNA_KEYS},
+                    "dna_avg": round(sum(dna.get(k, 50) for k in DNA_KEYS) / len(DNA_KEYS), 1),
+                })
+        except Exception:
+            pass
+    # Group stats
+    if athletes:
+        group_dna = {k: round(sum(a["dna"][k] for a in athletes) / len(athletes), 1) for k in DNA_KEYS}
+    else:
+        group_dna = {k: 50 for k in DNA_KEYS}
+
+    return {"athletes": athletes, "group_avg": group_dna, "labels": DNA_LABELS}
+
+
+@api_router.post("/coach/ai-suggestion")
+async def get_ai_training_suggestion(
+    data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Coach Studio AI — Suggest training plan based on group DNA"""
+    athlete_ids = data.get("athlete_ids", [])[:12]
+    focus_attribute = data.get("focus_attribute", None)
+
+    # Load athletes
+    athletes_data = []
+    for aid in athlete_ids:
+        try:
+            user = await db.users.find_one({"_id": ObjectId(aid)})
+            if user:
+                athletes_data.append(user.get("dna") or {})
+        except Exception:
+            pass
+
+    if not athletes_data:
+        # Demo suggestion
+        return {
+            "group_avg": {k: 65 for k in DNA_KEYS},
+            "weakest": "resistenza",
+            "strongest": "velocita",
+            "suggestion": _build_suggestion({k: 65 for k in DNA_KEYS}),
+        }
+
+    group_avg = {k: round(sum(d.get(k, 50) for d in athletes_data) / len(athletes_data), 1) for k in DNA_KEYS}
+    weakest = min(group_avg, key=lambda k: group_avg[k])
+    strongest = max(group_avg, key=lambda k: group_avg[k])
+    target = focus_attribute if focus_attribute in DNA_KEYS else weakest
+
+    return {
+        "group_avg": group_avg,
+        "athlete_count": len(athletes_data),
+        "weakest": weakest,
+        "strongest": strongest,
+        "suggestion": _build_suggestion(group_avg, target),
+    }
+
+
+def _build_suggestion(group_avg: dict, focus: str = None) -> dict:
+    """Build AI training suggestion based on group DNA averages"""
+    focus = focus or min(group_avg, key=lambda k: group_avg[k])
+    focus_val = group_avg.get(focus, 60)
+
+    # Intensity tier based on group average
+    group_mean = sum(group_avg.values()) / len(group_avg)
+    if group_mean < 55:
+        intensity = "low"
+        base_reps, base_time = 10, 40
+    elif group_mean < 72:
+        intensity = "medium"
+        base_reps, base_time = 15, 50
+    else:
+        intensity = "high"
+        base_reps, base_time = 20, 60
+
+    # Build exercise blocks targeting the weakest attribute
+    exercises_for_focus = [ex for ex, attrs in EXERCISE_DNA_MAP.items() if focus in attrs]
+    primary_ex = exercises_for_focus[0] if exercises_for_focus else "squat"
+    secondary_ex = [e for e in ["squat", "punch", "sprint", "plank"] if e != primary_ex][0]
+
+    return {
+        "focus_attribute": focus,
+        "focus_label": DNA_LABELS.get(focus, focus),
+        "group_mean": round(group_mean, 1),
+        "intensity": intensity,
+        "blocks": [
+            {
+                "exercise": primary_ex,
+                "label": primary_ex.upper(),
+                "reps": base_reps,
+                "duration_seconds": base_time,
+                "sets": 3,
+                "rest_seconds": 60,
+                "rationale": f"Migliora {DNA_LABELS.get(focus, focus)} (attuale: {focus_val})"
+            },
+            {
+                "exercise": secondary_ex,
+                "label": secondary_ex.upper(),
+                "reps": max(8, base_reps - 4),
+                "duration_seconds": max(30, base_time - 15),
+                "sets": 2,
+                "rest_seconds": 45,
+                "rationale": "Mantenimento forza complementare"
+            },
+        ],
+        "total_duration_min": round((base_time * 5 + 60 * 4) / 60, 0),
+        "xp_reward": int(base_reps * 10 + (30 if intensity == "high" else 15)),
+        "ai_note": f"Gruppo di {len(group_avg)} attributi: media {round(group_mean, 0)}. Focus su {DNA_LABELS.get(focus, focus)} ({focus_val}/100). Volume calibrato su intensità {intensity.upper()}.",
+    }
+
+
+
     return {
         "id": str(ch["_id"]),
         "challenger_id": str(ch["challenger_id"]),
