@@ -3506,6 +3506,7 @@ async def get_athletes_full_table(
         dna_avg = round(sum(dna.get(k, 50) for k in DNA_KEYS) / len(DNA_KEYS), 1) if dna else 50
         six_axis = compute_six_axis(user)
         injury   = compute_injury_risk_detail(six_axis)
+        kore     = compute_kore_score(user, [])   # single call, reuse all fields
 
         # Last scan
         last_scan = await db.scan_results.find_one({"user_id": user["_id"]}, sort=[("scanned_at", -1)])
@@ -3539,9 +3540,9 @@ async def get_athletes_full_table(
             "sport":        user.get("sport", "—"),
             "city":         user.get("city", "—"),
             "dna_avg":      dna_avg,
-            "kore_score":   compute_kore_score(user, []).get("score", dna_avg),
-            "kore_grade":   compute_kore_score(user, []).get("grade", "B"),
-            "kore_color":   compute_kore_score(user, []).get("color", "#00F2FF"),
+            "kore_score":   kore["score"],
+            "kore_grade":   kore["grade"],
+            "kore_color":   kore["color"],
             "six_axis":     six_axis,
             "injury_risk":  injury,
             "days_since_scan": days_since,
@@ -3551,8 +3552,8 @@ async def get_athletes_full_table(
         })
 
     reverse = sort_order == "desc"
-    if sort_by == "dna_avg":
-        enriched.sort(key=lambda a: a["dna_avg"], reverse=reverse)
+    if sort_by in ("dna_avg", "kore_score"):
+        enriched.sort(key=lambda a: a.get("kore_score", a["dna_avg"]), reverse=reverse)
     elif sort_by == "injury":
         enriched.sort(key=lambda a: a["injury_risk"]["risk_pct"], reverse=reverse)
     elif sort_by == "rank":

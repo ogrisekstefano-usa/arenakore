@@ -169,7 +169,7 @@ const kg$ = StyleSheet.create({
   barLabel: { width: 56, fontSize: 8, letterSpacing: 1.5, color: 'rgba(255,255,255,0.35)' },
   barTrack: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 2 },
-  barVal: { fontSize: 11, width: 24, textAlign: 'right' },
+  barVal: { fontSize: 11, width: 32, textAlign: 'right' },
   barContrib: { fontSize: 8, color: 'rgba(255,255,255,0.2)', letterSpacing: 0.3, width: 56, textAlign: 'right' },
 });
 
@@ -681,10 +681,10 @@ const cp$ = StyleSheet.create({
 
 // ── Main Module ───────────────────────────────────────────────────────────────
 const SORT_OPTIONS = [
-  { key: 'dna_avg', label: 'DNA' },
-  { key: 'injury',  label: 'RISCHIO' },
-  { key: 'rank',    label: 'RANK' },
-  { key: 'level',   label: 'LVL' },
+  { key: 'kore_score', label: 'KORE' },
+  { key: 'injury',     label: 'RISCHIO' },
+  { key: 'rank',       label: 'RANK' },
+  { key: 'level',      label: 'LVL' },
 ];
 const INJURY_FILTERS = ['ALL', 'HIGH', 'MEDIUM', 'LOW'];
 
@@ -782,7 +782,7 @@ export default function AthletesModule() {
               <>
                 {/* Table header */}
                 <View style={[am$.tableHead, { backgroundColor: theme.surface, borderBottomColor: theme.border2 }]}>
-                  {['#', 'ATLETA', 'DNA', 'RISK', 'SCAN', 'CREW', 'RANK'].map(h => (
+                  {['#', 'ATLETA', 'KORE', 'RISK', 'SCAN', 'CREW', 'RANK'].map(h => (
                     <Text key={h} style={[am$.th, MONT('900'), { color: theme.textTer, flex: h === 'ATLETA' ? 2 : undefined }]}>{h}</Text>
                   ))}
                   <View style={{ width: 70 }} />
