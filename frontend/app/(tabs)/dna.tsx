@@ -510,7 +510,7 @@ export default function DNATab() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505' },
+  container: { flex: 1, backgroundColor: '#000000' },
   heroImage: { width: '100%', minHeight: 480 },
   heroImageStyle: { opacity: 0.35 },
   heroGradient: { flex: 1, paddingTop: 16 },

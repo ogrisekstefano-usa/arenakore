@@ -1247,7 +1247,7 @@ export default function KoreTab() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505' },
+  container: { flex: 1, backgroundColor: '#000000' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });
 

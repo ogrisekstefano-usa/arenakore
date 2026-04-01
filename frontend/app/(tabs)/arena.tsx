@@ -257,135 +257,141 @@ const ef$ = StyleSheet.create({
   challengeText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
 });
 
-// ========== LIVE BATTLE DASHBOARD ==========
-function BattleProgressBar({ pctA, isMyCrewA, isMyCrewB }: { pctA: number; isMyCrewA: boolean; isMyCrewB: boolean }) {
-  const width = useSharedValue(50);
-  useEffect(() => { width.value = withTiming(pctA, { duration: 800, easing: Easing.out(Easing.cubic) }); }, [pctA]);
-  const styleA = useAnimatedStyle(() => ({ width: `${width.value}%` as any }));
-  const isWinning = isMyCrewA ? pctA > 50 : isMyCrewB ? pctA < 50 : false;
-  return (
-    <View style={bp$.track}>
-      <Animated.View style={[bp$.fillA, styleA, isMyCrewA && { backgroundColor: '#00F2FF' }, !isMyCrewA && isMyCrewB && { backgroundColor: '#FF453A' }]} />
-    </View>
-  );
-}
-const bp$ = StyleSheet.create({
-  track: { height: 8, backgroundColor: 'rgba(255,69,58,0.3)', borderRadius: 4, overflow: 'hidden' },
-  fillA: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 4 },
-});
-
+// ========== WAR ROOM — ARENA BATTLE ENGINE ==========
 function useCountdown(endsAt: string | null) {
   const [remaining, setRemaining] = useState('');
+  const [minsLeft, setMinsLeft] = useState(9999);
   useEffect(() => {
     if (!endsAt) { setRemaining(''); return; }
     const update = () => {
       const diff = new Date(endsAt).getTime() - Date.now();
-      if (diff <= 0) { setRemaining('TERMINATA'); return; }
+      if (diff <= 0) { setRemaining('TERMINATA'); setMinsLeft(0); return; }
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
-      setRemaining(h > 0 ? `${h}h ${m}m` : `${m}m ${s}s`);
+      setMinsLeft(h * 60 + m);
+      setRemaining(h > 0 ? `${h}h ${m}m` : m > 0 ? `${m}m ${s}s` : `${s}s`);
     };
     update();
     const iv = setInterval(update, 1000);
     return () => clearInterval(iv);
   }, [endsAt]);
-  return remaining;
+  return { remaining, minsLeft };
 }
 
-function LiveBattleCard({ battle, onContribute }: { battle: any; onContribute: (id: string) => void }) {
+function WarBar({ pctA, isMyCrewA, isMyCrewB }: { pctA: number; isMyCrewA: boolean; isMyCrewB: boolean }) {
+  const width = useSharedValue(50);
+  useEffect(() => { width.value = withTiming(pctA, { duration: 1000, easing: Easing.out(Easing.cubic) }); }, [pctA]);
+  const styleA = useAnimatedStyle(() => ({ width: `${width.value}%` as any }));
+  return (
+    <View style={wb$.container}>
+      <View style={wb$.track}>
+        <Animated.View style={[wb$.fillMine, styleA, isMyCrewA && { backgroundColor: '#00F2FF' }, isMyCrewB && { backgroundColor: '#333' }]} />
+      </View>
+      <View style={wb$.pctRow}>
+        <Text style={[wb$.pct, isMyCrewA && { color: '#00F2FF' }]}>{pctA.toFixed(0)}%</Text>
+        <Text style={wb$.pct}>{(100 - pctA).toFixed(0)}%</Text>
+      </View>
+    </View>
+  );
+}
+const wb$ = StyleSheet.create({
+  container: { gap: 6 },
+  track: { height: 20, backgroundColor: '#222', borderRadius: 10, overflow: 'hidden' },
+  fillMine: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 10 },
+  pctRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  pct: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
+});
+
+function LiveBattleCard({ battle }: { battle: any }) {
   const router = useRouter();
-  const countdown = useCountdown(battle.ends_at);
-  const { crew_a, crew_a: { pct: pctA }, crew_b } = battle;
-  const myCrewLabel = crew_a.is_my_crew ? crew_a.name : crew_b.is_my_crew ? crew_b.name : null;
-  const isWinning = (crew_a.is_my_crew && pctA > 50) || (crew_b.is_my_crew && pctA < 50);
-  const pulse = useSharedValue(1);
-  useEffect(() => { pulse.value = withRepeat(withSequence(withTiming(1.04, { duration: 900 }), withTiming(1, { duration: 900 })), -1, false); }, []);
-  const glow = useAnimatedStyle(() => ({ transform: [{ scale: pulse.value }] }));
+  const { remaining, minsLeft } = useCountdown(battle.ends_at);
+  const { crew_a, crew_b } = battle;
+  const pctA = crew_a.pct || 50;
+  const isMyCrewA = crew_a.is_my_crew;
+  const isMyCrewB = crew_b.is_my_crew;
+  const isLosing = (isMyCrewA && pctA < 50) || (isMyCrewB && pctA > 50);
+  const diff = Math.abs(pctA - 50);
+  const isLastPush = minsLeft < 10 && diff < 5 && battle.user_in_battle;
+  const isClose = diff < 8;
+
+  const borderGlow = useSharedValue(0.3);
+  useEffect(() => {
+    if (isLosing) {
+      borderGlow.value = withRepeat(withSequence(withTiming(1, { duration: 700 }), withTiming(0.3, { duration: 700 })), -1, false);
+    } else {
+      borderGlow.value = 0.3;
+    }
+  }, [isLosing]);
+  const borderStyle = useAnimatedStyle(() => ({
+    borderColor: isLosing ? `rgba(255,69,58,${borderGlow.value})` : 'rgba(255,255,255,0.06)',
+    shadowOpacity: isLosing ? borderGlow.value * 0.5 : 0,
+  }));
 
   return (
-    <Animated.View entering={FadeInDown.duration(300)} style={lbc$.card}>
-      <LinearGradient colors={['#0E0E0E', '#070707']} style={lbc$.inner}>
-        {/* Header */}
-        <View style={lbc$.header}>
-          <View style={lbc$.livePill}>
-            <Animated.View style={[lbc$.liveDot, glow]} />
-            <Text style={lbc$.liveText}>LIVE</Text>
-          </View>
-          <Text style={lbc$.timer}>{countdown || '24H'}</Text>
+    <Animated.View entering={FadeInDown.duration(300)} style={[wrc$.card, borderStyle]}>
+      {/* Teams header */}
+      <View style={wrc$.teams}>
+        <Text style={[wrc$.teamA, isMyCrewA && wrc$.teamMine]} numberOfLines={1}>{crew_a.name}</Text>
+        <View style={wrc$.timePill}>
+          <View style={wrc$.liveDot} />
+          <Text style={wrc$.timer}>{remaining || 'LIVE'}</Text>
         </View>
+        <Text style={[wrc$.teamB, isMyCrewB && wrc$.teamMine]} numberOfLines={1}>{crew_b.name}</Text>
+      </View>
 
-        {/* Teams */}
-        <View style={lbc$.teamsRow}>
-          <View style={lbc$.teamSide}>
-            <Text style={[lbc$.teamName, crew_a.is_my_crew && lbc$.teamMine]} numberOfLines={1}>{crew_a.name}</Text>
-            <Text style={lbc$.teamScore}>{crew_a.score}</Text>
-          </View>
-          <View style={lbc$.vsCol}>
-            <Text style={lbc$.vsText}>VS</Text>
-          </View>
-          <View style={[lbc$.teamSide, { alignItems: 'flex-end' }]}>
-            <Text style={[lbc$.teamName, crew_b.is_my_crew && lbc$.teamMine]} numberOfLines={1}>{crew_b.name}</Text>
-            <Text style={lbc$.teamScore}>{crew_b.score}</Text>
-          </View>
-        </View>
+      {/* War Bar */}
+      <WarBar pctA={pctA} isMyCrewA={isMyCrewA} isMyCrewB={isMyCrewB} />
 
-        {/* Progress Bar */}
-        <BattleProgressBar pctA={pctA} isMyCrewA={crew_a.is_my_crew} isMyCrewB={crew_b.is_my_crew} />
-        <View style={lbc$.pctRow}>
-          <Text style={lbc$.pctText}>{pctA}%</Text>
-          <Text style={lbc$.pctText}>{(100 - pctA).toFixed(1)}%</Text>
-        </View>
+      {/* Scores */}
+      <View style={wrc$.scores}>
+        <Text style={[wrc$.score, isMyCrewA && { color: '#00F2FF' }]}>{crew_a.score}</Text>
+        <Text style={wrc$.scoreDivider}>·</Text>
+        <Text style={[wrc$.score, isMyCrewB && { color: '#00F2FF' }]}>{crew_b.score}</Text>
+      </View>
 
-        {/* Status */}
-        {myCrewLabel && (
-          <View style={[lbc$.statusPill, isWinning ? lbc$.statusWin : lbc$.statusLose]}>
-            <Ionicons name={isWinning ? 'trending-up' : 'warning'} size={11} color={isWinning ? '#00F2FF' : '#FF9500'} />
-            <Text style={[lbc$.statusText, isWinning ? { color: '#00F2FF' } : { color: '#FF9500' }]}>
-              {isWinning ? 'STA VINCENDO' : 'IN SVANTAGGIO — CONTRIBUISCI'}
-            </Text>
-          </View>
-        )}
-
-        {/* CTA */}
-        {battle.user_in_battle && (
-          <TouchableOpacity
-            style={lbc$.cta}
-            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {}); router.push('/(tabs)/nexus-trigger'); }}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="flash-sharp" size={14} color="#050505" />
-            <Text style={lbc$.ctaText}>CONTRIBUISCI ORA</Text>
-          </TouchableOpacity>
-        )}
-      </LinearGradient>
+      {/* Last Push CTA */}
+      {isLastPush ? (
+        <TouchableOpacity
+          style={wrc$.lastPush}
+          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {}); router.push('/(tabs)/nexus-trigger'); }}
+          activeOpacity={0.85}
+        >
+          <Text style={wrc$.lastPushText}>LAST PUSH: SECURE THE VICTORY</Text>
+        </TouchableOpacity>
+      ) : battle.user_in_battle ? (
+        <TouchableOpacity
+          style={[wrc$.cta, isLosing && wrc$.ctaLosing]}
+          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); router.push('/(tabs)/nexus-trigger'); }}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="flash-sharp" size={13} color={isLosing ? '#FFFFFF' : '#050505'} />
+          <Text style={[wrc$.ctaText, isLosing && { color: '#FFFFFF' }]}>
+            {isLosing ? 'RECUPERA — FALLO ORA' : 'CONTRIBUISCI ORA'}
+          </Text>
+        </TouchableOpacity>
+      ) : null}
     </Animated.View>
   );
 }
 
-const lbc$ = StyleSheet.create({
-  card: { marginHorizontal: 16, marginBottom: 10, borderRadius: 16, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(255,69,58,0.3)' },
-  inner: { padding: 14, gap: 10 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  livePill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,69,58,0.12)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(255,69,58,0.3)' },
-  liveDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FF453A' },
-  liveText: { color: '#FF453A', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
-  timer: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
-  teamsRow: { flexDirection: 'row', alignItems: 'center' },
-  teamSide: { flex: 1, gap: 2 },
-  teamName: { color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  teamMine: { color: '#00F2FF' },
-  teamScore: { color: '#D4AF37', fontSize: 22, fontWeight: '900', letterSpacing: 1 },
-  vsCol: { width: 40, alignItems: 'center' },
-  vsText: { color: '#D4AF37', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  pctRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  pctText: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  statusPill: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
-  statusWin: { backgroundColor: 'rgba(0,242,255,0.07)', borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)' },
-  statusLose: { backgroundColor: 'rgba(255,149,0,0.07)', borderWidth: 1, borderColor: 'rgba(255,149,0,0.2)' },
-  statusText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
-  cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#FF453A', borderRadius: 10, paddingVertical: 12, marginTop: 2 },
-  ctaText: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+const wrc$ = StyleSheet.create({
+  card: { marginHorizontal: 16, marginBottom: 10, borderRadius: 14, padding: 14, gap: 10, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: '#000000', shadowColor: '#FF453A', shadowOffset: { width: 0, height: 0 }, shadowRadius: 16 },
+  teams: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  teamA: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
+  teamB: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5, textAlign: 'right' },
+  teamMine: { color: '#FFFFFF' },
+  timePill: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(255,69,58,0.1)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+  liveDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FF453A' },
+  timer: { color: '#FF453A', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  scores: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 },
+  score: { color: 'rgba(255,255,255,0.4)', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
+  scoreDivider: { color: 'rgba(255,255,255,0.1)', fontSize: 16 },
+  cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#00F2FF', borderRadius: 10, paddingVertical: 12 },
+  ctaLosing: { backgroundColor: '#FF453A' },
+  ctaText: { color: '#050505', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  lastPush: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FF453A', borderRadius: 10, paddingVertical: 14, shadowColor: '#FF453A', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 16 },
+  lastPushText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
 });
 
 function LiveBattleDashboard() {
@@ -427,7 +433,7 @@ function LiveBattleDashboard() {
           <Text style={lbd$.emptySub}>Usa il Matchmaking AI per trovare un avversario</Text>
         </View>
       ) : (
-        battles.map(b => <LiveBattleCard key={b.id} battle={b} onContribute={() => {}} />)
+        battles.map(b => <LiveBattleCard key={b.id} battle={b} />)
       )}
     </View>
   );
@@ -618,7 +624,7 @@ export default function ArenaTab() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505' },
+  container: { flex: 1, backgroundColor: '#000000' },
   dividerSection: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 10 },
   divLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.05)' },
 });

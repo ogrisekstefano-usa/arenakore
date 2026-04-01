@@ -82,19 +82,29 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
               </TouchableOpacity>
             </View>
 
-            {/* Opponent */}
-            <View style={m$.opponentRow}>
-              <View style={m$.opponentAvatar}>
-                <Text style={m$.opponentLetter}>{opponent.username[0].toUpperCase()}</Text>
+            {/* FACE-OFF */}
+            <View style={m$.faceOff}>
+              {/* My side */}
+              <View style={m$.faceCard}>
+                <View style={[m$.faceAvatar, { backgroundColor: '#00F2FF' }]}>
+                  <Text style={m$.faceLetter}>{(user?.username || 'TU')[0].toUpperCase()}</Text>
+                </View>
+                <Text style={m$.faceName} numberOfLines={1}>{(user?.username || 'TU').toUpperCase()}</Text>
+                <Text style={m$.faceXp}>{user?.xp?.toLocaleString()} XP</Text>
               </View>
-              <View style={m$.opponentInfo}>
-                <Text style={m$.opponentName}>{opponent.username.toUpperCase()}</Text>
-                <Text style={m$.opponentMeta}>LVL {opponent.level || 1} · {opponent.xp?.toLocaleString() || '0'} XP</Text>
+
+              {/* VS */}
+              <View style={m$.faceVs}>
+                <Text style={m$.vsText}>VS</Text>
               </View>
-              <View style={m$.vsBadge}><Text style={m$.vsText}>VS</Text></View>
-              <View style={m$.myInfo}>
-                <Text style={m$.opponentName}>{(user?.username || 'TU').toUpperCase()}</Text>
-                <Text style={m$.opponentMeta}>LVL {user?.level || 1} · {user?.xp?.toLocaleString() || '0'} XP</Text>
+
+              {/* Opponent */}
+              <View style={[m$.faceCard, { alignItems: 'flex-end' }]}>
+                <View style={[m$.faceAvatar, { backgroundColor: '#FF453A' }]}>
+                  <Text style={m$.faceLetter}>{opponent.username[0].toUpperCase()}</Text>
+                </View>
+                <Text style={m$.faceName} numberOfLines={1}>{opponent.username.toUpperCase()}</Text>
+                <Text style={m$.faceXp}>{opponent.xp?.toLocaleString() || '?'} XP</Text>
               </View>
             </View>
 
@@ -170,24 +180,34 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
 }
 
 const m$ = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.82)', justifyContent: 'flex-end' },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', justifyContent: 'flex-end' },
   sheet: {
-    backgroundColor: '#0A0A0A', borderTopLeftRadius: 20, borderTopRightRadius: 20,
-    padding: 20, borderWidth: 1.5, borderColor: 'rgba(255,69,58,0.25)',
+    backgroundColor: '#000000', borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    padding: 20, borderWidth: 1, borderColor: 'rgba(255,69,58,0.2)',
   },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   title: { color: '#FF453A', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
-  opponentRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 12 },
-  opponentAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#00F2FF', alignItems: 'center', justifyContent: 'center' },
-  opponentLetter: { color: '#050505', fontSize: 18, fontWeight: '900' },
-  opponentInfo: { flex: 1 },
-  opponentName: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  opponentMeta: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '400' },
-  vsBadge: { paddingHorizontal: 8 },
-  vsText: { color: '#D4AF37', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  myInfo: { flex: 1, alignItems: 'flex-end' },
-  sectionLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '900', letterSpacing: 3, marginBottom: 10, marginTop: 4 },
+  // Face-off
+  faceOff: { flexDirection: 'row', alignItems: 'center', marginBottom: 22, paddingVertical: 16, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.03)' },
+  faceCard: { flex: 1, alignItems: 'flex-start', paddingHorizontal: 16, gap: 6 },
+  faceAvatar: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
+  faceLetter: { color: '#050505', fontSize: 24, fontWeight: '900' },
+  faceName: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
+  faceXp: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '300', letterSpacing: 1 },
+  faceVs: { alignItems: 'center', justifyContent: 'center', width: 44 },
+  vsText: { color: '#D4AF37', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
+  // Legacy (cleanup)
+  opponentRow: { display: 'none' },
+  opponentAvatar: { display: 'none' },
+  opponentLetter: { color: 'transparent' },
+  opponentInfo: { display: 'none' },
+  opponentName: { color: 'transparent' },
+  opponentMeta: { color: 'transparent' },
+  vsBadge: { display: 'none' },
+  myInfo: { display: 'none' },
+  // Section labels
+  sectionLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 10, marginTop: 4 },
   discCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 12,
@@ -195,23 +215,22 @@ const m$ = StyleSheet.create({
   },
   discInfo: { flex: 1 },
   discLabel: { color: 'rgba(255,255,255,0.75)', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
-  discSub: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '400', marginTop: 2 },
+  discSub: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '300', marginTop: 2 },
   stakesRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   stakeBtn: {
     flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
   },
   stakeBtnActive: { borderColor: '#D4AF37', backgroundColor: 'rgba(212,175,55,0.08)' },
-  stakeBtnDisabled: { opacity: 0.35 },
+  stakeBtnDisabled: { opacity: 0.3 },
   stakeXp: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
-  stakeSub: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '400', letterSpacing: 0.5, textAlign: 'center', marginTop: 2 },
+  stakeSub: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '300', letterSpacing: 0.5, textAlign: 'center', marginTop: 2 },
   warningRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
   warningText: { color: '#FF9500', fontSize: 12, fontWeight: '700' },
   cta: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: '#FF453A', borderRadius: 12, paddingVertical: 16, marginTop: 4,
-    shadowColor: '#FF453A', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 12,
   },
-  ctaDisabled: { opacity: 0.5 },
-  ctaText: { color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  ctaDisabled: { opacity: 0.4 },
+  ctaText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
 });

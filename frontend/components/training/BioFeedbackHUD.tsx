@@ -1,14 +1,13 @@
 /**
- * ARENAKORE — BIO-FEEDBACK HUD
- * AI Coach overlay during Training Session scan.
- * - Mostra DNA Potential vs performance attuale
- * - Messaggi AI di intervento (intensità, postura, stanchezza)
- * - Barra progresso verso target reps/tempo
+ * ARENAKORE — BIO-FEEDBACK HUD v2.0
+ * AI Coach: messaggi grandi, centrati, 1.5s poi spariscono.
+ * "Senti la tensione — non leggere i dati."
  */
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated as RNAnimated } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeIn, FadeInDown, FadeOutUp, useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
+import { View, Text, StyleSheet } from 'react-native';
+import Animated, {
+  FadeIn, FadeOut, useSharedValue, withTiming, withSequence, useAnimatedStyle,
+} from 'react-native-reanimated';
 
 export interface BioFeedbackState {
   currentReps: number;
@@ -16,159 +15,108 @@ export interface BioFeedbackState {
   elapsedSeconds: number;
   targetReps: number;
   targetTime: number;
-  dnaPotential: number;  // 0-100
+  dnaPotential: number;
   isActive: boolean;
 }
 
-type AIStatus = 'idle' | 'optimal' | 'increase' | 'decrease' | 'fatigue' | 'posture';
+type AIStatus = 'idle' | 'optimal' | 'increase' | 'decrease' | 'fatigue' | 'posture' | 'almost' | 'last';
 
-const STATUS_CFG: Record<AIStatus, { icon: keyof typeof Ionicons.glyphMap; color: string; msg: string }> = {
-  idle:     { icon: 'scan',          color: 'rgba(255,255,255,0.3)', msg: 'INIZIALIZZAZIONE SENSORI...' },
-  optimal:  { icon: 'checkmark-circle', color: '#00F2FF',            msg: 'RITMO OTTIMALE — CONTINUA' },
-  increase: { icon: 'trending-up',   color: '#FF9500',               msg: 'AUMENTA L’INTENSITÀ' },
-  decrease: { icon: 'trending-down',  color: '#34C759',              msg: 'RIDUCI — MANTIENI IL RITMO' },
-  fatigue:  { icon: 'warning',        color: '#FF453A',              msg: 'STANCHEZZA RILEVATA — RESPIRA' },
-  posture:  { icon: 'body',           color: '#D4AF37',              msg: 'CORREGGI LA POSTURA — SCHIENA DRITTA' },
+const AI_MESSAGES: Record<AIStatus, { msg: string; color: string }> = {
+  idle:     { msg: '',              color: '#FFFFFF' },
+  optimal:  { msg: 'TIENICI.',      color: '#00F2FF' },
+  increase: { msg: 'PIÙ FORTE.',    color: '#FF9500' },
+  decrease: { msg: 'RESPIRA.',      color: '#34C759' },
+  fatigue:  { msg: 'NON MOLLARE.', color: '#FF453A' },
+  posture:  { msg: 'SCHIENA.',      color: '#D4AF37' },
+  almost:   { msg: 'CI SIAMO.',     color: '#00F2FF' },
+  last:     { msg: 'ULTIMA!',       color: '#FF453A' },
 };
 
 function getAIStatus(state: BioFeedbackState): AIStatus {
-  if (!state.isActive || state.elapsedSeconds < 5) return 'idle';
+  if (!state.isActive || state.elapsedSeconds < 4) return 'idle';
   const { currentQuality, dnaPotential, currentReps, targetReps, elapsedSeconds, targetTime } = state;
+  const repsLeft = targetReps - currentReps;
+  const timeLeft = targetTime - elapsedSeconds;
+  const expectedRate = targetReps / Math.max(targetTime, 1);
+  const actualRate = currentReps / Math.max(elapsedSeconds, 1);
 
-  // Rep rate: expected vs actual
-  const expectedRate = targetReps / targetTime;
-  const actualRate = elapsedSeconds > 0 ? currentReps / elapsedSeconds : 0;
-  const rateRatio = actualRate / Math.max(expectedRate, 0.01);
-
-  // Quality vs DNA potential (potential = theoretical max)
-  const qualityRatio = currentQuality / Math.max(dnaPotential, 1);
-
-  if (currentQuality < 30 && state.elapsedSeconds > 10) return 'posture';
-  if (rateRatio < 0.5 && elapsedSeconds > 15) return 'fatigue';
-  if (qualityRatio < 0.6) return 'increase';
-  if (qualityRatio > 1.15) return 'decrease';
+  if (repsLeft === 1) return 'last';
+  if (repsLeft <= 3 && repsLeft > 0) return 'almost';
+  if (currentQuality < 30 && elapsedSeconds > 8) return 'posture';
+  if (actualRate < expectedRate * 0.5 && elapsedSeconds > 12) return 'fatigue';
+  if (currentQuality / Math.max(dnaPotential, 1) < 0.6) return 'increase';
+  if (currentQuality / Math.max(dnaPotential, 1) > 1.1) return 'decrease';
   return 'optimal';
 }
 
 export function BioFeedbackHUD({ state }: { state: BioFeedbackState }) {
-  const { currentReps, currentQuality, elapsedSeconds, targetReps, targetTime, dnaPotential } = state;
-  const [aiStatus, setAIStatus] = useState<AIStatus>('idle');
-  const [prevMsg, setPrevMsg] = useState('');
-  const msgKey = useRef(0);
+  const [shownMsg, setShownMsg] = useState<{ msg: string; color: string; key: number } | null>(null);
+  const lastStatus = useRef<AIStatus>('idle');
+  const msgTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const repProgress = useSharedValue(0);
-  const timeProgress = useSharedValue(0);
-  const qualFill = useSharedValue(0);
+  // AI score 0-100
+  const repEff = Math.min(1, state.currentReps / Math.max(state.targetReps, 1));
+  const aiFeedbackScore = Math.round(state.currentQuality * 0.6 + repEff * 100 * 0.4);
+  const remaining = Math.max(0, state.targetTime - state.elapsedSeconds);
 
   useEffect(() => {
-    const newStatus = getAIStatus(state);
-    const cfg = STATUS_CFG[newStatus];
-    if (cfg.msg !== prevMsg) { msgKey.current++; setPrevMsg(cfg.msg); }
-    setAIStatus(newStatus);
-    repProgress.value = withTiming(Math.min(1, currentReps / Math.max(targetReps, 1)), { duration: 300 });
-    timeProgress.value = withTiming(Math.min(1, elapsedSeconds / Math.max(targetTime, 1)), { duration: 300 });
-    qualFill.value = withTiming(currentQuality / 100, { duration: 200 });
-  }, [state]);
-
-  const repStyle = useAnimatedStyle(() => ({ width: `${repProgress.value * 100}%` as any }));
-  const timeStyle = useAnimatedStyle(() => ({ width: `${timeProgress.value * 100}%` as any }));
-  const qualStyle = useAnimatedStyle(() => ({ width: `${qualFill.value * 100}%` as any }));
-
-  const cfg = STATUS_CFG[aiStatus];
-  const remaining = Math.max(0, targetTime - elapsedSeconds);
-  const repsLeft = Math.max(0, targetReps - currentReps);
-
-  // AI feedback score (0–100): weighted blend of quality + rep efficiency
-  const repEfficiency = Math.min(1, currentReps / Math.max(targetReps, 1));
-  const aiFeedbackScore = Math.round((currentQuality * 0.6 + repEfficiency * 100 * 0.4));
+    const status = getAIStatus(state);
+    if (status === lastStatus.current || status === 'idle') return;
+    lastStatus.current = status;
+    const cfg = AI_MESSAGES[status];
+    if (!cfg.msg) return;
+    const key = Date.now();
+    setShownMsg({ msg: cfg.msg, color: cfg.color, key });
+    if (msgTimeout.current) clearTimeout(msgTimeout.current);
+    msgTimeout.current = setTimeout(() => setShownMsg(null), 1500);
+  }, [state.elapsedSeconds]);
 
   return (
-    <Animated.View entering={FadeIn.duration(400)} style={bf$.container}>
-      {/* AI STATUS */}
-      <View style={[bf$.statusRow, { borderColor: cfg.color + '30' }]}>
-        <Ionicons name={cfg.icon} size={13} color={cfg.color} />
-        <Text key={msgKey.current} style={[bf$.statusMsg, { color: cfg.color }]}>{cfg.msg}</Text>
+    <View style={bf$.container} pointerEvents="none">
+      {/* Minimal corner data */}
+      <View style={bf$.corners}>
+        <Text style={bf$.corner}>{state.currentReps}<Text style={bf$.cornerUnit}> REP</Text></Text>
+        <Text style={bf$.corner}>{remaining}<Text style={bf$.cornerUnit}>s</Text></Text>
       </View>
 
-      {/* Targets grid */}
-      <View style={bf$.grid}>
-        {/* Rep Progress */}
-        <View style={bf$.metricCol}>
-          <View style={bf$.metricHeader}>
-            <Text style={bf$.metricLabel}>REP</Text>
-            <Text style={bf$.metricTarget}>/ {targetReps}</Text>
-          </View>
-          <Text style={[bf$.metricBig, currentReps >= targetReps && { color: '#34C759' }]}>{currentReps}</Text>
-          <View style={bf$.miniBar}>
-            <Animated.View style={[bf$.miniFill, repStyle, { backgroundColor: currentReps >= targetReps ? '#34C759' : '#00F2FF' }]} />
-          </View>
-        </View>
-
-        {/* Quality vs DNA */}
-        <View style={bf$.metricCol}>
-          <View style={bf$.metricHeader}>
-            <Text style={bf$.metricLabel}>QUALITÀ</Text>
-            <Text style={bf$.metricTarget}>DNA {dnaPotential}%</Text>
-          </View>
-          <Text style={[bf$.metricBig, { color: currentQuality >= dnaPotential ? '#00F2FF' : '#FF9500' }]}>{currentQuality}%</Text>
-          <View style={bf$.miniBar}>
-            <Animated.View style={[bf$.miniFill, qualStyle, { backgroundColor: currentQuality >= dnaPotential ? '#00F2FF' : '#FF9500' }]} />
-          </View>
-        </View>
-
-        {/* Time Remaining */}
-        <View style={bf$.metricCol}>
-          <View style={bf$.metricHeader}>
-            <Text style={bf$.metricLabel}>TEMPO</Text>
-            <Text style={bf$.metricTarget}>/ {targetTime}s</Text>
-          </View>
-          <Text style={[bf$.metricBig, remaining <= 10 && remaining > 0 && { color: '#FF453A' }]}>{remaining}s</Text>
-          <View style={bf$.miniBar}>
-            <Animated.View style={[bf$.miniFill, timeStyle, { backgroundColor: '#D4AF37' }]} />
-          </View>
-        </View>
-      </View>
-
-      {/* AI Score */}
-      <View style={bf$.aiRow}>
-        <Text style={bf$.aiLabel}>AI SCORE</Text>
-        <Text style={[bf$.aiVal, { color: aiFeedbackScore >= 80 ? '#D4AF37' : aiFeedbackScore >= 60 ? '#00F2FF' : '#FF453A' }]}>{aiFeedbackScore}</Text>
-        <View style={bf$.aiBarBg}>
-          <View style={[bf$.aiBarFill, { width: `${aiFeedbackScore}%` as any, backgroundColor: aiFeedbackScore >= 80 ? '#D4AF37' : '#00F2FF' }]} />
-        </View>
-      </View>
-
-      {/* Reps left reminder */}
-      {repsLeft > 0 && repsLeft <= 5 && (
-        <Text style={bf$.urgentText}>ULTIM{repsLeft === 1 ? 'A' : 'E'} {repsLeft} REP!</Text>
+      {/* Big centered AI message */}
+      {shownMsg && (
+        <Animated.View
+          key={shownMsg.key}
+          entering={FadeIn.duration(150)}
+          exiting={FadeOut.duration(400)}
+          style={bf$.msgWrap}
+        >
+          <Text style={[bf$.msg, { color: shownMsg.color }]}>{shownMsg.msg}</Text>
+        </Animated.View>
       )}
-    </Animated.View>
+
+      {/* AI Score bar (bottom) */}
+      <View style={bf$.scoreRow}>
+        <Text style={bf$.scoreLabel}>AI</Text>
+        <View style={bf$.scoreBar}>
+          <View style={[bf$.scoreFill, { width: `${aiFeedbackScore}%` as any, backgroundColor: aiFeedbackScore >= 80 ? '#D4AF37' : '#00F2FF' }]} />
+        </View>
+        <Text style={[bf$.scoreVal, { color: aiFeedbackScore >= 80 ? '#D4AF37' : '#00F2FF' }]}>{aiFeedbackScore}</Text>
+      </View>
+    </View>
   );
 }
 
 const bf$ = StyleSheet.create({
   container: {
-    position: 'absolute', bottom: 175, left: 10, right: 10, zIndex: 35,
-    backgroundColor: 'rgba(0,0,0,0.82)', borderRadius: 14, padding: 12,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', gap: 8,
+    position: 'absolute', bottom: 170, left: 0, right: 0, zIndex: 35,
+    alignItems: 'center', paddingHorizontal: 16,
   },
-  statusRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5,
-  },
-  statusMsg: { fontSize: 11, fontWeight: '900', letterSpacing: 2, flex: 1 },
-  grid: { flexDirection: 'row', gap: 8 },
-  metricCol: { flex: 1, gap: 3 },
-  metricHeader: { flexDirection: 'row', justifyContent: 'space-between' },
-  metricLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
-  metricTarget: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '400' },
-  metricBig: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
-  miniBar: { height: 3, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' },
-  miniFill: { height: '100%', borderRadius: 2 },
-  aiRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  aiLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '900', letterSpacing: 2, width: 56 },
-  aiVal: { fontSize: 13, fontWeight: '900', width: 28 },
-  aiBarBg: { flex: 1, height: 4, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' },
-  aiBarFill: { height: '100%', borderRadius: 2 },
-  urgentText: { color: '#FF453A', fontSize: 13, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
+  corners: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 16 },
+  corner: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: 1, textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 8 },
+  cornerUnit: { fontSize: 12, fontWeight: '300', letterSpacing: 2, color: 'rgba(255,255,255,0.4)' },
+  msgWrap: { alignItems: 'center', marginBottom: 16 },
+  msg: { fontSize: 42, fontWeight: '900', letterSpacing: 6, textShadowColor: 'rgba(0,0,0,0.9)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 20 },
+  scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8, padding: 8 },
+  scoreLabel: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 2, width: 16 },
+  scoreBar: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' },
+  scoreFill: { height: '100%', borderRadius: 2 },
+  scoreVal: { fontSize: 13, fontWeight: '900', width: 28, textAlign: 'right' },
 });
+

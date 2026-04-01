@@ -445,7 +445,7 @@ function NexusConsole({ user, onScan, onForge, deviceTier, eligibility, myRank, 
 }
 
 const cn$ = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505' },
+  container: { flex: 1, backgroundColor: '#000000' },
   safe: { flex: 1 },
   header: { alignItems: 'center', paddingTop: 16, paddingBottom: 8, gap: 2 },
   brandLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: '800', letterSpacing: 4 },
@@ -1253,7 +1253,7 @@ export default function NexusTriggerScreen() {
 }
 
 const main$ = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505' },
+  container: { flex: 1, backgroundColor: '#000000' },
   cameraOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(5,5,5,0.3)',
