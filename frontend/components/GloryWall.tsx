@@ -338,6 +338,7 @@ export function HallOfKore() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [myRank, setMyRank] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [verifiedOnly, setVerifiedOnly] = useState(false); // Verified-Only toggle
   const [refreshing, setRefreshing] = useState(false);
   const hasPlayedTop10 = useRef(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -366,7 +367,8 @@ export function HallOfKore() {
   useEffect(() => { hasPlayedTop10.current = false; loadData(); }, [loadData]);
 
   const top3 = activeTab !== 'crews' ? leaderboard.slice(0, 3) : [];
-  const rest = activeTab !== 'crews' ? leaderboard.slice(3) : leaderboard;
+  const restAll = activeTab !== 'crews' ? leaderboard.slice(3) : leaderboard;
+  const rest = verifiedOnly ? restAll.filter((a: any) => a.is_nexus_certified) : restAll;
 
   const tabs: { key: TabType; label: string }[] = [
     { key: 'global', label: 'GLOBAL' },
@@ -406,6 +408,15 @@ export function HallOfKore() {
               <Text style={[gl$.tabText, activeTab === t.key && gl$.tabTextActive]}>{t.label}</Text>
             </TouchableOpacity>
           ))}
+          {/* VERIFIED ONLY toggle */}
+          <TouchableOpacity
+            style={[gl$.verifiedToggle, verifiedOnly && gl$.verifiedToggleOn]}
+            onPress={() => setVerifiedOnly(v => !v)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="shield-checkmark" size={11} color={verifiedOnly ? '#000' : '#00F2FF'} />
+            <Text style={[gl$.verifiedText, verifiedOnly && { color: '#000' }]}>VERIFIED</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Category Filter (for SPORT tab) */}
@@ -483,7 +494,11 @@ export function HallOfKore() {
                     <Text style={gl$.sectionTitle}>THE HUNT</Text>
                   </View>
                 )}
-                {rest.map((item, i) => <LeaderRow key={item.id} item={item} index={i} onChallenge={item.id !== user?.id ? (it) => setChallengeTarget({ id: it.id, username: it.username, xp: it.xp, level: it.level }) : undefined} />)}
+                {rest.map((item, i) => (
+                  <View key={item.id} style={verifiedOnly && item.is_nexus_certified ? gl$.certifiedRow : undefined}>
+                    <LeaderRow item={item} index={i} onChallenge={item.id !== user?.id ? (it) => setChallengeTarget({ id: it.id, username: it.username, xp: it.xp, level: it.level }) : undefined} />
+                  </View>
+                ))}
               </>
             )}
             <View style={{ height: 80 }} />
@@ -521,11 +536,18 @@ const gl$ = StyleSheet.create({
   tabRow: {
     flexDirection: 'row', marginHorizontal: 16, gap: 4,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 3,
+    alignItems: 'center',
   },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
   tabActive: { backgroundColor: 'rgba(212,175,55,0.15)' },
   tabText: { color: 'rgba(255,255,255,0.72)', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
   tabTextActive: { color: '#D4AF37' },
+  // Verified Only toggle
+  verifiedToggle: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 6, backgroundColor: 'rgba(0,242,255,0.04)' },
+  verifiedToggleOn: { backgroundColor: '#00F2FF', borderColor: '#00F2FF' },
+  verifiedText: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  // Certified row glow border
+  certifiedRow: { borderLeftWidth: 2, borderLeftColor: '#00F2FF', borderRadius: 4 },
   catRow: { paddingHorizontal: 16, paddingVertical: 10, gap: 6 },
   catChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,

@@ -219,6 +219,9 @@ export const api = {
     request(`/talent/report/${athleteId}${coachNote ? `?coach_note=${encodeURIComponent(coachNote)}` : ''}`, {}, token),
   toggleScoutVisibility: (visible: boolean, token: string) =>
     request('/users/scout-visibility', { method: 'PUT', body: JSON.stringify({ scout_visible: visible }) }, token),
+  getReceivedDrafts: (token: string) => request('/talent/received-drafts', {}, token),
+  respondToTalentDraft: (draftId: string, action: 'accept' | 'decline', token: string) =>
+    request(`/talent/drafts/${draftId}/respond`, { method: 'POST', body: JSON.stringify({ action }) }, token),
 
   // ========== GYM_OWNER ENGINE ==========
   getGymMe: (token: string) => request('/gym/me', {}, token),

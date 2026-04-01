@@ -113,6 +113,27 @@ export default function TalentReportPage() {
   const [coachNote, setCoachNote] = useState('');
   const [noteEditMode, setNoteEditMode] = useState(false);
 
+  const handlePrintPDF = () => {
+    if (typeof window === 'undefined') return;
+    const styleId = 'nexus-print-style';
+    let existing = document.getElementById(styleId);
+    if (existing) existing.remove();
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      @media print {
+        @page { margin: 0; size: A4 portrait; }
+        body > * { display: none !important; }
+        body { background: #000 !important; margin: 0; padding: 0; }
+        #nexus-report-card { display: block !important; position: fixed !important; top: 0; left: 0; width: 100% !important; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      }
+    `;
+    document.head.appendChild(style);
+    document.getElementById('nexus-report-card')?.setAttribute('style', 'display:block');
+    setTimeout(() => { window.print(); setTimeout(() => style.remove(), 1000); }, 200);
+  };
+
   useEffect(() => {
     if (!token || !athleteId) return;
     api.getTalentReport(athleteId, token)
@@ -136,15 +157,27 @@ export default function TalentReportPage() {
 
   return (
     <ScrollView style={[rp$.root, { backgroundColor: theme.bg }]} contentContainerStyle={rp$.content}>
-      {/* Back button */}
-      <TouchableOpacity style={rp$.back} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={16} color={theme.textTer} />
-        <Text style={[rp$.backText, INTER('400'), { color: theme.textTer }]}>Talent Scout</Text>
-      </TouchableOpacity>
+      {/* Back button + Export */}
+      <View style={rp$.topActions}>
+        <TouchableOpacity style={rp$.back} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={16} color={theme.textTer} />
+          <Text style={[rp$.backText, INTER('400'), { color: theme.textTer }]}>Talent Scout</Text>
+        </TouchableOpacity>
+        {Platform.OS === 'web' && (
+          <TouchableOpacity style={rp$.exportBtn} onPress={handlePrintPDF} activeOpacity={0.85}>
+            <Ionicons name="document-text" size={14} color="#000" />
+            <Text style={rp$.exportBtnText}>EXPORT PDF</Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
       {/* ── TRADING CARD ── */}
-      <Animated.View entering={FadeIn.duration(400)} style={[rp$.card, { borderColor: '#1F2937' }]}
-        {...(Platform.OS === 'web' ? { 'data-nexus-card': '1' } as any : {})}>
+      <Animated.View
+        entering={FadeIn.duration(400)}
+        style={[rp$.card, { borderColor: '#1F2937' }]}
+        nativeID="nexus-report-card"
+        {...(Platform.OS === 'web' ? { id: 'nexus-report-card', 'data-nexus-card': '1' } as any : {})}
+      >
 
         {/* Card header strip */}
         <View style={rp$.cardStrip}>
@@ -322,8 +355,11 @@ const rp$ = StyleSheet.create({
   content: { padding: 24, paddingBottom: 60 },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14 },
   loadingText: { fontSize: 13, letterSpacing: 1 },
-  back: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 20 },
+  topActions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  back: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   backText: { fontSize: 13, letterSpacing: 1 },
+  exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#D4AF37', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9, shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.35, shadowRadius: 10 },
+  exportBtnText: { color: '#000', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   // Trading card
   card: { backgroundColor: '#050505', borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
   cardStrip: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#0A0A0A', paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#1F2937' },

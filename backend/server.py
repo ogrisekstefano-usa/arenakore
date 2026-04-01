@@ -2312,6 +2312,55 @@ async def toggle_scout_visibility(data: dict, current_user: dict = Depends(get_c
 
 
 
+@api_router.get("/talent/received-drafts")
+async def get_received_drafts(current_user: dict = Depends(get_current_user)):
+    """Get all squad invitations received by the current athlete"""
+    drafts = await db.talent_drafts.find({"athlete_id": current_user["_id"]}).sort("created_at", -1).to_list(20)
+    result = []
+    for d in drafts:
+        coach = await db.users.find_one({"_id": d["coach_id"]})
+        result.append({
+            "draft_id": str(d["_id"]),
+            "coach_id": str(d["coach_id"]),
+            "coach_username": d.get("coach_username", "?"),
+            "coach_avatar_color": coach.get("avatar_color", "#D4AF37") if coach else "#D4AF37",
+            "message": d.get("message", "Ti ho inserito nel mio Remote Squad."),
+            "status": d.get("status", "pending"),
+            "created_at": d["created_at"].isoformat() if d.get("created_at") else None,
+        })
+    return {"drafts": result, "pending_count": sum(1 for d in result if d["status"] == "pending")}
+
+
+@api_router.post("/talent/drafts/{draft_id}/respond")
+async def respond_to_talent_draft(draft_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Accept or decline a remote squad invitation"""
+    action = data.get("action")
+    if action not in ("accept", "decline"):
+        raise HTTPException(status_code=400, detail="action deve essere 'accept' o 'decline'")
+    try:
+        draft = await db.talent_drafts.find_one({"_id": ObjectId(draft_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Proposta non trovata")
+    if not draft or draft["athlete_id"] != current_user["_id"]:
+        raise HTTPException(status_code=403, detail="Non autorizzato")
+    if draft.get("status") != "pending":
+        raise HTTPException(status_code=400, detail="Proposta già gestita")
+    await db.talent_drafts.update_one({"_id": draft["_id"]}, {"$set": {"status": action + "ed"}})
+    await db.notifications.insert_one({
+        "user_id": draft["coach_id"],
+        "type": "draft_response",
+        "title": f"PROPOSTA {action.upper()}ATA",
+        "icon": "checkmark-circle" if action == "accept" else "close-circle",
+        "color": "#34C759" if action == "accept" else "#FF453A",
+        "message": f"{current_user.get('username')} ha {'accettato' if action == 'accept' else 'rifiutato'} l'invito nel tuo Remote Squad.",
+        "read": False, "created_at": datetime.utcnow(),
+    })
+    return {"status": action + "ed", "coach": draft.get("coach_username")}
+
+
+@api_router.post("/talent/draft/{athlete_id}")
+
+
 async def draft_athlete(athlete_id: str, data: dict = {}, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
     """Draft an athlete to your remote coaching team"""
     try:

@@ -121,6 +121,10 @@ function PassportHeader({ user }: { user: any }) {
                   <Text style={ph$.founderText}>FOUNDER</Text>
                 </Animated.View>
               )}
+              {/* NÈXUS CERTIFIED badge — pulsating when certified */}
+              <Animated.View style={user?.is_nexus_certified ? shimmerStyle : undefined}>
+                <CertBadge certified={user?.is_nexus_certified ?? false} size="sm" />
+              </Animated.View>
             </View>
             <Text style={ph$.sport}>
               {(user?.sport && user.sport !== 'ATHLETICS'
@@ -1076,6 +1080,80 @@ function BioScanStatusCard({ user, router }: { user: any; router: any }) {
   );
 }
 
+// ── OFFERTE SCOUT (Incoming Draft Invitations) ────────────────────────────────
+function OfferteScout({ token, refreshUser }: { token: string | null; refreshUser: () => Promise<void> }) {
+  const [drafts, setDrafts] = useState<any[]>([]);
+  const [responding, setResponding] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+    api.getReceivedDrafts(token)
+      .then(d => setDrafts((d.drafts || []).filter((dr: any) => dr.status === 'pending')))
+      .catch(() => {});
+  }, [token]);
+
+  if (!drafts.length) return null;
+
+  const handleRespond = async (draftId: string, action: 'accept' | 'decline') => {
+    if (!token) return;
+    setResponding(draftId);
+    try {
+      await api.respondToTalentDraft(draftId, action, token);
+      setDrafts(prev => prev.filter(d => d.draft_id !== draftId));
+      if (action === 'accept') await refreshUser();
+    } catch (_) {}
+    finally { setResponding(null); }
+  };
+
+  return (
+    <Animated.View entering={FadeInDown.duration(350)} style={os$.section}>
+      <View style={os$.header}>
+        <Ionicons name="star" size={13} color="#D4AF37" />
+        <Text style={os$.title}>OFFERTE SCOUT</Text>
+        <View style={os$.countPill}><Text style={os$.countText}>{drafts.length}</Text></View>
+      </View>
+      {drafts.map(d => (
+        <View key={d.draft_id} style={os$.card}>
+          <View style={[os$.coachAvatar, { backgroundColor: d.coach_avatar_color || '#D4AF37' }]}>
+            <Text style={os$.coachAvatarLetter}>{(d.coach_username || '?')[0].toUpperCase()}</Text>
+          </View>
+          <View style={os$.info}>
+            <Text style={os$.coachName}>🔥 SCOUT ALERT</Text>
+            <Text style={os$.message}>Il Coach <Text style={{ color: '#D4AF37', fontWeight: '900' }}>{d.coach_username?.toUpperCase()}</Text> ti ha inserito nel suo Radar. Visualizza la proposta.</Text>
+          </View>
+          <View style={os$.actions}>
+            <TouchableOpacity style={os$.acceptBtn} onPress={() => handleRespond(d.draft_id, 'accept')} disabled={responding === d.draft_id}>
+              {responding === d.draft_id ? <ActivityIndicator color="#000" size="small" /> : <Text style={os$.acceptText}>ACCETTA</Text>}
+            </TouchableOpacity>
+            <TouchableOpacity style={os$.declineBtn} onPress={() => handleRespond(d.draft_id, 'decline')} disabled={responding === d.draft_id}>
+              <Text style={os$.declineText}>Rifiuta</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ))}
+    </Animated.View>
+  );
+}
+
+const os$ = StyleSheet.create({
+  section: { marginHorizontal: 16, marginBottom: 12 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  title: { flex: 1, color: '#D4AF37', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  countPill: { backgroundColor: '#D4AF37', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
+  countText: { color: '#000', fontSize: 11, fontWeight: '900' },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(212,175,55,0.06)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)', marginBottom: 8 },
+  coachAvatar: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  coachAvatarLetter: { color: '#000', fontSize: 16, fontWeight: '900' },
+  info: { flex: 1, gap: 3 },
+  coachName: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  message: { color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '300', lineHeight: 15 },
+  actions: { flexDirection: 'row', gap: 8, flexShrink: 0 },
+  acceptBtn: { backgroundColor: '#00F2FF', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', minWidth: 60 },
+  acceptText: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  declineBtn: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 },
+  declineText: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '400' },
+});
+
 // ── SCOUT VISIBILITY TOGGLE ──────────────────────────────────────────────────
 function ScoutVisibilityToggle({ user, token, refreshUser }: { user: any; token: string | null; refreshUser: () => Promise<void> }) {
   const [loading, setLoading] = useState(false);
@@ -1222,6 +1300,8 @@ export default function KoreTab() {
           <GoalsSection user={user} />
           {/* AK DROPS Wallet — locked for Fast Entry */}
           <AKDropsWallet user={user} />
+          {/* OFFERTE SCOUT — incoming draft invitations */}
+          <OfferteScout token={token} refreshUser={refreshUser} />
           {/* Scout Visibility Toggle */}
           <ScoutVisibilityToggle user={user} token={token} refreshUser={refreshUser} />
           <KoreVault />
