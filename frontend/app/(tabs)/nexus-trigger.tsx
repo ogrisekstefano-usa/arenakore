@@ -35,6 +35,7 @@ import { PvPPendingCard } from '../../components/pvp/PvPPendingCard';
 import { TrainingTemplateCard } from '../../components/training/TrainingTemplateCard';
 import { BioFeedbackHUD, BioFeedbackState } from '../../components/training/BioFeedbackHUD';
 import { AKBadge } from '../../components/KoreVault';
+import { CertifiedByPros } from '../../components/training/CertifiedByPros';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -494,6 +495,7 @@ function NexusConsole({ user, onScan, onForge, deviceTier, eligibility, myRank, 
           />
           <PvPPendingCard />
           <TrainingTemplateCard />
+          <CertifiedByPros />
           <AIPromptBanner />
         </ScrollView>
       </SafeAreaView>

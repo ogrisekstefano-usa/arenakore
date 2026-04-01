@@ -18,6 +18,7 @@ const NAV_ITEMS_GYM_OWNER = [
   { href: '/coach-studio/gym-dashboard', icon: 'business',       label: 'GYM HUB',     sub: 'Business View' },
   { href: '/coach-studio/staff',         icon: 'people-circle',  label: 'STAFF',       sub: 'Manage Coaches' },
   { href: '/coach-studio/athletes',      icon: 'people',         label: 'ATLETI',      sub: 'CRM Engine' },
+  { href: '/coach-studio/talent',        icon: 'star',           label: 'SCOUT',       sub: 'Talent Discovery' },
   { href: '/coach-studio/ai',            icon: 'hardware-chip',  label: 'AI COACH',    sub: 'Risk & Forecast' },
 ];
 
@@ -25,6 +26,7 @@ const NAV_ITEMS_COACH = [
   { href: '/coach-studio',          icon: 'grid',           label: 'PANOPTICON',  sub: 'Dashboard' },
   { href: '/coach-studio/athletes', icon: 'people',         label: 'ATLETI',      sub: 'CRM Engine' },
   { href: '/coach-studio/builder',  icon: 'construct',      label: 'ARCHITECT',   sub: 'Template Builder' },
+  { href: '/coach-studio/talent',   icon: 'star',           label: 'SCOUT',       sub: 'Talent Discovery' },
   { href: '/coach-studio/crew',     icon: 'shield',         label: 'STRATEGIST',  sub: 'Battle Control' },
   { href: '/coach-studio/ai',       icon: 'hardware-chip',  label: 'AI COACH',    sub: 'Risk & Forecast' },
 ];

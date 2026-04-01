@@ -2090,6 +2090,361 @@ def _build_suggestion(group_avg: dict, focus: str = None) -> dict:
     }
 
 
+# ================================================================
+# TALENT SCOUT ENGINE — DNA-Relative Discovery & Drafting
+# ================================================================
+
+def calculate_dna_relative_score(user: dict) -> float:
+    """
+    DNA-Relative Score: identifies athletes expressing high potential
+    relative to their level and biometric base.
+    Formula: dna_avg × (1 + talent_factor) where talent_factor rewards
+    lower-level athletes with high DNA (diamonds in the rough).
+    """
+    dna = user.get("dna") or {}
+    dna_vals = [dna.get(k, 50) for k in DNA_KEYS]
+    if not dna_vals:
+        return 0.0
+    dna_avg = sum(dna_vals) / len(dna_vals)
+    level = user.get("level", 1)
+    xp = user.get("xp", 0)
+    # Lower-level athletes with high DNA get a higher talent multiplier
+    # (a level-3 athlete with 80 avg DNA is more "promising" than a level-10 with 80)
+    talent_factor = max(0, (10 - min(level, 10)) / 10) * 0.35
+    # XP efficiency bonus: athletes who achieve high DNA with less XP
+    xp_efficiency = max(0, 1 - (xp / 10000)) * 0.15  # Bonus for less-grinded athletes
+    relative_score = dna_avg * (1 + talent_factor + xp_efficiency)
+    return round(min(relative_score, 110), 1)  # Cap at 110 (exceptional talent)
+
+
+@api_router.get("/talent/discovery")
+async def talent_discovery(
+    min_dna: Optional[float] = None,
+    max_dna: Optional[float] = None,
+    city: Optional[str] = None,
+    sport: Optional[str] = None,
+    sort_by: str = "relative_score",  # "relative_score" | "dna_avg" | "level" | "xp"
+    limit: int = 20,
+    current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))
+):
+    """
+    Talent Scout: Discover athletes ranked by DNA-Relative potential score.
+    DNA-Relative identifies 'diamonds in the rough' — athletes expressing
+    high performance relative to their biometric baseline and level.
+    """
+    filters: dict = {"ghost_mode": {"$ne": True}}
+    if city:
+        filters["city"] = {"$regex": city, "$options": "i"}
+    if sport:
+        filters["sport"] = {"$regex": sport, "$options": "i"}
+
+    athletes = await db.users.find(filters).limit(200).to_list(200)
+
+    # Calculate scores + filter
+    profiles = []
+    for user in athletes:
+        if str(user["_id"]) == str(current_user["_id"]):
+            continue  # Skip self
+        dna = user.get("dna") or {}
+        dna_vals = [dna.get(k, 50) for k in DNA_KEYS]
+        dna_avg = round(sum(dna_vals) / len(dna_vals), 1) if dna_vals else 0
+        relative = calculate_dna_relative_score(user)
+        # Filter
+        if min_dna is not None and dna_avg < min_dna:
+            continue
+        if max_dna is not None and dna_avg > max_dna:
+            continue
+        # Already drafted check
+        already_drafted = await db.talent_drafts.find_one({
+            "coach_id": current_user["_id"],
+            "athlete_id": user["_id"],
+        })
+        profiles.append({
+            "id": str(user["_id"]),
+            "username": user.get("username"),
+            "city": user.get("city", "—"),
+            "sport": user.get("sport", "—"),
+            "level": user.get("level", 1),
+            "xp": user.get("xp", 0),
+            "avatar_color": user.get("avatar_color", "#00F2FF"),
+            "dna_avg": dna_avg,
+            "dna": {k: dna.get(k, 50) for k in DNA_KEYS},
+            "relative_score": relative,
+            "talent_tier": "ELITE" if relative >= 95 else "PRO" if relative >= 80 else "RISING" if relative >= 65 else "SCOUT",
+            "already_drafted": bool(already_drafted),
+        })
+
+    # Sort
+    sort_map = {"relative_score": "relative_score", "dna_avg": "dna_avg", "level": "level", "xp": "xp"}
+    sort_key = sort_map.get(sort_by, "relative_score")
+    profiles.sort(key=lambda p: p[sort_key], reverse=True)
+
+    return {
+        "athletes": profiles[:limit],
+        "total": len(profiles),
+        "filters": {"city": city, "sport": sport, "min_dna": min_dna, "max_dna": max_dna},
+    }
+
+
+@api_router.post("/talent/draft/{athlete_id}")
+async def draft_athlete(athlete_id: str, data: dict = {}, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Draft an athlete to your remote coaching team"""
+    try:
+        athlete = await db.users.find_one({"_id": ObjectId(athlete_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Atleta non trovato")
+    if not athlete:
+        raise HTTPException(status_code=404, detail="Atleta non trovato")
+    if athlete.get("ghost_mode"):
+        raise HTTPException(status_code=403, detail="Questo atleta ha attivato il Ghost Mode")
+
+    # Check already drafted
+    existing = await db.talent_drafts.find_one({"coach_id": current_user["_id"], "athlete_id": athlete["_id"]})
+    if existing:
+        raise HTTPException(status_code=400, detail="Hai già draftato questo atleta")
+
+    now = datetime.utcnow()
+    await db.talent_drafts.insert_one({
+        "coach_id": current_user["_id"],
+        "coach_username": current_user.get("username"),
+        "athlete_id": athlete["_id"],
+        "athlete_username": athlete.get("username"),
+        "message": data.get("message", "Benvenuto nel mio team. Sarò il tuo coach remoto."),
+        "status": "pending",  # pending → accepted | declined
+        "created_at": now,
+    })
+
+    # Notify athlete
+    await db.notifications.insert_one({
+        "user_id": athlete["_id"],
+        "type": "talent_draft",
+        "title": "HAI ATTIRATO L'ATTENZIONE DI UN COACH",
+        "icon": "star",
+        "color": "#D4AF37",
+        "message": f"Il Coach {current_user.get('username')} ti ha draftato per il suo team remoto!",
+        "read": False,
+        "created_at": now,
+        "meta": {"coach_id": str(current_user["_id"])},
+    })
+
+    return {
+        "status": "drafted",
+        "athlete": athlete.get("username"),
+        "message": "Richiesta inviata. L'atleta riceverà una notifica.",
+    }
+
+
+@api_router.get("/talent/my-drafts")
+async def get_my_drafts(current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Get all athletes drafted by the current coach"""
+    drafts = await db.talent_drafts.find({"coach_id": current_user["_id"]}).sort("created_at", -1).to_list(50)
+    result = []
+    for d in drafts:
+        athlete = await db.users.find_one({"_id": d["athlete_id"]})
+        if athlete:
+            dna = athlete.get("dna") or {}
+            dna_vals = [dna.get(k, 50) for k in DNA_KEYS]
+            result.append({
+                "draft_id": str(d["_id"]),
+                "athlete_id": str(athlete["_id"]),
+                "username": athlete.get("username"),
+                "city": athlete.get("city", "—"),
+                "sport": athlete.get("sport", "—"),
+                "level": athlete.get("level", 1),
+                "dna_avg": round(sum(dna_vals) / len(dna_vals), 1) if dna_vals else 0,
+                "relative_score": calculate_dna_relative_score(athlete),
+                "status": d.get("status", "pending"),
+                "created_at": d["created_at"].isoformat() if d.get("created_at") else None,
+            })
+    return {"drafts": result, "count": len(result)}
+
+
+# ================================================================
+# AK DROPS — Sweat-to-Credit Engine (exceeding biometric avg)
+# ================================================================
+
+CERTIFIED_TEMPLATES = [
+    {
+        "id": "ct_power_talosfit",
+        "name": "POWER PROTOCOL ELITE",
+        "discipline": "power",
+        "exercise": "squat",
+        "target_reps": 25,
+        "target_time": 60,
+        "difficulty": "extreme",
+        "certified_by": "Coach Marco Vitali",
+        "certified_org": "TalosFit",
+        "description": "Programma Power generato da AI, certificato dal Campione Europeo di Powerlifting. Target: massimizzare la produzione di forza esplosiva in 60 secondi.",
+        "dna_focus": ["forza", "potenza"],
+        "required_drops": 200,
+        "required_level": 5,
+        "xp_reward": 350,
+    },
+    {
+        "id": "ct_agility_talosfit",
+        "name": "AGILITY MASTER PROTOCOL",
+        "discipline": "agility",
+        "exercise": "punch",
+        "target_reps": 40,
+        "target_time": 45,
+        "difficulty": "hard",
+        "certified_by": "Dr. Sarah Kim",
+        "certified_org": "TalosFit",
+        "description": "Protocollo di velocità-reazione certificato dal team di analisi biometrica TalosFit. Sviluppa velocità neuromuscolare e coordinazione.",
+        "dna_focus": ["velocita", "agilita"],
+        "required_drops": 150,
+        "required_level": 3,
+        "xp_reward": 280,
+    },
+    {
+        "id": "ct_endurance_talosfit",
+        "name": "ENDURANCE ELITE 60",
+        "discipline": "endurance",
+        "exercise": "squat",
+        "target_reps": 30,
+        "target_time": 90,
+        "difficulty": "hard",
+        "certified_by": "Coach David Torres",
+        "certified_org": "TalosFit",
+        "description": "Programma di resistenza massima. 90 secondi di lavoro continuo certificato dal pluricampione di functional fitness.",
+        "dna_focus": ["resistenza", "potenza"],
+        "required_drops": 180,
+        "required_level": 4,
+        "xp_reward": 300,
+    },
+    {
+        "id": "ct_complete_talosfit",
+        "name": "THE COMPLETE ATHLETE",
+        "discipline": "power",
+        "exercise": "squat",
+        "target_reps": 35,
+        "target_time": 120,
+        "difficulty": "extreme",
+        "certified_by": "Team TalosFit",
+        "certified_org": "TalosFit",
+        "description": "Il protocollo definitivo per atleti d'élite. Progettato dall'intero staff di TalosFit per massimizzare tutti i parametri biometrici simultaneamente.",
+        "dna_focus": ["forza", "resistenza", "potenza", "velocita"],
+        "required_drops": 500,
+        "required_level": 8,
+        "xp_reward": 600,
+    },
+]
+
+
+@api_router.get("/certified-templates")
+async def get_certified_templates(current_user: dict = Depends(get_current_user)):
+    """Get TalosFit certified templates with unlock status"""
+    ak = current_user.get("ak_credits", 0)
+    level = current_user.get("level", 1)
+    unlocked = current_user.get("unlocked_tools", [])
+    result = []
+    for t in CERTIFIED_TEMPLATES:
+        is_unlocked = t["id"] in unlocked or current_user.get("is_founder", False)
+        can_afford = ak >= t["required_drops"]
+        meets_level = level >= t["required_level"]
+        result.append({
+            **t,
+            "is_unlocked": is_unlocked,
+            "can_afford": can_afford,
+            "meets_level": meets_level,
+            "can_unlock": can_afford and meets_level and not is_unlocked,
+        })
+    return {"templates": result, "ak_drops": ak, "user_level": level}
+
+
+@api_router.post("/certified-templates/{template_id}/unlock")
+async def unlock_certified_template(template_id: str, current_user: dict = Depends(get_current_user)):
+    """Unlock a TalosFit certified template using AK Drops"""
+    template = next((t for t in CERTIFIED_TEMPLATES if t["id"] == template_id), None)
+    if not template:
+        raise HTTPException(status_code=404, detail="Template non trovato")
+    if template_id in current_user.get("unlocked_tools", []):
+        return {"status": "already_unlocked", "template_name": template["name"]}
+    # Level check
+    if current_user.get("level", 1) < template["required_level"]:
+        raise HTTPException(status_code=402, detail=f"Livello insufficiente. Richiesto: {template['required_level']}")
+    # AK Drops check
+    if current_user.get("ak_credits", 0) < template["required_drops"]:
+        raise HTTPException(status_code=402, detail=f"AK Drops insufficienti. Servono: {template['required_drops']}")
+    # Deduct + unlock
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$inc": {"ak_credits": -template["required_drops"]}, "$addToSet": {"unlocked_tools": template_id}}
+    )
+    await db.ak_transactions.insert_one({
+        "user_id": current_user["_id"],
+        "amount": -template["required_drops"],
+        "reason": f"unlock_certified_{template_id}",
+        "label": f"Sbloccato: {template['name']} (TalosFit)",
+        "type": "spend",
+        "created_at": datetime.utcnow(),
+    })
+    updated = await db.users.find_one({"_id": current_user["_id"]})
+    return {
+        "status": "unlocked",
+        "template_name": template["name"],
+        "certified_by": template["certified_by"],
+        "ak_drops": updated.get("ak_credits", 0),
+    }
+
+
+async def award_ak_drops(user_id, reason: str, scan_quality: float = 0, custom_amount: int = 0) -> dict:
+    """
+    AK Drops — Sweat-to-Credit: earn drops ONLY when exceeding your personal biometric average.
+    Returns: { earned: int, new_balance: int, message: str, exceeded_avg: bool }
+    """
+    rule = AK_EARN_RULES.get(reason)
+    base_amount = custom_amount if custom_amount else (rule["amount"] if rule else 0)
+    if base_amount <= 0:
+        return {"earned": 0, "new_balance": 0, "message": "Nessuna drop guadagnata", "exceeded_avg": False}
+
+    label = rule["label"] if rule else reason
+    now = datetime.utcnow()
+    exceeded_avg = False
+    final_amount = base_amount
+
+    # For scan-based earning: only award full drops if quality > personal average
+    if reason == "nexus_scan" and scan_quality > 0:
+        # Get user's historical scan quality average
+        recent_scans = await db.ak_transactions.find(
+            {"user_id": user_id, "reason": "nexus_scan", "type": "earn"}
+        ).sort("created_at", -1).limit(5).to_list(5)
+
+        if recent_scans:
+            avg_quality = sum(s.get("scan_quality", 50) for s in recent_scans) / len(recent_scans)
+            if scan_quality > avg_quality:
+                bonus = min(20, int((scan_quality - avg_quality) * 0.5))
+                final_amount = base_amount + bonus
+                exceeded_avg = True
+                label = f"Scan superiore alla media ({round(avg_quality, 0)}%) +{bonus} bonus"
+            else:
+                # Consolation: only 3 drops for not exceeding average
+                final_amount = 3
+                label = "Scan completato (non supera la media personale)"
+        else:
+            # First scan: always award full
+            exceeded_avg = True
+
+    await db.users.update_one({"_id": user_id}, {"$inc": {"ak_credits": final_amount}})
+    await db.ak_transactions.insert_one({
+        "user_id": user_id,
+        "amount": final_amount,
+        "reason": reason,
+        "label": label,
+        "type": "earn",
+        "scan_quality": scan_quality,
+        "exceeded_avg": exceeded_avg,
+        "created_at": now,
+    })
+    user = await db.users.find_one({"_id": user_id})
+    return {
+        "earned": final_amount,
+        "new_balance": user.get("ak_credits", 0),
+        "message": f"+{final_amount} AK Drops" + (" 🔥" if exceeded_avg else ""),
+        "exceeded_avg": exceeded_avg,
+    }
+
+
 @api_router.get("/coach/heatmap")
 async def get_activity_heatmap(current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
     """Activity heatmap: scan counts per day for last 30 days"""

@@ -1,0 +1,53 @@
+{
+  "summary": "Sprint 28 Scouting & AK Drops testing. Backend: 28/28 tests pass. Frontend: All Sprint 28 features verified — KORE VAULT with 💧 AK DROPS, CertifiedByPros in NEXUS with 4 TalosFit templates, Coach Studio SCOUT tab with TALENT SCOUT page. One bug found and fixed (ToolLock ⚡→💧). One backend bug reported (founder AK deduction).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/certified-templates/{id}/unlock",
+        "issue": "Does not check is_founder before deducting AK drops. GET /certified-templates correctly marks all templates as is_unlocked=True for founders, but POST doesn't check is_founder — so founders calling unlock directly can be charged AK. In practice UI prevents this (shows AVVIA PROGRAMMA, not unlock button), but direct API call deducts AK. Side effect: STEFANO lost 150 AK during testing (now 500, was 650). ct_agility_talosfit added to unlocked_tools.",
+        "priority": "LOW"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "KoreVault.tsx — ToolLock overlay",
+        "issue": "Line 296: ToolLock overlay showed 'Sblocca con ⚡ {costAk} AK' using old lightning icon instead of 💧. FIXED — changed to 💧.",
+        "testID": "N/A",
+        "priority": "LOW (FIXED)"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sprint28_scouting_ak_drops.py",
+    "/app/test_reports/pytest/sprint28_scouting_ak_drops.xml"
+  ],
+  "action_items": [
+    "Fix unlock_certified_template backend: add is_founder check before AK deduction. Fix: `if current_user.get('is_founder', False): return {'status': 'already_unlocked', 'template_name': template['name']}` at top of POST /certified-templates/{id}/unlock",
+    "Note: STEFANO's AK credits reduced from 650 to 500 during testing (150 deducted for ct_agility_talosfit unlock via direct API call). Reset if needed: db.users.update_one({'username': 'STEFANO'}, {'$set': {'ak_credits': 650, 'unlocked_tools': ['ai_matchmaker', 'ct_agility_talosfit']}})"
+  ],
+  "critical_code_review_comments": [
+    "talent/discovery: Default limit=20 is correct. Total 29 athletes exist but only 20 returned by default — consider if 29 were expected. The backend code has limit=20 default, can be overridden.",
+    "talent/discovery: sort_by parameter correctly maps relative_score, dna_avg, level, xp — UI only exposes relative_score/dna_avg/level (missing xp, which is fine)",
+    "certified_templates: is_founder check on GET correctly shows all as unlocked, but POST endpoint is missing same check — inconsistency",
+    "KoreVault.tsx line 296: ToolLock overlay had ⚡ instead of 💧 — now FIXED",
+    "All 5 mobile tabs load without crashes. Coach Studio modules (PANOPTICON, GYM HUB, STAFF, ATLETI, SCOUT, AI COACH) load correctly"
+  ],
+  "updated_files": [
+    "/app/frontend/components/KoreVault.tsx (line 296: ⚡ → 💧 in ToolLock overlay)"
+  ],
+  "success_rate": {
+    "backend": "100% (28/28 tests pass)",
+    "frontend": "98% — all Sprint 28 features verified. Minor ToolLock icon fix applied."
+  },
+  "seed_data_creation": "STEFANO: AK credits reduced from 650 to 500 (testing artifact — ct_agility_talosfit unlock API call deducted 150). unlocked_tools now contains ['ct_agility_talosfit'] in addition to any prior entries.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Sprint 28 fully functional. Backend 100%. All Sprint 28 features verified: (1) KORE VAULT shows 💧 AK DROPS everywhere, earn guide +10💧 +50💧 +100💧 correct. (2) NEXUS tab shows CERTIFIED BY PROS / TalosFit with 4 templates, founder sees AVVIA PROGRAMMA on all. (3) Coach Studio SCOUT tab works for GYM_OWNER role — TALENT SCOUT page shows athletes ranked by relative_score with ELITE/PRO/RISING/SCOUT tiers, DRAFT buttons, IL MIO TEAM REMOTO section. (4) DRAFT system tested — D.ROSE and L.GRANT already drafted (PENDING status). ToolLock overlay icon fixed (⚡→💧). Backend minor bug: founder not checked in POST /certified-templates/{id}/unlock before AK deduction.",
+  "rca_of_issue": "ToolLock ⚡→💧: Root cause: KoreVault.tsx ToolLock overlay was not updated when AK Credits were renamed to AK Drops in Sprint 28. Only the main KoreVault component and AKBadge were updated. Fix applied at line 296. Backend founder unlock: POST endpoint only checks unlocked_tools list, but GET marks all as unlocked for founders via is_founder flag without adding to unlocked_tools. First API call causes AK deduction before ct_* template enters unlocked_tools list."
+}

@@ -184,7 +184,7 @@ export const api = {
 
   getActionCenter: (token: string) => request('/kore/action-center', {}, token),
 
-  // ========== AK CREDITS ENGINE ==========
+  // ========== AK DROPS ENGINE ==========
   getAKBalance: (token: string) => request('/ak/balance', {}, token),
   getAKTools: (token: string) => request('/ak/tools', {}, token),
   unlockTool: (toolId: string, token: string) =>
@@ -192,6 +192,22 @@ export const api = {
   earnAK: (reason: string, token: string) =>
     request('/ak/earn', { method: 'POST', body: JSON.stringify({ reason }) }, token),
   getAIPrompt: (token: string) => request('/ak/ai-prompt', {}, token),
+  // TalosFit Certified Templates
+  getCertifiedTemplates: (token: string) => request('/certified-templates', {}, token),
+  unlockCertifiedTemplate: (templateId: string, token: string) =>
+    request(`/certified-templates/${templateId}/unlock`, { method: 'POST' }, token),
+  // Talent Scout
+  getTalentDiscovery: (token: string, filters?: { city?: string; sport?: string; minDna?: number; sortBy?: string }) => {
+    const p = new URLSearchParams();
+    if (filters?.city) p.append('city', filters.city);
+    if (filters?.sport) p.append('sport', filters.sport);
+    if (filters?.minDna) p.append('min_dna', String(filters.minDna));
+    if (filters?.sortBy) p.append('sort_by', filters.sortBy);
+    return request(`/talent/discovery?${p.toString()}`, {}, token);
+  },
+  draftAthlete: (athleteId: string, token: string, message?: string) =>
+    request(`/talent/draft/${athleteId}`, { method: 'POST', body: JSON.stringify({ message }) }, token),
+  getMyDrafts: (token: string) => request('/talent/my-drafts', {}, token),
 
   // ========== GYM_OWNER ENGINE ==========
   getGymMe: (token: string) => request('/gym/me', {}, token),

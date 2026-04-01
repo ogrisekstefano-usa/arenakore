@@ -35,17 +35,17 @@ export function AKBadge({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
       <Animated.View style={[ak$.badgeCompact, glow]}>
-        <Text style={ak$.badgeIcon}>⚡</Text>
+        <Text style={ak$.badgeIcon}>💧</Text>
         <Text style={ak$.badgeValCompact}>{ak}</Text>
       </Animated.View>
     );
   }
   return (
     <Animated.View style={[ak$.badge, glow]}>
-      <Text style={ak$.badgeIcon}>⚡</Text>
+      <Text style={ak$.badgeIcon}>💧</Text>
       <View>
         <Text style={ak$.badgeVal}>{ak.toLocaleString()}</Text>
-        <Text style={ak$.badgeLabel}>AK CREDITS</Text>
+        <Text style={ak$.badgeLabel}>AK DROPS</Text>
       </View>
     </Animated.View>
   );
@@ -126,7 +126,7 @@ function ToolCard({ tool, ak, onUnlock, unlocking }: { tool: any; ak: number; on
             <ActivityIndicator color="#000" size="small" />
           ) : (
             <>
-              <Text style={[tc$.unlockCost, !canAfford && { color: 'rgba(255,255,255,0.3)' }]}>⚡ {tool.cost_ak}</Text>
+              <Text style={[tc$.unlockCost, !canAfford && { color: 'rgba(255,255,255,0.3)' }]}>💧 {tool.cost_ak}</Text>
               <Text style={[tc$.unlockLabel, !canAfford && { color: 'rgba(255,255,255,0.3)' }]}>SBLOCCA</Text>
             </>
           )}
@@ -157,10 +157,10 @@ const tc$ = StyleSheet.create({
 // ── Earn Guide ────────────────────────────────────────────────────────────────
 function EarnGuide() {
   const RULES = [
-    { icon: 'scan', label: 'Scan Nexus', ak: '+10 AK', color: '#00F2FF' },
-    { icon: 'flash', label: 'Vittoria PvP', ak: '+50 AK', color: '#D4AF37' },
-    { icon: 'shield', label: 'Crew Battle Win', ak: '+100 AK', color: '#FF453A' },
-    { icon: 'calendar', label: 'Login Giornaliero', ak: '+5 AK', color: '#34C759' },
+    { icon: 'scan', label: 'Scan Nexus', ak: '+10 💧', color: '#00F2FF' },
+    { icon: 'flash', label: 'Vittoria PvP', ak: '+50 💧', color: '#D4AF37' },
+    { icon: 'shield', label: 'Crew Battle Win', ak: '+100 💧', color: '#FF453A' },
+    { icon: 'calendar', label: 'Login Giornaliero', ak: '+5 💧', color: '#34C759' },
   ];
   return (
     <View style={eg$.wrap}>
@@ -240,7 +240,7 @@ export function KoreVault() {
         </View>
         <AKBadge />
       </View>
-      <Text style={kv$.subtitle}>Sblocca tool premium con i tuoi AK Credits</Text>
+      <Text style={kv$.subtitle}>Sblocca tool premium con i tuoi AK Drops</Text>
 
       {loading ? (
         <ActivityIndicator color="#D4AF37" size="small" style={{ marginTop: 20 }} />
@@ -293,7 +293,7 @@ export function ToolLock({ toolId, toolName, costAk, requiresPro = false, onNavi
       {requiresPro ? (
         <View style={tl$.proPill}><Text style={tl$.proText}>RISERVATO A PRO / ENTERPRISE</Text></View>
       ) : (
-        <Text style={tl$.cost}>Sblocca con <Text style={{ color: '#D4AF37', fontWeight: '900' }}>⚡ {costAk} AK</Text></Text>
+        <Text style={tl$.cost}>Sblocca con <Text style={{ color: '#D4AF37', fontWeight: '900' }}>💧 {costAk} AK</Text></Text>
       )}
       {onNavigate && (
         <TouchableOpacity style={tl$.cta} onPress={onNavigate} activeOpacity={0.85}>
