@@ -1,0 +1,67 @@
+{
+  "summary": "Sprint 32 — KORE SCORE Engine. Backend: 25/25 tests passed. Frontend: Athletes table shows KORE scores with grade pills (A=cyan, B=green, C=orange). DeepProfilePanel opens with KORE SCORE — L'ARBITRO section at hero position: SVG 270° circular arc gauge, score+grade badge, 3 breakdown bars (VOLUME/INTENSITÀ/QUALITÀ BIO), verdict text. No posture penalty badge visible in current data (penalty_active=False for all athletes since no real scans exist — penalty still applied numerically but gap < 10pt threshold). All backend logic verified: score 0-100, grade mapping S/A/B/C/D, penalty math correct, breakdown labels correct, auth gates enforced.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/coach/athletes/full",
+        "issue": "compute_kore_score() called 3 times per athlete (for score/grade/color separately). Should be called once per athlete and result cached. Minor performance issue at scale."
+      },
+      {
+        "endpoint": "GET /api/coach/athletes/full vs GET /api/coach/kore-score/{id}/breakdown",
+        "issue": "Table endpoint calls compute_kore_score(user, []) with empty scan_trend, but breakdown endpoint fetches last 6 real scans. If an athlete has scan data, table kore_score ≠ panel kore_score. Inconsistency when real scans exist."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "KoreScoreGauge barVal",
+        "issue": "INTENSITÀ value '54.8' wraps to '54.' + '8' on two lines when panel is 310px wide. barVal has fixed width: 24px at fontSize:11 — too narrow for 4-character decimal values. Recommend increasing to 32-36px.",
+        "testID": "N/A",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Athletes Table — Sort by DNA",
+        "issue": "Sort button labeled 'DNA' triggers sort_by='dna_avg' on backend, which sorts by plain DNA average. However, the column now displays kore_score values. Sorting by 'DNA' should either sort by kore_score or the sort label should be renamed to 'KORE'.",
+        "affected_testIDs": []
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "coach-studio/athletes — Table header",
+        "issues": ["Column header still labeled 'DNA' but now shows KORE SCORE values with grade pills. Should say 'KORE' or 'KORE SCORE' to match displayed metric."]
+      }
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sprint32_kore_score.py",
+    "/app/test_reports/pytest/sprint32_kore_score.xml"
+  ],
+  "action_items": [
+    "LOW: Rename table column header from 'DNA' to 'KORE' since it now displays kore_score values",
+    "LOW: Update sort button from 'DNA' label to 'KORE' and sort by kore_score field (backend: add sort_by=kore_score option)",
+    "LOW: Fix barVal width from 24px to 32-36px to prevent decimal values wrapping to 2 lines",
+    "LOW: Call compute_kore_score() once per athlete in athletes/full endpoint, not 3 times",
+    "INFO: Table uses empty scan_trend for kore_score, panel uses real scans — this may cause score discrepancy if athletes have real scan data. Consider fetching scan_trend in athletes/full endpoint too (may have performance impact)."
+  ],
+  "critical_code_review_comments": [
+    "server.py line 3542-3544: compute_kore_score(user, []) called 3× per athlete in a loop — extract to single variable for efficiency.",
+    "server.py: athletes/full endpoint uses empty scan_trend [] for kore_score calculation while breakdown endpoint fetches real scans. This creates potential score discrepancy between table and DeepProfilePanel for athletes with real scan data.",
+    "athletes.tsx: Table header hardcoded as ['#', 'ATLETA', 'DNA', 'RISK', 'SCAN', 'CREW', 'RANK'] — the DNA column now shows KORE scores, header label not updated.",
+    "athletes.tsx: SORT_OPTIONS uses 'dna_avg' key with 'DNA' label — not updated to reflect KORE score is now the primary column metric."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "100% — 25/25 tests passed",
+    "frontend": "95% — All core KORE SCORE features working; minor header label/sort label mismatch and narrow barVal issue"
+  },
+  "seed_data_creation": "No test data created. Used existing seeded athletes (T.BUTLER, REX_FIGHT, etc.)",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Sprint 32 KORE SCORE Engine. Backend fully operational: GET /api/coach/kore-score/{id}/breakdown returns kore_score.{score,grade,color,verdict,penalty_active,posture_penalty,breakdown{volume,intensity,biometric}}. GET /api/coach/athletes/full returns kore_score,kore_grade,kore_color per athlete. Frontend: KoreScoreGauge SVG component renders correctly (270° arc, score center, grade badge, verdict, 3 component bars). DeepProfilePanel shows KORE SCORE at hero top position. No athlete currently has penalty_active=True (no real scan data in DB, all fallback to tecnica DNA; gaps < 10pt threshold). Minor issues: table header/sort label still say 'DNA', barVal width 24px too narrow for some decimal values.",
+  "rca_of_issue": "No critical bugs. Minor: column header/sort mismatch is cosmetic (DNA label vs KORE score display). barVal width issue is CSS overflow causing text wrap at 24px for 4-char values. Backend compute_kore_score called 3x per athlete is inefficiency but not a bug."
+}

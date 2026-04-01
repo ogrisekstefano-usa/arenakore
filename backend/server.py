@@ -3201,6 +3201,156 @@ SIX_AXIS_LABELS = {
     "agility":   "Agility",
 }
 
+def compute_kore_score(user: dict, scan_trend: list = None) -> dict:
+    """
+    KORE SCORE — L'Arbitro Multidisciplinare Proprietario.
+
+    Incrocia 3 dimensioni con un sistema di penalità posturale:
+
+    ┌─────────────────────────────────────────────────────────────┐
+    │  VOLUME INDEX (30%)   →  resistenza + GPS + frequenza scan  │
+    │  INTENSITY INDEX (30%)→  forza + potenza + strength watts   │
+    │  BIOMETRIC QUALITY (40%)→  media NÈXUS scan quality         │
+    │  ──────────────────────────────────────────────────────────  │
+    │  POSTURE PENALTY (−0 a −30) se qualità scan < DNA potential │
+    │  L'atleta fa volume MA mostra decadimento posturale → cala  │
+    └─────────────────────────────────────────────────────────────┘
+
+    Ritorna:
+      score (0-100), grade (S/A/B/C/D), breakdown, posture_penalty,
+      verdict (messaggio sintetico dell'Arbitro)
+    """
+    dna = user.get("dna") or {}
+    ms  = user.get("multiskill") or {}
+    scans = scan_trend or []
+
+    def r(k: str) -> float:
+        return float(dna.get(k, 50))
+
+    # ── 1. VOLUME INDEX (0-100) ───────────────────────────────────
+    # DNA endurance (base) + GPS data (external) + scan frequency bonus
+    base_volume = r("resistenza")
+    gps_boost   = float(ms.get("endurance_gps", base_volume)) * 0.35
+    # Scan frequency: more scans = higher volume signal
+    scan_freq_bonus = min(15, len(scans) * 2.5)
+    volume_index = round(min(100, base_volume * 0.65 + gps_boost + scan_freq_bonus), 1)
+
+    # ── 2. INTENSITY INDEX (0-100) ───────────────────────────────
+    # DNA forza + potenza + Technogym Watts
+    base_intensity = (r("forza") * 0.5 + r("potenza") * 0.3)
+    watts_boost    = float(ms.get("strength_watts", base_intensity)) * 0.2
+    intensity_index = round(min(100, base_intensity + watts_boost), 1)
+
+    # ── 3. BIOMETRIC QUALITY (0-100) ────────────────────────────
+    # Media qualità NÈXUS scan (ultimi 6) — questo è il differenziatore
+    if scans:
+        avg_scan_quality = sum(s.get("quality", 50) for s in scans) / len(scans)
+    else:
+        avg_scan_quality = r("tecnica")  # Fallback to technique DNA if no scans
+    biometric_quality = round(avg_scan_quality, 1)
+
+    # ── 4. POSTURE PENALTY ─────────────────────────────────────
+    # Se qualità scan < potenziale DNA: l'atleta degrada sotto sforzo
+    dna_potential = round((r("velocita") + r("forza") + r("resistenza") + r("agilita") + r("tecnica") + r("potenza")) / 6, 1)
+    posture_gap = dna_potential - avg_scan_quality
+    # Penalty: fino a -30 punti. Scala da 0 se gap ≤ 0 a -30 se gap ≥ 40
+    posture_penalty = round(max(0, min(30, posture_gap * 0.75)), 1)
+    penalty_active  = posture_gap > 10  # Significant only if gap > 10 pts
+
+    # ── 5. FINAL KORE SCORE ────────────────────────────────────
+    raw_score = (
+        volume_index    * 0.30 +
+        intensity_index * 0.30 +
+        biometric_quality * 0.40
+    ) - posture_penalty
+    kore_score = round(max(0, min(100, raw_score)), 1)
+
+    # ── 6. GRADE & VERDICT ─────────────────────────────────────
+    if kore_score >= 88:
+        grade, color = "S", "#D4AF37"   # Gold — Elite
+        verdict = "PERFORMANCE ÉLITE. Tutti i parametri sopra il potenziale."
+    elif kore_score >= 74:
+        grade, color = "A", "#00F2FF"   # Cyan — Pro
+        verdict = "PROFILO BILANCIATO. Mantieni questo ritmo di allenamento."
+    elif kore_score >= 58:
+        grade, color = "B", "#34C759"   # Green — Good
+        verdict = "SOLIDO. Incrementa l'intensità o la qualità degli scan."
+    elif kore_score >= 40:
+        grade, color = "C", "#FF9500"   # Orange — Average
+        if penalty_active:
+            verdict = f"ATTENZIONE: stai accumulando volume con decadimento posturale ({round(posture_gap, 1)} punti di gap). Riduci il volume e lavora sulla tecnica."
+        else:
+            verdict = "NELLA MEDIA. Aumenta la frequenza degli scan NÈXUS per validare il tuo potenziale."
+    else:
+        grade, color = "D", "#FF453A"   # Red — Critical
+        if penalty_active:
+            verdict = f"RISCHIO INFORTUNIO: qualità scan ({round(avg_scan_quality, 1)}) molto sotto DNA ({dna_potential}). Ferma il volume, priorità Recovery."
+        else:
+            verdict = "UNDER-PERFORMANCE. Rivedi il piano di allenamento con il tuo Coach."
+
+    return {
+        "score":        kore_score,
+        "grade":        grade,
+        "color":        color,
+        "verdict":      verdict,
+        "penalty_active": penalty_active,
+        "breakdown": {
+            "volume": {
+                "value":  volume_index,
+                "weight": 0.30,
+                "contribution": round(volume_index * 0.30, 1),
+                "label": "VOLUME",
+                "sub":   "Resistenza · GPS · Frequenza scan",
+                "color": "#00F2FF",
+            },
+            "intensity": {
+                "value":  intensity_index,
+                "weight": 0.30,
+                "contribution": round(intensity_index * 0.30, 1),
+                "label": "INTENSITÀ",
+                "sub":   "Forza · Potenza · Technogym Watts",
+                "color": "#FF453A",
+            },
+            "biometric": {
+                "value":  biometric_quality,
+                "weight": 0.40,
+                "contribution": round(biometric_quality * 0.40, 1),
+                "label": "QUALITÀ BIO",
+                "sub":   f"Media {len(scans)} scan NÈXUS · Tecnica",
+                "color": "#34C759",
+            },
+        },
+        "posture_penalty": posture_penalty,
+        "posture_gap":     round(posture_gap, 1),
+        "dna_potential":   dna_potential,
+        "avg_scan_quality": round(avg_scan_quality, 1),
+        "scans_used":      len(scans),
+    }
+
+
+@api_router.get("/coach/kore-score/{athlete_id}/breakdown")
+async def get_kore_score_breakdown(athlete_id: str, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Full KORE SCORE breakdown for a single athlete"""
+    try:
+        user = await db.users.find_one({"_id": ObjectId(athlete_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Atleta non trovato")
+    if not user:
+        raise HTTPException(status_code=404, detail="Atleta non trovato")
+    # Get last 6 scans
+    scans = await db.scan_results.find({"user_id": user["_id"]}).sort("scanned_at", -1).limit(6).to_list(6)
+    scan_trend = [{"quality": s.get("quality_score", 50), "date": s["scanned_at"].strftime("%d/%m") if s.get("scanned_at") else "?"} for s in reversed(scans)]
+    kore = compute_kore_score(user, scan_trend)
+    return {
+        "athlete_id":  str(user["_id"]),
+        "username":    user.get("username"),
+        "kore_score":  kore,
+        "six_axis":    compute_six_axis(user),
+        "dna":         {k: user.get("dna", {}).get(k, 50) for k in DNA_KEYS} if user.get("dna") else {},
+        "multiskill":  user.get("multiskill") or {},
+    }
+
+
 def compute_six_axis(user: dict) -> dict:
     """
     Compute 6 athletic dimensions from DNA + optional multiskill data.
@@ -3389,6 +3539,9 @@ async def get_athletes_full_table(
             "sport":        user.get("sport", "—"),
             "city":         user.get("city", "—"),
             "dna_avg":      dna_avg,
+            "kore_score":   compute_kore_score(user, []).get("score", dna_avg),
+            "kore_grade":   compute_kore_score(user, []).get("grade", "B"),
+            "kore_color":   compute_kore_score(user, []).get("color", "#00F2FF"),
             "six_axis":     six_axis,
             "injury_risk":  injury,
             "days_since_scan": days_since,

@@ -250,6 +250,8 @@ export const api = {
   },
   getAthleteFullProfile: (athleteId: string, token: string) =>
     request(`/coach/athlete/${athleteId}/full-profile`, {}, token),
+  getKoreScoreBreakdown: (athleteId: string, token: string) =>
+    request(`/coach/kore-score/${athleteId}/breakdown`, {}, token),
   updateAthleteMiltiskill: (athleteId: string, data: { endurance_gps?: number; strength_watts?: number; sleep_score?: number; hrv_score?: number }, token: string) =>
     request(`/coach/athlete/${athleteId}/multiskill`, { method: 'PUT', body: JSON.stringify(data) }, token),
   getCrewManagement: (token: string) => request('/crew/manage', {}, token),

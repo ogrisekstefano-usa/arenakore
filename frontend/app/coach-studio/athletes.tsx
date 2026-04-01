@@ -8,7 +8,7 @@ import {
   ActivityIndicator, TextInput, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Polygon, Line, Text as SvgText, Circle } from 'react-native-svg';
+import Svg, { Path as KPath, Circle as KCircle, Polygon, Line, Text as SvgText, Circle } from 'react-native-svg';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme, MONT, INTER } from '../../contexts/ThemeContext';
@@ -79,6 +79,100 @@ function SixAxisRadar({ data, size = 180, showLabels = true, compare }: {
   );
 }
 
+// ── KORE SCORE Gauge (SVG circular) ─────────────────────────────────────────
+function KoreScoreGauge({ kore, size = 160 }: { kore: any; size?: number }) {
+  if (!kore) return null;
+  const { score, grade, color, verdict, penalty_active, posture_penalty, breakdown } = kore;
+
+  // SVG arc math: 270° gauge (from 225° to 495°, i.e. -135° to 135° from top)
+  const R = size / 2 - 14;
+  const cx = size / 2, cy = size / 2 + 8;
+  const START_ANGLE = 135, SWEEP = 270;
+
+  const polarToCartesian = (angle: number) => {
+    const rad = (angle - 90) * (Math.PI / 180);
+    return { x: cx + R * Math.cos(rad), y: cy + R * Math.sin(rad) };
+  };
+
+  const describeArc = (startAngle: number, endAngle: number) => {
+    const s = polarToCartesian(startAngle), e = polarToCartesian(endAngle);
+    const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+    return `M ${s.x} ${s.y} A ${R} ${R} 0 ${largeArc} 1 ${e.x} ${e.y}`;
+  };
+
+  const scoreAngle = START_ANGLE + (score / 100) * SWEEP;
+  const trackPath = describeArc(START_ANGLE, START_ANGLE + SWEEP);
+  const fillPath  = score > 0 ? describeArc(START_ANGLE, Math.min(scoreAngle, START_ANGLE + SWEEP - 0.01)) : '';
+
+  return (
+    <View style={kg$.container}>
+      <Svg width={size} height={size + 8}>
+        {/* Track */}
+        <KPath d={trackPath} stroke="rgba(255,255,255,0.07)" strokeWidth={10} fill="none" strokeLinecap="round" />
+        {/* Fill */}
+        {score > 0 && <KPath d={fillPath} stroke={color} strokeWidth={10} fill="none" strokeLinecap="round" />}
+        {/* Glow dot at current position */}
+        {score > 0 && (() => {
+          const pos = polarToCartesian(Math.min(scoreAngle, START_ANGLE + SWEEP - 1));
+          return <KCircle cx={pos.x} cy={pos.y} r={5} fill={color} />;
+        })()}
+      </Svg>
+
+      {/* Center text (positioned over SVG) */}
+      <View style={[kg$.center, { width: size, top: 8 }]}>
+        <Text style={[kg$.score, { color }]}>{Math.round(score)}</Text>
+        <View style={[kg$.gradeBadge, { backgroundColor: color + '20', borderColor: color + '40' }]}>
+          <Text style={[kg$.grade, { color }]}>{grade}</Text>
+        </View>
+        {penalty_active && (
+          <View style={kg$.penaltyBadge}>
+            <Ionicons name="warning" size={9} color="#FF453A" />
+            <Text style={kg$.penaltyText}>-{posture_penalty} postura</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Verdict */}
+      <Text style={[kg$.verdict, { color: 'rgba(255,255,255,0.5)' }]} numberOfLines={2}>{verdict}</Text>
+
+      {/* Component bars */}
+      {breakdown && (
+        <View style={kg$.bars}>
+          {Object.values(breakdown as Record<string, any>).map((b: any) => (
+            <View key={b.label} style={kg$.barRow}>
+              <Text style={[kg$.barLabel, INTER('300')]}>{b.label}</Text>
+              <View style={kg$.barTrack}>
+                <View style={[kg$.barFill, { width: `${b.value}%` as any, backgroundColor: b.color }]} />
+              </View>
+              <Text style={[kg$.barVal, MONT('900'), { color: b.color }]}>{b.value}</Text>
+              <Text style={[kg$.barContrib, INTER('300')]}>{b.weight * 100}%→{b.contribution}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+// ── KORE SCORE Gauge Styles ──────────────────────────────────────────────────
+const kg$ = StyleSheet.create({
+  container: { alignItems: 'center', gap: 8, position: 'relative' },
+  center: { position: 'absolute', alignItems: 'center', justifyContent: 'center', gap: 4 },
+  score: { fontSize: 38, fontWeight: '900', letterSpacing: 1 },
+  gradeBadge: { borderRadius: 6, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2 },
+  grade: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  penaltyBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(255,69,58,0.1)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 },
+  penaltyText: { color: '#FF453A', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  verdict: { fontSize: 10, textAlign: 'center', lineHeight: 14, paddingHorizontal: 8, fontWeight: '300' },
+  bars: { width: '100%', gap: 6, paddingHorizontal: 8 },
+  barRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  barLabel: { width: 56, fontSize: 8, letterSpacing: 1.5, color: 'rgba(255,255,255,0.35)' },
+  barTrack: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' },
+  barFill: { height: '100%', borderRadius: 2 },
+  barVal: { fontSize: 11, width: 24, textAlign: 'right' },
+  barContrib: { fontSize: 8, color: 'rgba(255,255,255,0.2)', letterSpacing: 0.3, width: 56, textAlign: 'right' },
+});
+
 // ── Injury Risk Badge ─────────────────────────────────────────────────────────
 function RiskBadge({ risk }: { risk: any }) {
   const { theme } = useTheme();
@@ -126,6 +220,7 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
   const { token } = useAuth();
   const { theme } = useTheme();
   const [profile, setProfile] = useState<any>(null);
+  const [koreData, setKoreData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [ms, setMs] = useState<Record<string, string>>({});
@@ -134,10 +229,14 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
   useEffect(() => {
     if (!token || !athleteId) return;
     setLoading(true);
-    api.getAthleteFullProfile(athleteId, token)
-      .then(d => { setProfile(d); setMs({ endurance_gps: String(d.multiskill?.endurance_gps || ''), strength_watts: String(d.multiskill?.strength_watts || ''), sleep_score: String(d.multiskill?.sleep_score || ''), hrv_score: String(d.multiskill?.hrv_score || '') }); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    Promise.all([
+      api.getAthleteFullProfile(athleteId, token),
+      api.getKoreScoreBreakdown(athleteId, token),
+    ]).then(([p, k]) => {
+      setProfile(p);
+      setKoreData(k?.kore_score || null);
+      setMs({ endurance_gps: String(p.multiskill?.endurance_gps || ''), strength_watts: String(p.multiskill?.strength_watts || ''), sleep_score: String(p.multiskill?.sleep_score || ''), hrv_score: String(p.multiskill?.hrv_score || '') });
+    }).catch(() => {}).finally(() => setLoading(false));
   }, [athleteId, token]);
 
   const handleSaveMs = async () => {
@@ -192,6 +291,22 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+        {/* KORE SCORE — Hero metric */}
+        {koreData && (
+          <View style={[dp$.section, { backgroundColor: koreData.color + '06', borderBottomColor: koreData.color + '20' }]}>
+            <View style={dp$.secHeader}>
+              <Text style={[dp$.sectionTitle, MONT('900'), { color: koreData.color }]}>KORE SCORE — L'ARBITRO</Text>
+              {koreData.penalty_active && (
+                <View style={[dp$.penaltyTag, { borderColor: '#FF453A40' }]}>
+                  <Ionicons name="warning" size={10} color="#FF453A" />
+                  <Text style={dp$.penaltyTagText}>PENALITÀ POSTURA</Text>
+                </View>
+              )}
+            </View>
+            <KoreScoreGauge kore={koreData} size={170} />
+          </View>
+        )}
+
         {/* 6-Axis Radar */}
         <View style={dp$.section}>
           <Text style={[dp$.sectionTitle, MONT('900'), { color: theme.textTer }]}>DNA MULTI-SKILL RADAR</Text>
@@ -305,6 +420,8 @@ const dp$ = StyleSheet.create({
   trendRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   trendLabel: { fontSize: 11 },
   secHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  penaltyTag: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2, backgroundColor: 'rgba(255,69,58,0.08)' },
+  penaltyTagText: { color: '#FF453A', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
   msRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   msLabel: { flex: 1, fontSize: 11 },
   msVal: { fontSize: 14 },
@@ -690,8 +807,17 @@ export default function AthletesModule() {
                           <Text style={[am$.tdSub, INTER('300'), { color: theme.textTer }]}>{a.sport} · LVL {a.level}</Text>
                         </View>
                       </View>
-                      {/* DNA */}
-                      <Text style={[am$.td, MONT('900'), { color: a.dna_avg >= 80 ? theme.accentGold : theme.text }]}>{a.dna_avg}</Text>
+                      {/* KORE SCORE (replaces plain DNA avg) */}
+                      <View style={{ width: 56, alignItems: 'center', gap: 2 }}>
+                        <Text style={[am$.td, MONT('900'), { color: a.kore_color || (a.dna_avg >= 80 ? theme.accentGold : theme.text), width: 'auto' as any }]}>
+                          {a.kore_score || a.dna_avg}
+                        </Text>
+                        {a.kore_grade && (
+                          <View style={[am$.koreGradePill, { backgroundColor: (a.kore_color || theme.accent) + '15', borderColor: (a.kore_color || theme.accent) + '40' }]}>
+                            <Text style={[am$.koreGradeText, { color: a.kore_color || theme.accent }]}>{a.kore_grade}</Text>
+                          </View>
+                        )}
+                      </View>
                       {/* Injury */}
                       <View style={{ width: 70 }}>
                         <RiskBadge risk={a.injury_risk} />
@@ -745,6 +871,8 @@ const am$ = StyleSheet.create({
   splitView: { flex: 1, flexDirection: 'row' },
   tableArea: { flex: 1 },
   loadWrap: { alignItems: 'center', paddingTop: 40 },
+  koreGradePill: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1 },
+  koreGradeText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
   tableHead: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 9, borderBottomWidth: 1, gap: 8 },
   th: { fontSize: 8, letterSpacing: 2.5, width: 50, textAlign: 'center' },
   tableRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 9, borderBottomWidth: 1, gap: 8, position: 'relative' },
