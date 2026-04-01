@@ -421,11 +421,12 @@ const s = StyleSheet.create({
   primaryBtnTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   outlineBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: 'transparent',
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.4)',
+    backgroundColor: 'rgba(0,242,255,0.07)',
+    borderWidth: 1.5, borderColor: '#00F2FF',
     borderRadius: 10, paddingVertical: 14,
+    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 12,
   },
-  outlineBtnTxt: { color: CYAN, fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  outlineBtnTxt: { color: '#00F2FF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
 
   // Partner section
   partnerSection: { marginTop: 8, gap: 16 },

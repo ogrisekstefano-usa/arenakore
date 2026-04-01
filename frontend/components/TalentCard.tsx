@@ -203,12 +203,17 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
-    backgroundColor: '#00F2FF',
+    backgroundColor: 'rgba(0,0,0,0.88)',
     borderRadius: 16,
     padding: 20,
     borderWidth: 1.5,
-    borderColor: 'rgba(0,242,255,0.65)',
+    borderColor: 'rgba(0,242,255,0.22)',
     gap: 12,
+    shadowColor: '#00F2FF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 6,
   },
   cardHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
@@ -217,7 +222,7 @@ const styles = StyleSheet.create({
   brandArena: { color: '#FFFFFF', fontSize: 17, fontWeight: '900', letterSpacing: -0.5 },
   brandDare: { color: '#D4AF37', fontSize: 17, fontWeight: '900', letterSpacing: -0.5 },
   cardType: { color: '#00F2FF', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
-  divider: { height: 1, backgroundColor: '#1E1E1E' },
+  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.08)' },
 
   profileRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatar: {
@@ -240,8 +245,8 @@ const styles = StyleSheet.create({
   xpBadge: { color: '#888', fontSize: 13, fontWeight: '700' },
   ovrCircle: {
     width: 52, height: 52, borderRadius: 26,
-    backgroundColor: 'rgba(0,242,255,0.65)',
-    borderWidth: 2, borderColor: '#00F2FF',
+    backgroundColor: 'rgba(0,242,255,0.08)',
+    borderWidth: 2, borderColor: 'rgba(0,242,255,0.4)',
     alignItems: 'center', justifyContent: 'center',
   },
   ovrVal: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
@@ -268,21 +273,21 @@ const styles = StyleSheet.create({
   dataRow: { flexDirection: 'row', gap: 12 },
   statsCol: { flex: 1, gap: 6, justifyContent: 'center' },
   statRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  statLabel: { color: '#555', fontSize: 12, fontWeight: '400', width: 28 },
+  statLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '400', width: 28 },
   statLabelBroken: { color: '#D4AF37' },
-  statBarOuter: { flex: 1, height: 3, backgroundColor: '#1A1A1A', borderRadius: 2, overflow: 'hidden' },
+  statBarOuter: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' },
   statBarInner: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
   statBarBroken: { backgroundColor: '#D4AF37' },
-  statVal: { color: '#888', fontSize: 13, fontWeight: '800', width: 24, textAlign: 'right' },
+  statVal: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '800', width: 24, textAlign: 'right' },
   statValBroken: { color: '#D4AF37' },
 
   visualCol: { alignItems: 'center', gap: 8 },
   qrContainer: {
     padding: 4,
     borderRadius: 6,
-    backgroundColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(0,242,255,0.2)',
   },
 
   shareBtn: {
