@@ -19,6 +19,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { Header } from '../../components/Header';
+import { KoreVault, AKBadge } from '../../components/KoreVault';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { ImageBackground } from 'react-native';
@@ -1180,6 +1181,7 @@ export default function KoreTab() {
 
           {/* GOALS */}
           <GoalsSection user={user} />
+          <KoreVault />
 
           {/* 2. RANK INFOGRAPHIC */}
             <RankInfographic rankData={rankData} city={city} onCitySelect={handleCitySelect} />

@@ -34,6 +34,7 @@ import { ProUnlockModal } from '../../components/nexus/ProUnlockModal';
 import { PvPPendingCard } from '../../components/pvp/PvPPendingCard';
 import { TrainingTemplateCard } from '../../components/training/TrainingTemplateCard';
 import { BioFeedbackHUD, BioFeedbackState } from '../../components/training/BioFeedbackHUD';
+import { AKBadge } from '../../components/KoreVault';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -294,6 +295,61 @@ const pro$ = StyleSheet.create({
   ctaText: { fontSize: 11, fontWeight: '900', letterSpacing: 2 },
 });
 
+// ========== AI PROMPT BANNER — Contextual Tool Discovery ==========
+function AIPromptBanner() {
+  const { token, user } = useAuth();
+  const router = useRouter();
+  const [prompts, setPrompts] = useState<any[]>([]);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    if (!token || dismissed) return;
+    api.getAIPrompt(token)
+      .then(d => setPrompts(d.prompts || []))
+      .catch(() => {});
+  }, [token]);
+
+  if (!prompts.length || dismissed) return null;
+  const p = prompts[0]; // Show first prompt
+
+  return (
+    <Animated.View entering={FadeInDown.delay(600).duration(350)} style={apb$.card}>
+      <View style={[apb$.bar, { backgroundColor: p.color }]} />
+      <View style={apb$.body}>
+        <View style={apb$.header}>
+          <Ionicons name={p.icon || 'flash'} size={14} color={p.color} />
+          <Text style={[apb$.title, { color: p.color }]}>{p.title}</Text>
+          <TouchableOpacity onPress={() => setDismissed(true)} style={{ marginLeft: 'auto' as any }}>
+            <Ionicons name="close" size={14} color="rgba(255,255,255,0.3)" />
+          </TouchableOpacity>
+        </View>
+        <Text style={apb$.message}>{p.message}</Text>
+        {p.cta && (
+          <TouchableOpacity
+            style={[apb$.cta, { borderColor: p.color + '60' }]}
+            onPress={() => { setDismissed(true); router.push('/(tabs)/kore'); }}
+            activeOpacity={0.8}
+          >
+            <Text style={[apb$.ctaText, { color: p.color }]}>{p.cta}</Text>
+            <Ionicons name="arrow-forward" size={11} color={p.color} />
+          </TouchableOpacity>
+        )}
+      </View>
+    </Animated.View>
+  );
+}
+
+const apb$ = StyleSheet.create({
+  card: { marginHorizontal: 16, marginTop: 10, marginBottom: 4, flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
+  bar: { width: 3 },
+  body: { flex: 1, padding: 12, gap: 6 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  title: { fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  message: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '300', lineHeight: 16 },
+  cta: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 },
+  ctaText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+});
+
 // ========== GHOST SESSION HUD (PvP Mode) ==========
 function GhostSessionHUD({ ghost, currentReps, currentQuality, exercise }: {
   ghost: { username: string; reps: number; quality_score: number };
@@ -438,6 +494,7 @@ function NexusConsole({ user, onScan, onForge, deviceTier, eligibility, myRank, 
           />
           <PvPPendingCard />
           <TrainingTemplateCard />
+          <AIPromptBanner />
         </ScrollView>
       </SafeAreaView>
     </View>

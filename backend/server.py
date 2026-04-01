@@ -329,7 +329,7 @@ def user_to_response(user: dict) -> dict:
         "id": str(user["_id"]),
         "username": user["username"],
         "email": user["email"],
-        "role": normalize_role(user),  # Always normalized
+        "role": normalize_role(user),
         "gym_id": str(user["gym_id"]) if user.get("gym_id") else None,
         "sport": user.get("sport"),
         "xp": user.get("xp", 0),
@@ -348,6 +348,9 @@ def user_to_response(user: dict) -> dict:
         "camera_enabled": user.get("camera_enabled", False),
         "mic_enabled": user.get("mic_enabled", False),
         "city": user.get("city"),
+        # AK Credits Economy
+        "ak_credits": user.get("ak_credits", 0),
+        "unlocked_tools": user.get("unlocked_tools", []),
     }
 
 
@@ -1008,9 +1011,10 @@ async def complete_challenge(data: ChallengeComplete, current_user: dict = Depen
 
     updated = await db.users.find_one({"_id": current_user["_id"]})
 
+    # Award AK Credits for scan completion
+    await award_ak_credits(current_user["_id"], "nexus_scan")
+
     return {
-        "status": "completed",
-        "performance_score": round(performance, 1),
         "duration_seconds": duration,
         "xp_earned": total_xp,
         "base_xp": base_xp,
@@ -2536,6 +2540,277 @@ async def update_user_role(user_id: str, data: dict, current_user: dict = Depend
     return {"status": "updated", "username": target.get("username"), "new_role": new_role}
 
 
+# ================================================================
+# AK CREDITS ENGINE — Virtual Currency & Premium Tool Gating
+# ================================================================
+
+PREMIUM_TOOLS = {
+    "ai_matchmaker": {
+        "id": "ai_matchmaker",
+        "name": "AI MATCHMAKER",
+        "description": "Sfida globale intelligente basata sul tuo DNA",
+        "detail": "L'AI analizza il tuo KORE score e ti trova avversari al limite delle tue capacità.",
+        "cost_ak": 500,
+        "icon": "analytics",
+        "color": "#D4AF37",
+        "requires_pro": False,
+        "category": "competitive",
+    },
+    "dna_radar_pro": {
+        "id": "dna_radar_pro",
+        "name": "DNA RADAR PRO",
+        "description": "Confronta il tuo DNA con i Top Performer mondiali",
+        "detail": "Overlay del tuo profilo contro la media dei Top 10 globali in ogni attributo.",
+        "cost_ak": 200,
+        "icon": "radio",
+        "color": "#00F2FF",
+        "requires_pro": False,
+        "category": "analytics",
+    },
+    "injury_prevention": {
+        "id": "injury_prevention",
+        "name": "INJURY PREVENTION AI",
+        "description": "Analisi rischio infortuni in tempo reale",
+        "detail": "Monitora lo squilibrio DNA e avvisa prima che diventi un infortunio reale.",
+        "cost_ak": 0,
+        "icon": "shield-checkmark",
+        "color": "#FF453A",
+        "requires_pro": True,
+        "category": "health",
+    },
+    "ghost_mode_pro": {
+        "id": "ghost_mode_pro",
+        "name": "GHOST MODE PRO",
+        "description": "Competi in anonimato totale nel ranking globale",
+        "detail": "Il tuo nome è nascosto. Il tuo score parla da solo.",
+        "cost_ak": 150,
+        "icon": "eye-off",
+        "color": "#AF52DE",
+        "requires_pro": False,
+        "category": "privacy",
+    },
+    "battle_analytics": {
+        "id": "battle_analytics",
+        "name": "BATTLE ANALYTICS",
+        "description": "Storico dettagliato di ogni battle con breakdown DNA",
+        "detail": "Analisi post-battle: chi ha contribuito di più, dove hai perso terreno.",
+        "cost_ak": 300,
+        "icon": "bar-chart",
+        "color": "#FF9500",
+        "requires_pro": False,
+        "category": "competitive",
+    },
+}
+
+AK_EARN_RULES = {
+    "nexus_scan": {"amount": 10, "label": "Scan Nexus completato"},
+    "pvp_win": {"amount": 50, "label": "Vittoria PvP"},
+    "crew_battle_win": {"amount": 100, "label": "Vittoria Crew Battle"},
+    "daily_login": {"amount": 5, "label": "Login giornaliero"},
+    "first_scan": {"amount": 25, "label": "Primo Scan Nexus"},
+    "iap_pack_small": {"amount": 500, "label": "Acquisto Pack S"},
+    "iap_pack_medium": {"amount": 1200, "label": "Acquisto Pack M"},
+    "iap_pack_large": {"amount": 3000, "label": "Acquisto Pack L"},
+}
+
+
+async def award_ak_credits(user_id, reason: str, custom_amount: int = 0) -> int:
+    """Award AK credits to a user. Returns new balance."""
+    rule = AK_EARN_RULES.get(reason)
+    amount = custom_amount if custom_amount else (rule["amount"] if rule else 0)
+    if amount <= 0:
+        return 0
+    label = rule["label"] if rule else reason
+    now = datetime.utcnow()
+    await db.users.update_one({"_id": user_id}, {"$inc": {"ak_credits": amount}})
+    await db.ak_transactions.insert_one({
+        "user_id": user_id,
+        "amount": amount,
+        "reason": reason,
+        "label": label,
+        "type": "earn",
+        "created_at": now,
+    })
+    user = await db.users.find_one({"_id": user_id})
+    return user.get("ak_credits", 0)
+
+
+@api_router.get("/ak/balance")
+async def get_ak_balance(current_user: dict = Depends(get_current_user)):
+    """Get AK credits balance and recent transactions"""
+    txns = await db.ak_transactions.find(
+        {"user_id": current_user["_id"]}
+    ).sort("created_at", -1).limit(20).to_list(20)
+    return {
+        "ak_credits": current_user.get("ak_credits", 0),
+        "unlocked_tools": current_user.get("unlocked_tools", []),
+        "transactions": [
+            {
+                "amount": t["amount"],
+                "label": t.get("label", t.get("reason")),
+                "type": t.get("type", "earn"),
+                "created_at": t["created_at"].isoformat() if t.get("created_at") else None,
+            }
+            for t in txns
+        ],
+    }
+
+
+@api_router.get("/ak/tools")
+async def get_ak_tools(current_user: dict = Depends(get_current_user)):
+    """Get all premium tools with unlock status for current user"""
+    unlocked = current_user.get("unlocked_tools", [])
+    ak = current_user.get("ak_credits", 0)
+    # Pro check
+    is_pro = current_user.get("is_pro", False) or current_user.get("pro_unlocked", False) or current_user.get("is_founder", False)
+    result = []
+    for tool_id, tool in PREMIUM_TOOLS.items():
+        is_unlocked = tool_id in unlocked or (tool.get("requires_pro") and is_pro)
+        can_afford = ak >= tool["cost_ak"] and not tool.get("requires_pro")
+        result.append({
+            **tool,
+            "is_unlocked": is_unlocked,
+            "can_afford": can_afford,
+            "locked_reason": (
+                "PRO/ENTERPRISE plan required" if tool.get("requires_pro") and not is_unlocked
+                else f"Serve {tool['cost_ak']} AK" if not is_unlocked and not can_afford
+                else None
+            ),
+        })
+    return {
+        "tools": result,
+        "ak_credits": ak,
+        "earn_rules": [{"reason": k, "amount": v["amount"], "label": v["label"]} for k, v in AK_EARN_RULES.items() if not k.startswith("iap")],
+    }
+
+
+@api_router.post("/ak/unlock-tool")
+async def unlock_tool(data: dict, current_user: dict = Depends(get_current_user)):
+    """Spend AK credits to unlock a premium tool"""
+    tool_id = data.get("tool_id")
+    if not tool_id or tool_id not in PREMIUM_TOOLS:
+        raise HTTPException(status_code=400, detail="Tool non valido")
+    tool = PREMIUM_TOOLS[tool_id]
+    # Already unlocked?
+    if tool_id in current_user.get("unlocked_tools", []):
+        return {"status": "already_unlocked", "tool": tool_id, "ak_credits": current_user.get("ak_credits", 0)}
+    # Pro-only tools
+    is_pro = current_user.get("is_pro", False) or current_user.get("is_founder", False)
+    if tool.get("requires_pro") and not is_pro:
+        raise HTTPException(status_code=402, detail="Questo tool richiede un piano Pro/Enterprise")
+    # AK check (pro-required tools are free)
+    cost = tool["cost_ak"]
+    if not tool.get("requires_pro"):
+        if current_user.get("ak_credits", 0) < cost:
+            raise HTTPException(status_code=402, detail=f"AK insufficienti. Servono {cost} AK.")
+        await db.users.update_one({"_id": current_user["_id"]}, {"$inc": {"ak_credits": -cost}})
+        await db.ak_transactions.insert_one({
+            "user_id": current_user["_id"], "amount": -cost,
+            "reason": f"unlock_{tool_id}", "label": f"Sbloccato: {tool['name']}",
+            "type": "spend", "created_at": datetime.utcnow(),
+        })
+    # Unlock the tool
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$addToSet": {"unlocked_tools": tool_id}}
+    )
+    updated = await db.users.find_one({"_id": current_user["_id"]})
+    return {
+        "status": "unlocked",
+        "tool_id": tool_id,
+        "tool_name": tool["name"],
+        "ak_credits": updated.get("ak_credits", 0),
+        "unlocked_tools": updated.get("unlocked_tools", []),
+    }
+
+
+@api_router.post("/ak/earn")
+async def earn_ak_credits(data: dict, current_user: dict = Depends(get_current_user)):
+    """Manually earn AK credits (daily login, etc.)"""
+    reason = data.get("reason", "daily_login")
+    if reason not in AK_EARN_RULES:
+        raise HTTPException(status_code=400, detail="Motivo non valido")
+    new_balance = await award_ak_credits(current_user["_id"], reason)
+    return {"status": "earned", "amount": AK_EARN_RULES[reason]["amount"], "ak_credits": new_balance}
+
+
+@api_router.get("/ak/ai-prompt")
+async def get_ai_tool_prompt(current_user: dict = Depends(get_current_user)):
+    """AI suggests premium tools based on user's current situation"""
+    unlocked = current_user.get("unlocked_tools", [])
+    ak = current_user.get("ak_credits", 0)
+    dna = current_user.get("dna") or {}
+    dna_keys = ["velocita", "forza", "resistenza", "agilita", "tecnica", "potenza"]
+    dna_vals = [dna.get(k, 50) for k in dna_keys]
+    max_v, min_v = max(dna_vals) if dna_vals else 50, min(dna_vals) if dna_vals else 50
+    imbalance = max_v - min_v
+
+    prompts = []
+
+    # PvP streak check
+    recent_pvp = await db.pvp_challenges.find(
+        {"winner_id": current_user["_id"], "status": "completed"}
+    ).sort("created_at", -1).limit(3).to_list(3)
+    if len(recent_pvp) >= 3 and "ai_matchmaker" not in unlocked:
+        prompts.append({
+            "type": "streak",
+            "icon": "flame",
+            "color": "#FF9500",
+            "title": "SEI IN FIAMME!",
+            "message": "3 vittorie consecutive. Usa i tuoi AK per sbloccare l'AI Matchmaker e sfida il mondo.",
+            "cta": "SBLOCCA AI MATCHMAKER",
+            "tool_id": "ai_matchmaker",
+            "cost_ak": 500,
+            "can_afford": ak >= 500,
+        })
+
+    # Injury risk check
+    if imbalance > 25 and "injury_prevention" not in unlocked:
+        max_key = dna_keys[dna_vals.index(max_v)]
+        prompts.append({
+            "type": "injury_risk",
+            "icon": "warning",
+            "color": "#FF453A",
+            "title": "RISCHIO INFORTUNIO RILEVATO",
+            "message": f"Squilibrio DNA critico su {max_key.upper()}. Sblocca l'Injury Prevention Tool per i dettagli.",
+            "cta": "SCOPRI IL RISCHIO",
+            "tool_id": "injury_prevention",
+            "cost_ak": 0,
+            "can_afford": False,
+            "requires_pro": True,
+        })
+
+    # Low credits
+    if ak < 100:
+        prompts.append({
+            "type": "earn_ak",
+            "icon": "flash",
+            "color": "#D4AF37",
+            "title": "ACCUMULA AK",
+            "message": f"Hai {ak} AK. Fai uno Scan Nexus per guadagnare +10 AK e sbloccare i tool premium.",
+            "cta": "FALLO ORA",
+            "tool_id": None,
+            "cost_ak": 0,
+            "can_afford": True,
+        })
+
+    # DNA Radar Pro suggestion
+    if "dna_radar_pro" not in unlocked and ak >= 200:
+        prompts.append({
+            "type": "analytics",
+            "icon": "analytics",
+            "color": "#00F2FF",
+            "title": "ANALIZZA IL TUO DNA",
+            "message": "Hai abbastanza AK. Confronta il tuo DNA con i Top Performer mondiali.",
+            "cta": "SBLOCCA DNA RADAR PRO",
+            "tool_id": "dna_radar_pro",
+            "cost_ak": 200,
+            "can_afford": True,
+        })
+
+    return {"prompts": prompts[:2], "ak_credits": ak}  # Max 2 prompts at a time
+
+
 # =====================================================================
 def pvp_challenge_to_response(ch: dict) -> dict:
     return {
@@ -2848,9 +3123,11 @@ async def submit_pvp_result(challenge_id: str, data: PvPSubmitRequest, current_u
         "read": False, "created_at": now,
     })
 
+    # Award AK Credits for PvP win
+    if winner_id == current_user["_id"]:
+        await award_ak_credits(winner_id, "pvp_win")
+    
     return {
-        "status": "completed",
-        "result": "won" if is_winner else "lost",
         "your_score": pvp_score,
         "opponent_score": challenger_score,
         "xp_change": winner_xp_gain if is_winner else -loser_xp_loss,

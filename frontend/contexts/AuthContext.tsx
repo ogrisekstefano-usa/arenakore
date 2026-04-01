@@ -30,6 +30,8 @@ export interface User {
   email: string;
   role?: string;
   gym_id?: string | null;
+  ak_credits?: number;
+  unlocked_tools?: string[];
   sport?: string;
   xp: number;
   level: number;

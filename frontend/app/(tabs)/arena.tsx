@@ -18,6 +18,7 @@ import { Header } from '../../components/Header';
 import { TAB_BACKGROUNDS } from '../../utils/images';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
+import { ToolLock } from '../../components/KoreVault';
 import { ChallengeInviteModal } from '../../components/crew/ChallengeInviteModal';
 
 const { width: SW } = Dimensions.get('window');
@@ -453,10 +454,12 @@ const lbd$ = StyleSheet.create({
 
 // ========== MATCHMAKING AI PANEL ==========
 function MatchmakingPanel() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const router = useRouter();
   const [data, setData] = useState<any>(null);
   const [challenging, setChallengingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const isUnlocked = user?.unlocked_tools?.includes('ai_matchmaker');
 
   useEffect(() => {
     if (!token) return;
@@ -484,10 +487,18 @@ function MatchmakingPanel() {
   };
 
   if (loading) return null;
-  if (!data?.suggestions?.length) return null;
+  if (!data?.suggestions?.length && isUnlocked) return null;
 
   return (
-    <Animated.View entering={FadeInDown.delay(200).duration(400)} style={mp$.section}>
+    <Animated.View entering={FadeInDown.delay(200).duration(400)} style={[mp$.section, { position: 'relative' as any }]}>
+      {!isUnlocked && (
+        <ToolLock
+          toolId="ai_matchmaker"
+          toolName="AI MATCHMAKER"
+          costAk={500}
+          onNavigate={() => router.push('/(tabs)/kore')}
+        />
+      )}
       {/* Header */}
       <View style={mp$.header}>
         <View style={mp$.headerLeft}>

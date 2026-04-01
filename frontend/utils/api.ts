@@ -184,6 +184,15 @@ export const api = {
 
   getActionCenter: (token: string) => request('/kore/action-center', {}, token),
 
+  // ========== AK CREDITS ENGINE ==========
+  getAKBalance: (token: string) => request('/ak/balance', {}, token),
+  getAKTools: (token: string) => request('/ak/tools', {}, token),
+  unlockTool: (toolId: string, token: string) =>
+    request('/ak/unlock-tool', { method: 'POST', body: JSON.stringify({ tool_id: toolId }) }, token),
+  earnAK: (reason: string, token: string) =>
+    request('/ak/earn', { method: 'POST', body: JSON.stringify({ reason }) }, token),
+  getAIPrompt: (token: string) => request('/ak/ai-prompt', {}, token),
+
   // ========== GYM_OWNER ENGINE ==========
   getGymMe: (token: string) => request('/gym/me', {}, token),
   getGymDashboard: (token: string) => request('/gym/dashboard', {}, token),
