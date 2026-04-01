@@ -1,0 +1,52 @@
+{
+  "summary": "Sprint 31 — ARENAKORE DNA Athletic Hub (6-axis radar, Advanced CRM table, DeepProfilePanel, Crew Panel). CRITICAL BUG FOUND & FIXED: athletes.tsx line 22 had `compare?: any` in TypeScript destructuring parameter — invalid TS/JS syntax causing Metro SyntaxError crash (entire app broken). Fixed by removing `?: any` (keeping `compare` without type annotation, already handled by the interface on the right side). After fix: backend 27/27 tests passed, frontend fully operational.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "SixAxisRadar in CrewPanel",
+        "issue": "Mini radar (90px size) in CREW PANEL has overlapping axis labels at small size — cosmetic, functional",
+        "testID": "N/A",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "coach-studio/athletes (CREW PANEL)",
+        "issues": ["Mini radar labels (END/POW/MOB/TEC/REC/AGI) overlap at 90px size in crew card — minor cosmetic issue"]
+      }
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sprint30_dna_hub.py",
+    "/app/test_reports/pytest/sprint30_dna_hub.xml"
+  ],
+  "action_items": [
+    "FIXED: athletes.tsx line 22 — `compare?: any` removed from destructuring pattern (was `compare?: any`, fixed to `compare`). This was a fatal SyntaxError crashing the app.",
+    "INFO: T.BUTLER and M.JORDAN show ATHLETE role badge in CREW PANEL (not COACH) — this is because they are not in the `coaches` array of the SHADOW SQUAD crew document (their platform role is COACH but crew membership role defaults to ATHLETE). No action needed unless crew roles should sync with platform roles.",
+    "INFO: SCAN column shows '—' for all athletes — no scan_results exist for gym athletes. Expected empty state.",
+    "INFO: 'DNA ATHLETIC HUB' explicit heading not rendered on page (the component title is ATLETI CRM in topbar tabs). The review request mentions 'shows DNA ATHLETIC HUB' — the page title in sidebar shows 'ATHLETE CRM' and top content shows 'ATLETI CRM | CREW PANEL'. If an explicit 'DNA ATHLETIC HUB' heading is required, consider adding it to the topBar."
+  ],
+  "critical_code_review_comments": [
+    "FIXED: athletes.tsx line 22 — TypeScript destructuring parameter had `compare?: any` inside the destructuring braces `{ data, size = 180, showLabels = true, compare?: any }`. The `?:` syntax is only valid in type declarations/interfaces, NOT in destructuring patterns. This caused Metro bundler SyntaxError crash blocking the entire app. Fix: remove `?: any` to just `compare` — the type annotation `compare?: Record<string, number>` on the right side handles the optional typing.",
+    "MINOR: No testID attributes on the athlete table rows or crew panel elements — makes future automated testing harder. Consider adding testID to athlete rows and crew cards.",
+    "MINOR: athletes.tsx is 758 lines — at the boundary of the 700-line guideline for split recommendation."
+  ],
+  "updated_files": [
+    "/app/frontend/app/coach-studio/athletes.tsx (line 22: removed `?: any` from SixAxisRadar destructuring parameter)"
+  ],
+  "success_rate": {
+    "backend": "100% — 27/27 tests passed",
+    "frontend": "100% — All 7 review criteria verified"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Sprint 31 DNA Athletic Hub is fully operational after fixing the TypeScript syntax error in athletes.tsx. Backend: all 5 new endpoints (/api/coach/athletes/full, /api/coach/athlete/{id}/full-profile, /api/crew/manage, /api/crew/invite, /api/crew/invitations/{id}/respond) return correct data structures with six_axis, injury_risk, global_rank, crews, scan_trend. Frontend: ATLETI CRM table shows rank/avatar/DNA/RISK badge/SCAN/CREW/global rank/mini radar columns correctly. Clicking athlete opens DeepProfilePanel (6-axis radar, axis breakdown, injury risk + progress bar, trend scan sparkline, multiskill editor). CREW PANEL shows SHADOW SQUAD with weighted DNA 73.8, avg six-axis bars, member list with OWNER/ATHLETE role badges, invite form. Filters (HIGH/MEDIUM/LOW/TUTTI), sorts (DNA/RISCHIO/RANK/LVL), and search all working. Metro cache was cleared to pick up the fix.",
+  "rca_of_issue": "CRITICAL BUG RCA: athletes.tsx line 22 `compare?: any` in destructuring — TypeScript only allows `?:` in interface/type declarations (right side of `:` in function signature). In a destructuring pattern `{ compare?: any }`, the `?` after the variable name is NOT valid JavaScript/TypeScript syntax. Babel (used by Metro bundler) raised SyntaxError: 'Unexpected token, expected ,' at position 22:68. Metro showed the error overlay immediately preventing any page from loading. Fix: change `{ data, size = 180, showLabels = true, compare?: any }` to `{ data, size = 180, showLabels = true, compare }` — the interface definition on the right side already declares `compare?: Record<string, number>` which is the valid location for the `?` optional marker."
+}

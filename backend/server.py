@@ -2905,6 +2905,420 @@ async def update_user_role(user_id: str, data: dict, current_user: dict = Depend
 
 
 # ================================================================
+# DNA ATHLETIC HUB — Multi-Skill Radar, Deep Profiles & Crew CRM
+# ================================================================
+
+SIX_AXIS_LABELS = {
+    "endurance": "Endurance",
+    "power":     "Power",
+    "mobility":  "Mobility",
+    "technique": "Technique",
+    "recovery":  "Recovery",
+    "agility":   "Agility",
+}
+
+def compute_six_axis(user: dict) -> dict:
+    """
+    Compute 6 athletic dimensions from DNA + optional multiskill data.
+    Each axis 0-100.
+    """
+    dna = user.get("dna") or {}
+    ms  = user.get("multiskill") or {}
+    r   = lambda k: float(dna.get(k, 50))
+
+    # GPS endurance blends DNA resistenza + external GPS data
+    endurance = r("resistenza") * 0.65 + float(ms.get("endurance_gps", r("resistenza"))) * 0.35
+    # Power blends forza + potenza + strength test (watts)
+    power     = (r("forza") * 0.45 + r("potenza") * 0.35 + float(ms.get("strength_watts", r("forza"))) * 0.20)
+    # Mobility from NEXUS pose quality + agilità
+    mobility  = (r("agilita") * 0.60 + r("tecnica") * 0.40)
+    # Technique purely from NEXUS form score
+    technique = r("tecnica")
+    # Recovery: sleep + HRV (default 60 if not measured)
+    recovery  = (float(ms.get("sleep_score", 60)) * 0.55 + float(ms.get("hrv_score", 60)) * 0.45)
+    # Agility: speed + coordination
+    agility   = (r("velocita") * 0.60 + r("agilita") * 0.40)
+
+    return {
+        "endurance": round(min(100, endurance), 1),
+        "power":     round(min(100, power),     1),
+        "mobility":  round(min(100, mobility),  1),
+        "technique": round(min(100, technique), 1),
+        "recovery":  round(min(100, recovery),  1),
+        "agility":   round(min(100, agility),   1),
+    }
+
+
+def compute_injury_risk_detail(six_axis: dict) -> dict:
+    """Enhanced injury risk from all 6 axes."""
+    vals = list(six_axis.values())
+    avg = sum(vals) / len(vals)
+    mx, mn = max(vals), min(vals)
+    imbalance = mx - mn
+    low_recovery = six_axis.get("recovery", 60) < 50
+    risk_pct = min(100, int(imbalance * 2.2 + (20 if low_recovery else 0)))
+    dominant = max(six_axis, key=lambda k: six_axis[k])
+    weak     = min(six_axis, key=lambda k: six_axis[k])
+    return {
+        "risk_pct":   risk_pct,
+        "level":      "HIGH" if risk_pct > 65 else "MEDIUM" if risk_pct > 35 else "LOW",
+        "color":      "#FF453A" if risk_pct > 65 else "#FF9500" if risk_pct > 35 else "#34C759",
+        "dominant":   SIX_AXIS_LABELS.get(dominant, dominant),
+        "weak":       SIX_AXIS_LABELS.get(weak,     weak),
+        "imbalance":  round(imbalance, 1),
+        "low_recovery": low_recovery,
+        "recommendation": f"Riduci {SIX_AXIS_LABELS.get(dominant, dominant)}, intensifica {SIX_AXIS_LABELS.get(weak, weak)} e Recovery." if risk_pct > 35 else "Profilo bilanciato. Mantieni il programma attuale.",
+    }
+
+
+@api_router.get("/coach/athlete/{athlete_id}/full-profile")
+async def get_athlete_full_profile(athlete_id: str, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Deep dive: 6-axis radar, scan trend, injury risk, crew & global rank"""
+    try:
+        user = await db.users.find_one({"_id": ObjectId(athlete_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Atleta non trovato")
+    if not user:
+        raise HTTPException(status_code=404, detail="Atleta non trovato")
+
+    six_axis  = compute_six_axis(user)
+    injury    = compute_injury_risk_detail(six_axis)
+
+    # Scan trend: last 6 scan quality scores
+    scans = await db.scan_results.find({"user_id": user["_id"]}).sort("scanned_at", -1).limit(6).to_list(6)
+    scan_trend = [
+        {
+            "quality": s.get("quality_score", 0),
+            "reps":    s.get("reps_completed", 0),
+            "date":    s["scanned_at"].strftime("%d/%m") if s.get("scanned_at") else "?",
+        }
+        for s in reversed(scans)
+    ]
+    # Avg quality trend direction
+    if len(scan_trend) >= 2:
+        first_half = sum(s["quality"] for s in scan_trend[:len(scan_trend)//2]) / (len(scan_trend)//2)
+        second_half = sum(s["quality"] for s in scan_trend[len(scan_trend)//2:]) / (len(scan_trend) - len(scan_trend)//2)
+        trend_direction = "up" if second_half > first_half + 2 else "down" if second_half < first_half - 2 else "stable"
+    else:
+        trend_direction = "stable"
+
+    # Crew membership
+    crews = await db.crews_v2.find({"members": user["_id"]}).to_list(5)
+    crew_info = [{"id": str(c["_id"]), "name": c["name"], "role": "OWNER" if c.get("owner_id") == user["_id"] else "MEMBER"} for c in crews]
+
+    # Global rank (by XP)
+    global_rank_count = await db.users.count_documents({"xp": {"$gt": user.get("xp", 0)}})
+    global_rank = global_rank_count + 1
+
+    return {
+        "id":           str(user["_id"]),
+        "username":     user.get("username"),
+        "avatar_color": user.get("avatar_color", "#00F2FF"),
+        "level":        user.get("level", 1),
+        "xp":           user.get("xp", 0),
+        "sport":        user.get("sport", "—"),
+        "city":         user.get("city", "—"),
+        "gender":       user.get("gender"),
+        "age":          user.get("age"),
+        "dna":          {k: user.get("dna", {}).get(k, 50) for k in DNA_KEYS} if user.get("dna") else {},
+        "multiskill":   user.get("multiskill") or {},
+        "six_axis":     six_axis,
+        "injury_risk":  injury,
+        "scan_trend":   scan_trend,
+        "trend_direction": trend_direction,
+        "crews":        crew_info,
+        "global_rank":  global_rank,
+        "ak_credits":   user.get("ak_credits", 0),
+    }
+
+
+@api_router.put("/coach/athlete/{athlete_id}/multiskill")
+async def update_athlete_multiskill(athlete_id: str, data: dict, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Coach manually sets external metrics (GPS, watts, sleep, HRV)"""
+    allowed = {"endurance_gps", "strength_watts", "sleep_score", "hrv_score"}
+    updates = {k: float(v) for k, v in data.items() if k in allowed and v is not None}
+    if not updates:
+        raise HTTPException(status_code=400, detail="Nessun campo valido")
+    try:
+        oid = ObjectId(athlete_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID non valido")
+    await db.users.update_one({"_id": oid}, {"$set": {f"multiskill.{k}": v for k, v in updates.items()}})
+    user = await db.users.find_one({"_id": oid})
+    return {"status": "updated", "six_axis": compute_six_axis(user), "multiskill": user.get("multiskill") or {}}
+
+
+@api_router.get("/coach/athletes/full")
+async def get_athletes_full_table(
+    sort_by: str = "dna_avg",
+    sort_order: str = "desc",
+    min_dna: Optional[float] = None,
+    injury_level: Optional[str] = None,   # HIGH | MEDIUM | LOW
+    current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))
+):
+    """Full athlete table with 6-axis, injury risk, crew, and rank"""
+    gym_id = current_user.get("gym_id")
+    if gym_id:
+        athletes = await db.users.find({"gym_id": gym_id}).to_list(100)
+    else:
+        coach_crews = await db.crews_v2.find({"owner_id": current_user["_id"]}).to_list(10)
+        member_ids = list({mid for c in coach_crews for mid in c.get("members", [])})
+        athletes = await db.users.find({"_id": {"$in": member_ids} if member_ids else {"$ne": current_user["_id"]}}).limit(50).to_list(50)
+
+    # Enrich each athlete
+    enriched = []
+    for user in athletes:
+        dna  = user.get("dna") or {}
+        dna_avg = round(sum(dna.get(k, 50) for k in DNA_KEYS) / len(DNA_KEYS), 1) if dna else 50
+        six_axis = compute_six_axis(user)
+        injury   = compute_injury_risk_detail(six_axis)
+
+        # Last scan
+        last_scan = await db.scan_results.find_one({"user_id": user["_id"]}, sort=[("scanned_at", -1)])
+        days_since = None
+        if last_scan and last_scan.get("scanned_at"):
+            days_since = (datetime.utcnow() - last_scan["scanned_at"]).days
+
+        # Crew
+        crews = await db.crews_v2.find({"members": user["_id"]}).to_list(3)
+        crew_names = [c["name"] for c in crews]
+
+        # Global rank
+        rank = await db.users.count_documents({"xp": {"$gt": user.get("xp", 0)}}) + 1
+
+        # Compliance
+        pushes = await db.challenge_pushes.find({"coach_id": current_user["_id"]}).to_list(10)
+        completed = sum(1 for p in pushes for c in p.get("completions", []) if c.get("user_id") == user["_id"])
+        comp_pct = round(completed / max(len(pushes), 1) * 100, 1) if pushes else 0
+
+        if min_dna and dna_avg < min_dna:
+            continue
+        if injury_level and injury["level"] != injury_level:
+            continue
+
+        enriched.append({
+            "id":           str(user["_id"]),
+            "username":     user.get("username"),
+            "avatar_color": user.get("avatar_color", "#00F2FF"),
+            "level":        user.get("level", 1),
+            "xp":           user.get("xp", 0),
+            "sport":        user.get("sport", "—"),
+            "city":         user.get("city", "—"),
+            "dna_avg":      dna_avg,
+            "six_axis":     six_axis,
+            "injury_risk":  injury,
+            "days_since_scan": days_since,
+            "crews":        crew_names,
+            "global_rank":  rank,
+            "compliance_pct": comp_pct,
+        })
+
+    reverse = sort_order == "desc"
+    if sort_by == "dna_avg":
+        enriched.sort(key=lambda a: a["dna_avg"], reverse=reverse)
+    elif sort_by == "injury":
+        enriched.sort(key=lambda a: a["injury_risk"]["risk_pct"], reverse=reverse)
+    elif sort_by == "rank":
+        enriched.sort(key=lambda a: a["global_rank"], reverse=not reverse)
+    elif sort_by == "level":
+        enriched.sort(key=lambda a: a["level"], reverse=reverse)
+
+    return {"athletes": enriched, "total": len(enriched)}
+
+
+# ── Crew CRM ──────────────────────────────────────────────────────────────────
+
+@api_router.get("/crew/manage")
+async def get_crew_management(current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Advanced crew management with weighted averages and member details"""
+    coach_crews = await db.crews_v2.find({
+        "$or": [{"owner_id": current_user["_id"]}, {"coaches": current_user["_id"]}]
+    }).to_list(10)
+
+    result = []
+    for crew in coach_crews:
+        members = []
+        total_xp = 0
+        dna_avgs = []
+        six_axes = []
+
+        for mid in crew.get("members", []):
+            user = await db.users.find_one({"_id": mid})
+            if not user:
+                continue
+            dna = user.get("dna") or {}
+            dna_avg = round(sum(dna.get(k, 50) for k in DNA_KEYS) / len(DNA_KEYS), 1)
+            six = compute_six_axis(user)
+            xp = user.get("xp", 0)
+            total_xp += xp
+            dna_avgs.append(dna_avg)
+            six_axes.append(six)
+            members.append({
+                "id":           str(user["_id"]),
+                "username":     user.get("username"),
+                "avatar_color": user.get("avatar_color", "#00F2FF"),
+                "role":         "COACH" if user["_id"] in crew.get("coaches", []) else ("OWNER" if user["_id"] == crew.get("owner_id") else "ATHLETE"),
+                "level":        user.get("level", 1),
+                "xp":           xp,
+                "dna_avg":      dna_avg,
+                "six_axis":     six,
+                "ak_credits":   user.get("ak_credits", 0),
+            })
+
+        # Weighted average DNA (XP-weighted)
+        if members:
+            total_w = sum(m["xp"] or 1 for m in members)
+            weighted_dna = round(sum((m["dna_avg"] * (m["xp"] or 1)) for m in members) / max(total_w, 1), 1)
+            # Average six-axis
+            avg_six = {k: round(sum(s[k] for s in six_axes) / len(six_axes), 1) for k in SIX_AXIS_LABELS}
+        else:
+            weighted_dna = 0
+            avg_six = {k: 50 for k in SIX_AXIS_LABELS}
+
+        # Battle stats
+        battles = await db.crew_battles.find({
+            "$or": [{"crew_a_id": crew["_id"]}, {"crew_b_id": crew["_id"]}],
+            "status": "completed"
+        }).to_list(20)
+        wins = sum(1 for b in battles if b.get("winner_crew_id") == crew["_id"])
+
+        # Pending invitations
+        invites = await db.crew_invitations.find({"crew_id": crew["_id"], "status": "pending"}).to_list(10)
+
+        result.append({
+            "id":            str(crew["_id"]),
+            "name":          crew.get("name"),
+            "members":       members,
+            "members_count": len(members),
+            "total_xp":      total_xp,
+            "weighted_dna":  weighted_dna,
+            "avg_six_axis":  avg_six,
+            "battle_wins":   wins,
+            "battle_total":  len(battles),
+            "pending_invites": len(invites),
+        })
+
+    # Also get invitations sent by this coach
+    sent_invites = await db.crew_invitations.find({"invited_by": current_user["_id"]}).sort("created_at", -1).limit(20).to_list(20)
+    pending_received = await db.crew_invitations.find({"invited_user_id": current_user["_id"], "status": "pending"}).to_list(10)
+
+    return {
+        "crews": result,
+        "sent_invitations": [
+            {
+                "id":             str(i["_id"]),
+                "crew_name":      i.get("crew_name"),
+                "invitee":        i.get("invitee_username"),
+                "role":           i.get("role"),
+                "status":         i.get("status"),
+                "created_at":     i["created_at"].isoformat() if i.get("created_at") else None,
+            }
+            for i in sent_invites
+        ],
+        "pending_for_me": [
+            {
+                "id":         str(i["_id"]),
+                "crew_name":  i.get("crew_name"),
+                "invited_by": i.get("inviter_username"),
+                "role":       i.get("role"),
+            }
+            for i in pending_received
+        ],
+    }
+
+
+@api_router.post("/crew/invite")
+async def invite_to_crew(data: dict, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Invite an athlete to a crew (Apple Calendar style invitation)"""
+    crew_id   = data.get("crew_id")
+    email     = data.get("email", "").strip().lower()
+    role      = data.get("role", "ATHLETE")
+
+    if not crew_id or not email:
+        raise HTTPException(status_code=400, detail="crew_id e email richiesti")
+
+    crew = await db.crews_v2.find_one({"_id": ObjectId(crew_id)})
+    if not crew:
+        raise HTTPException(status_code=404, detail="Crew non trovata")
+
+    invitee = await db.users.find_one({"email": email})
+    if not invitee:
+        raise HTTPException(status_code=404, detail=f"Nessun utente con email {email}")
+    if invitee["_id"] in crew.get("members", []):
+        raise HTTPException(status_code=400, detail="L'utente è già nella crew")
+
+    # Check duplicate pending
+    existing = await db.crew_invitations.find_one({"crew_id": crew["_id"], "invited_user_id": invitee["_id"], "status": "pending"})
+    if existing:
+        raise HTTPException(status_code=400, detail="Invito già inviato a questo utente")
+
+    now = datetime.utcnow()
+    inv = {
+        "crew_id":          crew["_id"],
+        "crew_name":        crew.get("name"),
+        "invited_user_id":  invitee["_id"],
+        "invitee_username": invitee.get("username"),
+        "invited_by":       current_user["_id"],
+        "inviter_username": current_user.get("username"),
+        "role":             role,
+        "status":           "pending",
+        "created_at":       now,
+        "expires_at":       now + timedelta(days=7),
+    }
+    result = await db.crew_invitations.insert_one(inv)
+
+    # Notify athlete
+    await db.notifications.insert_one({
+        "user_id": invitee["_id"],
+        "type":    "crew_invitation",
+        "title":   "INVITO CREW RICEVUTO",
+        "icon":    "people",
+        "color":   "#00F2FF",
+        "message": f"{current_user.get('username')} ti invita nella crew '{crew.get('name')}' come {role}",
+        "read":    False,
+        "created_at": now,
+        "meta":    {"invitation_id": str(result.inserted_id)},
+    })
+
+    return {"status": "invited", "invitation_id": str(result.inserted_id), "invitee": invitee.get("username"), "crew": crew.get("name")}
+
+
+@api_router.post("/crew/invitations/{invitation_id}/respond")
+async def respond_to_crew_invitation(invitation_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    """Accept or decline a crew invitation"""
+    action = data.get("action")  # "accept" | "decline"
+    if action not in ("accept", "decline"):
+        raise HTTPException(status_code=400, detail="action deve essere 'accept' o 'decline'")
+    try:
+        inv = await db.crew_invitations.find_one({"_id": ObjectId(invitation_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Invito non trovato")
+    if not inv or inv["invited_user_id"] != current_user["_id"]:
+        raise HTTPException(status_code=403, detail="Non autorizzato")
+    if inv["status"] != "pending":
+        raise HTTPException(status_code=400, detail="Invito già gestito")
+
+    await db.crew_invitations.update_one({"_id": inv["_id"]}, {"$set": {"status": action + "ed"}})
+
+    if action == "accept":
+        await db.crews_v2.update_one({"_id": inv["crew_id"]}, {"$addToSet": {"members": current_user["_id"]}})
+        await db.users.update_one({"_id": current_user["_id"]}, {"$set": {"gym_id": inv.get("crew_id")}})
+        # Notify inviter
+        await db.notifications.insert_one({
+            "user_id": inv["invited_by"],
+            "type": "invitation_accepted",
+            "title": "INVITO ACCETTATO",
+            "icon": "checkmark-circle",
+            "color": "#34C759",
+            "message": f"{current_user.get('username')} ha accettato l'invito per '{inv.get('crew_name')}'",
+            "read": False,
+            "created_at": datetime.utcnow(),
+        })
+
+    return {"status": action + "ed", "crew": inv.get("crew_name")}
+
+
+# ================================================================
 # AK CREDITS ENGINE — Virtual Currency & Premium Tool Gating
 # ================================================================
 

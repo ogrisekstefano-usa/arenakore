@@ -1,458 +1,757 @@
 /**
- * COACH STUDIO — MODULE 1: ATHLETE ANALYTICS
- * Advanced table + DNA Radar Comparison + Compliance Chart
+ * NÈXUS COMMAND CENTER — ATHLETE CRM (DNA Athletic Hub)
+ * Panel 1: Advanced Table  |  Panel 2: Deep Profile  |  Tab: Crew Management
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, TextInput,
+  ActivityIndicator, TextInput, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Polygon, Line, Circle, Text as SvgText, G, Polyline } from 'react-native-svg';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Svg, { Polygon, Line, Text as SvgText, Circle } from 'react-native-svg';
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme, MONT, INTER } from '../../contexts/ThemeContext';
 import { api } from '../../utils/api';
-import { LineChart, MiniRadar } from '../../components/studio/StudioComponents';
 
-const DNA_KEYS = ['velocita','forza','resistenza','agilita','tecnica','potenza'];
-const DNA_LABELS = ['VEL','FOR','RES','AGI','TEC','POT'];
-const RADAR_COLORS = ['#00F2FF','#D4AF37','#FF453A','#AF52DE'];
+// ── 6-Axis Radar ──────────────────────────────────────────────────────────────
+const SIX_AXES = ['endurance', 'power', 'mobility', 'technique', 'recovery', 'agility'];
+const SIX_LABELS = ['END', 'POW', 'MOB', 'TEC', 'REC', 'AGI'];
+const SIX_COLORS = ['#00F2FF', '#FF453A', '#34C759', '#D4AF37', '#AF52DE', '#FF9500'];
 
-// ── DNA Radar Chart (SVG) ──────────────────────────────────────────────
-function DNARadar({ athletes, size = 220 }: { athletes: any[]; size?: number }) {
+function SixAxisRadar({ data, size = 180, showLabels = true, compare }: {
+  data: Record<string, number>; size?: number; showLabels?: boolean; compare?: Record<string, number>;
+}) {
   const cx = size / 2, cy = size / 2, r = size / 2 - 28;
-  const n = DNA_KEYS.length;
+  const n = SIX_AXES.length;
 
   const pts = (vals: number[], scale = 1) =>
-    DNA_KEYS.map((k, i) => {
+    SIX_AXES.map((k, i) => {
       const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
       const v = (vals[i] / 100) * r * scale;
       return [cx + v * Math.cos(angle), cy + v * Math.sin(angle)] as [number, number];
     });
 
-  const axisPoints = pts(new Array(n).fill(100));
-  const gridLevels = [0.25, 0.5, 0.75, 1.0];
+  const gridPts = pts(new Array(n).fill(100));
+  const dataPts = pts(SIX_AXES.map(k => data?.[k] ?? 50));
+  const compPts = compare ? pts(SIX_AXES.map(k => compare?.[k] ?? 50)) : null;
 
   return (
     <Svg width={size} height={size}>
-      {/* Grid */}
-      {gridLevels.map(lvl => (
-        <Polygon
-          key={lvl}
+      {/* Grid rings at 25%, 50%, 75%, 100% */}
+      {[0.25, 0.5, 0.75, 1.0].map(lvl => (
+        <Polygon key={lvl}
           points={pts(new Array(n).fill(100), lvl).map(p => p.join(',')).join(' ')}
-          fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={1}
+          fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={1}
         />
       ))}
-      {/* Axes */}
-      {axisPoints.map(([x, y], i) => (
-        <Line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="rgba(255,255,255,0.07)" strokeWidth={1} />
+      {/* Axis lines */}
+      {gridPts.map(([x, y], i) => (
+        <Line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth={1} />
       ))}
-      {/* Athlete polygons */}
-      {athletes.map((ath, ai) => {
-        const vals = DNA_KEYS.map(k => ath.dna?.[k] ?? 50);
-        const ap = pts(vals);
+      {/* Compare polygon (if provided) */}
+      {compPts && (
+        <Polygon
+          points={compPts.map(p => p.join(',')).join(' ')}
+          fill="rgba(212,175,55,0.08)" stroke="#D4AF37" strokeWidth={1.5} opacity={0.7}
+        />
+      )}
+      {/* Data polygon */}
+      <Polygon
+        points={dataPts.map(p => p.join(',')).join(' ')}
+        fill="rgba(0,242,255,0.12)" stroke="#00F2FF" strokeWidth={2}
+      />
+      {/* Axis dots */}
+      {dataPts.map(([x, y], i) => (
+        <Circle key={i} cx={x} cy={y} r={3} fill={SIX_COLORS[i % SIX_COLORS.length]} />
+      ))}
+      {/* Labels */}
+      {showLabels && gridPts.map(([x, y], i) => {
+        const lx = cx + (x - cx) * 1.28, ly = cy + (y - cy) * 1.28;
         return (
-          <Polygon
-            key={ath.id}
-            points={ap.map(p => p.join(',')).join(' ')}
-            fill={RADAR_COLORS[ai % RADAR_COLORS.length] + '22'}
-            stroke={RADAR_COLORS[ai % RADAR_COLORS.length]}
-            strokeWidth={2}
-            opacity={0.85}
-          />
+          <SvgText key={i} x={lx} y={ly + 4}
+            fontSize={9} fill={SIX_COLORS[i % SIX_COLORS.length]} textAnchor="middle" fontWeight="bold">
+            {SIX_LABELS[i]}
+          </SvgText>
         );
       })}
-      {/* Axis labels */}
-      {axisPoints.map(([x, y], i) => (
-        <SvgText
-          key={i} x={x + (x > cx ? 6 : x < cx ? -6 : 0)}
-          y={y + (y > cy ? 14 : y < cy ? -6 : 4)}
-          fontSize={9} fill="rgba(255,255,255,0.35)" textAnchor="middle"
-          fontWeight="bold"
-        >{DNA_LABELS[i]}</SvgText>
-      ))}
     </Svg>
   );
 }
 
-// ── Compliance Bar Chart (SVG) ────────────────────────────────────────
-function ComplianceChart({ templates }: { templates: any[] }) {
-  const w = 400, barH = 28, gap = 8, padLeft = 130;
-  const total = templates.length;
-  const svgH = total * (barH + gap) + 20;
-
+// ── Injury Risk Badge ─────────────────────────────────────────────────────────
+function RiskBadge({ risk }: { risk: any }) {
+  const { theme } = useTheme();
   return (
-    <View style={cc$.wrap}>
-      <Text style={cc$.title}>COMPLIANCE TEMPLATE</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <Svg width={w} height={svgH}>
-          {templates.map((t, i) => {
-            const y = i * (barH + gap) + 4;
-            const barW = ((t.compliance_pct || 0) / 100) * (w - padLeft - 20);
-            const col = t.compliance_pct >= 70 ? '#34C759' : t.compliance_pct >= 40 ? '#FF9500' : '#FF453A';
-            return (
-              <G key={t.push_id}>
-                <SvgText x={0} y={y + barH / 2 + 4} fontSize={10} fill="rgba(255,255,255,0.4)" fontWeight="bold">
-                  {(t.template_name || '').substring(0, 16).toUpperCase()}
-                </SvgText>
-                <Polygon
-                  points={`${padLeft},${y} ${padLeft + Math.max(barW, 4)},${y} ${padLeft + Math.max(barW, 4)},${y + barH} ${padLeft},${y + barH}`}
-                  fill={col + '30'} stroke={col} strokeWidth={1}
-                />
-                <SvgText x={padLeft + Math.max(barW, 4) + 6} y={y + barH / 2 + 4} fontSize={11} fill={col} fontWeight="bold">
-                  {t.compliance_pct}%
-                </SvgText>
-              </G>
-            );
-          })}
-        </Svg>
-      </ScrollView>
+    <View style={[rb$.badge, { backgroundColor: risk.color + '15', borderColor: risk.color + '45' }]}>
+      <View style={[rb$.dot, { backgroundColor: risk.color }]} />
+      <Text style={[rb$.text, MONT('900'), { color: risk.color }]}>{risk.level}</Text>
+    </View>
+  );
+}
+const rb$ = StyleSheet.create({
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1 },
+  dot: { width: 5, height: 5, borderRadius: 3 },
+  text: { fontSize: 9, letterSpacing: 1.5 },
+});
+
+// ── Scan Trend Sparkline ──────────────────────────────────────────────────────
+function TrendSparkline({ trend, direction }: { trend: any[]; direction: string }) {
+  if (!trend?.length) return null;
+  const w = 56, h = 22;
+  const max = Math.max(...trend.map(t => t.quality), 100);
+  const points = trend.map((t, i) => {
+    const x = (i / Math.max(trend.length - 1, 1)) * w;
+    const y = h - (t.quality / max) * h;
+    return `${x},${y}`;
+  }).join(' ');
+  const color = direction === 'up' ? '#34C759' : direction === 'down' ? '#FF453A' : '#888888';
+  return (
+    <View style={{ width: w, height: h }}>
+      <Svg width={w} height={h}>
+        <Polygon points={`0,${h} ${points} ${w},${h}`} fill={color + '18'} />
+        <Line x1={0} y1={0} x2={w} y2={0} stroke="rgba(255,255,255,0)" />
+        {trend.map((_, i) => {
+          const x = (i / Math.max(trend.length - 1, 1)) * w;
+          const y = h - (trend[i].quality / max) * h;
+          return <Line key={i} x1={x} y1={y} x2={x + 0.1} y2={y + 0.1} stroke={color} strokeWidth={1.5} />;
+        })}
+      </Svg>
     </View>
   );
 }
 
-const cc$ = StyleSheet.create({
-  wrap: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
-  title: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 16 },
-});
-
-// ── Main Athletes Module ───────────────────────────────────────────────
-const SORT_COLS = [
-  { key: 'username', label: 'ATLETA' },
-  { key: 'dna_avg', label: 'KORE' },
-  { key: 'level', label: 'LVL' },
-  { key: 'xp', label: 'XP' },
-  { key: 'compliance_pct', label: '%' },
-  { key: 'days_since_scan', label: 'SCAN' },
-];
-
-const DNA_SHORT = ['V','F','R','A','T','P'];
-
-export default function AthletesModule() {
+// ── Deep Profile Panel ────────────────────────────────────────────────────────
+function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: () => void }) {
   const { token } = useAuth();
-  const [athletes, setAthletes] = useState<any[]>([]);
-  const [compliance, setCompliance] = useState<any[]>([]);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [radarAthletes, setRadarAthletes] = useState<any[]>([]);
+  const { theme } = useTheme();
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState('dna_avg');
-  const [sortOrder, setSortOrder] = useState<'asc'|'desc'>('desc');
-  const [search, setSearch] = useState('');
-  const [minScore, setMinScore] = useState('');
-  const [deepDiveId, setDeepDiveId] = useState<string | null>(null);
-  const [historicalData, setHistoricalData] = useState<any>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [ms, setMs] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
 
-  const load = useCallback(async () => {
+  useEffect(() => {
+    if (!token || !athleteId) return;
+    setLoading(true);
+    api.getAthleteFullProfile(athleteId, token)
+      .then(d => { setProfile(d); setMs({ endurance_gps: String(d.multiskill?.endurance_gps || ''), strength_watts: String(d.multiskill?.strength_watts || ''), sleep_score: String(d.multiskill?.sleep_score || ''), hrv_score: String(d.multiskill?.hrv_score || '') }); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [athleteId, token]);
+
+  const handleSaveMs = async () => {
     if (!token) return;
+    setSaving(true);
+    const data: any = {};
+    Object.entries(ms).forEach(([k, v]) => { if (v) data[k] = parseFloat(v); });
     try {
-      const [a, c] = await Promise.all([
-        api.getCoachAthletes(token, sortBy, sortOrder, minScore ? Number(minScore) : undefined),
-        api.getCoachCompliance(token),
-      ]);
-      setAthletes(a.athletes || []);
-      setCompliance(c.templates || []);
-    } catch (_) {}
-    finally { setLoading(false); }
-  }, [token, sortBy, sortOrder, minScore]);
-
-  useEffect(() => { load(); }, [load]);
-
-  useEffect(() => {
-    if (selectedIds.length === 0 || !token) { setRadarAthletes([]); return; }
-    api.getCoachRadar(selectedIds, token).then(d => setRadarAthletes(d.athletes || [])).catch(() => {});
-  }, [selectedIds, token]);
-
-  useEffect(() => {
-    if (!deepDiveId || !token) { setHistoricalData(null); return; }
-    api.getAthleteHistorical(deepDiveId, token).then(d => setHistoricalData(d)).catch(() => {});
-  }, [deepDiveId, token]);
-
-  const handleSort = (key: string) => {
-    if (key === sortBy) setSortOrder(o => o === 'asc' ? 'desc' : 'asc');
-    else { setSortBy(key); setSortOrder('desc'); }
+      const r = await api.updateAthleteMiltiskill(athleteId, data, token);
+      setProfile((p: any) => ({ ...p, six_axis: r.six_axis, multiskill: r.multiskill }));
+      setEditMode(false);
+    } catch (e: any) { Alert.alert('Errore', e?.message || 'Impossibile salvare'); }
+    finally { setSaving(false); }
   };
 
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : prev.length < 4 ? [...prev, id] : prev
-    );
-  };
-
-  const filtered = athletes.filter(a =>
-    !search || a.username.toLowerCase().includes(search.toLowerCase())
+  if (loading) return (
+    <View style={[dp$.panel, { backgroundColor: theme.surface, borderColor: theme.border2, alignItems: 'center', justifyContent: 'center' }]}>
+      <ActivityIndicator color={theme.accent} />
+    </View>
   );
+  if (!profile) return null;
 
-  if (loading) return <View style={m$.center}><ActivityIndicator color="#00F2FF" /></View>;
+  const ir = profile.injury_risk || {};
+  const MS_FIELDS = [
+    { key: 'endurance_gps',   label: 'GPS Endurance', icon: 'navigate', color: '#00F2FF' },
+    { key: 'strength_watts',  label: 'Strength (Watt)', icon: 'barbell', color: '#FF453A' },
+    { key: 'sleep_score',     label: 'Sleep Score', icon: 'moon', color: '#AF52DE' },
+    { key: 'hrv_score',       label: 'HRV Score', icon: 'heart', color: '#34C759' },
+  ];
 
   return (
-    <ScrollView style={m$.root} contentContainerStyle={m$.content}>
-      <Text style={m$.pageTitle}>ATHLETE ANALYTICS</Text>
-
-      {/* Filters + CSV Export */}
-      <View style={m$.filters}>
-        <View style={m$.searchWrap}>
-          <Ionicons name="search" size={14} color="rgba(255,255,255,0.3)" />
-          <TextInput
-            style={m$.searchInput}
-            placeholder="Cerca atleta..."
-            placeholderTextColor="rgba(255,255,255,0.2)"
-            value={search}
-            onChangeText={setSearch}
-          />
+    <Animated.View entering={FadeIn.duration(250)} style={[dp$.panel, { backgroundColor: theme.surface, borderColor: theme.border2 }]}>
+      {/* Header */}
+      <View style={dp$.header}>
+        <View style={[dp$.avatar, { backgroundColor: profile.avatar_color || theme.accent }]}>
+          <Text style={dp$.avatarLetter}>{(profile.username || '?')[0]}</Text>
         </View>
-        <View style={m$.searchWrap}>
-          <Ionicons name="analytics" size={14} color="rgba(255,255,255,0.3)" />
-          <TextInput
-            style={m$.searchInput}
-            placeholder="Min KORE (es. 60)"
-            placeholderTextColor="rgba(255,255,255,0.2)"
-            value={minScore}
-            onChangeText={setMinScore}
-            onSubmitEditing={load}
-            keyboardType="numeric"
-          />
+        <View style={dp$.headerInfo}>
+          <Text style={[dp$.name, MONT(), { color: theme.text }]}>{profile.username}</Text>
+          <Text style={[dp$.meta, INTER('300'), { color: theme.textSec }]}>
+            LVL {profile.level} · #{profile.global_rank} Global · {profile.city}
+          </Text>
+          {profile.crews?.length > 0 && (
+            <Text style={[dp$.crewBadge, { color: theme.accent }]}>
+              🛡 {profile.crews[0].name}
+            </Text>
+          )}
         </View>
-        {/* CSV Export button */}
-        <TouchableOpacity
-          style={m$.csvBtn}
-          onPress={() => {
-            if (typeof window === 'undefined') return;
-            const headers = 'Nome,KORE Score,DNA Medio,Compliance %,Livello,XP';
-            const rows = filtered.map((a: any) =>
-              `${a.username},${a.dna_avg},${a.dna_avg},${a.compliance_pct},${a.level},${a.xp}`
-            );
-            const csv = [headers, ...rows].join('\n');
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `arenakore_athletes_${new Date().toISOString().slice(0, 10)}.csv`;
-            link.click();
-            URL.revokeObjectURL(url);
-          }}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="download-outline" size={14} color="#34C759" />
-          <Text style={m$.csvBtnText}>EXPORT CSV</Text>
+        <TouchableOpacity onPress={onClose} style={dp$.closeBtn}>
+          <Ionicons name="close" size={16} color={theme.textTer} />
         </TouchableOpacity>
-        <View style={m$.selectedInfo}>
-          <Text style={m$.selectedText}>{selectedIds.length}/4 selezionati per Radar</Text>
-          {selectedIds.length > 0 && (
-            <TouchableOpacity onPress={() => setSelectedIds([])}>
-              <Text style={m$.clearSel}>RESET</Text>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+        {/* 6-Axis Radar */}
+        <View style={dp$.section}>
+          <Text style={[dp$.sectionTitle, MONT('900'), { color: theme.textTer }]}>DNA MULTI-SKILL RADAR</Text>
+          <View style={dp$.radarWrap}>
+            <SixAxisRadar data={profile.six_axis || {}} size={170} />
+          </View>
+          {/* Axis breakdown */}
+          <View style={dp$.axisGrid}>
+            {SIX_AXES.map((k, i) => (
+              <View key={k} style={[dp$.axisItem, { backgroundColor: theme.surface2 }]}>
+                <Text style={[dp$.axisLabel, INTER('300'), { color: theme.textTer }]}>{SIX_LABELS[i]}</Text>
+                <Text style={[dp$.axisVal, MONT('900'), { color: SIX_COLORS[i % SIX_COLORS.length] }]}>
+                  {profile.six_axis?.[k] ?? '—'}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Injury Risk */}
+        <View style={[dp$.section, { backgroundColor: ir.color + '08', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: ir.color + '25' }]}>
+          <View style={dp$.riskHeader}>
+            <Ionicons name="warning" size={14} color={ir.color} />
+            <Text style={[dp$.sectionTitle, MONT('900'), { color: ir.color }]}>INJURY RISK: {ir.level}</Text>
+            <Text style={[dp$.riskPct, MONT('900'), { color: ir.color }]}>{ir.risk_pct}%</Text>
+          </View>
+          <View style={[dp$.riskBar, { backgroundColor: theme.surface2 }]}>
+            <View style={[dp$.riskFill, { width: `${ir.risk_pct}%` as any, backgroundColor: ir.color }]} />
+          </View>
+          <Text style={[dp$.riskRec, INTER('300'), { color: theme.textSec }]}>{ir.recommendation}</Text>
+          <View style={dp$.riskDetail}>
+            <Text style={[INTER(), { color: theme.textTer, fontSize: 10 }]}>⬆ {ir.dominant} · ⬇ {ir.weak}</Text>
+            {ir.low_recovery && <View style={[dp$.recovWarn, { borderColor: '#AF52DE40' }]}><Text style={[{ color: '#AF52DE', fontSize: 10 }, INTER('300')]}>⚠ Recovery bassa</Text></View>}
+          </View>
+        </View>
+
+        {/* Scan Trend */}
+        <View style={dp$.section}>
+          <Text style={[dp$.sectionTitle, MONT('900'), { color: theme.textTer }]}>TREND SCAN NEXUS</Text>
+          <View style={dp$.trendRow}>
+            <TrendSparkline trend={profile.scan_trend || []} direction={profile.trend_direction} />
+            <Text style={[dp$.trendLabel, INTER('300'), { color: profile.trend_direction === 'up' ? '#34C759' : profile.trend_direction === 'down' ? '#FF453A' : theme.textTer }]}>
+              {profile.trend_direction === 'up' ? '↑ In miglioramento' : profile.trend_direction === 'down' ? '↓ In calo' : '→ Stabile'}
+            </Text>
+          </View>
+        </View>
+
+        {/* External Metrics Editor */}
+        <View style={dp$.section}>
+          <View style={dp$.secHeader}>
+            <Text style={[dp$.sectionTitle, MONT('900'), { color: theme.textTer }]}>METRICHE ESTERNE</Text>
+            <TouchableOpacity onPress={() => setEditMode(e => !e)}>
+              <Ionicons name={editMode ? 'close' : 'pencil'} size={14} color={theme.textTer} />
+            </TouchableOpacity>
+          </View>
+          {MS_FIELDS.map(f => (
+            <View key={f.key} style={dp$.msRow}>
+              <Ionicons name={f.icon as any} size={13} color={f.color} />
+              <Text style={[dp$.msLabel, INTER('300'), { color: theme.textSec }]}>{f.label}</Text>
+              {editMode ? (
+                <TextInput
+                  style={[dp$.msInput, { backgroundColor: theme.surface2, color: theme.text, borderColor: theme.border }]}
+                  value={ms[f.key] || ''}
+                  onChangeText={v => setMs(prev => ({ ...prev, [f.key]: v }))}
+                  keyboardType="numeric"
+                  placeholder="0–100"
+                  placeholderTextColor={theme.textTer}
+                />
+              ) : (
+                <Text style={[dp$.msVal, MONT('900'), { color: f.color }]}>
+                  {profile.multiskill?.[f.key] ? `${profile.multiskill[f.key]}` : '—'}
+                </Text>
+              )}
+            </View>
+          ))}
+          {editMode && (
+            <TouchableOpacity style={[dp$.saveBtn, { backgroundColor: theme.accent }]} onPress={handleSaveMs} disabled={saving}>
+              {saving ? <ActivityIndicator color="#000" size="small" /> : <Text style={[dp$.saveBtnText, MONT('900')]}>SALVA METRICHE</Text>}
             </TouchableOpacity>
           )}
         </View>
-      </View>
+      </ScrollView>
+    </Animated.View>
+  );
+}
 
-      {/* Two-column layout */}
-      <View style={m$.cols}>
-        {/* LEFT: Table */}
-        <View style={m$.tableWrap}>
-          {/* Table header */}
-          <View style={m$.tableHeader}>
-            <View style={m$.chkCol} />
-            {SORT_COLS.map(col => (
-              <TouchableOpacity
-                key={col.key}
-                style={[m$.th, col.key === 'username' && m$.thName]}
-                onPress={() => handleSort(col.key)}
-              >
-                <Text style={[m$.thText, sortBy === col.key && { color: '#00F2FF' }]}>{col.label}</Text>
-                {sortBy === col.key && (
-                  <Ionicons name={sortOrder === 'desc' ? 'chevron-down' : 'chevron-up'} size={10} color="#00F2FF" />
-                )}
-              </TouchableOpacity>
-            ))}
-            {DNA_SHORT.map(d => (
-              <View key={d} style={m$.thDna}>
-                <Text style={m$.thTextSm}>{d}</Text>
-              </View>
-            ))}
+const dp$ = StyleSheet.create({
+  panel: { width: 310, borderLeftWidth: 1, paddingTop: 16, flexShrink: 0 },
+  header: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 14, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
+  avatar: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  avatarLetter: { color: '#000', fontSize: 17, fontWeight: '900' },
+  headerInfo: { flex: 1, gap: 2 },
+  name: { fontSize: 14, letterSpacing: 1 },
+  meta: { fontSize: 10, letterSpacing: 0.5 },
+  crewBadge: { fontSize: 10, letterSpacing: 1 },
+  closeBtn: { padding: 4 },
+  section: { paddingHorizontal: 14, paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  sectionTitle: { fontSize: 9, letterSpacing: 3 },
+  radarWrap: { alignItems: 'center' },
+  axisGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  axisItem: { flex: 1, minWidth: 44, alignItems: 'center', borderRadius: 8, paddingVertical: 6 },
+  axisLabel: { fontSize: 8, letterSpacing: 1.5 },
+  axisVal: { fontSize: 15 },
+  riskHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  riskPct: { marginLeft: 'auto' as any, fontSize: 16 },
+  riskBar: { height: 4, borderRadius: 2, overflow: 'hidden' },
+  riskFill: { height: '100%', borderRadius: 2 },
+  riskRec: { fontSize: 11, lineHeight: 15 },
+  riskDetail: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  recovWarn: { borderWidth: 1, borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2 },
+  trendRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  trendLabel: { fontSize: 11 },
+  secHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  msRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  msLabel: { flex: 1, fontSize: 11 },
+  msVal: { fontSize: 14 },
+  msInput: { width: 60, borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 5, fontSize: 12, textAlign: 'right' } as any,
+  saveBtn: { borderRadius: 8, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', marginTop: 6 },
+  saveBtnText: { color: '#000', fontSize: 11, letterSpacing: 2 },
+});
+
+// ── Crew Panel ────────────────────────────────────────────────────────────────
+function CrewPanel() {
+  const { token } = useAuth();
+  const { theme } = useTheme();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('ATHLETE');
+  const [inviteCrewId, setInviteCrewId] = useState('');
+  const [inviting, setInviting] = useState(false);
+  const [respondingId, setRespondingId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!token) return;
+    try { const d = await api.getCrewManagement(token); setData(d); } catch (_) {}
+    finally { setLoading(false); }
+  }, [token]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleInvite = async () => {
+    if (!token || !inviteEmail || !inviteCrewId) return;
+    setInviting(true);
+    try {
+      await api.inviteToCrewByEmail(inviteCrewId, inviteEmail.toLowerCase(), inviteRole, token);
+      Alert.alert('INVITO INVIATO', `${inviteEmail} ha ricevuto un invito alla crew.`);
+      setInviteEmail('');
+      load();
+    } catch (e: any) { Alert.alert('Errore', e?.message || 'Impossibile inviare invito'); }
+    finally { setInviting(false); }
+  };
+
+  const handleRespond = async (id: string, action: 'accept' | 'decline') => {
+    if (!token) return;
+    setRespondingId(id);
+    try { await api.respondToCrewInvitation(id, action, token); load(); }
+    catch (e: any) { Alert.alert('Errore', e?.message || 'Impossibile rispondere'); }
+    finally { setRespondingId(null); }
+  };
+
+  if (loading) return <View style={[cp$.root, { alignItems: 'center', justifyContent: 'center' }]}><ActivityIndicator color={theme.accent} /></View>;
+
+  return (
+    <ScrollView style={cp$.root} contentContainerStyle={cp$.content}>
+      {/* Crew Cards */}
+      {(data?.crews || []).map((crew: any) => (
+        <View key={crew.id} style={[cp$.crewCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+          {/* Header */}
+          <View style={cp$.crewHeader}>
+            <View style={cp$.crewName}>
+              <Text style={[cp$.crewTitle, MONT(), { color: theme.text }]}>{crew.name}</Text>
+              <Text style={[cp$.crewMeta, INTER('300'), { color: theme.textTer }]}>
+                {crew.members_count} membri · DNA {crew.weighted_dna} (pesato) · {crew.battle_wins}V/{crew.battle_total - crew.battle_wins}S
+              </Text>
+            </View>
+            <View style={cp$.crewStats}>
+              <Text style={[cp$.crewDnaScore, MONT(), { color: crew.weighted_dna >= 75 ? theme.accentGold : theme.accent }]}>
+                {crew.weighted_dna}
+              </Text>
+              <Text style={[cp$.crewDnaLabel, INTER('300'), { color: theme.textTer }]}>KORE</Text>
+            </View>
           </View>
 
-          {/* Table rows */}
-          {filtered.map((ath, i) => {
-            const isSelected = selectedIds.includes(ath.id);
-            const selColor = RADAR_COLORS[selectedIds.indexOf(ath.id) % RADAR_COLORS.length];
-            return (
-              <Animated.View
-                key={ath.id}
-                entering={FadeInDown.delay(i * 30).duration(200)}
-                style={[m$.row, isSelected && { borderColor: selColor + '60', backgroundColor: selColor + '08' }]}
-              >
-                {/* Select checkbox */}
-                <TouchableOpacity style={m$.chkCol} onPress={() => toggleSelect(ath.id)}>
-                  <View style={[m$.chk, isSelected && { backgroundColor: selColor, borderColor: selColor }]}>
-                    {isSelected && <Ionicons name="checkmark" size={10} color="#000" />}
-                  </View>
-                </TouchableOpacity>
-
-                {/* Name */}
-                <TouchableOpacity style={m$.tdName} onPress={() => setDeepDiveId(ath.id === deepDiveId ? null : ath.id)}>
-                  <View style={[m$.avatar, { backgroundColor: ath.avatar_color || '#00F2FF' }]}>
-                    <Text style={m$.avatarLetter}>{ath.username[0]}</Text>
-                  </View>
-                  <Text style={[m$.tdNameText, ath.id === deepDiveId && { color: '#00F2FF' }]} numberOfLines={1}>{ath.username}</Text>
-                </TouchableOpacity>
-
-                {/* KORE Score */}
-                <Text style={[m$.td, { color: ath.dna_avg >= 80 ? '#D4AF37' : '#FFFFFF' }]}>{ath.dna_avg}</Text>
-
-                {/* Level */}
-                <Text style={m$.tdSm}>{ath.level}</Text>
-
-                {/* XP */}
-                <Text style={m$.td}>{(ath.xp || 0).toLocaleString()}</Text>
-
-                {/* Compliance */}
-                <View style={m$.tdCompliance}>
-                  <Text style={[m$.tdSm, { color: ath.compliance_pct >= 70 ? '#34C759' : '#FF9500' }]}>
-                    {ath.compliance_pct}%
-                  </Text>
-                </View>
-
-                {/* Days since scan */}
-                <View style={m$.tdScan}>
-                  {ath.days_since_scan !== null && ath.days_since_scan !== undefined ? (
-                    <Text style={[m$.tdSm, { color: ath.days_since_scan > 7 ? '#FF9500' : '#34C759' }]}>
-                      {ath.days_since_scan}g
-                    </Text>
-                  ) : <Text style={m$.tdSm}>—</Text>}
-                </View>
-
-                {/* DNA mini bars */}
-                {DNA_KEYS.map(k => (
-                  <View key={k} style={m$.dnaMini}>
-                    <View style={m$.dnaTrack}>
-                      <View style={[m$.dnaFill, { height: `${ath.dna?.[k] ?? 50}%` as any }]} />
+          {/* Avg 6-axis mini radar */}
+          {crew.avg_six_axis && (
+            <View style={cp$.radarRow}>
+              <SixAxisRadar data={crew.avg_six_axis} size={90} showLabels />
+              <View style={cp$.axisLabels}>
+                {SIX_AXES.map((k, i) => (
+                  <View key={k} style={cp$.axisRow}>
+                    <Text style={[cp$.axisName, INTER('300'), { color: theme.textTer }]}>{SIX_LABELS[i]}</Text>
+                    <View style={cp$.axisBarBg}>
+                      <View style={[cp$.axisBarFill, { width: `${crew.avg_six_axis[k]}%` as any, backgroundColor: SIX_COLORS[i % SIX_COLORS.length] }]} />
                     </View>
-                    <Text style={m$.dnaVal}>{ath.dna?.[k] ?? '?'}</Text>
+                    <Text style={[cp$.axisNum, MONT('900'), { color: SIX_COLORS[i % SIX_COLORS.length] }]}>
+                      {crew.avg_six_axis[k]}
+                    </Text>
                   </View>
                 ))}
-              </Animated.View>
-            );
-          })}
-        </View>
-
-        {/* RIGHT: Radar + Compliance */}
-        <View style={m$.rightCol}>
-          {/* Radar comparison */}
-          <View style={m$.radarCard}>
-            <Text style={m$.radarTitle}>DNA RADAR — COMPARISON</Text>
-            {radarAthletes.length > 0 ? (
-              <>
-                <DNARadar athletes={radarAthletes} size={220} />
-                <View style={m$.radarLegend}>
-                  {radarAthletes.map((a, i) => (
-                    <View key={a.id} style={m$.legendRow}>
-                      <View style={[m$.legendDot, { backgroundColor: RADAR_COLORS[i] }]} />
-                      <Text style={m$.legendName}>{a.username}</Text>
-                      <Text style={m$.legendAvg}>{a.dna_avg}</Text>
-                    </View>
-                  ))}
-                </View>
-              </>
-            ) : (
-              <View style={m$.radarEmpty}>
-                <Ionicons name="analytics-outline" size={32} color="rgba(255,255,255,0.1)" />
-                <Text style={m$.radarEmptyText}>Seleziona fino a 4 atleti{`\n`}dalla tabella per confrontare i DNA</Text>
               </View>
+            </View>
+          )}
+
+          {/* Member list with role badges */}
+          <View style={cp$.memberList}>
+            {crew.members.slice(0, 6).map((m: any) => (
+              <View key={m.id} style={cp$.memberRow}>
+                <View style={[cp$.memberAvatar, { backgroundColor: m.avatar_color || theme.accent }]}>
+                  <Text style={cp$.memberLetter}>{(m.username || '?')[0]}</Text>
+                </View>
+                <Text style={[cp$.memberName, INTER(), { color: theme.text }]} numberOfLines={1}>{m.username}</Text>
+                <View style={[cp$.rolePill, {
+                  backgroundColor: m.role === 'COACH' ? theme.accent + '15' : m.role === 'OWNER' ? theme.accentGold + '15' : theme.surface2,
+                  borderColor: m.role === 'COACH' ? theme.accent + '40' : m.role === 'OWNER' ? theme.accentGold + '40' : theme.border,
+                }]}>
+                  {m.role === 'COACH' && <Ionicons name="medal" size={9} color={theme.accent} />}
+                  {m.role === 'OWNER' && <Ionicons name="shield" size={9} color={theme.accentGold} />}
+                  <Text style={[cp$.roleTxt, MONT('900'), { color: m.role === 'COACH' ? theme.accent : m.role === 'OWNER' ? theme.accentGold : theme.textTer }]}>
+                    {m.role}
+                  </Text>
+                </View>
+                <Text style={[cp$.memberDna, MONT('900'), { color: theme.textSec }]}>{m.dna_avg}</Text>
+              </View>
+            ))}
+            {crew.members.length > 6 && (
+              <Text style={[cp$.moreMem, INTER('300'), { color: theme.textTer }]}>+{crew.members.length - 6} altri...</Text>
             )}
           </View>
 
-          {/* Compliance chart */}
-          {compliance.length > 0 && <ComplianceChart templates={compliance.slice(0, 8)} />}
-
-          {/* Historical Trends Deep Dive */}
-          {deepDiveId && (
-            <View style={m$.deepDiveCard}>
-              <View style={m$.deepDiveHeader}>
-                <Text style={m$.deepDiveTitle}>TREND STORICO — {historicalData?.username || '...'}</Text>
-                <TouchableOpacity onPress={() => { setDeepDiveId(null); setHistoricalData(null); }}>
-                  <Text style={m$.deepDiveClose}>✕</Text>
+          {/* Invite form for this crew */}
+          <View style={[cp$.inviteBox, { backgroundColor: theme.surface2, borderColor: theme.border }]}>
+            <Text style={[cp$.inviteTitle, MONT('900'), { color: theme.textSec }]}>INVIA INVITO (stile Apple Calendar)</Text>
+            <TextInput
+              style={[cp$.inviteInput, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+              placeholder="email@atleta.com"
+              placeholderTextColor={theme.textTer}
+              value={inviteCrewId === crew.id ? inviteEmail : ''}
+              onFocus={() => setInviteCrewId(crew.id)}
+              onChangeText={setInviteEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+            <View style={cp$.roleRow}>
+              {['ATHLETE', 'COACH'].map(r => (
+                <TouchableOpacity key={r}
+                  style={[cp$.roleOpt, inviteRole === r && { borderColor: theme.accent, backgroundColor: theme.accent + '10' }]}
+                  onPress={() => setInviteRole(r)}
+                >
+                  <Text style={[cp$.roleOptTxt, MONT('900'), { color: inviteRole === r ? theme.accent : theme.textTer }]}>{r}</Text>
                 </TouchableOpacity>
-              </View>
-              {historicalData?.months ? (
-                <>
-                  <LineChart
-                    months={historicalData.months}
-                    keys={['forza', 'resistenza', 'velocita']}
-                    height={150}
-                    width={280}
-                  />
-                  <View style={m$.legendRow}>
-                    {[{k:'forza',c:'#FF453A',l:'Forza'},{k:'resistenza',c:'#D4AF37',l:'Resistenza'},{k:'velocita',c:'#00F2FF',l:'Velocità'}].map(item => (
-                      <View key={item.k} style={m$.legendItem}>
-                        <View style={[m$.legendDot, { backgroundColor: item.c }]} />
-                        <Text style={m$.legendText}>{item.l}: {historicalData.current_dna?.[item.k] ?? '?'}</Text>
-                      </View>
-                    ))}
-                  </View>
-                </>
-              ) : (
-                <ActivityIndicator color="#00F2FF" size="small" />
-              )}
+              ))}
+              <TouchableOpacity
+                style={[cp$.inviteBtn, { backgroundColor: inviteEmail && inviteCrewId === crew.id ? theme.accent : theme.surface }]}
+                onPress={handleInvite}
+                disabled={inviting || !inviteEmail || inviteCrewId !== crew.id}
+                activeOpacity={0.85}
+              >
+                {inviting ? <ActivityIndicator color="#000" size="small" /> : (
+                  <><Ionicons name="person-add" size={13} color={inviteEmail && inviteCrewId === crew.id ? '#000' : theme.textTer} />
+                  <Text style={[cp$.inviteBtnTxt, MONT('900'), { color: inviteEmail && inviteCrewId === crew.id ? '#000' : theme.textTer }]}>INVITA</Text></>
+                )}
+              </TouchableOpacity>
             </View>
-          )}
+          </View>
         </View>
-      </View>
+      ))}
+
+      {/* Pending invitations for me */}
+      {data?.pending_for_me?.length > 0 && (
+        <View style={[cp$.section, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+          <Text style={[cp$.sectionTitle, MONT('900'), { color: theme.textTer }]}>INVITI IN ATTESA PER TE</Text>
+          {data.pending_for_me.map((inv: any) => (
+            <View key={inv.id} style={cp$.pendingRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={[cp$.pendingCrew, MONT('700'), { color: theme.text }]}>{inv.crew_name}</Text>
+                <Text style={[INTER('300'), { color: theme.textTer, fontSize: 11 }]}>
+                  Da {inv.invited_by} · Ruolo: {inv.role}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[cp$.acceptBtn, { backgroundColor: theme.accent }]}
+                onPress={() => handleRespond(inv.id, 'accept')}
+                disabled={respondingId === inv.id}
+              >
+                <Text style={[cp$.acceptTxt, MONT('900')]}>ACCETTA</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[cp$.declineBtn, { borderColor: theme.border }]}
+                onPress={() => handleRespond(inv.id, 'decline')}
+                disabled={respondingId === inv.id}
+              >
+                <Text style={[cp$.declineTxt, INTER(), { color: theme.textTer }]}>Rifiuta</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Sent invitations */}
+      {data?.sent_invitations?.length > 0 && (
+        <View style={[cp$.section, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+          <Text style={[cp$.sectionTitle, MONT('900'), { color: theme.textTer }]}>INVITI INVIATI</Text>
+          {data.sent_invitations.slice(0, 5).map((inv: any) => (
+            <View key={inv.id} style={cp$.sentRow}>
+              <Text style={[INTER(), { flex: 1, color: theme.textSec, fontSize: 12 }]}>{inv.invitee}</Text>
+              <Text style={[INTER('300'), { color: theme.textTer, fontSize: 11 }]}>{inv.crew_name}</Text>
+              <View style={[cp$.statusPill, {
+                backgroundColor: inv.status === 'accepted' ? '#34C75915' : inv.status === 'declined' ? '#FF453A15' : theme.surface2,
+                borderColor: inv.status === 'accepted' ? '#34C75940' : inv.status === 'declined' ? '#FF453A40' : theme.border,
+              }]}>
+                <Text style={[MONT('900'), { fontSize: 8, letterSpacing: 1.5, color: inv.status === 'accepted' ? '#34C759' : inv.status === 'declined' ? '#FF453A' : theme.textTer }]}>
+                  {(inv.status || 'PENDING').toUpperCase()}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
     </ScrollView>
   );
 }
 
-const m$ = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000000' },
-  content: { padding: 28, paddingBottom: 60, gap: 20 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  pageTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 4, marginBottom: 4 },
-  filters: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  searchWrap: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#0A0A0A', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  searchInput: { color: '#FFFFFF', fontSize: 12, width: 140, outlineStyle: 'none' } as any,
-  selectedInfo: { flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: 'auto' as any },
-  selectedText: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  clearSel: { color: '#FF453A', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
-  csvBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: 'rgba(52,199,89,0.35)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: 'rgba(52,199,89,0.06)' },
-  csvBtnText: { color: '#34C759', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
-  cols: { flexDirection: 'row', gap: 20, alignItems: 'flex-start' },
-  tableWrap: { flex: 1, backgroundColor: '#0A0A0A', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
-  tableHeader: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#111111', paddingVertical: 10, paddingHorizontal: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)' },
-  chkCol: { width: 24, alignItems: 'center' },
-  th: { width: 70, flexDirection: 'row', alignItems: 'center', gap: 3 },
-  thName: { flex: 1, minWidth: 120 },
-  thText: { color: 'rgba(255,255,255,0.35)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  thTextSm: { color: 'rgba(255,255,255,0.2)', fontSize: 8, fontWeight: '700', letterSpacing: 1 },
-  thDna: { width: 36, alignItems: 'center' },
-  row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 9, paddingHorizontal: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: 'transparent', borderRadius: 0, marginHorizontal: 0 },
-  avatar: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  avatarLetter: { color: '#000000', fontSize: 11, fontWeight: '900' },
-  tdName: { flex: 1, minWidth: 120, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  tdNameText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700', letterSpacing: 0.5 },
-  td: { width: 70, color: '#FFFFFF', fontSize: 13, fontWeight: '700', textAlign: 'center' },
-  tdSm: { width: 50, color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '400', textAlign: 'center' },
-  tdCompliance: { width: 50, alignItems: 'center' },
-  tdScan: { width: 50, alignItems: 'center' },
-  dnaMini: { width: 36, alignItems: 'center', gap: 2 },
-  dnaTrack: { width: 6, height: 28, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 3, overflow: 'hidden', justifyContent: 'flex-end' },
-  dnaFill: { width: 6, backgroundColor: '#00F2FF', borderRadius: 3 },
-  dnaVal: { color: 'rgba(255,255,255,0.25)', fontSize: 8, fontWeight: '700', textAlign: 'center' },
-  deepDiveCard: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 14, gap: 10, borderWidth: 1, borderColor: 'rgba(0,242,255,0.12)' },
-  deepDiveHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  deepDiveTitle: { color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
-  deepDiveClose: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '700' },
-  legendRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '400' },
-  chk: { width: 16, height: 16, borderRadius: 3, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-  rightCol: { width: 280, gap: 16 },
-  radarCard: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', alignItems: 'center', gap: 12 },
-  radarTitle: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '900', letterSpacing: 3, alignSelf: 'flex-start' },
-  radarLegend: { width: '100%', gap: 6 },
-  legendRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendName: { flex: 1, color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
-  legendAvg: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '400' },
-  radarEmpty: { alignItems: 'center', justifyContent: 'center', paddingVertical: 32, gap: 12 },
-  radarEmptyText: { color: 'rgba(255,255,255,0.25)', fontSize: 12, textAlign: 'center', lineHeight: 18 },
+const cp$ = StyleSheet.create({
+  root: { flex: 1 },
+  content: { padding: 20, gap: 16, paddingBottom: 48 },
+  crewCard: { borderRadius: 14, borderWidth: 1, padding: 16, gap: 14 },
+  crewHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  crewName: { flex: 1, gap: 3 },
+  crewTitle: { fontSize: 16, letterSpacing: 2 },
+  crewMeta: { fontSize: 10, letterSpacing: 0.5 },
+  crewStats: { alignItems: 'center' },
+  crewDnaScore: { fontSize: 28, letterSpacing: 1 },
+  crewDnaLabel: { fontSize: 8, letterSpacing: 3 },
+  radarRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  axisLabels: { flex: 1, gap: 5 },
+  axisRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  axisName: { width: 24, fontSize: 9, letterSpacing: 1 },
+  axisBarBg: { flex: 1, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.07)', overflow: 'hidden' },
+  axisBarFill: { height: '100%', borderRadius: 2 },
+  axisNum: { width: 26, fontSize: 10, textAlign: 'right' },
+  memberList: { gap: 6 },
+  memberRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  memberAvatar: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  memberLetter: { color: '#000', fontSize: 10, fontWeight: '900' },
+  memberName: { flex: 1, fontSize: 12, letterSpacing: 0.3 },
+  rolePill: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 },
+  roleTxt: { fontSize: 8, letterSpacing: 1.5 },
+  memberDna: { fontSize: 12, width: 28, textAlign: 'right' },
+  moreMem: { fontSize: 10, textAlign: 'right' },
+  inviteBox: { borderRadius: 10, borderWidth: 1, padding: 12, gap: 8 },
+  inviteTitle: { fontSize: 9, letterSpacing: 2.5 },
+  inviteInput: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 12 } as any,
+  roleRow: { flexDirection: 'row', gap: 6, alignItems: 'center' },
+  roleOpt: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 6, borderColor: 'rgba(255,255,255,0.1)' },
+  roleOptTxt: { fontSize: 9, letterSpacing: 1.5 },
+  inviteBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 8, paddingVertical: 8 },
+  inviteBtnTxt: { fontSize: 10, letterSpacing: 1.5 },
+  section: { borderRadius: 14, borderWidth: 1, padding: 14, gap: 10 },
+  sectionTitle: { fontSize: 9, letterSpacing: 3 },
+  pendingRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
+  pendingCrew: { fontSize: 13, letterSpacing: 0.5 },
+  acceptBtn: { borderRadius: 7, paddingHorizontal: 12, paddingVertical: 7, alignItems: 'center' },
+  acceptTxt: { color: '#000', fontSize: 10, letterSpacing: 1.5 },
+  declineBtn: { borderWidth: 1, borderRadius: 7, paddingHorizontal: 10, paddingVertical: 7 },
+  declineTxt: { fontSize: 10 },
+  sentRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 5 },
+  statusPill: { borderWidth: 1, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 },
+});
+
+// ── Main Module ───────────────────────────────────────────────────────────────
+const SORT_OPTIONS = [
+  { key: 'dna_avg', label: 'DNA' },
+  { key: 'injury',  label: 'RISCHIO' },
+  { key: 'rank',    label: 'RANK' },
+  { key: 'level',   label: 'LVL' },
+];
+const INJURY_FILTERS = ['ALL', 'HIGH', 'MEDIUM', 'LOW'];
+
+export default function AthletesModule() {
+  const { token } = useAuth();
+  const { theme } = useTheme();
+  const [athletes, setAthletes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState('dna_avg');
+  const [injuryFilter, setInjuryFilter] = useState('ALL');
+  const [search, setSearch] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [view, setView] = useState<'table' | 'crew'>('table');
+
+  const load = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const d = await api.getAthletesFullTable(token, sortBy, injuryFilter !== 'ALL' ? injuryFilter : undefined);
+      setAthletes(d.athletes || []);
+    } catch (_) {}
+    finally { setLoading(false); }
+  }, [token, sortBy, injuryFilter]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const filtered = athletes.filter(a => !search || a.username?.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <View style={[am$.root, { backgroundColor: theme.bg }]}>
+      {/* TOP BAR */}
+      <View style={[am$.topBar, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+        {/* View switcher */}
+        <View style={am$.viewSwitch}>
+          {(['table', 'crew'] as const).map(v => (
+            <TouchableOpacity key={v}
+              style={[am$.viewBtn, view === v && { backgroundColor: theme.accent + '18', borderColor: theme.accent + '50' }]}
+              onPress={() => setView(v)}
+            >
+              <Ionicons name={v === 'table' ? 'people' : 'shield'} size={14} color={view === v ? theme.accent : theme.textTer} />
+              <Text style={[am$.viewBtnTxt, MONT('900'), { color: view === v ? theme.accent : theme.textTer }]}>
+                {v === 'table' ? 'ATLETI CRM' : 'CREW PANEL'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {view === 'table' && (
+          <View style={am$.filterRow}>
+            {/* Search */}
+            <View style={[am$.searchBox, { backgroundColor: theme.inputBg, borderColor: theme.border }]}>
+              <Ionicons name="search" size={13} color={theme.textTer} />
+              <TextInput
+                style={[am$.searchInput, { color: theme.text }, INTER('300')]}
+                placeholder="Cerca atleta..."
+                placeholderTextColor={theme.textTer}
+                value={search}
+                onChangeText={setSearch}
+              />
+            </View>
+            {/* Sort */}
+            {SORT_OPTIONS.map(s => (
+              <TouchableOpacity key={s.key}
+                style={[am$.sortBtn, sortBy === s.key && { backgroundColor: theme.accent + '15', borderColor: theme.accent + '50' }]}
+                onPress={() => setSortBy(s.key)}
+              >
+                <Text style={[am$.sortTxt, MONT('900'), { color: sortBy === s.key ? theme.accent : theme.textTer }]}>{s.label}</Text>
+              </TouchableOpacity>
+            ))}
+            {/* Injury filter */}
+            {INJURY_FILTERS.map(f => (
+              <TouchableOpacity key={f}
+                style={[am$.sortBtn, injuryFilter === f && { borderColor: f === 'HIGH' ? '#FF453A50' : f === 'MEDIUM' ? '#FF950050' : f === 'LOW' ? '#34C75950' : theme.accent + '50', backgroundColor: f === 'HIGH' ? '#FF453A10' : f === 'MEDIUM' ? '#FF950010' : f === 'LOW' ? '#34C75910' : theme.accent + '10' }]}
+                onPress={() => setInjuryFilter(f)}
+              >
+                <Text style={[am$.sortTxt, MONT('900'), { color: injuryFilter === f ? (f === 'HIGH' ? '#FF453A' : f === 'MEDIUM' ? '#FF9500' : f === 'LOW' ? '#34C759' : theme.accent) : theme.textTer }]}>
+                  {f === 'ALL' ? 'TUTTI' : f}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+
+      {/* CONTENT AREA */}
+      {view === 'crew' ? (
+        <CrewPanel />
+      ) : (
+        <View style={am$.splitView}>
+          {/* TABLE */}
+          <ScrollView style={am$.tableArea} showsVerticalScrollIndicator={false}>
+            {loading ? (
+              <View style={am$.loadWrap}><ActivityIndicator color={theme.accent} /></View>
+            ) : (
+              <>
+                {/* Table header */}
+                <View style={[am$.tableHead, { backgroundColor: theme.surface, borderBottomColor: theme.border2 }]}>
+                  {['#', 'ATLETA', 'DNA', 'RISK', 'SCAN', 'CREW', 'RANK'].map(h => (
+                    <Text key={h} style={[am$.th, MONT('900'), { color: theme.textTer, flex: h === 'ATLETA' ? 2 : undefined }]}>{h}</Text>
+                  ))}
+                  <View style={{ width: 70 }} />
+                </View>
+                {filtered.map((a, idx) => (
+                  <Animated.View key={a.id} entering={FadeInDown.delay(idx * 20).duration(200)}>
+                    <TouchableOpacity
+                      style={[am$.tableRow, { borderBottomColor: theme.border }, selectedId === a.id && { backgroundColor: theme.accent + '06' }]}
+                      onPress={() => setSelectedId(selectedId === a.id ? null : a.id)}
+                      activeOpacity={0.8}
+                    >
+                      {/* Rank indicator */}
+                      {selectedId === a.id && <View style={[am$.rowIndicator, { backgroundColor: theme.accent }]} />}
+                      <Text style={[am$.td, MONT('900'), { color: theme.textTer, width: 28, textAlign: 'center' }]}>#{idx + 1}</Text>
+                      {/* Athlete */}
+                      <View style={[am$.athleteCell, { flex: 2 }]}>
+                        <View style={[am$.rowAvatar, { backgroundColor: a.avatar_color || theme.accent }]}>
+                          <Text style={am$.rowAvatarLetter}>{(a.username || '?')[0]}</Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[am$.td, MONT('700'), { color: theme.text }]} numberOfLines={1}>{a.username}</Text>
+                          <Text style={[am$.tdSub, INTER('300'), { color: theme.textTer }]}>{a.sport} · LVL {a.level}</Text>
+                        </View>
+                      </View>
+                      {/* DNA */}
+                      <Text style={[am$.td, MONT('900'), { color: a.dna_avg >= 80 ? theme.accentGold : theme.text }]}>{a.dna_avg}</Text>
+                      {/* Injury */}
+                      <View style={{ width: 70 }}>
+                        <RiskBadge risk={a.injury_risk} />
+                      </View>
+                      {/* Scan trend */}
+                      <View style={{ width: 50, alignItems: 'center' }}>
+                        {a.days_since_scan !== null && a.days_since_scan !== undefined
+                          ? <Text style={[am$.tdSub, { color: a.days_since_scan > 7 ? '#FF9500' : '#34C759' }]}>{a.days_since_scan}g</Text>
+                          : <Text style={[am$.tdSub, { color: theme.textTer }]}>—</Text>}
+                      </View>
+                      {/* Crew */}
+                      <Text style={[am$.tdSub, INTER('300'), { color: theme.textSec, width: 80 }]} numberOfLines={1}>
+                        {a.crews?.[0] || '—'}
+                      </Text>
+                      {/* Global rank */}
+                      <Text style={[am$.td, MONT('900'), { color: a.global_rank <= 3 ? theme.accentGold : theme.textSec, width: 40, textAlign: 'center' }]}>
+                        #{a.global_rank}
+                      </Text>
+                      {/* Mini radar preview */}
+                      <View style={{ width: 44 }}>
+                        <SixAxisRadar data={a.six_axis || {}} size={40} showLabels={false} />
+                      </View>
+                    </TouchableOpacity>
+                  </Animated.View>
+                ))}
+              </>
+            )}
+          </ScrollView>
+
+          {/* DEEP PROFILE (right panel) */}
+          {selectedId && (
+            <DeepProfilePanel athleteId={selectedId} onClose={() => setSelectedId(null)} />
+          )}
+        </View>
+      )}
+    </View>
+  );
+}
+
+const am$ = StyleSheet.create({
+  root: { flex: 1 },
+  topBar: { borderBottomWidth: 1, paddingHorizontal: 16, paddingVertical: 10, gap: 10 },
+  viewSwitch: { flexDirection: 'row', gap: 8 },
+  viewBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: 'transparent', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
+  viewBtnTxt: { fontSize: 11, letterSpacing: 1.5 },
+  filterRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  searchBox: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, minWidth: 160 },
+  searchInput: { fontSize: 12, flex: 1, outlineStyle: 'none' } as any,
+  sortBtn: { borderWidth: 1, borderColor: 'transparent', borderRadius: 6, paddingHorizontal: 9, paddingVertical: 5 },
+  sortTxt: { fontSize: 9, letterSpacing: 2 },
+  splitView: { flex: 1, flexDirection: 'row' },
+  tableArea: { flex: 1 },
+  loadWrap: { alignItems: 'center', paddingTop: 40 },
+  tableHead: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 9, borderBottomWidth: 1, gap: 8 },
+  th: { fontSize: 8, letterSpacing: 2.5, width: 50, textAlign: 'center' },
+  tableRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 9, borderBottomWidth: 1, gap: 8, position: 'relative' },
+  rowIndicator: { position: 'absolute', left: 0, top: 4, bottom: 4, width: 3, borderRadius: 2 },
+  athleteCell: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  rowAvatar: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  rowAvatarLetter: { color: '#000', fontSize: 12, fontWeight: '900' },
+  td: { fontSize: 13, width: 50, textAlign: 'center' },
+  tdSub: { fontSize: 10, letterSpacing: 0.3 },
 });

@@ -226,6 +226,23 @@ export const api = {
   updateUserRole: (userId: string, role: string, token: string) =>
     request(`/gym/user-role/${userId}`, { method: 'PUT', body: JSON.stringify({ role }) }, token),
 
+  // ========== DNA ATHLETIC HUB — Multi-Skill & Crew CRM ==========
+  getAthletesFullTable: (token: string, sortBy?: string, injuryLevel?: string) => {
+    const p = new URLSearchParams();
+    if (sortBy) p.append('sort_by', sortBy);
+    if (injuryLevel) p.append('injury_level', injuryLevel);
+    return request(`/coach/athletes/full?${p.toString()}`, {}, token);
+  },
+  getAthleteFullProfile: (athleteId: string, token: string) =>
+    request(`/coach/athlete/${athleteId}/full-profile`, {}, token),
+  updateAthleteMiltiskill: (athleteId: string, data: { endurance_gps?: number; strength_watts?: number; sleep_score?: number; hrv_score?: number }, token: string) =>
+    request(`/coach/athlete/${athleteId}/multiskill`, { method: 'PUT', body: JSON.stringify(data) }, token),
+  getCrewManagement: (token: string) => request('/crew/manage', {}, token),
+  inviteToCrewByEmail: (crewId: string, email: string, role: string, token: string) =>
+    request('/crew/invite', { method: 'POST', body: JSON.stringify({ crew_id: crewId, email, role }) }, token),
+  respondToCrewInvitation: (invitationId: string, action: 'accept' | 'decline', token: string) =>
+    request(`/crew/invitations/${invitationId}/respond`, { method: 'POST', body: JSON.stringify({ action }) }, token),
+
   // ========== COACH STUDIO ENGINE ==========
   getCoachAthletes: (token: string, sortBy?: string, sortOrder?: string, minScore?: number) => {
     const params = new URLSearchParams();
