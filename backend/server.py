@@ -2358,6 +2358,11 @@ async def unlock_certified_template(template_id: str, current_user: dict = Depen
     template = next((t for t in CERTIFIED_TEMPLATES if t["id"] == template_id), None)
     if not template:
         raise HTTPException(status_code=404, detail="Template non trovato")
+    # Founders: always unlocked, no AK deduction
+    if current_user.get("is_founder", False) or current_user.get("is_admin", False):
+        if template_id not in current_user.get("unlocked_tools", []):
+            await db.users.update_one({"_id": current_user["_id"]}, {"$addToSet": {"unlocked_tools": template_id}})
+        return {"status": "unlocked", "template_name": template["name"], "certified_by": template["certified_by"], "ak_drops": current_user.get("ak_credits", 0), "founder_bypass": True}
     if template_id in current_user.get("unlocked_tools", []):
         return {"status": "already_unlocked", "template_name": template["name"]}
     # Level check
