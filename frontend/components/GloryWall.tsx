@@ -147,6 +147,11 @@ function LeaderRow({ item, index, onChallenge }: { item: any; index: number; onC
                 <Text style={row$.founderPillText}>F</Text>
               </View>
             )}
+            {item.is_nexus_certified && (
+              <View style={row$.certMini}>
+                <Ionicons name="shield-checkmark" size={8} color="#00F2FF" />
+              </View>
+            )}
           </View>
           <View style={row$.sportRow}>
             <Ionicons name={sportCfg?.icon || 'flash'} size={10} color={sportCfg?.color || '#00F2FF'} />
@@ -184,6 +189,7 @@ const row$ = StyleSheet.create({
     borderRadius: 8, alignItems: 'center', justifyContent: 'center',
   },
   founderPillText: { color: '#D4AF37', fontSize: 11, fontWeight: '900' },
+  certMini: { width: 14, height: 14, borderRadius: 7, backgroundColor: 'rgba(0,242,255,0.1)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)' },
   sportRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   sport: { color: 'rgba(255,255,255,0.45)', fontSize: 14, fontWeight: '600' },
   right: { alignItems: 'flex-end', gap: 4 },

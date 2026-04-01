@@ -326,6 +326,11 @@ class GymJoin(BaseModel):
 
 
 def user_to_response(user: dict) -> dict:
+    is_nexus_certified = bool(
+        user.get("onboarding_completed") and
+        user.get("baseline_scanned_at") and
+        user.get("dna")
+    )
     return {
         "id": str(user["_id"]),
         "username": user["username"],
@@ -336,6 +341,9 @@ def user_to_response(user: dict) -> dict:
         "xp": user.get("xp", 0),
         "level": user.get("level", 1),
         "onboarding_completed": user.get("onboarding_completed", False),
+        "is_nexus_certified": is_nexus_certified,
+        "baseline_scanned_at": user.get("baseline_scanned_at").isoformat() if user.get("baseline_scanned_at") else None,
+        "scout_visible": user.get("scout_visible", True),
         "dna": user.get("dna"),
         "avatar_color": user.get("avatar_color", "#00E5FF"),
         "is_admin": user.get("is_admin", False),
@@ -343,13 +351,14 @@ def user_to_response(user: dict) -> dict:
         "founder_number": user.get("founder_number"),
         "height_cm": user.get("height_cm"),
         "weight_kg": user.get("weight_kg"),
+        "age": user.get("age"),
+        "gender": user.get("gender"),
         "is_pro": (user.get("level", 1) >= 10 or user.get("xp", 0) >= 3000),
         "pro_unlocked": user.get("pro_unlocked", False),
         "ghost_mode": user.get("ghost_mode", False),
         "camera_enabled": user.get("camera_enabled", False),
         "mic_enabled": user.get("mic_enabled", False),
         "city": user.get("city"),
-        # AK Credits Economy
         "ak_credits": user.get("ak_credits", 0),
         "unlocked_tools": user.get("unlocked_tools", []),
     }
@@ -2136,7 +2145,7 @@ async def talent_discovery(
     current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))
 ):
     """Talent Scout: Efficiency Ratio = diamonds-in-the-rough formula"""
-    filters: dict = {"ghost_mode": {"$ne": True}}
+    filters: dict = {"ghost_mode": {"$ne": True}, "scout_visible": {"$ne": False}}
     if city:
         filters["city"] = {"$regex": city, "$options": "i"}
     elif country:
@@ -2207,7 +2216,102 @@ async def talent_discovery(
 
 
 
-@api_router.post("/talent/draft/{athlete_id}")
+@api_router.get("/talent/report/{athlete_id}")
+async def get_talent_report(athlete_id: str, coach_note: str = "", current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Generate a full Talent Report for one athlete (trading-card style)"""
+    try:
+        user = await db.users.find_one({"_id": ObjectId(athlete_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Atleta non trovato")
+    if not user:
+        raise HTTPException(status_code=404, detail="Atleta non trovato")
+
+    dna = user.get("dna") or {}
+    dna_vals = [dna.get(k, 50) for k in DNA_KEYS]
+    dna_avg = round(sum(dna_vals) / len(dna_vals), 1) if dna_vals else 50
+    level = user.get("level", 1)
+    xp = user.get("xp", 0)
+    efficiency = round(min(150, dna_avg * (11 - min(level, 10)) / 10), 1)
+
+    # World average DNA (computed from all users with dna)
+    all_users = await db.users.find({"dna": {"$ne": None}}, {"dna": 1}).to_list(100)
+    if all_users:
+        world_avg = {}
+        for k in DNA_KEYS:
+            vals = [u.get("dna", {}).get(k, 50) for u in all_users if u.get("dna")]
+            world_avg[k] = round(sum(vals) / len(vals), 1) if vals else 50
+    else:
+        world_avg = {k: 60 for k in DNA_KEYS}
+
+    # KORE Score + injury risk
+    six_axis = compute_six_axis(user)
+    kore = compute_kore_score(user, [])
+    injury = compute_injury_risk_detail(six_axis)
+
+    # Last 6 scans for trend
+    scans = await db.scan_results.find({"user_id": user["_id"]}).sort("scanned_at", -1).limit(6).to_list(6)
+    scan_trend = [{"quality": s.get("quality_score", 50), "reps": s.get("reps_completed", 0),
+                   "date": s["scanned_at"].strftime("%d/%m") if s.get("scanned_at") else "?"} for s in reversed(scans)]
+
+    # 30-day AI forecast
+    last_scan = scans[0] if scans else None
+    days_since = (datetime.utcnow() - last_scan["scanned_at"]).days if last_scan and last_scan.get("scanned_at") else 14
+    scans_per_week = max(0.3, 7 / max(days_since, 1))
+    proj_xp = xp + scans_per_week * 4 * 60
+    proj_dna = round(min(100, dna_avg + scans_per_week * 1.8), 1)
+    proj_kore = round(min(100, kore["score"] + scans_per_week * 1.2), 1)
+    trend_label = "↑ IN CRESCITA" if scans_per_week >= 2 else "→ STABILE" if scans_per_week >= 1 else "↓ IN CALO"
+    trend_color = "#34C759" if scans_per_week >= 2 else "#FF9500" if scans_per_week >= 1 else "#FF453A"
+
+    # Certification
+    is_certified = bool(user.get("onboarding_completed") and user.get("baseline_scanned_at") and user.get("dna"))
+
+    return {
+        "athlete": {
+            "id": str(user["_id"]),
+            "username": user.get("username"),
+            "city": user.get("city", "—"),
+            "sport": user.get("sport", "—"),
+            "level": level,
+            "xp": xp,
+            "avatar_color": user.get("avatar_color", "#00F2FF"),
+            "age": user.get("age"),
+            "gender": user.get("gender"),
+            "is_nexus_certified": is_certified,
+            "is_free_agent": not bool(await db.crews_v2.find_one({"members": user["_id"]})),
+        },
+        "kore_score": kore,
+        "efficiency_ratio": efficiency,
+        "dna": {k: dna.get(k, 50) for k in DNA_KEYS},
+        "dna_avg": dna_avg,
+        "world_avg_dna": world_avg,
+        "six_axis": six_axis,
+        "injury_risk": injury,
+        "scan_trend": scan_trend,
+        "forecast_30d": {
+            "projected_dna": proj_dna,
+            "projected_kore": proj_kore,
+            "projected_xp": int(proj_xp),
+            "scans_per_week": round(scans_per_week, 1),
+            "trend_label": trend_label,
+            "trend_color": trend_color,
+        },
+        "coach_note": coach_note,
+        "generated_at": datetime.utcnow().isoformat(),
+        "generated_by": current_user.get("username"),
+    }
+
+
+@api_router.put("/users/scout-visibility")
+async def toggle_scout_visibility(data: dict, current_user: dict = Depends(get_current_user)):
+    """Toggle whether athlete appears in Scout talent discovery"""
+    visible = bool(data.get("scout_visible", True))
+    await db.users.update_one({"_id": current_user["_id"]}, {"$set": {"scout_visible": visible}})
+    return {"status": "updated", "scout_visible": visible,
+            "message": "Ora sei visibile agli Scout" if visible else "Profilo nascosto dagli Scout"}
+
+
+
 async def draft_athlete(athlete_id: str, data: dict = {}, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
     """Draft an athlete to your remote coaching team"""
     try:
@@ -4973,6 +5077,11 @@ async def get_leaderboard(
         ).sort("xp", -1).to_list(limit)
 
         for rank, u in enumerate(users, 1):
+            is_nexus_certified = bool(
+                u.get("onboarding_completed") and
+                u.get("baseline_scanned_at") and
+                u.get("dna")
+            )
             result.append({
                 "rank": rank,
                 "id": str(u["_id"]),
@@ -4984,6 +5093,7 @@ async def get_leaderboard(
                 "level": u.get("level", 1),
                 "is_admin": u.get("is_admin", False),
                 "is_founder": u.get("is_founder", False),
+                "is_nexus_certified": is_nexus_certified,
             })
 
     # Cache the result

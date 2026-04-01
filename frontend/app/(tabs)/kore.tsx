@@ -1076,6 +1076,44 @@ function BioScanStatusCard({ user, router }: { user: any; router: any }) {
   );
 }
 
+// ── SCOUT VISIBILITY TOGGLE ──────────────────────────────────────────────────
+function ScoutVisibilityToggle({ user, token, refreshUser }: { user: any; token: string | null; refreshUser: () => Promise<void> }) {
+  const [loading, setLoading] = useState(false);
+  const isVisible = user?.scout_visible !== false;
+  const isCertified = !!(user?.onboarding_completed && user?.baseline_scanned_at && user?.dna);
+  const toggle = async () => {
+    if (!token) return;
+    setLoading(true);
+    try { await api.toggleScoutVisibility(!isVisible, token); await refreshUser(); }
+    catch (_) {} finally { setLoading(false); }
+  };
+  return (
+    <Animated.View entering={FadeInDown.duration(300)} style={sv$.card}>
+      <View style={sv$.left}>
+        <Ionicons name={isVisible ? 'eye' : 'eye-off'} size={18} color={isVisible ? '#00F2FF' : 'rgba(255,255,255,0.35)'} />
+        <View style={{ flex: 1 }}>
+          <Text style={sv$.title}>VISIBILE AGLI SCOUT</Text>
+          <Text style={sv$.sub} numberOfLines={2}>{isVisible ? (isCertified ? '✓ Profilo scoutable — ti vedono i Coach' : '⚠ Non certificato — completa il NÈXUS Scan') : '✗ Nascosto — non appari nelle ricerche Scout'}</Text>
+        </View>
+      </View>
+      <TouchableOpacity style={[sv$.toggle, isVisible ? sv$.toggleOn : sv$.toggleOff]} onPress={toggle} disabled={loading} activeOpacity={0.8}>
+        {loading ? <ActivityIndicator color={isVisible ? '#000' : 'rgba(255,255,255,0.5)'} size="small" /> : <View style={[sv$.knob, isVisible && sv$.knobOn]} />}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+const sv$ = StyleSheet.create({
+  card: { marginHorizontal: 16, marginBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', gap: 12 },
+  left: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  title: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
+  sub: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '300', marginTop: 2, lineHeight: 15 },
+  toggle: { width: 44, height: 26, borderRadius: 13, padding: 3, justifyContent: 'center', alignItems: 'center' },
+  toggleOn: { backgroundColor: '#00F2FF' },
+  toggleOff: { backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
+  knob: { width: 20, height: 20, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.4)', position: 'absolute', left: 3 },
+  knobOn: { backgroundColor: '#000000', position: 'absolute', right: 3, left: 'auto' as any },
+});
+
 // ── GOALS SECTION — Icon Badges
 function GoalsSection({ user }: { user: any }) {
   const xp = user?.xp || 0;
@@ -1115,7 +1153,7 @@ function GoalsSection({ user }: { user: any }) {
 
 // ========== MAIN KORE TAB ==========
 export default function KoreTab() {
-  const { user, token } = useAuth();
+  const { user, token, refreshUser } = useAuth();
   const router = useRouter();
   const [rankData, setRankData] = useState<any>(null);
   const [affiliData, setAffiliData] = useState<any>(null);
@@ -1184,6 +1222,8 @@ export default function KoreTab() {
           <GoalsSection user={user} />
           {/* AK DROPS Wallet — locked for Fast Entry */}
           <AKDropsWallet user={user} />
+          {/* Scout Visibility Toggle */}
+          <ScoutVisibilityToggle user={user} token={token} refreshUser={refreshUser} />
           <KoreVault />
 
           {/* 2. RANK INFOGRAPHIC */}

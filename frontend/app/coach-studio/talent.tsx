@@ -16,6 +16,7 @@ import { useTheme, MONT, INTER } from '../../contexts/ThemeContext';
 import { api } from '../../utils/api';
 import { MiniRadar, SectionHeader } from '../../components/studio/StudioComponents';
 import { CertBadge } from '../../components/CertBadge';
+import { useRouter } from 'expo-router';
 
 const TIER_CFG: Record<string, { color: string; bg: string; icon: string }> = {
   ELITE:  { color: '#D4AF37', bg: 'rgba(212,175,55,0.12)', icon: '👑' },
@@ -48,6 +49,7 @@ const CONTINENT_OPTIONS = [
 export default function TalentScout() {
   const { token } = useAuth();
   const { theme } = useTheme();
+  const router = useRouter();
   const [athletes, setAthletes] = useState<any[]>([]);
   const [drafts, setDrafts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -234,21 +236,32 @@ export default function TalentScout() {
                 )}
               </View>
               {/* INVITE TO REMOTE SQUAD button */}
-              <TouchableOpacity
-                style={[t$.draftBtn, ath.already_drafted && t$.draftBtnDone]}
-                onPress={() => handleDraft(ath)}
-                disabled={ath.already_drafted || isDrafting}
-                activeOpacity={0.8}
-              >
-                {isDrafting ? <ActivityIndicator color="#000" size="small" /> : (
-                  <>
-                    <Ionicons name={ath.already_drafted ? 'checkmark-circle' : 'people'} size={11} color={ath.already_drafted ? '#34C759' : '#000'} />
-                    <Text style={[t$.draftBtnText, ath.already_drafted && { color: '#34C759' }, { fontSize: 9, letterSpacing: 0.5 }]}>
-                      {ath.already_drafted ? 'IN SQUAD' : 'INVITE'}
-                    </Text>
-                  </>
-                )}
-              </TouchableOpacity>
+              <View style={{ gap: 4 }}>
+                <TouchableOpacity
+                  style={[t$.draftBtn, ath.already_drafted && t$.draftBtnDone]}
+                  onPress={() => handleDraft(ath)}
+                  disabled={ath.already_drafted || isDrafting}
+                  activeOpacity={0.8}
+                >
+                  {isDrafting ? <ActivityIndicator color="#000" size="small" /> : (
+                    <>
+                      <Ionicons name={ath.already_drafted ? 'checkmark-circle' : 'people'} size={11} color={ath.already_drafted ? '#34C759' : '#000'} />
+                      <Text style={[t$.draftBtnText, ath.already_drafted && { color: '#34C759' }, { fontSize: 9, letterSpacing: 0.5 }]}>
+                        {ath.already_drafted ? 'IN SQUAD' : 'INVITE'}
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+                {/* VIEW REPORT button */}
+                <TouchableOpacity
+                  style={[t$.reportBtn]}
+                  onPress={() => router.push({ pathname: '/coach-studio/report', params: { athleteId: ath.id } } as any)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="document-text" size={10} color="#AF52DE" />
+                  <Text style={t$.reportBtnText}>REPORT</Text>
+                </TouchableOpacity>
+              </View>
             </Animated.View>
           );
         })}
@@ -323,6 +336,8 @@ const t$ = StyleSheet.create({
   draftBtn: { width: 68, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: '#D4AF37', borderRadius: 8, paddingVertical: 7 },
   draftBtnDone: { backgroundColor: 'rgba(52,199,89,0.08)', borderWidth: 1, borderColor: 'rgba(52,199,89,0.3)' },
   draftBtnText: { color: '#000', fontSize: 10, fontWeight: '900' },
+  reportBtn: { width: 68, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: 'rgba(175,82,222,0.12)', borderRadius: 8, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(175,82,222,0.3)' },
+  reportBtnText: { color: '#AF52DE', fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
   // NEW: pill filter row
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' },
   pill: { borderWidth: 1, borderColor: '#1E1E1E', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: '#0A0A0A' },

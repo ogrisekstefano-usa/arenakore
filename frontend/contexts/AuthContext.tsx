@@ -29,6 +29,9 @@ export interface User {
   username: string;
   email: string;
   role?: string;
+  is_nexus_certified?: boolean;
+  scout_visible?: boolean;
+  baseline_scanned_at?: string | null;
   gym_id?: string | null;
   ak_credits?: number;
   unlocked_tools?: string[];

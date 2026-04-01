@@ -197,8 +197,7 @@ export const api = {
   unlockCertifiedTemplate: (templateId: string, token: string) =>
     request(`/certified-templates/${templateId}/unlock`, { method: 'POST' }, token),
   // Talent Scout
-  getTalentDiscovery: (token: string, filters?: {
-    city?: string; country?: string; continent?: string;
+  getTalentDiscovery: (token: string, filters?: {    city?: string; country?: string; continent?: string;
     discipline?: string; crewStatus?: string;
     sortBy?: string; minDna?: number; minEfficiency?: number;
   }) => {
@@ -216,6 +215,10 @@ export const api = {
   draftAthlete: (athleteId: string, token: string, message?: string) =>
     request(`/talent/draft/${athleteId}`, { method: 'POST', body: JSON.stringify({ message }) }, token),
   getMyDrafts: (token: string) => request('/talent/my-drafts', {}, token),
+  getTalentReport: (athleteId: string, token: string, coachNote?: string) =>
+    request(`/talent/report/${athleteId}${coachNote ? `?coach_note=${encodeURIComponent(coachNote)}` : ''}`, {}, token),
+  toggleScoutVisibility: (visible: boolean, token: string) =>
+    request('/users/scout-visibility', { method: 'PUT', body: JSON.stringify({ scout_visible: visible }) }, token),
 
   // ========== GYM_OWNER ENGINE ==========
   getGymMe: (token: string) => request('/gym/me', {}, token),
