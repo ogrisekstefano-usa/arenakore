@@ -453,16 +453,16 @@ export default function LegacyStep1() {
 // STYLES
 // ===================================================================
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#050505', paddingHorizontal: 24 },
+  root: { flex: 1, backgroundColor: '#000000', paddingHorizontal: 24 },
   topBar: {
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 12,
   },
   brand: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
-    backgroundColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'transparent',
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 1, borderColor: 'rgba(0,242,255,0.4)',
   },
   stepTxt: { color: '#00F2FF', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
   progBar: {
@@ -522,9 +522,9 @@ const s = StyleSheet.create({
   voiceSection: { gap: 6, marginBottom: 'auto' as any },
   voiceStatusRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(0,242,255,0.07)',
     borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
-    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)',
+    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.35)',
   },
   voiceStatusGold: {
     backgroundColor: 'rgba(212,175,55,0.06)',
@@ -566,8 +566,8 @@ const s = StyleSheet.create({
   },
   micBtn: {
     width: 58, height: 58, borderRadius: 10,
-    backgroundColor: 'rgba(0,242,255,0.65)',
-    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'transparent',
+    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.35)',
     alignItems: 'center', justifyContent: 'center',
   },
   micBtnGold: {
