@@ -36,6 +36,7 @@ import { TrainingTemplateCard } from '../../components/training/TrainingTemplate
 import { BioFeedbackHUD, BioFeedbackState } from '../../components/training/BioFeedbackHUD';
 import { AKBadge } from '../../components/KoreVault';
 import { CertifiedByPros } from '../../components/training/CertifiedByPros';
+import { TiltGuideOverlay } from '../../components/TiltGuideOverlay';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -931,7 +932,7 @@ export default function NexusTriggerScreen() {
   const { user, token, logout, activeRole, setActiveRole, updateUser } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'countdown' | 'stabilizing' | 'scanning' | 'results'>('console');
+  const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'tilt_setup' | 'countdown' | 'stabilizing' | 'scanning' | 'results'>('console');
   const [exercise, setExercise] = useState<ExerciseType>('squat');
   const [forgeMode, setForgeMode] = useState<ForgeMode>('personal');
   const [motionState, setMotionState] = useState<MotionState | null>(null);
@@ -1004,7 +1005,7 @@ export default function NexusTriggerScreen() {
     if (!isTrainingMode) return;
     if (params.trainingExercise) setExercise(params.trainingExercise as ExerciseType);
     setForgeMode('personal');
-    setPhase('countdown');
+    setPhase('tilt_setup'); // Go through tilt guide even for training sessions
   }, [isTrainingMode]);
 
   // Web camera & motion detection — SPRINT 5: Camera VISIBLE, overlay reduced
@@ -1049,7 +1050,7 @@ export default function NexusTriggerScreen() {
     };
   }, [phase]);
 
-  const handleForgeSelect = (mode: ForgeMode, ex: ExerciseType) => { setForgeMode(mode); setExercise(ex); setPhase('countdown'); };
+  const handleForgeSelect = (mode: ForgeMode, ex: ExerciseType) => { setForgeMode(mode); setExercise(ex); setPhase('tilt_setup'); };
 
   const handleCountdownDone = () => {
     setPhase('stabilizing');
@@ -1161,6 +1162,16 @@ export default function NexusTriggerScreen() {
 
   if (phase === 'console') {
     return <NexusConsole user={user} onScan={() => router.push({ pathname: '/onboarding/step2', params: { mode: 'rescan' } })} onForge={() => setPhase('forge')} deviceTier={deviceTier} eligibility={eligibility} myRank={myRank} myCrews={myCrews} />;
+  }
+
+  if (phase === 'tilt_setup') {
+    return (
+      <TiltGuideOverlay
+        lang="it"
+        onReady={() => setPhase('countdown')}
+        onSkip={() => setPhase('countdown')}
+      />
+    );
   }
 
   if (phase === 'forge') {

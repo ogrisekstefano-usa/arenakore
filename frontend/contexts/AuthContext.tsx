@@ -58,8 +58,6 @@ interface AuthContextType {
     height_cm?: number; weight_kg?: number; age?: number;
     training_level?: string; gender?: string;
   }) => Promise<void>;
-    height_cm?: number; weight_kg?: number; age?: number; training_level?: string;
-  }) => Promise<User>;
   completeOnboarding: (role: string, sport: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
