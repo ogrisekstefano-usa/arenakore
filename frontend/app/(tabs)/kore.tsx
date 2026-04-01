@@ -20,6 +20,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { Header } from '../../components/Header';
 import { KoreVault, AKBadge } from '../../components/KoreVault';
+import { AKDropsWallet, CertBadge } from '../../components/CertBadge';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { ImageBackground } from 'react-native';
@@ -1181,6 +1182,8 @@ export default function KoreTab() {
 
           {/* GOALS */}
           <GoalsSection user={user} />
+          {/* AK DROPS Wallet — locked for Fast Entry */}
+          <AKDropsWallet user={user} />
           <KoreVault />
 
           {/* 2. RANK INFOGRAPHIC */}

@@ -197,12 +197,20 @@ export const api = {
   unlockCertifiedTemplate: (templateId: string, token: string) =>
     request(`/certified-templates/${templateId}/unlock`, { method: 'POST' }, token),
   // Talent Scout
-  getTalentDiscovery: (token: string, filters?: { city?: string; sport?: string; minDna?: number; sortBy?: string }) => {
+  getTalentDiscovery: (token: string, filters?: {
+    city?: string; country?: string; continent?: string;
+    discipline?: string; crewStatus?: string;
+    sortBy?: string; minDna?: number; minEfficiency?: number;
+  }) => {
     const p = new URLSearchParams();
     if (filters?.city) p.append('city', filters.city);
-    if (filters?.sport) p.append('sport', filters.sport);
-    if (filters?.minDna) p.append('min_dna', String(filters.minDna));
+    if (filters?.country) p.append('country', filters.country);
+    if (filters?.continent) p.append('continent', filters.continent);
+    if (filters?.discipline) p.append('discipline', filters.discipline);
+    if (filters?.crewStatus) p.append('crew_status', filters.crewStatus);
     if (filters?.sortBy) p.append('sort_by', filters.sortBy);
+    if (filters?.minDna) p.append('min_dna', String(filters.minDna));
+    if (filters?.minEfficiency) p.append('min_efficiency', String(filters.minEfficiency));
     return request(`/talent/discovery?${p.toString()}`, {}, token);
   },
   draftAthlete: (athleteId: string, token: string, message?: string) =>

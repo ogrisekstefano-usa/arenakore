@@ -2123,71 +2123,88 @@ def calculate_dna_relative_score(user: dict) -> float:
 
 @api_router.get("/talent/discovery")
 async def talent_discovery(
-    min_dna: Optional[float] = None,
-    max_dna: Optional[float] = None,
+    sort_by: str = "efficiency_ratio",
+    sort_order: str = "desc",
     city: Optional[str] = None,
-    sport: Optional[str] = None,
-    sort_by: str = "relative_score",  # "relative_score" | "dna_avg" | "level" | "xp"
+    country: Optional[str] = None,
+    continent: Optional[str] = None,
+    discipline: Optional[str] = None,
+    crew_status: Optional[str] = None,
+    min_dna: Optional[float] = None,
+    min_efficiency: Optional[float] = None,
     limit: int = 20,
     current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))
 ):
-    """
-    Talent Scout: Discover athletes ranked by DNA-Relative potential score.
-    DNA-Relative identifies 'diamonds in the rough' — athletes expressing
-    high performance relative to their biometric baseline and level.
-    """
+    """Talent Scout: Efficiency Ratio = diamonds-in-the-rough formula"""
     filters: dict = {"ghost_mode": {"$ne": True}}
     if city:
         filters["city"] = {"$regex": city, "$options": "i"}
-    if sport:
-        filters["sport"] = {"$regex": sport, "$options": "i"}
+    elif country:
+        filters["city"] = {"$regex": country, "$options": "i"}
+    elif continent:
+        CONT = {"EU":["MILANO","ROMA","PARIS","MADRID","LONDON","BERLIN"],
+                "NA":["CHICAGO","NEW YORK","LOS ANGELES","TORONTO"],
+                "AS":["TOKYO","SEOUL","DUBAI","SINGAPORE"],"SA":["SAO PAULO"],"AF":["LAGOS"],"OC":["SYDNEY"]}
+        cities = CONT.get(continent.upper(), [])
+        if cities:
+            filters["city"] = {"$in": cities}
 
     athletes = await db.users.find(filters).limit(200).to_list(200)
-
-    # Calculate scores + filter
     profiles = []
     for user in athletes:
         if str(user["_id"]) == str(current_user["_id"]):
-            continue  # Skip self
+            continue
         dna = user.get("dna") or {}
         dna_vals = [dna.get(k, 50) for k in DNA_KEYS]
         dna_avg = round(sum(dna_vals) / len(dna_vals), 1) if dna_vals else 0
+        level = user.get("level", 1)
+        efficiency_ratio = round(min(150, dna_avg * (11 - min(level, 10)) / 10), 1)
         relative = calculate_dna_relative_score(user)
-        # Filter
         if min_dna is not None and dna_avg < min_dna:
             continue
-        if max_dna is not None and dna_avg > max_dna:
+        if min_efficiency is not None and efficiency_ratio < min_efficiency:
             continue
-        # Already drafted check
-        already_drafted = await db.talent_drafts.find_one({
-            "coach_id": current_user["_id"],
-            "athlete_id": user["_id"],
-        })
+        # Discipline filter
+        if discipline:
+            DISC_MAP = {"endurance":["resistenza"],"power":["forza","potenza"],"agility":["velocita","agilita"],"mobility":["agilita","tecnica"]}
+            keys = DISC_MAP.get(discipline, [])
+            if keys and (sum(dna.get(k,50) for k in keys)/max(len(keys),1)) < 65:
+                continue
+        # Crew status
+        crews = await db.crews_v2.find({"members": user["_id"]}).to_list(3)
+        is_in_crew = len(crews) > 0
+        if crew_status == "free_agent" and is_in_crew:
+            continue
+        if crew_status == "in_crew" and not is_in_crew:
+            continue
+        already_drafted = await db.talent_drafts.find_one({"coach_id": current_user["_id"], "athlete_id": user["_id"]})
+        is_certified = bool(user.get("onboarding_completed") and user.get("dna"))
+        dom_key = max(DNA_KEYS, key=lambda k: dna.get(k, 50)) if dna else "forza"
+        disc_label = {"resistenza":"ENDURANCE","forza":"POWER","potenza":"POWER","velocita":"AGILITY","agilita":"AGILITY","tecnica":"TECHNIQUE"}.get(dom_key,"GENERAL")
         profiles.append({
             "id": str(user["_id"]),
             "username": user.get("username"),
             "city": user.get("city", "—"),
             "sport": user.get("sport", "—"),
-            "level": user.get("level", 1),
+            "level": level,
             "xp": user.get("xp", 0),
             "avatar_color": user.get("avatar_color", "#00F2FF"),
             "dna_avg": dna_avg,
             "dna": {k: dna.get(k, 50) for k in DNA_KEYS},
+            "efficiency_ratio": efficiency_ratio,
             "relative_score": relative,
             "talent_tier": "ELITE" if relative >= 95 else "PRO" if relative >= 80 else "RISING" if relative >= 65 else "SCOUT",
+            "dominant_discipline": disc_label,
+            "is_certified": is_certified,
+            "is_free_agent": not is_in_crew,
+            "crews": [c.get("name") for c in crews],
             "already_drafted": bool(already_drafted),
         })
+    sort_key = {"efficiency_ratio":"efficiency_ratio","dna_avg":"dna_avg","relative_score":"relative_score","level":"level","xp":"xp"}.get(sort_by,"efficiency_ratio")
+    profiles.sort(key=lambda p: p.get(sort_key, 0) or 0, reverse=sort_order == "desc")
+    return {"athletes": profiles[:limit], "total": len(profiles),
+            "filters": {"city": city, "country": country, "continent": continent, "discipline": discipline, "crew_status": crew_status}}
 
-    # Sort
-    sort_map = {"relative_score": "relative_score", "dna_avg": "dna_avg", "level": "level", "xp": "xp"}
-    sort_key = sort_map.get(sort_by, "relative_score")
-    profiles.sort(key=lambda p: p[sort_key], reverse=True)
-
-    return {
-        "athletes": profiles[:limit],
-        "total": len(profiles),
-        "filters": {"city": city, "sport": sport, "min_dna": min_dna, "max_dna": max_dna},
-    }
 
 
 @api_router.post("/talent/draft/{athlete_id}")

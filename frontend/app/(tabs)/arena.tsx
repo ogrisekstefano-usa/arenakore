@@ -20,6 +20,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { ToolLock } from '../../components/KoreVault';
 import { ChallengeInviteModal } from '../../components/crew/ChallengeInviteModal';
+import { CertBadge } from '../../components/CertBadge';
 
 const { width: SW } = Dimensions.get('window');
 
@@ -614,10 +615,34 @@ const ELITE_FEED = [
 ];
 
 export default function ArenaTab() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const isCertified = !!(user?.onboarding_completed && user?.dna);
+
   return (
     <ImageBackground source={{ uri: TAB_BACKGROUNDS.arena }} style={s.container} imageStyle={{ opacity: 0.12 }}>
       <StatusBar barStyle="light-content" />
       <Header title="ARENA" />
+
+      {/* ── URGENCY BANNER for uncertified users ── */}
+      {!isCertified && (
+        <Animated.View entering={FadeInDown.duration(300)} style={s.urgencyBanner}>
+          <View style={s.urgencyLeft}>
+            <Ionicons name="warning" size={14} color="#D4AF37" />
+            <Text style={s.urgencyText}>
+              Il tuo talento non è certificato. Completa il NÈXUS Scan per entrare nel Radar degli Scout.
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={s.urgencyCta}
+            onPress={() => router.push('/onboarding/step1')}
+            activeOpacity={0.85}
+          >
+            <Text style={s.urgencyCtaText}>CERTIFICA</Text>
+            <Ionicons name="scan" size={10} color="#000" />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <LiveBattleDashboard />
         <MatchmakingPanel />
@@ -638,6 +663,15 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
   dividerSection: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 10 },
   divLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.05)' },
+  urgencyBanner: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: 'rgba(212,175,55,0.1)', paddingHorizontal: 14, paddingVertical: 10,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(212,175,55,0.25)', gap: 10,
+  },
+  urgencyLeft: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
+  urgencyText: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '300', flex: 1, lineHeight: 15 },
+  urgencyCta: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#D4AF37', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
+  urgencyCtaText: { color: '#000', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
 });
 
 const live$ = StyleSheet.create({ card: {} }); // legacy placeholder

@@ -1,0 +1,45 @@
+{
+  "summary": "Sprint 33 — AK DROPS System, Talent Discovery v2, CertBadge, Urgency Banner. Backend: 21/21 tests passed. GET /api/talent/discovery returns athletes sorted by efficiency_ratio (NOT relative_score), all required fields present (efficiency_ratio, is_certified, is_free_agent, dominant_discipline, crews), all filters working (crew_status, discipline, continent). KORE tab: AK DROPS wallet visible for STEFANO (certified) with 650 balance + 3 earning rules. No locked state/CERTIFICA button for certified user. Arena tab: No urgency banner for certified STEFANO (correct). Coach Studio talent: All filter pills present (GLOBAL/EU/NA/ASIA, ALL/ENDURANCE/POWER/AGILITY/MOBILITY, TUTTI/FREE AGENT/IN CREW, ⚡EFFICIENCY/DNA), table columns correct (ATLETA, DNA, ⚡EFF, TIER, STATUS), INVITE buttons visible, CertBadge xs icons shown next to athlete names.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "KORE tab — AK DROPS locked state / Arena Urgency Banner (uncertified users)",
+        "issue": "Could not directly UI-test the uncertified user flows (locked wallet + urgency banner) due to lack of uncertified user credentials. Code review confirms logic is correct: isCertified = !!(user?.onboarding_completed && user?.dna). STEFANO (certified) correctly shows active wallet and no urgency banner. Uncertified athlete data confirmed via /api/talent/discovery (is_certified=False athletes exist).",
+        "affected_testIDs": []
+      }
+    ],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sprint33_ak_drops_certbadge_talent_v2.py",
+    "/app/test_reports/pytest/sprint33_certbadge_talent_v2.xml"
+  ],
+  "action_items": [
+    "INFO: Urgency banner for uncertified users and locked AK DROPS wallet were verified via code review only (no uncertified user credentials available for live UI testing). Implement a test uncertified user to cover these flows in future iterations.",
+    "INFO: STEFANO shows 'BIO-SCAN STATUS: MAI ESEGUITO' (Never scanned) on KORE tab despite being certified (onboarding_completed=True). This is a minor UX inconsistency — baseline_scanned_at may be null even though DNA exists."
+  ],
+  "critical_code_review_comments": [
+    "talent.tsx: 'FREE AGENT' filter pill text uses '⚡ FREE AGENT' with emoji prefix — querySelector with text selector may not work in some testing environments due to emoji rendering, but functionally the pill works via React Native onPress.",
+    "CertBadge.tsx: xs size shows ONLY icon (no text) — in the talent table rows, CERTIFIED vs UNCERTIFIED is visually distinguishable only by icon (shield-checkmark cyan vs lock-closed grey). For accessibility, consider adding aria-label to the badge.",
+    "arena.tsx: Urgency banner text 'Il tuo talento non è certificato. Completa il NÈXUS Scan per entrare nel Radar degli Scout.' — slightly more verbose than spec ('Il tuo talento non è certificato... Completa il NÈXUS Scan') but not a bug.",
+    "server.py talent_discovery: continent filter uses hardcoded city arrays (e.g., EU: ['MILANO','ROMA','PARIS','MADRID','LONDON','BERLIN']). If more EU cities are added to user profiles without updating this list, EU filter would miss them. Consider a DB-level continent field on users."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_sprint33_ak_drops_certbadge_talent_v2.py"
+  ],
+  "success_rate": {
+    "backend": "100% — 21/21 tests passed",
+    "frontend": "95% — All visible features working; uncertified user flows verified via code review only"
+  },
+  "seed_data_creation": "No test data created. Used STEFANO (ogrisek.stefano@gmail.com) for all authenticated tests.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Sprint 33: AK DROPS System, Talent Discovery v2, CertBadge, Urgency Banner. All 21 backend tests pass. STEFANO (certified, 650 AK Drops) sees active AK DROPS wallet with 3 earning rules in KORE tab and no urgency banner in Arena tab. Uncertified athletes confirmed present in talent discovery (K.PAYNE, D.ROSE, OGRI etc. all have is_certified=False). Coach Studio /coach-studio/talent shows all filter pills (GLOBAL/EU/NA/ASIA, ALL/ENDURANCE/POWER/AGILITY/MOBILITY, TUTTI/FREE AGENT/IN CREW, EFFICIENCY/DNA sort), table with ATLETA/DNA/⚡EFF/TIER/STATUS/INVITE columns, CertBadge xs icons, and INVITE buttons. EU continent filter functional. efficiency_ratio formula validated (DNA_avg * (11-min(level,10))/10, cap 150).",
+  "rca_of_issue": "No critical bugs. Minor: uncertified user UI flows (locked wallet, urgency banner) could not be live-tested due to no uncertified user credentials, but code review confirms correct implementation. The isCertified = !!(user?.onboarding_completed && user?.dna) logic is correct and tested via STEFANO's certified state."
+}

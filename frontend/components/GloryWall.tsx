@@ -17,6 +17,7 @@ import { playAcceptPing } from '../utils/sounds';
 import { HALL_OF_KORE_BG } from '../utils/images';
 import { ControlCenter } from './ControlCenter';
 import { PvPChallengeModal } from './pvp/PvPChallengeModal';
+import { CertBadge } from './CertBadge';
 
 const MEDAL_COLORS: Record<number, { bg: string; border: string; text: string; glow: string }> = {
   1: { bg: 'rgba(212,175,55,0.2)', border: 'rgba(212,175,55,0.5)', text: '#D4AF37', glow: '#D4AF37' },

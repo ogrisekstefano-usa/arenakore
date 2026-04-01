@@ -1,6 +1,8 @@
 /**
- * COACH STUDIO — TALENT SCOUT
- * DNA-Relative Discovery: identifica atleti con alto potenziale biometrico relativo.
+ * COACH STUDIO — TALENT SCOUT v2
+ * Efficiency Ratio: diamonds-in-the-rough formula
+ * Filters: Discipline, Location hierarchy, Crew Status
+ * INVITE TO REMOTE SQUAD action
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -10,8 +12,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme, MONT, INTER } from '../../contexts/ThemeContext';
 import { api } from '../../utils/api';
 import { MiniRadar, SectionHeader } from '../../components/studio/StudioComponents';
+import { CertBadge } from '../../components/CertBadge';
 
 const TIER_CFG: Record<string, { color: string; bg: string; icon: string }> = {
   ELITE:  { color: '#D4AF37', bg: 'rgba(212,175,55,0.12)', icon: '👑' },
@@ -20,13 +24,38 @@ const TIER_CFG: Record<string, { color: string; bg: string; icon: string }> = {
   SCOUT:  { color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.04)', icon: '🔍' },
 };
 
+const DISC_OPTIONS = [
+  { key: '', label: 'ALL' },
+  { key: 'endurance', label: 'ENDURANCE', color: '#00F2FF' },
+  { key: 'power',     label: 'POWER',     color: '#FF453A' },
+  { key: 'agility',   label: 'AGILITY',   color: '#FF9500' },
+  { key: 'mobility',  label: 'MOBILITY',  color: '#34C759' },
+];
+
+const CREW_STATUS_OPTIONS = [
+  { key: '', label: 'TUTTI' },
+  { key: 'free_agent', label: '⚡ FREE AGENT' },
+  { key: 'in_crew',   label: '🛡 IN CREW' },
+];
+
+const CONTINENT_OPTIONS = [
+  { key: '', label: 'GLOBAL' },
+  { key: 'EU', label: '🇪🇺 EU' },
+  { key: 'NA', label: '🌎 NA' },
+  { key: 'AS', label: '🌏 ASIA' },
+];
+
 export default function TalentScout() {
   const { token } = useAuth();
+  const { theme } = useTheme();
   const [athletes, setAthletes] = useState<any[]>([]);
   const [drafts, setDrafts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [draftingId, setDraftingId] = useState<string | null>(null);
-  const [filters, setFilters] = useState({ city: '', sport: '', minDna: '', sortBy: 'relative_score' });
+  const [filters, setFilters] = useState({
+    city: '', continent: '', discipline: '',
+    crewStatus: '', minDna: '', sortBy: 'efficiency_ratio',
+  });
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -35,7 +64,9 @@ export default function TalentScout() {
       const [discovery, myDrafts] = await Promise.all([
         api.getTalentDiscovery(token, {
           city: filters.city || undefined,
-          sport: filters.sport || undefined,
+          continent: filters.continent || undefined,
+          discipline: filters.discipline || undefined,
+          crewStatus: filters.crewStatus || undefined,
           minDna: filters.minDna ? Number(filters.minDna) : undefined,
           sortBy: filters.sortBy,
         }),
@@ -45,7 +76,7 @@ export default function TalentScout() {
       setDrafts(myDrafts.drafts || []);
     } catch (_) {}
     finally { setLoading(false); }
-  }, [token, filters.city, filters.sport, filters.minDna, filters.sortBy]);
+  }, [token, filters.city, filters.continent, filters.discipline, filters.crewStatus, filters.minDna, filters.sortBy]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -68,55 +99,67 @@ export default function TalentScout() {
       <View style={t$.header}>
         <View>
           <Text style={t$.pageTitle}>TALENT SCOUT</Text>
-          <Text style={t$.pageSub}>DNA-Relative Discovery · Individua i diamanti grezzi del talento biometrico</Text>
+          <Text style={t$.pageSub}>Efficiency Ratio · Identifica i diamanti grezzi — alto DNA, basso livello</Text>
         </View>
         <View style={t$.draftCount}>
           <Text style={t$.draftCountVal}>{drafts.length}</Text>
-          <Text style={t$.draftCountLabel}>DRAFT</Text>
+          <Text style={t$.draftCountLabel}>SQUAD</Text>
         </View>
       </View>
 
-      {/* Filters */}
+      {/* Filters — Row 1: text inputs */}
       <View style={t$.filters}>
-        {[
-          { key: 'city', placeholder: 'Filtra per città (es. MILANO)', icon: 'location' },
-          { key: 'sport', placeholder: 'Filtra per sport (es. Atletica)', icon: 'barbell' },
-          { key: 'minDna', placeholder: 'Min DNA (es. 70)', icon: 'analytics' },
-        ].map(f => (
-          <View key={f.key} style={t$.filterWrap}>
-            <Ionicons name={f.icon as any} size={13} color="rgba(255,255,255,0.3)" />
-            <TextInput
-              style={t$.filterInput}
-              placeholder={f.placeholder}
-              placeholderTextColor="rgba(255,255,255,0.2)"
-              value={filters[f.key as keyof typeof filters]}
-              onChangeText={v => setFilters(prev => ({ ...prev, [f.key]: v }))}
-              onSubmitEditing={load}
-            />
-          </View>
-        ))}
-        {/* Sort selector */}
-        <View style={t$.sortRow}>
-          {[
-            { val: 'relative_score', label: 'POTENZIALE' },
-            { val: 'dna_avg', label: 'DNA' },
-            { val: 'level', label: 'LVL' },
-          ].map(s => (
-            <TouchableOpacity
-              key={s.val}
-              style={[t$.sortBtn, filters.sortBy === s.val && t$.sortBtnActive]}
-              onPress={() => setFilters(prev => ({ ...prev, sortBy: s.val }))}
-            >
-              <Text style={[t$.sortText, filters.sortBy === s.val && { color: '#D4AF37' }]}>{s.label}</Text>
-            </TouchableOpacity>
-          ))}
+        <View style={t$.filterWrap}>
+          <Ionicons name="location" size={13} color="rgba(255,255,255,0.3)" />
+          <TextInput style={t$.filterInput} placeholder="Città (es. MILANO)" placeholderTextColor="rgba(255,255,255,0.2)"
+            value={filters.city} onChangeText={v => setFilters(p => ({ ...p, city: v }))} onSubmitEditing={load} />
         </View>
+        <View style={t$.filterWrap}>
+          <Ionicons name="analytics" size={13} color="rgba(255,255,255,0.3)" />
+          <TextInput style={t$.filterInput} placeholder="Min DNA (es. 65)" placeholderTextColor="rgba(255,255,255,0.2)"
+            value={filters.minDna} onChangeText={v => setFilters(p => ({ ...p, minDna: v }))} keyboardType="numeric" onSubmitEditing={load} />
+        </View>
+      </View>
+
+      {/* Filters — Row 2: pill selectors */}
+      <View style={t$.pillRow}>
+        {/* Continents */}
+        {CONTINENT_OPTIONS.map(c => (
+          <TouchableOpacity key={c.key} style={[t$.pill, filters.continent === c.key && t$.pillActive]}
+            onPress={() => setFilters(p => ({ ...p, continent: c.key }))}>
+            <Text style={[t$.pillText, filters.continent === c.key && { color: '#D4AF37' }]}>{c.label}</Text>
+          </TouchableOpacity>
+        ))}
+        <View style={t$.pillDivider} />
+        {/* Disciplines */}
+        {DISC_OPTIONS.map(d => (
+          <TouchableOpacity key={d.key} style={[t$.pill, filters.discipline === d.key && t$.pillActive, d.color ? { borderColor: d.color + '40' } : {}]}
+            onPress={() => setFilters(p => ({ ...p, discipline: d.key }))}>
+            <Text style={[t$.pillText, filters.discipline === d.key && { color: d.color || '#D4AF37' }]}>{d.label}</Text>
+          </TouchableOpacity>
+        ))}
+        <View style={t$.pillDivider} />
+        {/* Crew Status */}
+        {CREW_STATUS_OPTIONS.map(cs => (
+          <TouchableOpacity key={cs.key} style={[t$.pill, filters.crewStatus === cs.key && t$.pillActive]}
+            onPress={() => setFilters(p => ({ ...p, crewStatus: cs.key }))}>
+            <Text style={[t$.pillText, filters.crewStatus === cs.key && { color: '#00F2FF' }]}>{cs.label}</Text>
+          </TouchableOpacity>
+        ))}
+        <View style={t$.pillDivider} />
+        {/* Sort */}
+        {[{ val: 'efficiency_ratio', label: '⚡ EFFICIENCY' }, { val: 'dna_avg', label: '🧬 DNA' }].map(s => (
+          <TouchableOpacity key={s.val} style={[t$.pill, filters.sortBy === s.val && t$.pillActive]}
+            onPress={() => setFilters(p => ({ ...p, sortBy: s.val }))}>
+            <Text style={[t$.pillText, filters.sortBy === s.val && { color: '#D4AF37' }]}>{s.label}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       {/* Legend */}
       <View style={t$.legend}>
-        <Text style={t$.legendTitle}>DNA-RELATIVE SCORE</Text>
-        <Text style={t$.legendDesc}>Score che premia atleti con alto DNA biometrico rispetto al loro livello. Un atleta LVL 3 con DNA 78 batte un LVL 10 con DNA 78 — è più "diamante grezzo".</Text>
+        <Text style={t$.legendTitle}>⚡ EFFICIENCY RATIO</Text>
+        <Text style={t$.legendDesc}>Potenziale DNA × (11 − livello) / 10. Un atleta LVL 2 con DNA 80 ha ratio 160 — molto più "grezzo" di un LVL 10 con lo stesso DNA (ratio 10).</Text>
         <View style={t$.tierRow}>
           {Object.entries(TIER_CFG).map(([tier, cfg]) => (
             <View key={tier} style={[t$.tierPill, { backgroundColor: cfg.bg, borderColor: cfg.color + '50' }]}>
@@ -133,10 +176,10 @@ export default function TalentScout() {
         <View style={t$.tableHeader}>
           <Text style={[t$.th, { flex: 1 }]}>ATLETA</Text>
           <Text style={t$.th}>DNA</Text>
-          <Text style={t$.th}>SCORE</Text>
+          <Text style={[t$.th, { color: '#D4AF37' }]}>⚡EFF</Text>
           <Text style={t$.th}>TIER</Text>
-          <Text style={t$.th}>LVL</Text>
-          <View style={{ width: 80 }} />
+          <Text style={t$.th}>STATUS</Text>
+          <View style={{ width: 100 }} />
         </View>
 
         {loading ? (
@@ -151,32 +194,46 @@ export default function TalentScout() {
           const isDrafting = draftingId === ath.id;
           return (
             <Animated.View key={ath.id} entering={FadeInDown.delay(idx * 30).duration(200)} style={t$.row}>
-              {/* Rank */}
               <Text style={t$.rowRank}>#{idx + 1}</Text>
-              {/* Avatar + name */}
-              <View style={t$.rowAthlete}>
+              {/* Avatar + name + cert badge */}
+              <View style={[t$.rowAthlete, { flex: 1 }]}>
                 <View style={[t$.rowAvatar, { backgroundColor: ath.avatar_color || '#00F2FF' }]}>
                   <Text style={t$.rowAvatarLetter}>{(ath.username || '?')[0].toUpperCase()}</Text>
                 </View>
                 <View style={t$.rowInfo}>
-                  <Text style={t$.rowName}>{ath.username}</Text>
-                  <Text style={t$.rowMeta}>{ath.city} · {ath.sport}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={t$.rowName} numberOfLines={1}>{ath.username}</Text>
+                    <CertBadge certified={ath.is_certified} size="xs" />
+                  </View>
+                  <Text style={t$.rowMeta}>{ath.city} · <Text style={{ color: ath.dominant_discipline === 'POWER' ? '#FF453A' : ath.dominant_discipline === 'ENDURANCE' ? '#00F2FF' : '#FF9500' }}>{ath.dominant_discipline}</Text></Text>
                 </View>
-                {/* Mini radar */}
-                <MiniRadar dna={ath.dna} color={tier.color} size={42} />
+                <MiniRadar dna={ath.dna} color={tier.color} size={36} />
               </View>
               {/* DNA */}
               <Text style={[t$.rowDna, { color: ath.dna_avg >= 80 ? '#D4AF37' : '#FFFFFF' }]}>{ath.dna_avg}</Text>
-              {/* Relative score */}
-              <Text style={[t$.rowScore, { color: tier.color }]}>{ath.relative_score}</Text>
+              {/* ⚡ Efficiency Ratio — primary metric */}
+              <View style={{ width: 54, alignItems: 'center' }}>
+                <Text style={[t$.rowScore, { color: ath.efficiency_ratio >= 80 ? '#D4AF37' : tier.color, fontSize: 15 }]}>{ath.efficiency_ratio}</Text>
+                <Text style={{ fontSize: 8, color: 'rgba(255,255,255,0.25)', letterSpacing: 1 }}>⚡EFF</Text>
+              </View>
               {/* Tier */}
               <View style={[t$.rowTier, { backgroundColor: tier.bg }]}>
                 <Text>{tier.icon}</Text>
                 <Text style={[t$.rowTierText, { color: tier.color }]}>{ath.talent_tier}</Text>
               </View>
-              {/* Level */}
-              <Text style={t$.rowLevel}>LVL {ath.level}</Text>
-              {/* Draft button */}
+              {/* Free Agent / In Crew */}
+              <View style={{ width: 60, alignItems: 'center' }}>
+                {ath.is_free_agent ? (
+                  <View style={[t$.statusPill, { backgroundColor: 'rgba(52,199,89,0.1)', borderColor: 'rgba(52,199,89,0.3)' }]}>
+                    <Text style={{ color: '#34C759', fontSize: 8, fontWeight: '900' }}>⚡ FREE</Text>
+                  </View>
+                ) : (
+                  <View style={[t$.statusPill, { backgroundColor: 'rgba(0,242,255,0.06)', borderColor: 'rgba(0,242,255,0.2)' }]}>
+                    <Text style={{ color: '#00F2FF', fontSize: 8, fontWeight: '700' }}>🛡 CREW</Text>
+                  </View>
+                )}
+              </View>
+              {/* INVITE TO REMOTE SQUAD button */}
               <TouchableOpacity
                 style={[t$.draftBtn, ath.already_drafted && t$.draftBtnDone]}
                 onPress={() => handleDraft(ath)}
@@ -185,9 +242,9 @@ export default function TalentScout() {
               >
                 {isDrafting ? <ActivityIndicator color="#000" size="small" /> : (
                   <>
-                    <Ionicons name={ath.already_drafted ? 'checkmark-circle' : 'person-add'} size={12} color={ath.already_drafted ? '#34C759' : '#000'} />
-                    <Text style={[t$.draftBtnText, ath.already_drafted && { color: '#34C759' }]}>
-                      {ath.already_drafted ? 'DRAFTED' : 'DRAFT'}
+                    <Ionicons name={ath.already_drafted ? 'checkmark-circle' : 'people'} size={11} color={ath.already_drafted ? '#34C759' : '#000'} />
+                    <Text style={[t$.draftBtnText, ath.already_drafted && { color: '#34C759' }, { fontSize: 9, letterSpacing: 0.5 }]}>
+                      {ath.already_drafted ? 'IN SQUAD' : 'INVITE'}
                     </Text>
                   </>
                 )}
@@ -263,9 +320,16 @@ const t$ = StyleSheet.create({
   rowTier: { width: 70, flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, justifyContent: 'center' },
   rowTierText: { fontSize: 9, fontWeight: '900', letterSpacing: 1 },
   rowLevel: { width: 40, color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '400', textAlign: 'center' },
-  draftBtn: { width: 72, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, backgroundColor: '#D4AF37', borderRadius: 8, paddingVertical: 7 },
+  draftBtn: { width: 68, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: '#D4AF37', borderRadius: 8, paddingVertical: 7 },
   draftBtnDone: { backgroundColor: 'rgba(52,199,89,0.08)', borderWidth: 1, borderColor: 'rgba(52,199,89,0.3)' },
-  draftBtnText: { color: '#000', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  draftBtnText: { color: '#000', fontSize: 10, fontWeight: '900' },
+  // NEW: pill filter row
+  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' },
+  pill: { borderWidth: 1, borderColor: '#1E1E1E', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: '#0A0A0A' },
+  pillActive: { borderColor: 'rgba(212,175,55,0.5)', backgroundColor: 'rgba(212,175,55,0.08)' },
+  pillText: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  pillDivider: { width: 1, height: 20, backgroundColor: '#1E1E1E' },
+  statusPill: { borderWidth: 1, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 3, alignItems: 'center' },
   draftsSection: { gap: 10 },
   draftRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#0A0A0A', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#1E1E1E' },
   draftAvatar: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
