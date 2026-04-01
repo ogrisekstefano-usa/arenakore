@@ -13,15 +13,91 @@ import { StudioToastProvider } from '../../components/studio/StudioToast';
 
 // ── Inject Google Fonts (web only) ────────────────────────────────────────────
 function InjectFonts() {
+  const { mode } = useTheme();
+
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof document === 'undefined') return;
-    if (document.getElementById('nexus-fonts')) return;
-    const link = document.createElement('link');
-    link.id = 'nexus-fonts';
-    link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Inter:wght@300;400;500&display=swap';
-    document.head.appendChild(link);
-  }, []);
+
+    // ── Google Fonts: Plus Jakarta Sans + Montserrat (latin subset only) ──
+    if (!document.getElementById('nexus-fonts')) {
+      const link = document.createElement('link');
+      link.id = 'nexus-fonts';
+      link.rel = 'stylesheet';
+      link.href = [
+        'https://fonts.googleapis.com/css2?',
+        'family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800&',
+        'family=Montserrat:wght@300;400;500;600;700;800;900&',
+        'display=swap&subset=latin',
+      ].join('');
+      document.head.appendChild(link);
+    }
+
+    // ── CSS: typography system + light/dark mode rules ──
+    const styleId = 'nexus-typography';
+    let style = document.getElementById(styleId) as HTMLStyleElement | null;
+    if (!style) {
+      style = document.createElement('style');
+      style.id = styleId;
+      document.head.appendChild(style);
+    }
+
+    style.textContent = `
+      /* ── NÈXUS Typography System ── */
+
+      /* Base reset */
+      html[data-nexus-mode] { box-sizing: border-box; }
+
+      /* Plus Jakarta Sans for all title/heading elements */
+      [data-nexus-title="1"] {
+        font-family: 'Plus Jakarta Sans', 'Montserrat', sans-serif !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.02em !important;
+      }
+
+      /* Montserrat for all body text */
+      [data-nexus-body] {
+        font-family: 'Montserrat', -apple-system, sans-serif !important;
+      }
+
+      /* ── LIGHT MODE RULES ── */
+      html[data-nexus-mode="light"] {
+        background: #F4F4F4;
+      }
+
+      /* +2px font size boost in light mode for all text */
+      html[data-nexus-mode="light"] div, 
+      html[data-nexus-mode="light"] span,
+      html[data-nexus-mode="light"] p {
+        letter-spacing: 0.005em;
+      }
+
+      /* Absolute black for all title elements in light mode */
+      html[data-nexus-mode="light"] [data-nexus-title="1"] {
+        color: #000000 !important;
+      }
+
+      /* Widget cards: rounded-2xl + soft shadow in light mode */
+      html[data-nexus-mode="light"] [data-nexus-card] {
+        border-radius: 16px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05) !important;
+        border-color: #D1D5DB !important;
+      }
+
+      /* Buttons rounded-2xl */
+      html[data-nexus-mode="light"] [data-nexus-btn] {
+        border-radius: 16px !important;
+      }
+
+      /* ── DARK MODE RULES ── */
+      html[data-nexus-mode="dark"] [data-nexus-card] {
+        border-radius: 12px !important;
+      }
+    `;
+
+    // Apply mode to html element
+    document.documentElement.setAttribute('data-nexus-mode', mode);
+  }, [mode]);
+
   return null;
 }
 

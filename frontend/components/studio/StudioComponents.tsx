@@ -1,10 +1,12 @@
 /**
  * COACH STUDIO — Shared SVG Chart Components
  * ActivityHeatmap, LineChart, RadarChart, AlertBadge
+ * Updated: Plus Jakarta Sans titles + theme-aware cards
  */
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import Svg, { Rect, Line, Polyline, Polygon, Circle, Text as SvgText, G } from 'react-native-svg';
+import { useTheme, PJS, MONT, INTER, fz } from '../../contexts/ThemeContext';
 
 const DNA_KEYS = ['velocita','forza','resistenza','agilita','tecnica','potenza'];
 const DNA_SHORT = ['VEL','FOR','RES','AGI','TEC','POT'];
@@ -146,31 +148,40 @@ export function MiniRadar({ dna, color = '#00F2FF', size = 60 }: { dna: any; col
 
 // ── KPI Card ───────────────────────────────────────────────────────────────
 export function KPICard({ label, value, sub, color = '#00F2FF', icon, trend }: any) {
+  const { theme, mode } = useTheme();
   return (
-    <View style={k$.card}>
+    <View
+      style={[k$.card, {
+        backgroundColor: theme.surface,
+        borderColor: theme.border,
+        borderRadius: theme.cardRadius,
+        ...(Platform.OS === 'web' && theme.cardShadow ? { boxShadow: theme.cardShadowCss } as any : {}),
+      }]}
+      {...(Platform.OS === 'web' ? { 'data-nexus-card': '1' } as any : {})}
+    >
       <View style={k$.top}>
         <Text style={[k$.icon, { color }]}>{icon}</Text>
         {trend && (
-          <View style={[k$.trendBadge, { backgroundColor: trend === 'up' ? '#34C75920' : '#FF453A20' }]}>
-            <Text style={[k$.trendText, { color: trend === 'up' ? '#34C759' : '#FF453A' }]}>{trend === 'up' ? '↑' : '↓'}</Text>
+          <View style={[k$.trendBadge, { backgroundColor: trend === 'up' ? theme.positive + '20' : theme.negative + '20' }]}>
+            <Text style={[k$.trendText, { color: trend === 'up' ? theme.positive : theme.negative }]}>{trend === 'up' ? '↑' : '↓'}</Text>
           </View>
         )}
       </View>
-      <Text style={[k$.value, { color }]}>{value}</Text>
-      <Text style={k$.label}>{label}</Text>
-      {sub && <Text style={k$.sub}>{sub}</Text>}
+      <Text style={[k$.value, PJS(), { color, fontSize: fz(28, mode) }]}>{value}</Text>
+      <Text style={[k$.label, MONT('600'), { color: theme.textTer, fontSize: fz(9, mode) }]}>{label}</Text>
+      {sub && <Text style={[k$.sub, MONT('400'), { color: theme.textTer, fontSize: fz(10, mode) }]}>{sub}</Text>}
     </View>
   );
 }
 
 const k$ = StyleSheet.create({
-  card: { flex: 1, backgroundColor: '#0A0A0A', borderRadius: 12, padding: 18, gap: 6, borderWidth: 1, borderColor: '#1E1E1E', minWidth: 140 },
+  card: { flex: 1, borderRadius: 12, padding: 18, gap: 6, borderWidth: 1, minWidth: 140 },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  icon: { fontSize: 22 },
-  value: { fontSize: 30, fontWeight: '900', letterSpacing: 1, color: '#FFFFFF' },
-  label: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-  sub: { color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: '300' },
-  trendBadge: { borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
+  icon: { fontSize: 20 },
+  value: { letterSpacing: -0.5 },
+  label: { letterSpacing: 2 },
+  sub: {},
+  trendBadge: { borderRadius: 6, width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
   trendText: { fontSize: 12, fontWeight: '900' },
 });
 
@@ -198,22 +209,25 @@ const al$ = StyleSheet.create({
 });
 
 // ── Section Header ─────────────────────────────────────────────────────────
-export function SectionHeader({ title, sub, action, onAction }: { title: string; sub?: string; action?: string; onAction?: () => void }) {
+export function SectionHeader({ title, sub }: { title: string; sub?: string; action?: string; onAction?: () => void }) {
+  const { theme, mode } = useTheme();
   return (
     <View style={sh$.row}>
       <View>
-        <Text style={sh$.title}>{title}</Text>
-        {sub && <Text style={sh$.sub}>{sub}</Text>}
+        <Text
+          style={[sh$.title, PJS(), { color: theme.titleColor, fontSize: fz(15, mode) }]}
+          {...(Platform.OS === 'web' ? { 'data-nexus-title': '1' } as any : {})}
+        >{title}</Text>
+        {sub && <Text style={[sh$.sub, MONT('400'), { color: theme.textTer, fontSize: fz(11, mode) }]}>{sub}</Text>}
       </View>
-      {/* action placeholder for future */}
     </View>
   );
 }
 
 const sh$ = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 14 },
-  title: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
-  sub: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '300', marginTop: 2 },
+  title: {},
+  sub: { marginTop: 3 },
 });
 
 export { DNA_KEYS, DNA_SHORT, LINE_COLORS };

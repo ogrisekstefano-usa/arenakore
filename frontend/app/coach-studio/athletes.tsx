@@ -11,7 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path as KPath, Circle as KCircle, Polygon, Line, Text as SvgText, Circle } from 'react-native-svg';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme, MONT, INTER } from '../../contexts/ThemeContext';
+import { useTheme, PJS, MONT, INTER, fz } from '../../contexts/ThemeContext';
 import { api } from '../../utils/api';
 
 // ── 6-Axis Radar ──────────────────────────────────────────────────────────────

@@ -12,7 +12,7 @@ import Svg, { Rect, Text as SvgText, G, Line, Polygon } from 'react-native-svg';
 import Animated, { FadeInDown, FadeIn, useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme, MONT, INTER } from '../../contexts/ThemeContext';
+import { useTheme, PJS, MONT, INTER, fz } from '../../contexts/ThemeContext';
 import { api } from '../../utils/api';
 
 // ── Discipline metadata (mirrors backend) ─────────────────────────────────────

@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme, MONT, INTER } from '../../contexts/ThemeContext';
+import { useTheme, PJS, MONT, INTER, fz } from '../../contexts/ThemeContext';
 import { api } from '../../utils/api';
 import { ActivityHeatmap, AlertRow } from '../../components/studio/StudioComponents';
 import { LiveMonitorPanel } from '../../components/studio/LiveMonitor';
@@ -18,26 +18,28 @@ function Widget({ title, subtitle, icon, iconColor, children, onExpand, span = 1
   title: string; subtitle?: string; icon?: string; iconColor?: string;
   children: React.ReactNode; onExpand?: () => void; span?: number;
 }) {
-  const { theme } = useTheme();
+  const { theme, mode } = useTheme();
   return (
-    <View style={[
-      w$.card,
-      { backgroundColor: theme.cardBg, borderColor: theme.cardBorder, flex: span },
-      Platform.OS === 'web' ? ({
-        boxShadow: theme.mode === 'light'
-          ? '0 2px 12px rgba(0,0,0,0.07)'
-          : '0 2px 16px rgba(0,0,0,0.4)',
-      } as any) : {},
-    ]}>
+    <View
+      style={[
+        w$.card,
+        { backgroundColor: theme.cardBg, borderColor: theme.cardBorder, flex: span, borderRadius: theme.cardRadius },
+        Platform.OS === 'web' && theme.cardShadow ? ({ boxShadow: theme.cardShadowCss } as any) : {},
+      ]}
+      {...(Platform.OS === 'web' ? { 'data-nexus-card': '1' } as any : {})}
+    >
       <View style={w$.header}>
         <View style={w$.headerLeft}>
-          {icon && <Ionicons name={icon as any} size={14} color={iconColor || theme.accent} />}
-          <Text style={[w$.title, MONT('900'), { color: theme.text }]}>{title}</Text>
-          {subtitle && <Text style={[w$.subtitle, INTER('300'), { color: theme.textTer }]}>{subtitle}</Text>}
+          {icon && <Ionicons name={icon as any} size={13} color={iconColor || theme.accent} />}
+          <Text
+            style={[w$.title, PJS(), { color: theme.titleColor, fontSize: fz(11, mode) }]}
+            {...(Platform.OS === 'web' ? { 'data-nexus-title': '1' } as any : {})}
+          >{title}</Text>
+          {subtitle && <Text style={[w$.subtitle, MONT('400'), { color: theme.textTer, fontSize: fz(9, mode) }]}>{subtitle}</Text>}
         </View>
         {onExpand && (
           <TouchableOpacity onPress={onExpand}>
-            <Ionicons name="expand-outline" size={14} color={theme.textTer} />
+            <Ionicons name="expand-outline" size={13} color={theme.textTer} />
           </TouchableOpacity>
         )}
       </View>
@@ -108,7 +110,7 @@ const qa$ = StyleSheet.create({
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
 export default function GlobalDashboard() {
   const { token, user } = useAuth();
-  const { theme } = useTheme();
+  const { theme, mode } = useTheme();
   const router = useRouter();
   const [athletes, setAthletes] = useState<any>(null);
   const [compliance, setCompliance] = useState<any>(null);
@@ -157,10 +159,13 @@ export default function GlobalDashboard() {
       {/* ── PAGE HEADER ── */}
       <Animated.View entering={FadeInDown.duration(300)} style={pg$.pageHeader}>
         <View>
-          <Text style={[pg$.greeting, INTER('300'), { color: theme.textSec }]}>
+          <Text style={[pg$.greeting, MONT('400'), { color: theme.textSec, fontSize: fz(12, mode) }]}>
             Benvenuto, {user?.username?.toUpperCase()}
           </Text>
-          <Text style={[pg$.pageTitle, MONT(), { color: theme.text }]}>
+          <Text
+            style={[pg$.pageTitle, PJS(), { color: theme.titleColor, fontSize: fz(22, mode) }]}
+            {...(Platform.OS === 'web' ? { 'data-nexus-title': '1' } as any : {})}
+          >
             GLOBAL DASHBOARD
           </Text>
         </View>
