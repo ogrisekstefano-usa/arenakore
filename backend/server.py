@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -132,6 +132,84 @@ async def get_user_gym(user: dict) -> Optional[dict]:
     if normalize_role(user) in ("GYM_OWNER", "ADMIN"):
         return await db.gyms.find_one({"owner_id": user["_id"]})
     return None
+
+
+def require_enterprise():
+    """Require ENTERPRISE (elite) tier. Free/Pro get 402."""
+    async def checker(current_user: dict = Depends(get_current_user)):
+        if current_user.get("is_founder", False) or current_user.get("is_admin", False):
+            return current_user
+        gym = await get_user_gym(current_user)
+        if not gym or gym.get("subscription_tier") not in ("elite", "enterprise"):
+            raise HTTPException(
+                status_code=402,
+                detail="ENTERPRISE plan required. Upgrade at coachstudio/billing."
+            )
+        return current_user
+    return checker
+
+
+# ================================================================
+# WEBSOCKET — LIVE MONITOR ENGINE
+# ================================================================
+
+class ConnectionManager:
+    def __init__(self):
+        self._connections: dict = {}  # gym_id_str -> List[WebSocket]
+
+    async def connect(self, ws: WebSocket, gym_id: str):
+        await ws.accept()
+        self._connections.setdefault(gym_id, []).append(ws)
+
+    def disconnect(self, ws: WebSocket, gym_id: str):
+        if gym_id in self._connections:
+            try:
+                self._connections[gym_id].remove(ws)
+            except ValueError:
+                pass
+
+    async def broadcast(self, gym_id: str, data: dict):
+        dead = []
+        for ws in self._connections.get(gym_id, []):
+            try:
+                await ws.send_json(data)
+            except Exception:
+                dead.append(ws)
+        for ws in dead:
+            self.disconnect(ws, gym_id)
+
+
+ws_manager = ConnectionManager()
+
+
+@app.websocket("/api/ws/live-monitor/{gym_id}")
+async def websocket_live_monitor(websocket: WebSocket, gym_id: str, token: str = ""):
+    """WebSocket endpoint for real-time scan monitoring in Coach Studio."""
+    # Validate token
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        if not user_id:
+            await websocket.close(code=4001)
+            return
+        user = await db.users.find_one({"_id": ObjectId(user_id)})
+        if not user or (normalize_role(user) not in ("COACH", "GYM_OWNER", "ADMIN") and not user.get("is_founder")):
+            await websocket.close(code=4003)
+            return
+    except Exception:
+        await websocket.close(code=4001)
+        return
+
+    await ws_manager.connect(websocket, gym_id)
+    try:
+        # Keep alive with heartbeat
+        while True:
+            await asyncio.sleep(25)
+            await websocket.send_json({"type": "heartbeat", "ts": datetime.utcnow().isoformat()})
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket, gym_id)
+    except Exception:
+        ws_manager.disconnect(websocket, gym_id)
 
 
 class UserRegister(BaseModel):
@@ -896,6 +974,35 @@ async def complete_challenge(data: ChallengeComplete, current_user: dict = Depen
                     coach_notified = True
         except Exception:
             pass  # Non-blocking — session still succeeds
+
+    # ── WebSocket Broadcast: notify gym coaches in real-time ──
+    gym = await get_user_gym(current_user)
+    if gym:
+        gym_id_str = str(gym["_id"])
+        await ws_manager.broadcast(gym_id_str, {
+            "type": "scan_complete",
+            "athlete": current_user.get("username"),
+            "athlete_id": str(current_user["_id"]),
+            "avatar_color": current_user.get("avatar_color", "#00F2FF"),
+            "exercise": data.reps_completed and "squat" or "session",
+            "reps": data.reps_completed,
+            "quality": data.quality_score,
+            "xp_earned": total_xp,
+            "template_name": push_doc.get("template_name") if 'push_doc' in dir() and push_doc else None,
+            "timestamp": datetime.utcnow().isoformat(),
+        })
+        # Also save to live_events collection for polling fallback
+        await db.live_events.insert_one({
+            "gym_id": gym["_id"],
+            "type": "scan_complete",
+            "athlete": current_user.get("username"),
+            "athlete_id": current_user["_id"],
+            "avatar_color": current_user.get("avatar_color", "#00F2FF"),
+            "reps": data.reps_completed,
+            "quality": data.quality_score,
+            "xp_earned": total_xp,
+            "created_at": datetime.utcnow(),
+        })
 
     updated = await db.users.find_one({"_id": current_user["_id"]})
 
@@ -2037,7 +2144,55 @@ async def get_coach_alerts(current_user: dict = Depends(require_role("COACH", "G
     return {"alerts": alerts, "count": len(alerts), "critical": sum(1 for a in alerts if a["severity"] == "danger")}
 
 
-@api_router.get("/coach/historical/{athlete_id}")
+@api_router.get("/coach/live-events")
+async def get_live_events(current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Polling fallback for Live Monitor — returns last 20 events of the gym"""
+    gym = await get_user_gym(current_user)
+    if not gym:
+        return {"events": []}
+    events = await db.live_events.find(
+        {"gym_id": gym["_id"]},
+        sort=[("created_at", -1)]
+    ).limit(20).to_list(20)
+    now = datetime.utcnow()
+    result = []
+    for e in events:
+        age_secs = (now - e.get("created_at", now)).total_seconds()
+        result.append({
+            "type": e.get("type", "scan_complete"),
+            "athlete": e.get("athlete"),
+            "avatar_color": e.get("avatar_color", "#00F2FF"),
+            "reps": e.get("reps"),
+            "quality": e.get("quality"),
+            "xp_earned": e.get("xp_earned"),
+            "age_secs": int(age_secs),
+            "timestamp": e.get("created_at").isoformat() if e.get("created_at") else None,
+        })
+    return {"events": result, "gym_id": str(gym["_id"])}
+
+
+@api_router.get("/coach/tier")
+async def get_coach_tier(current_user: dict = Depends(get_current_user)):
+    """Get the subscription tier for feature gating on frontend"""
+    if current_user.get("is_founder") or current_user.get("is_admin"):
+        return {"tier": "elite", "is_enterprise": True}
+    gym = await get_user_gym(current_user)
+    tier = gym.get("subscription_tier", "free") if gym else "free"
+    return {
+        "tier": tier,
+        "is_enterprise": tier in ("elite", "enterprise"),
+        "features": {
+            "ai_injury_risk": tier in ("elite", "enterprise"),
+            "historical_trends_extended": tier in ("elite", "enterprise"),
+            "battle_simulator": tier in ("elite", "enterprise"),
+            "live_monitor": True,  # All tiers
+            "bulk_push": tier != "free",
+            "export_csv": True,   # All tiers
+        }
+    }
+
+
+
 async def get_athlete_historical(athlete_id: str, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
     """Historical DNA trends — 6-month simulated trend toward current values"""
     try:

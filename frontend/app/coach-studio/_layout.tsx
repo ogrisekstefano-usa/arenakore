@@ -1,16 +1,17 @@
 /**
  * COACH STUDIO — Desktop Command Center Layout
- * Sidebar + Main content. Desktop-only.
+ * Glassmorphism sidebar + Role-based nav + Auth Shield + Toast
  */
 import React from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Platform, ScrollView,
+  View, Text, StyleSheet, TouchableOpacity, Platform,
 } from 'react-native';
 import { Slot, useRouter, usePathname, Redirect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { StudioToastProvider } from '../../components/studio/StudioToast';
 
 const NAV_ITEMS_GYM_OWNER = [
   { href: '/coach-studio',               icon: 'grid',           label: 'PANOPTICON',  sub: 'Dashboard' },
@@ -81,10 +82,25 @@ export default function CoachStudioLayout() {
   }
   console.log('[CoachStudio] Token found, rendering layout');
 
+  // ── AUTH SHIELD: ATHLETE role blocked from Coach Studio ──
+  if (role === 'ATHLETE' && !user?.is_founder && !user?.is_admin) {
+    return (
+      <View style={l$.athleteBlock}>
+        <Ionicons name="lock-closed" size={32} color="#FF453A" />
+        <Text style={l$.athleteTitle}>ACCESSO LIMITATO</Text>
+        <Text style={l$.athleteSub}>{'Il Coach Studio è riservato a Coach e GYM Owner.\nContatta il tuo Coach per accedere ai tuoi dati.'}</Text>
+        <TouchableOpacity style={l$.mobileBack} onPress={() => router.push('/')}>
+          <Text style={l$.mobileBackText}>TORNA ALL'APP</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
+    <StudioToastProvider>
     <View style={l$.root}>
-      {/* Sidebar */}
-      <View style={l$.sidebar}>
+      {/* Sidebar — Glassmorphism on web */}
+      <View style={[l$.sidebar, Platform.OS === 'web' ? { ...(l$.sidebarGlass as any) } : {}]}>
         {/* Brand */}
         <View style={l$.brand}>
           <View style={l$.brandDot} />
@@ -142,6 +158,7 @@ export default function CoachStudioLayout() {
         <Slot />
       </View>
     </View>
+    </StudioToastProvider>
   );
 }
 
@@ -152,7 +169,14 @@ const l$ = StyleSheet.create({
     borderRightColor: 'rgba(255,255,255,0.06)',
     padding: 20, justifyContent: 'space-between',
   },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 32 },
+  // Glassmorphism (web-only via spread in JSX)
+  sidebarGlass: {
+    backdropFilter: 'blur(24px)',
+    WebkitBackdropFilter: 'blur(24px)',
+    background: 'rgba(5,5,5,0.88)',
+    borderRight: '1px solid rgba(255,255,255,0.05)',
+  },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 24 },
   brandDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF' },
   brandName: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
   roleBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, marginBottom: 16, alignSelf: 'flex-start' },
@@ -173,9 +197,14 @@ const l$ = StyleSheet.create({
   userName: { color: '#FFFFFF', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
   userRole: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '300' },
   main: { flex: 1, backgroundColor: '#000000' },
+  // Mobile & restricted views
   mobileBlock: { flex: 1, backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 32 },
   mobileTitle: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
   mobileSub: { color: 'rgba(255,255,255,0.4)', fontSize: 14, textAlign: 'center', lineHeight: 22 },
   mobileBack: { marginTop: 16, borderWidth: 1, borderColor: '#00F2FF', borderRadius: 8, paddingHorizontal: 20, paddingVertical: 10 },
   mobileBackText: { color: '#00F2FF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  // Auth Shield
+  athleteBlock: { flex: 1, backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center', gap: 14, padding: 40 },
+  athleteTitle: { color: '#FF453A', fontSize: 20, fontWeight: '900', letterSpacing: 3 },
+  athleteSub: { color: 'rgba(255,255,255,0.4)', fontSize: 13, textAlign: 'center', lineHeight: 20 },
 });

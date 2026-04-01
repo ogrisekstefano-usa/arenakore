@@ -8,15 +8,19 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { KPICard, ActivityHeatmap, AlertRow, SectionHeader } from '../../components/studio/StudioComponents';
+import { LiveMonitorPanel } from '../../components/studio/LiveMonitor';
+import { useToast } from '../../components/studio/StudioToast';
 
 export default function PanopticonDashboard() {
   const { token, user } = useAuth();
   const router = useRouter();
+  const { addToast } = useToast();
   const [athletes, setAthletes] = useState<any>(null);
   const [compliance, setCompliance] = useState<any>(null);
   const [heatmap, setHeatmap] = useState<any>(null);
   const [alerts, setAlerts] = useState<any>(null);
   const [battles, setBattles] = useState<any>(null);
+  const [gymData, setGymData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,8 +31,19 @@ export default function PanopticonDashboard() {
       api.getCoachHeatmap(token),
       api.getCoachAlerts(token),
       api.getCoachBattleStats(token),
-    ]).then(([a, c, h, al, b]) => {
-      setAthletes(a); setCompliance(c); setHeatmap(h); setAlerts(al); setBattles(b);
+      api.getGymMe(token),
+    ]).then(([a, c, h, al, b, g]) => {
+      setAthletes(a); setCompliance(c); setHeatmap(h);
+      setAlerts(al); setBattles(b); setGymData(g?.gym);
+      // Show critical AI alerts as Toast notifications
+      const critical = (al?.alerts || []).filter((x: any) => x.severity === 'danger');
+      critical.slice(0, 2).forEach((al: any) => {
+        addToast(al.message, 'error', `CRITICAL — ${al.athlete}`);
+      });
+      const warnings = (al?.alerts || []).filter((x: any) => x.severity === 'warning');
+      warnings.slice(0, 1).forEach((al: any) => {
+        addToast(al.message, 'warning', `ATTENZIONE — ${al.athlete}`);
+      });
     }).catch(() => {}).finally(() => setLoading(false));
   }, [token]);
 
@@ -87,6 +102,12 @@ export default function PanopticonDashboard() {
             )}
           </View>
         </View>
+      </View>
+
+      {/* LIVE MONITOR — Real-time scan feed */}
+      <View style={p$.section}>
+        <SectionHeader title="LIVE MONITOR" sub="Scan in tempo reale — WebSocket + polling" />
+        <LiveMonitorPanel gymId={gymData?.id} />
       </View>
 
       {/* Recent battles */}

@@ -223,6 +223,9 @@ export const api = {
   getCoachAIFull: (token: string) => request('/coach/ai-full', {}, token),
   bulkPushTemplate: (templateId: string, crewIds: string[], token: string) =>
     request('/coach/bulk-push', { method: 'POST', body: JSON.stringify({ template_id: templateId, crew_ids: crewIds }) }, token),
+  // SPRINT 26: Enterprise features
+  getLiveEvents: (token: string) => request('/coach/live-events', {}, token),
+  getCoachTier: (token: string) => request('/coach/tier', {}, token),
 
   // ========== TRAINING SESSION (Coach Templates) ==========
   getMyTemplate: (token: string) => request('/my-template', {}, token),

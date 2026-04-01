@@ -188,7 +188,7 @@ export default function AthletesModule() {
     <ScrollView style={m$.root} contentContainerStyle={m$.content}>
       <Text style={m$.pageTitle}>ATHLETE ANALYTICS</Text>
 
-      {/* Filters */}
+      {/* Filters + CSV Export */}
       <View style={m$.filters}>
         <View style={m$.searchWrap}>
           <Ionicons name="search" size={14} color="rgba(255,255,255,0.3)" />
@@ -212,6 +212,29 @@ export default function AthletesModule() {
             keyboardType="numeric"
           />
         </View>
+        {/* CSV Export button */}
+        <TouchableOpacity
+          style={m$.csvBtn}
+          onPress={() => {
+            if (typeof window === 'undefined') return;
+            const headers = 'Nome,KORE Score,DNA Medio,Compliance %,Livello,XP';
+            const rows = filtered.map((a: any) =>
+              `${a.username},${a.dna_avg},${a.dna_avg},${a.compliance_pct},${a.level},${a.xp}`
+            );
+            const csv = [headers, ...rows].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `arenakore_athletes_${new Date().toISOString().slice(0, 10)}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+          }}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="download-outline" size={14} color="#34C759" />
+          <Text style={m$.csvBtnText}>EXPORT CSV</Text>
+        </TouchableOpacity>
         <View style={m$.selectedInfo}>
           <Text style={m$.selectedText}>{selectedIds.length}/4 selezionati per Radar</Text>
           {selectedIds.length > 0 && (
@@ -389,6 +412,8 @@ const m$ = StyleSheet.create({
   selectedInfo: { flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: 'auto' as any },
   selectedText: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
   clearSel: { color: '#FF453A', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  csvBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: 'rgba(52,199,89,0.35)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: 'rgba(52,199,89,0.06)' },
+  csvBtnText: { color: '#34C759', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   cols: { flexDirection: 'row', gap: 20, alignItems: 'flex-start' },
   tableWrap: { flex: 1, backgroundColor: '#0A0A0A', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
   tableHeader: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#111111', paddingVertical: 10, paddingHorizontal: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)' },
