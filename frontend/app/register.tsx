@@ -259,7 +259,7 @@ function BioDataPhase({
 
   const canSubmit = nickname.trim().length >= 3 && gender && parseInt(age) >= 13 && !loading;
 
-  const handleForge = async () => {
+  const handleRegister = async (destination: 'fast' | 'nexus') => {
     if (nickname.trim().length < 3) { setError('Nickname: minimo 3 caratteri'); return; }
     if (!gender) { setError('Seleziona il tuo genere'); return; }
     const ageN = parseInt(age);
@@ -274,14 +274,20 @@ function BioDataPhase({
         password,
         { age: ageN, gender } as any,
       );
-      // Navigation handled by AuthContext after successful registration
-      router.replace('/onboarding/step1');
+      if (destination === 'fast') {
+        router.replace('/(tabs)/arena');
+      } else {
+        router.replace('/onboarding/step1');
+      }
     } catch (e: any) {
       setError(e?.message || 'Errore durante la registrazione');
     } finally {
       setLoading(false);
     }
   };
+
+  // Keep old handleForge for backwards compat
+  const handleForge = () => handleRegister('nexus');
 
   return (
     <Animated.View entering={SlideInRight.duration(350)}>
@@ -383,29 +389,55 @@ function BioDataPhase({
         </Animated.View>
       ) : null}
 
-      {/* CTA */}
+      {/* ── CHAMELEON ENGINE — Biforcazione Fast Entry / NÈXUS Certification ── */}
+      <View style={styles.chameleonDivider}>
+        <View style={styles.chameleonLine} />
+        <Text style={[styles.chameleonLabel, INTER]}>SCEGLI IL TUO PERCORSO</Text>
+        <View style={styles.chameleonLine} />
+      </View>
+
+      {/* FAST ENTRY */}
       <TouchableOpacity
-        style={[styles.ctaBtn, !canSubmit && styles.ctaBtnOff]}
-        onPress={handleForge}
-        disabled={!canSubmit}
+        style={[styles.chameleonCard, styles.chameleonFast, !canSubmit && styles.ctaBtnOff]}
+        onPress={() => handleRegister('fast')}
+        disabled={!canSubmit || loading}
         activeOpacity={0.85}
       >
-        <LinearGradient
-          colors={canSubmit ? ['#D4AF37', '#B8960E'] : ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.05)']}
-          style={styles.ctaGrad}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-        >
-          {loading ? (
-            <ActivityIndicator color="#000" size="small" />
-          ) : (
-            <>
-              <Text style={[styles.ctaText, MONT, !canSubmit && { color: 'rgba(255,255,255,0.3)' }]}>
-                FORGIA IL TUO KORE ID
-              </Text>
-              <Ionicons name="flash-sharp" size={16} color={canSubmit ? '#000' : 'rgba(255,255,255,0.3)'} />
-            </>
-          )}
-        </LinearGradient>
+        <View style={styles.chameleonCardLeft}>
+          <View style={styles.chameleonIconWrap}>
+            <Ionicons name="flash" size={20} color="rgba(255,255,255,0.6)" />
+          </View>
+          <View>
+            <Text style={[styles.chameleonCardTitle, MONT]}>FAST ENTRY</Text>
+            <Text style={[styles.chameleonCardSub, INTER]}>Entra subito nell'app.{'\n'}Bio-Certificazione completabile dopo.</Text>
+          </View>
+        </View>
+        <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.3)" />
+      </TouchableOpacity>
+
+      {/* NÈXUS CERTIFICATION */}
+      <TouchableOpacity
+        style={[styles.chameleonCard, styles.chameleonNexus, !canSubmit && styles.ctaBtnOff]}
+        onPress={() => handleRegister('nexus')}
+        disabled={!canSubmit || loading}
+        activeOpacity={0.85}
+      >
+        {loading ? (
+          <ActivityIndicator color="#000" size="small" style={{ flex: 1 }} />
+        ) : (
+          <>
+            <View style={styles.chameleonCardLeft}>
+              <View style={[styles.chameleonIconWrap, { backgroundColor: 'rgba(0,242,255,0.15)' }]}>
+                <Ionicons name="scan" size={20} color={CYAN} />
+              </View>
+              <View>
+                <Text style={[styles.chameleonCardTitle, MONT, { color: CYAN }]}>NÈXUS CERTIFICATION</Text>
+                <Text style={[styles.chameleonCardSub, INTER]}>Scansione biometrica completa.{'\n'}KORE SCORE certificato e validato AI.</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={CYAN} />
+          </>
+        )}
       </TouchableOpacity>
     </Animated.View>
   );
@@ -805,5 +837,71 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '900',
     letterSpacing: 2,
+  },
+
+  // ── Chameleon Engine styles ─────────────────────────────────────────
+  chameleonDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 8,
+    marginBottom: 10,
+  },
+  chameleonLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  chameleonLabel: {
+    color: 'rgba(255,255,255,0.3)',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 3,
+  },
+  chameleonCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    marginBottom: 10,
+    gap: 12,
+  },
+  chameleonFast: {
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  chameleonNexus: {
+    backgroundColor: 'rgba(0,242,255,0.07)',
+    borderColor: 'rgba(0,242,255,0.35)',
+  },
+  chameleonCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    flex: 1,
+  },
+  chameleonIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  chameleonCardTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginBottom: 3,
+  },
+  chameleonCardSub: {
+    color: 'rgba(255,255,255,0.45)',
+    fontSize: 11,
+    fontWeight: '300',
+    lineHeight: 16,
   },
 });
