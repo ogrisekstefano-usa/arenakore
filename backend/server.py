@@ -2053,7 +2053,7 @@ async def get_full_ai_analysis(current_user: dict = Depends(get_current_user)):
         spw = max(0.1, 7 / max(days_since, 1))
         proj_xp = xp + spw * 4 * 60
         dna_avg = sum(dna_vals) / len(dna_vals)
-        forecasts.append({"athlete": user.get("username"), "athlete_id": str(user["_id"]), "current_xp": xp, "projected_xp_30d": int(proj_xp), "current_level": user.get("level", 1), "projected_level": max(1, int(proj_xp // 500) + 1), "current_dna": round(dna_avg, 1), "projected_dna": round(min(100, dna_avg + spw * 2), 1), "trend": "rising" if spw >= 2 else "stable" if spw >= 1 else "declining"})
+        forecasts.append({"athlete": user.get("username"), "athlete_id": str(user["_id"]), "current_xp": xp, "projected_xp_30d": int(proj_xp), "current_level": user.get("level", 1), "projected_level": max(1, int(proj_xp // 500) + 1), "current_dna": round(dna_avg, 1), "projected_dna": round(min(100, dna_avg + spw * 2), 1), "trend": "rising" if spw >= 2 else "stable" if spw >= 1 else "declining", "scans_per_week": round(spw, 1)})
     injury_risks.sort(key=lambda x: -x["risk_pct"])
     return {"injury_risks": injury_risks[:5], "forecasts": sorted(forecasts, key=lambda x: -x["projected_dna"])[:8], "group_summary": {"total_athletes": len(athletes), "high_risk": sum(1 for r in injury_risks if r["risk_pct"] > 60), "improving": sum(1 for f in forecasts if f["trend"] == "rising")}}
 
