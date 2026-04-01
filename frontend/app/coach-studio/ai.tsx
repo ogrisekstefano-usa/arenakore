@@ -8,6 +8,7 @@ import Svg, { Rect } from 'react-native-svg';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
+import { FeatureGate } from '../../components/studio/FeatureGate';
 
 function RiskBar({ pct, color }: { pct: number; color: string }) {
   return (
@@ -30,14 +31,18 @@ const rb$ = StyleSheet.create({
 export default function AICoachAssistant() {
   const { token } = useAuth();
   const [data, setData] = useState<any>(null);
+  const [tierData, setTierData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!token) return;
-    api.getCoachAIFull(token)
-      .then(d => setData(d))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    Promise.all([
+      api.getCoachAIFull(token),
+      api.getCoachTier(token),
+    ]).then(([d, t]) => {
+      setData(d);
+      setTierData(t);
+    }).catch(() => {}).finally(() => setLoading(false));
   }, [token]);
 
   if (loading) return <View style={ai$.center}><ActivityIndicator color="#00F2FF" /></View>;
@@ -70,8 +75,9 @@ export default function AICoachAssistant() {
       </View>
 
       <View style={ai$.twoCol}>
-        {/* Injury Risks */}
+        {/* Injury Risks — ENTERPRISE ONLY */}
         <View style={ai$.col}>
+          <FeatureGate featureKey="ai_injury_risk" features={tierData?.features}>
           <View style={ai$.sectionCard}>
             <View style={ai$.secHeader}>
               <Ionicons name="warning" size={14} color="#FF453A" />
@@ -105,6 +111,7 @@ export default function AICoachAssistant() {
               </Animated.View>
             ))}
           </View>
+          </FeatureGate>
         </View>
 
         {/* Performance Forecasts */}
