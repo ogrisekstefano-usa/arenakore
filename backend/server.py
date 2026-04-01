@@ -1899,7 +1899,195 @@ def _build_suggestion(group_avg: dict, focus: str = None) -> dict:
     }
 
 
+@api_router.get("/coach/heatmap")
+async def get_activity_heatmap(current_user: dict = Depends(get_current_user)):
+    """Activity heatmap: scan counts per day for last 30 days"""
+    coach_crews = await db.crews_v2.find({"owner_id": current_user["_id"]}).to_list(20)
+    all_member_ids = list({mid for crew in coach_crews for mid in crew.get("members", [])})
+    if not all_member_ids:
+        all_member_ids = [current_user["_id"]]
+    now = datetime.utcnow()
+    start = now - timedelta(days=29)
+    scans = await db.scan_results.find({"user_id": {"$in": all_member_ids}, "scanned_at": {"$gte": start}}).to_list(500)
+    sessions = await db.nexus_sessions.find({"user_id": {"$in": all_member_ids}, "started_at": {"$gte": start}}).to_list(500)
+    from collections import defaultdict
+    day_counts: dict = defaultdict(int)
+    for s in scans:
+        d = s.get("scanned_at")
+        if d:
+            day_counts[d.strftime("%Y-%m-%d")] += 1
+    for s in sessions:
+        d = s.get("started_at")
+        if d:
+            day_counts[d.strftime("%Y-%m-%d")] += 1
+    grid = []
+    for i in range(30):
+        day = (start + timedelta(days=i)).strftime("%Y-%m-%d")
+        cnt = day_counts.get(day, 0)
+        grid.append({"date": day, "count": cnt, "level": min(4, cnt)})
+    mx = max((g["count"] for g in grid), default=1) or 1
+    for g in grid:
+        g["intensity"] = round(g["count"] / mx, 2)
+    return {"grid": grid, "total_scans": sum(g["count"] for g in grid), "active_days": sum(1 for g in grid if g["count"] > 0)}
 
+
+@api_router.get("/coach/alerts")
+async def get_coach_alerts(current_user: dict = Depends(get_current_user)):
+    """AI Alert Center: underperforming athletes, expired passports, injury risks"""
+    coach_crews = await db.crews_v2.find({"owner_id": current_user["_id"]}).to_list(20)
+    all_member_ids = list({mid for crew in coach_crews for mid in crew.get("members", [])})
+    athletes = await db.users.find({"_id": {"$in": all_member_ids} if all_member_ids else {"$ne": current_user["_id"]}}).limit(12).to_list(12)
+    alerts = []
+    now = datetime.utcnow()
+    for user in athletes:
+        dna = user.get("dna") or {}
+        dna_values = [dna.get(k, 50) for k in DNA_KEYS]
+        dna_avg = sum(dna_values) / len(dna_values) if dna_values else 50
+        max_attr = max(dna_values) if dna_values else 50
+        min_attr = min(dna_values) if dna_values else 50
+        max_key = DNA_KEYS[dna_values.index(max_attr)] if dna_values else "forza"
+        min_key = DNA_KEYS[dna_values.index(min_attr)] if dna_values else "resistenza"
+        last_scan = await db.scan_results.find_one({"user_id": user["_id"]}, sort=[("scanned_at", -1)])
+        days_inactive = (now - last_scan["scanned_at"]).days if last_scan and last_scan.get("scanned_at") else 30
+        if days_inactive > 14:
+            alerts.append({"type": "passport_expired", "severity": "warning", "athlete": user.get("username"), "athlete_id": str(user["_id"]), "message": f"Nessun scan da {days_inactive} giorni — Passaporto DNA non certificato", "icon": "time", "color": "#FF9500"})
+        if dna_values and (max_attr - min_attr) > 25:
+            alerts.append({"type": "injury_risk", "severity": "danger", "athlete": user.get("username"), "athlete_id": str(user["_id"]), "message": f"Squilibrio DNA: {DNA_LABELS.get(max_key, max_key)} ({max_attr}) vs {DNA_LABELS.get(min_key, min_key)} ({min_attr}) — rischio infortunio", "icon": "warning", "color": "#FF453A"})
+        if dna_avg < 55:
+            alerts.append({"type": "underperforming", "severity": "info", "athlete": user.get("username"), "athlete_id": str(user["_id"]), "message": f"Performance sotto media: KORE {round(dna_avg, 1)} — considera un piano di sviluppo", "icon": "trending-down", "color": "#AF52DE"})
+    alerts.sort(key=lambda a: {"danger": 0, "warning": 1, "info": 2}.get(a["severity"], 3))
+    return {"alerts": alerts, "count": len(alerts), "critical": sum(1 for a in alerts if a["severity"] == "danger")}
+
+
+@api_router.get("/coach/historical/{athlete_id}")
+async def get_athlete_historical(athlete_id: str, current_user: dict = Depends(get_current_user)):
+    """Historical DNA trends — 6-month simulated trend toward current values"""
+    try:
+        user = await db.users.find_one({"_id": ObjectId(athlete_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Atleta non trovato")
+    if not user:
+        raise HTTPException(status_code=404, detail="Atleta non trovato")
+    dna = user.get("dna") or {k: 50 for k in DNA_KEYS}
+    import random; random.seed(int(user.get("xp", 0)) + int(user.get("level", 1)) * 100)
+    now = datetime.utcnow()
+    months = []
+    for i in range(6, 0, -1):
+        factor = (7 - i) / 7
+        month_date = (now - timedelta(days=30 * i)).strftime("%b")
+        month_data = {"month": month_date}
+        for k in DNA_KEYS:
+            current = dna.get(k, 50)
+            base = max(30, current - int((1 - factor) * 25) - random.randint(-3, 3))
+            month_data[k] = min(100, max(30, base))
+        months.append(month_data)
+    months.append({"month": "Now", **{k: dna.get(k, 50) for k in DNA_KEYS}})
+    return {"athlete_id": athlete_id, "username": user.get("username"), "months": months, "current_dna": dna, "dna_avg": round(sum(dna.get(k, 50) for k in DNA_KEYS) / len(DNA_KEYS), 1)}
+
+
+@api_router.get("/coach/battle-stats")
+async def get_battle_stats(current_user: dict = Depends(get_current_user)):
+    """Crew Strategist: battle history"""
+    coach_crews = await db.crews_v2.find({"owner_id": current_user["_id"]}).to_list(10)
+    if not coach_crews:
+        return {"battles": [], "wins": 0, "losses": 0, "win_rate": 0, "crews": []}
+    crew_ids = [c["_id"] for c in coach_crews]
+    battles = await db.crew_battles.find({"$or": [{"crew_a_id": {"$in": crew_ids}}, {"crew_b_id": {"$in": crew_ids}}]}).sort("created_at", -1).to_list(20)
+    wins = losses = 0
+    battle_list = []
+    for b in battles:
+        my_crew = next((c for c in coach_crews if c["_id"] in [b.get("crew_a_id"), b.get("crew_b_id")]), None)
+        is_winner = my_crew and b.get("winner_crew_id") == (my_crew["_id"] if my_crew else None)
+        is_loser = b.get("status") == "completed" and not is_winner and my_crew
+        if is_winner: wins += 1
+        elif is_loser: losses += 1
+        battle_list.append({"id": str(b["_id"]), "crew_a": b.get("crew_a_name"), "score_a": round(b.get("crew_a_kore_score", 0) + b.get("crew_a_contribution", 0), 1), "crew_b": b.get("crew_b_name"), "score_b": round(b.get("crew_b_kore_score", 0) + b.get("crew_b_contribution", 0), 1), "status": b.get("status"), "my_result": "win" if is_winner else ("loss" if is_loser else "active"), "started_at": b["started_at"].isoformat() if b.get("started_at") else None})
+    return {"battles": battle_list, "wins": wins, "losses": losses, "win_rate": round(wins / max(wins + losses, 1) * 100, 1), "crews": [{"id": str(c["_id"]), "name": c["name"], "members": len(c.get("members", []))} for c in coach_crews]}
+
+
+@api_router.post("/coach/battle-simulate")
+async def simulate_battle(data: dict, current_user: dict = Depends(get_current_user)):
+    """Weighted Average Calculator"""
+    athlete_ids = data.get("athlete_ids", [])[:10]
+    members_data = []
+    breakdown = []
+    for aid in athlete_ids:
+        try:
+            user = await db.users.find_one({"_id": ObjectId(aid)})
+            if user:
+                dna = user.get("dna") or {}
+                xp = user.get("xp", 0)
+                members_data.append({"xp": xp, "dna": dna})
+                dna_avg = round(sum(dna.get(k, 50) for k in DNA_KEYS) / len(DNA_KEYS), 1)
+                breakdown.append({"username": user.get("username"), "kore_score": dna_avg, "xp": xp})
+        except Exception:
+            pass
+    total_xp = sum(m.get("xp", 0) for m in members_data)
+    score = calculate_kore_battle_score(members_data, total_xp) if members_data else 0
+    return {"score": round(score, 1), "member_count": len(members_data), "total_xp": total_xp, "breakdown": breakdown, "intensity": "high" if score > 75 else "medium" if score > 55 else "low", "note": f"KORE Battle Score: {round(score, 1)} / 100"}
+
+
+@api_router.get("/coach/ai-full")
+async def get_full_ai_analysis(current_user: dict = Depends(get_current_user)):
+    """AI Coach: injury risks + performance forecasts"""
+    coach_crews = await db.crews_v2.find({"owner_id": current_user["_id"]}).to_list(20)
+    all_member_ids = list({mid for crew in coach_crews for mid in crew.get("members", [])}) or [current_user["_id"]]
+    athletes = await db.users.find({"_id": {"$in": all_member_ids}}).to_list(50)
+    now = datetime.utcnow()
+    injury_risks, forecasts = [], []
+    for user in athletes:
+        dna = user.get("dna") or {}
+        dna_vals = [dna.get(k, 50) for k in DNA_KEYS]
+        if not dna_vals:
+            continue
+        max_val, min_val = max(dna_vals), min(dna_vals)
+        max_key = DNA_KEYS[dna_vals.index(max_val)]
+        min_key = DNA_KEYS[dna_vals.index(min_val)]
+        imbalance = max_val - min_val
+        risk_pct = min(100, int(imbalance * 2.5))
+        if risk_pct > 30:
+            injury_risks.append({"athlete": user.get("username"), "athlete_id": str(user["_id"]), "risk_pct": risk_pct, "overloaded": DNA_LABELS.get(max_key, max_key), "weak_area": DNA_LABELS.get(min_key, min_key), "recommendation": f"Ridurre {DNA_LABELS.get(max_key, max_key)}, aumentare {DNA_LABELS.get(min_key, min_key)}", "color": "#FF453A" if risk_pct > 60 else "#FF9500"})
+        xp = user.get("xp", 0)
+        last_scan = await db.scan_results.find_one({"user_id": user["_id"]}, sort=[("scanned_at", -1)])
+        days_since = (now - last_scan["scanned_at"]).days if last_scan and last_scan.get("scanned_at") else 14
+        spw = max(0.1, 7 / max(days_since, 1))
+        proj_xp = xp + spw * 4 * 60
+        dna_avg = sum(dna_vals) / len(dna_vals)
+        forecasts.append({"athlete": user.get("username"), "athlete_id": str(user["_id"]), "current_xp": xp, "projected_xp_30d": int(proj_xp), "current_level": user.get("level", 1), "projected_level": max(1, int(proj_xp // 500) + 1), "current_dna": round(dna_avg, 1), "projected_dna": round(min(100, dna_avg + spw * 2), 1), "trend": "rising" if spw >= 2 else "stable" if spw >= 1 else "declining"})
+    injury_risks.sort(key=lambda x: -x["risk_pct"])
+    return {"injury_risks": injury_risks[:5], "forecasts": sorted(forecasts, key=lambda x: -x["projected_dna"])[:8], "group_summary": {"total_athletes": len(athletes), "high_risk": sum(1 for r in injury_risks if r["risk_pct"] > 60), "improving": sum(1 for f in forecasts if f["trend"] == "rising")}}
+
+
+@api_router.post("/coach/bulk-push")
+async def bulk_push_template(data: dict, current_user: dict = Depends(get_current_user)):
+    """Bulk push template to crews or athletes"""
+    template_id = data.get("template_id")
+    crew_ids = data.get("crew_ids", [])
+    if not template_id:
+        raise HTTPException(status_code=400, detail="template_id richiesto")
+    try:
+        template = await db.templates.find_one({"_id": ObjectId(template_id), "coach_id": current_user["_id"]})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Template non trovato")
+    if not template:
+        raise HTTPException(status_code=404, detail="Template non trovato")
+    pushed = 0
+    now = datetime.utcnow()
+    for cid in crew_ids:
+        try:
+            crew = await db.crews_v2.find_one({"_id": ObjectId(cid)})
+            if crew:
+                await db.challenge_pushes.insert_one({"template_id": template["_id"], "template_name": template["name"], "exercise": template["exercise"], "target_time": template["target_time"], "target_reps": template["target_reps"], "xp_reward": template["xp_reward"], "difficulty": template["difficulty"], "crew_id": crew["_id"], "crew_name": crew["name"], "coach_id": current_user["_id"], "coach_name": current_user.get("username"), "pushed_at": now, "status": "active", "completions": []})
+                pushed += 1
+                for mid in crew.get("members", []):
+                    await db.notifications.insert_one({"user_id": mid, "type": "template_pushed", "title": "NUOVA SESSIONE", "icon": "barbell", "color": "#D4AF37", "message": f"{current_user.get('username')} ha inviato: {template['name']}", "read": False, "created_at": now})
+        except Exception:
+            pass
+    return {"status": "pushed", "pushed_to_crews": pushed, "template_name": template.get("name")}
+
+
+# =====================================================================
+def pvp_challenge_to_response(ch: dict) -> dict:
     return {
         "id": str(ch["_id"]),
         "challenger_id": str(ch["challenger_id"]),

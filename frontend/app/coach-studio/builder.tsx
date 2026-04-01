@@ -109,6 +109,20 @@ export default function TemplateBuilder() {
     finally { setLoadingAI(false); }
   };
 
+  const autoScale = () => {
+    if (athletes.length === 0 || selectedAthletes.length === 0) return;
+    const selected = athletes.filter(a => selectedAthletes.includes(a.id));
+    const avgKore = selected.reduce((s, a) => s + a.dna_avg, 0) / selected.length;
+    // Auto-set difficulty based on group KORE
+    if (avgKore >= 80) setDifficulty('extreme');
+    else if (avgKore >= 68) setDifficulty('hard');
+    else if (avgKore >= 55) setDifficulty('medium');
+    else setDifficulty('easy');
+    // Auto-set XP reward
+    setXpReward(String(Math.round(avgKore * 2.5)));
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+  };
+
   const pushTemplate = async () => {
     if (!token) return;
     if (!templateName.trim()) { Alert.alert('Errore', 'Inserisci un nome per il template'); return; }
@@ -144,16 +158,27 @@ export default function TemplateBuilder() {
           <Text style={b$.title}>TEMPLATE BUILDER</Text>
           <Text style={b$.sub}>Assembla, calibra con AI, invia al mobile</Text>
         </View>
-        <TouchableOpacity
-          style={[b$.pushBtn, pushing && b$.pushBtnDisabled]}
-          onPress={pushTemplate}
-          disabled={pushing}
-          activeOpacity={0.85}
-        >
-          {pushing ? <ActivityIndicator color="#000" size="small" /> : (
-            <><Ionicons name="cloud-upload" size={16} color="#000000" /><Text style={b$.pushBtnText}>PUSH TO ATHLETE</Text></>
-          )}
-        </TouchableOpacity>
+        <View style={b$.headerBtns}>
+          <TouchableOpacity
+            style={[b$.scaleBtn, selectedAthletes.length === 0 && b$.pushBtnDisabled]}
+            onPress={autoScale}
+            disabled={selectedAthletes.length === 0}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="options" size={14} color="#D4AF37" />
+            <Text style={b$.scaleBtnText}>AUTO-SCALE DNA</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[b$.pushBtn, pushing && b$.pushBtnDisabled]}
+            onPress={pushTemplate}
+            disabled={pushing}
+            activeOpacity={0.85}
+          >
+            {pushing ? <ActivityIndicator color="#000" size="small" /> : (
+              <><Ionicons name="cloud-upload" size={16} color="#000000" /><Text style={b$.pushBtnText}>PUSH TO ATHLETE</Text></>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={b$.cols}>
@@ -339,6 +364,9 @@ const b$ = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   title: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
   sub: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '300', marginTop: 3 },
+  headerBtns: { flexDirection: 'row', gap: 10, alignItems: 'center' },
+  scaleBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(212,175,55,0.12)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, borderWidth: 1, borderColor: 'rgba(212,175,55,0.3)' },
+  scaleBtnText: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   pushBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#00F2FF', borderRadius: 8, paddingHorizontal: 18, paddingVertical: 11 },
   pushBtnDisabled: { opacity: 0.5 },
   pushBtnText: { color: '#000000', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },

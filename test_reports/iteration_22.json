@@ -1,0 +1,52 @@
+{
+  "summary": "ARENAKORE Coach Studio — Full Enterprise SaaS Dashboard tested. All 51 backend API tests passed (100%). All 5 frontend modules verified visually and interactively via Playwright at 1440x900 desktop viewport. Login with ogrisek.stefano@gmail.com / Founder@KORE2026! working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/coach/ai-full",
+        "issue": "Response does not include 'scans_per_week' field, but frontend ai.tsx line 134 references f.scans_per_week. Renders as empty/blank before '/sett' in Performance Forecast meta: shows '/sett · LVL 9→9' instead of '0.1/sett · LVL 9→9'."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "AI COACH — Performance Forecast forecastMeta",
+        "issue": "ai.tsx line 134: {f.scans_per_week}/sett — scans_per_week field is NOT returned by /api/coach/ai-full. The meta row shows '/sett · LVL 9→9' without a leading number. No 'undefined' text appears (React silently drops it) but value is visually blank.",
+        "testID": "N/A",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sprint22_coach_studio_full.py",
+    "/app/test_reports/pytest/sprint22_coach_studio.xml"
+  ],
+  "action_items": [
+    "MINOR: Add 'scans_per_week' to /api/coach/ai-full forecast response OR change ai.tsx forecastMeta to use 'trend' or a calculated field instead of f.scans_per_week. The `spw` variable (scans per week) is calculated in the backend but not exposed in the response."
+  ],
+  "critical_code_review_comments": [
+    "All 6 new coach endpoints verified: GET /api/coach/heatmap (30-cell grid, intensity), GET /api/coach/alerts (severity-sorted, danger/warning/info), GET /api/coach/historical/{id} (7 months including Now), GET /api/coach/battle-stats (wins/losses/win_rate), POST /api/coach/battle-simulate (weighted score + breakdown), GET /api/coach/ai-full (injury_risks ≤5, forecasts ≤8)",
+    "PANOPTICON fully verified: 5-item sidebar (PANOPTICON/ATLETI/ARCHITECT/STRATEGIST/AI COACH), 5 KPI cards, 30-cell heatmap SVG, Alert Center with 1 CRITICAL badge, Battle History with LIVE and LOSS entries",
+    "ATLETI: 9 athletes in sortable table, DNA mini bars, DNA Radar Comparison panel, Historical Trends panel triggered by clicking athlete row (line chart with Forza/Resistenza/Velocità shown)",
+    "ARCHITECT: Exercise palette 6 items tappable, blocks correctly added to session, AUTO-SCALE DNA + PUSH TO ATHLETE buttons present, AI SUGGESTION + GENERA SESSIONE AI working",
+    "STRATEGIST: 3 stat boxes (0 wins, 1 loss, 0% WR), battle list (LIVE + SCONFITTA), CALCOLA SCORE with 2 athletes selected returned KORE Battle Score 87 HIGH INTENSITY",
+    "AI COACH: Injury Risk Predictor shows STEFANO (ALTO, 100%) + THUNDER_MAN (MEDIO, 32%), Performance Forecast 8 athletes with +1.0 DNA/30g trend icons, AI KORE Engine v2 note at bottom"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_sprint22_coach_studio_full.py"
+  ],
+  "success_rate": {
+    "backend": "100% (51/51 tests passed)",
+    "frontend": "97% (minor scans_per_week display bug only)"
+  },
+  "seed_data_creation": "None (used existing SHADOW SQUAD crew with 9 athletes, 1 active battle, 1 template push)",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Coach Studio at /coach-studio is FULLY WORKING. Login: ogrisek.stefano@gmail.com / Founder@KORE2026!. Use desktop viewport 1440x900. Login pattern: fill data-testid='login-email-input', 'login-password-input', click 'login-submit-btn' → redirects to /kore → then navigate to /coach-studio. All 5 modules working. Minor: scans_per_week field missing from ai-full response causes blank display in forecast meta.",
+  "rca_of_issue": "scans_per_week RCA: In server.py get_full_ai_analysis(), the variable 'spw' (scans_per_week) is computed as max(0.1, 7/max(days_since, 1)) but NOT included in the forecasts dict appended at line 2056. Fix: Add 'scans_per_week': round(spw, 1) to the forecasts.append() dict."
+}

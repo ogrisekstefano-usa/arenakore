@@ -13,9 +13,11 @@ import { useAuth } from '../../contexts/AuthContext';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 const NAV_ITEMS = [
-  { href: '/coach-studio',          icon: 'grid',           label: 'OVERVIEW',   sub: 'Dashboard' },
-  { href: '/coach-studio/athletes', icon: 'people',         label: 'ATLETI',     sub: 'Analytics' },
-  { href: '/coach-studio/builder',  icon: 'construct',      label: 'TEMPLATE',   sub: 'Builder' },
+  { href: '/coach-studio',          icon: 'grid',           label: 'PANOPTICON',  sub: 'Dashboard' },
+  { href: '/coach-studio/athletes', icon: 'people',         label: 'ATLETI',      sub: 'CRM Engine' },
+  { href: '/coach-studio/builder',  icon: 'construct',      label: 'ARCHITECT',   sub: 'Template Builder' },
+  { href: '/coach-studio/crew',     icon: 'shield',         label: 'STRATEGIST',  sub: 'Battle Control' },
+  { href: '/coach-studio/ai',       icon: 'hardware-chip',  label: 'AI COACH',    sub: 'Injury & Forecast' },
 ];
 
 export default function CoachStudioLayout() {

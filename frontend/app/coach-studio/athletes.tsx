@@ -8,10 +8,11 @@ import {
   ActivityIndicator, TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Polygon, Line, Circle, Text as SvgText, G } from 'react-native-svg';
+import Svg, { Polygon, Line, Circle, Text as SvgText, G, Polyline } from 'react-native-svg';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
+import { LineChart, MiniRadar } from '../../components/studio/StudioComponents';
 
 const DNA_KEYS = ['velocita','forza','resistenza','agilita','tecnica','potenza'];
 const DNA_LABELS = ['VEL','FOR','RES','AGI','TEC','POT'];
@@ -138,6 +139,8 @@ export default function AthletesModule() {
   const [sortOrder, setSortOrder] = useState<'asc'|'desc'>('desc');
   const [search, setSearch] = useState('');
   const [minScore, setMinScore] = useState('');
+  const [deepDiveId, setDeepDiveId] = useState<string | null>(null);
+  const [historicalData, setHistoricalData] = useState<any>(null);
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -158,6 +161,11 @@ export default function AthletesModule() {
     if (selectedIds.length === 0 || !token) { setRadarAthletes([]); return; }
     api.getCoachRadar(selectedIds, token).then(d => setRadarAthletes(d.athletes || [])).catch(() => {});
   }, [selectedIds, token]);
+
+  useEffect(() => {
+    if (!deepDiveId || !token) { setHistoricalData(null); return; }
+    api.getAthleteHistorical(deepDiveId, token).then(d => setHistoricalData(d)).catch(() => {});
+  }, [deepDiveId, token]);
 
   const handleSort = (key: string) => {
     if (key === sortBy) setSortOrder(o => o === 'asc' ? 'desc' : 'asc');
@@ -258,12 +266,12 @@ export default function AthletesModule() {
                 </TouchableOpacity>
 
                 {/* Name */}
-                <View style={m$.tdName}>
+                <TouchableOpacity style={m$.tdName} onPress={() => setDeepDiveId(ath.id === deepDiveId ? null : ath.id)}>
                   <View style={[m$.avatar, { backgroundColor: ath.avatar_color || '#00F2FF' }]}>
                     <Text style={m$.avatarLetter}>{ath.username[0]}</Text>
                   </View>
-                  <Text style={m$.tdNameText} numberOfLines={1}>{ath.username}</Text>
-                </View>
+                  <Text style={[m$.tdNameText, ath.id === deepDiveId && { color: '#00F2FF' }]} numberOfLines={1}>{ath.username}</Text>
+                </TouchableOpacity>
 
                 {/* KORE Score */}
                 <Text style={[m$.td, { color: ath.dna_avg >= 80 ? '#D4AF37' : '#FFFFFF' }]}>{ath.dna_avg}</Text>
@@ -332,6 +340,38 @@ export default function AthletesModule() {
 
           {/* Compliance chart */}
           {compliance.length > 0 && <ComplianceChart templates={compliance.slice(0, 8)} />}
+
+          {/* Historical Trends Deep Dive */}
+          {deepDiveId && (
+            <View style={m$.deepDiveCard}>
+              <View style={m$.deepDiveHeader}>
+                <Text style={m$.deepDiveTitle}>TREND STORICO — {historicalData?.username || '...'}</Text>
+                <TouchableOpacity onPress={() => { setDeepDiveId(null); setHistoricalData(null); }}>
+                  <Text style={m$.deepDiveClose}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              {historicalData?.months ? (
+                <>
+                  <LineChart
+                    months={historicalData.months}
+                    keys={['forza', 'resistenza', 'velocita']}
+                    height={150}
+                    width={280}
+                  />
+                  <View style={m$.legendRow}>
+                    {[{k:'forza',c:'#FF453A',l:'Forza'},{k:'resistenza',c:'#D4AF37',l:'Resistenza'},{k:'velocita',c:'#00F2FF',l:'Velocità'}].map(item => (
+                      <View key={item.k} style={m$.legendItem}>
+                        <View style={[m$.legendDot, { backgroundColor: item.c }]} />
+                        <Text style={m$.legendText}>{item.l}: {historicalData.current_dna?.[item.k] ?? '?'}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </>
+              ) : (
+                <ActivityIndicator color="#00F2FF" size="small" />
+              )}
+            </View>
+          )}
         </View>
       </View>
     </ScrollView>
@@ -371,6 +411,14 @@ const m$ = StyleSheet.create({
   dnaTrack: { width: 6, height: 28, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 3, overflow: 'hidden', justifyContent: 'flex-end' },
   dnaFill: { width: 6, backgroundColor: '#00F2FF', borderRadius: 3 },
   dnaVal: { color: 'rgba(255,255,255,0.25)', fontSize: 8, fontWeight: '700', textAlign: 'center' },
+  deepDiveCard: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 14, gap: 10, borderWidth: 1, borderColor: 'rgba(0,242,255,0.12)' },
+  deepDiveHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  deepDiveTitle: { color: 'rgba(255,255,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
+  deepDiveClose: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '700' },
+  legendRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  legendDot: { width: 8, height: 8, borderRadius: 4 },
+  legendText: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '400' },
   chk: { width: 16, height: 16, borderRadius: 3, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   rightCol: { width: 280, gap: 16 },
   radarCard: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', alignItems: 'center', gap: 12 },

@@ -196,6 +196,16 @@ export const api = {
   getCoachRadar: (ids: string[], token: string) => request(`/coach/radar?ids=${ids.join(',')}`, {}, token),
   getCoachAISuggestion: (athleteIds: string[], token: string, focus?: string) =>
     request('/coach/ai-suggestion', { method: 'POST', body: JSON.stringify({ athlete_ids: athleteIds, focus_attribute: focus }) }, token),
+  // NEW: Extended Coach Studio v2
+  getCoachHeatmap: (token: string) => request('/coach/heatmap', {}, token),
+  getCoachAlerts: (token: string) => request('/coach/alerts', {}, token),
+  getAthleteHistorical: (athleteId: string, token: string) => request(`/coach/historical/${athleteId}`, {}, token),
+  getCoachBattleStats: (token: string) => request('/coach/battle-stats', {}, token),
+  simulateCrewBattle: (athleteIds: string[], token: string) =>
+    request('/coach/battle-simulate', { method: 'POST', body: JSON.stringify({ athlete_ids: athleteIds }) }, token),
+  getCoachAIFull: (token: string) => request('/coach/ai-full', {}, token),
+  bulkPushTemplate: (templateId: string, crewIds: string[], token: string) =>
+    request('/coach/bulk-push', { method: 'POST', body: JSON.stringify({ template_id: templateId, crew_ids: crewIds }) }, token),
 
   // ========== TRAINING SESSION (Coach Templates) ==========
   getMyTemplate: (token: string) => request('/my-template', {}, token),
