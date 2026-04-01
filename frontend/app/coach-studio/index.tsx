@@ -32,7 +32,7 @@ function Widget({ title, subtitle, icon, iconColor, children, onExpand, span = 1
         <View style={w$.headerLeft}>
           {icon && <Ionicons name={icon as any} size={13} color={iconColor || theme.accent} />}
           <Text
-            style={[w$.title, PJS(), { color: theme.titleColor, fontSize: fz(11, mode) }]}
+            style={[w$.title, PJS('600'), { color: theme.titleColor, fontSize: fz(11, mode) }]}
             {...(Platform.OS === 'web' ? { 'data-nexus-title': '1' } as any : {})}
           >{title}</Text>
           {subtitle && <Text style={[w$.subtitle, MONT('400'), { color: theme.textTer, fontSize: fz(9, mode) }]}>{subtitle}</Text>}
@@ -163,7 +163,7 @@ export default function GlobalDashboard() {
             Benvenuto, {user?.username?.toUpperCase()}
           </Text>
           <Text
-            style={[pg$.pageTitle, PJS(), { color: theme.titleColor, fontSize: fz(22, mode) }]}
+            style={[pg$.pageTitle, PJS('800'), { color: theme.titleColor, fontSize: fz(22, mode) }]}
             {...(Platform.OS === 'web' ? { 'data-nexus-title': '1' } as any : {})}
           >
             GLOBAL DASHBOARD

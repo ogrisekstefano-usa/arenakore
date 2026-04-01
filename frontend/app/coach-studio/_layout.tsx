@@ -18,15 +18,14 @@ function InjectFonts() {
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof document === 'undefined') return;
 
-    // ── Google Fonts: Plus Jakarta Sans + Montserrat (latin subset only) ──
+    // ── Google Fonts: Montserrat (latin subset) ──
     if (!document.getElementById('nexus-fonts')) {
       const link = document.createElement('link');
       link.id = 'nexus-fonts';
       link.rel = 'stylesheet';
       link.href = [
         'https://fonts.googleapis.com/css2?',
-        'family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800&',
-        'family=Montserrat:wght@300;400;500;600;700;800;900&',
+        'family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&',
         'display=swap&subset=latin',
       ].join('');
       document.head.appendChild(link);
@@ -42,36 +41,25 @@ function InjectFonts() {
     }
 
     style.textContent = `
-      /* ── NÈXUS Typography System ── */
+      /* ── NÈXUS Typography System v2.1 — Montserrat Only ── */
 
-      /* Base reset */
-      html[data-nexus-mode] { box-sizing: border-box; }
-
-      /* Plus Jakarta Sans for all title/heading elements */
+      /* Montserrat for all title/heading elements */
       [data-nexus-title="1"] {
-        font-family: 'Plus Jakarta Sans', 'Montserrat', sans-serif !important;
-        font-weight: 800 !important;
-        letter-spacing: -0.02em !important;
+        font-family: 'Montserrat', -apple-system, sans-serif !important;
+        letter-spacing: -0.01em !important;
       }
 
-      /* Montserrat for all body text */
+      /* Montserrat for body text */
       [data-nexus-body] {
         font-family: 'Montserrat', -apple-system, sans-serif !important;
       }
 
-      /* ── LIGHT MODE RULES ── */
+      /* ── LIGHT MODE ── */
       html[data-nexus-mode="light"] {
         background: #F4F4F4;
       }
 
-      /* +2px font size boost in light mode for all text */
-      html[data-nexus-mode="light"] div, 
-      html[data-nexus-mode="light"] span,
-      html[data-nexus-mode="light"] p {
-        letter-spacing: 0.005em;
-      }
-
-      /* Absolute black for all title elements in light mode */
+      /* Absolute black for title elements in light mode */
       html[data-nexus-mode="light"] [data-nexus-title="1"] {
         color: #000000 !important;
       }
@@ -83,14 +71,10 @@ function InjectFonts() {
         border-color: #D1D5DB !important;
       }
 
-      /* Buttons rounded-2xl */
-      html[data-nexus-mode="light"] [data-nexus-btn] {
-        border-radius: 16px !important;
-      }
-
-      /* ── DARK MODE RULES ── */
+      /* ── DARK MODE ── */
       html[data-nexus-mode="dark"] [data-nexus-card] {
-        border-radius: 12px !important;
+        border-radius: 16px !important;
+        border-color: #1F2937 !important;
       }
     `;
 

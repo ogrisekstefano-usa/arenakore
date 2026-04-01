@@ -167,7 +167,7 @@ export function KPICard({ label, value, sub, color = '#00F2FF', icon, trend }: a
           </View>
         )}
       </View>
-      <Text style={[k$.value, PJS(), { color, fontSize: fz(28, mode) }]}>{value}</Text>
+      <Text style={[k$.value, PJS('800'), { color, fontSize: fz(28, mode) }]}>{value}</Text>
       <Text style={[k$.label, MONT('600'), { color: theme.textTer, fontSize: fz(9, mode) }]}>{label}</Text>
       {sub && <Text style={[k$.sub, MONT('400'), { color: theme.textTer, fontSize: fz(10, mode) }]}>{sub}</Text>}
     </View>
@@ -215,7 +215,7 @@ export function SectionHeader({ title, sub }: { title: string; sub?: string; act
     <View style={sh$.row}>
       <View>
         <Text
-          style={[sh$.title, PJS(), { color: theme.titleColor, fontSize: fz(15, mode) }]}
+          style={[sh$.title, PJS('700'), { color: theme.titleColor, fontSize: fz(15, mode) }]}
           {...(Platform.OS === 'web' ? { 'data-nexus-title': '1' } as any : {})}
         >{title}</Text>
         {sub && <Text style={[sh$.sub, MONT('400'), { color: theme.textTer, fontSize: fz(11, mode) }]}>{sub}</Text>}

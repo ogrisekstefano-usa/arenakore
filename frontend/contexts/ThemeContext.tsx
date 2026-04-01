@@ -1,6 +1,6 @@
 /**
- * NÈXUS COMMAND CENTER — Theme System v2
- * Plus Jakarta Sans (titles) + Montserrat (body)
+ * NÈXUS COMMAND CENTER — Theme System v2.1
+ * Typography: Montserrat (tutti i pesi) — geometric, clean, Nike-ready
  * Dual-theme: OLED Dark + Titanium Light
  */
 import React, { createContext, useContext, useState, useCallback } from 'react';
@@ -11,58 +11,47 @@ export type ThemeMode = 'dark' | 'light';
 export const THEMES = {
   dark: {
     mode: 'dark' as ThemeMode,
-    // Backgrounds
     bg:          '#000000',
     surface:     '#0A0A0A',
     surface2:    '#111111',
     surface3:    '#161616',
-    // Borders
-    border:      'rgba(255,255,255,0.07)',
+    border:      '#1F2937',          // precisione cromatica, non rgba fuzzy
     border2:     'rgba(255,255,255,0.12)',
-    // Text
     text:        '#FFFFFF',
-    textSec:     'rgba(255,255,255,0.55)',
-    textTer:     'rgba(255,255,255,0.25)',
-    // Accents
+    textSec:     'rgba(255,255,255,0.60)',
+    textTer:     'rgba(255,255,255,0.30)',
     accent:      '#00F2FF',
     accentGold:  '#D4AF37',
     accentRed:   '#FF453A',
     accentGreen: '#34C759',
-    // Navigation
     shadow:      'rgba(0,0,0,0.6)',
     navBg:       '#050505',
-    navBorder:   'rgba(255,255,255,0.05)',
+    navBorder:   '#1F2937',
     inputBg:     'rgba(255,255,255,0.04)',
     cardBg:      '#0A0A0A',
-    cardBorder:  'rgba(255,255,255,0.07)',
+    cardBorder:  '#1F2937',
     positive:    '#34C759',
     negative:    '#FF453A',
-    // Typography system
     titleColor:  '#FFFFFF',
-    cardRadius:  12,
+    cardRadius:  16,                 // rounded-2xl su entrambi i temi
     cardShadow:  false,
     cardShadowCss: 'none',
   },
   light: {
     mode: 'light' as ThemeMode,
-    // Backgrounds — Titanium palette
     bg:          '#F4F4F4',
     surface:     '#FFFFFF',
     surface2:    '#F0F0F0',
     surface3:    '#E8E8E8',
-    // Borders — defined, not fuzzy
     border:      '#D1D5DB',
     border2:     '#C1C5CB',
-    // Text — absolute black for titles
     text:        '#111111',
     textSec:     '#4B5563',
     textTer:     '#9CA3AF',
-    // Accents — Steel Blue palette
     accent:      '#1D4ED8',
     accentGold:  '#92400E',
     accentRed:   '#DC2626',
     accentGreen: '#15803D',
-    // Navigation
     shadow:      'rgba(0,0,0,0.08)',
     navBg:       '#FFFFFF',
     navBorder:   '#E5E7EB',
@@ -71,9 +60,8 @@ export const THEMES = {
     cardBorder:  '#D1D5DB',
     positive:    '#15803D',
     negative:    '#DC2626',
-    // Typography system — light mode boosts
-    titleColor:  '#000000',   // Absolute black for H1/H2
-    cardRadius:  16,          // 1rem = rounded-2xl
+    titleColor:  '#000000',
+    cardRadius:  16,
     cardShadow:  true,
     cardShadowCss: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05)',
   },
@@ -81,43 +69,42 @@ export const THEMES = {
 
 export type Theme = typeof THEMES.dark;
 
-// ── Font size scale (+2px for light mode) ────────────────────────────────────
+// ── Font size scale (+2px in light mode) ─────────────────────────────────────
 export const fz = (base: number, mode: ThemeMode): number =>
   mode === 'light' ? base + 2 : base;
 
-// ── FONT HELPERS ──────────────────────────────────────────────────────────────
+// ── FONT HELPERS (tutti Montserrat) ───────────────────────────────────────────
 
 /**
- * PJS — Plus Jakarta Sans 800
- * For: H1, H2, Widget Titles, KPI Values
- * Style: editorial, compact (-0.02em letter-spacing)
+ * PJS — Montserrat 800 per TITOLI e KPI
+ * geometric, Nike-grade, altamente leggibile
  */
-export const PJS = (extra?: object): any =>
+export const PJS = (weight: '600' | '700' | '800' = '800', extra?: object): any =>
   Platform.select({
     web: {
-      fontFamily: `'Plus Jakarta Sans', 'Montserrat', sans-serif`,
-      fontWeight: '800',
-      letterSpacing: '-0.02em',
+      fontFamily: `'Montserrat', -apple-system, sans-serif`,
+      fontWeight: weight,
+      letterSpacing: '-0.01em',
       ...extra,
     },
-    default: { fontWeight: '800', ...extra },
+    default: { fontWeight: weight, ...extra },
   });
 
 /**
- * MONT — Montserrat (replaces previous INTER helper for body text)
- * weight 400 = normal body, 600 = medium emphasis
+ * MONT — Montserrat per body text e dati biometrici secondari
+ * 400 = corpo normale, 600 = dato chiave in tabella
  */
-export const MONT = (weight: '300' | '400' | '500' | '600' | '700' | '900' = '400'): any =>
+export const MONT = (weight: '300' | '400' | '500' | '600' | '700' | '800' | '900' = '400'): any =>
   Platform.select({
     web: {
-      fontFamily: `'Montserrat', 'Inter', -apple-system, sans-serif`,
+      fontFamily: `'Montserrat', -apple-system, sans-serif`,
       fontWeight: weight,
     },
     default: { fontWeight: weight },
   });
 
 /**
- * INTER — kept for backwards compatibility, maps to Montserrat
+ * INTER — backwards compat, mappa a MONT
  */
 export const INTER = (weight: '300' | '400' | '500' | '600' = '400'): any =>
   MONT(weight);

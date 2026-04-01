@@ -108,19 +108,19 @@ function KoreScoreGauge({ kore, size = 160 }: { kore: any; size?: number }) {
     <View style={kg$.container}>
       <Svg width={size} height={size + 8}>
         {/* Track */}
-        <KPath d={trackPath} stroke="rgba(255,255,255,0.07)" strokeWidth={10} fill="none" strokeLinecap="round" />
+        <KPath d={trackPath} stroke="rgba(255,255,255,0.08)" strokeWidth={16} fill="none" strokeLinecap="round" />
         {/* Fill */}
-        {score > 0 && <KPath d={fillPath} stroke={color} strokeWidth={10} fill="none" strokeLinecap="round" />}
+        {score > 0 && <KPath d={fillPath} stroke={color} strokeWidth={16} fill="none" strokeLinecap="round" />}
         {/* Glow dot at current position */}
         {score > 0 && (() => {
           const pos = polarToCartesian(Math.min(scoreAngle, START_ANGLE + SWEEP - 1));
-          return <KCircle cx={pos.x} cy={pos.y} r={5} fill={color} />;
+          return <KCircle cx={pos.x} cy={pos.y} r={8} fill={color} />;
         })()}
       </Svg>
 
-      {/* Center text (positioned over SVG) */}
+      {/* Center text — numero enorme */}
       <View style={[kg$.center, { width: size, top: 8 }]}>
-        <Text style={[kg$.score, { color }]}>{Math.round(score)}</Text>
+        <Text style={[kg$.score, MONT('800'), { color, fontSize: Math.round(size * 0.30) }]}>{Math.round(score)}</Text>
         <View style={[kg$.gradeBadge, { backgroundColor: color + '20', borderColor: color + '40' }]}>
           <Text style={[kg$.grade, { color }]}>{grade}</Text>
         </View>
@@ -873,9 +873,9 @@ const am$ = StyleSheet.create({
   loadWrap: { alignItems: 'center', paddingTop: 40 },
   koreGradePill: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1 },
   koreGradeText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
-  tableHead: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 9, borderBottomWidth: 1, gap: 8 },
+  tableHead: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, gap: 8 },
   th: { fontSize: 8, letterSpacing: 2.5, width: 50, textAlign: 'center' },
-  tableRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 9, borderBottomWidth: 1, gap: 8, position: 'relative' },
+  tableRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, gap: 8, position: 'relative' },
   rowIndicator: { position: 'absolute', left: 0, top: 4, bottom: 4, width: 3, borderRadius: 2 },
   athleteCell: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   rowAvatar: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
