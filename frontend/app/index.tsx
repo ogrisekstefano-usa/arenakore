@@ -421,7 +421,7 @@ const s = StyleSheet.create({
   primaryBtnTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   outlineBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: 'rgba(0,242,255,0.07)',
+    backgroundColor: 'rgba(0,0,0,0.75)',
     borderWidth: 1.5, borderColor: '#00F2FF',
     borderRadius: 10, paddingVertical: 14,
     shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 12,
