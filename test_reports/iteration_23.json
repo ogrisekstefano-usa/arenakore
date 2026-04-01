@@ -1,0 +1,47 @@
+{
+  "summary": "ARENAKORE Sprint 25 RBAC — Full Backend + Frontend testing complete. 37/37 backend tests pass after fixing critical gym_to_response duplicate bug. All 3 new frontend pages (gym-dashboard, staff, passport) verified. 5-item sidebar for GYM_OWNER confirmed. GYM CODE now showing 'KORE01' after bug fix.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "passport.tsx — DNA bars",
+        "issue": "Agilità and Potenza DNA values show '—' for STEFANO. Root cause: STEFANO's DNA was seeded with legacy keys 'mentalita' + 'flessibilita' instead of 'agilita' + 'potenza'. The passport uses DNA_KEYS = ['velocita','forza','resistenza','agilita','tecnica','potenza']. Pre-existing data issue, not Sprint 25 regression.",
+        "testID": "N/A",
+        "priority": "LOW"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sprint25_rbac.py",
+    "/app/test_reports/pytest/sprint25_rbac.xml"
+  ],
+  "action_items": [
+    "FIXED: gym_to_response duplicate function in server.py (lines 2178 and 3690). The second definition overrode Sprint 25 version causing /gym/me to return old schema without gym_code, city, subscription_tier. Renamed old version to _legacy_gym_to_response and updated its callers.",
+    "INFO: /coach/athletes endpoint requires require_role(COACH, GYM_OWNER, ADMIN) — T.BUTLER (COACH) gets 200 correctly. Founders/admins bypass role check (STEFANO is is_founder=True, is_admin=True).",
+    "OPTIONAL: Fix STEFANO's DNA keys — currently has 'mentalita' and 'flessibilita' instead of 'agilita' and 'potenza'. Passport shows '—' for those two DNA attrs. Could update the startup seed DNA for is_admin user to use standard 6 keys."
+  ],
+  "critical_code_review_comments": [
+    "FIXED: server.py had duplicate gym_to_response function (lines 2178 and 3690). Python uses last definition at runtime, so Sprint 25 routes were returning old format without gym_code/city/subscription_tier. Fix: renamed second definition to _legacy_gym_to_response.",
+    "server.py also has duplicate @api_router.get('/gym/me') at lines 2221 and 3752. FastAPI uses first registered route (line 2221, Sprint 25 version). Second route (line 3752) is unreachable for GET /gym/me but its function was renamed to get_my_gym_legacy to avoid confusion. The old PUT /gym/me at line 3759 is a separate route (not duplicated) and uses _legacy_gym_to_response correctly.",
+    "require_role() middleware correctly enforces RBAC: COACH gets 403 on /gym/dashboard and all GYM_OWNER-only endpoints. Founders/admins bypass via is_founder/is_admin flag. T.BUTLER (COACH) correctly gets 200 from /coach/athletes.",
+    "DB migration confirmed: STEFANO role=GYM_OWNER, gym_id set, T.BUTLER+M.JORDAN role=COACH, gym_id set. 23 members total, subscription_tier=elite."
+  ],
+  "updated_files": [
+    "/app/backend/server.py (gym_to_response duplicate fixed, _legacy_gym_to_response introduced, get_my_gym_legacy renamed)"
+  ],
+  "success_rate": {
+    "backend": "100% (37/37 tests passed after bug fix)",
+    "frontend": "98% (minor DNA key mismatch for STEFANO's legacy seed data — pre-existing)"
+  },
+  "seed_data_creation": "None (used existing seeded DB: KORE GYM — FLAGSHIP, 23 members, T.BUTLER+M.JORDAN as COACH)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Sprint 25 RBAC fully verified. gym_to_response duplicate bug fixed in server.py. Login: ogrisek.stefano@gmail.com / Founder@KORE2026!. Desktop viewport 1440x900. All 3 new pages (gym-dashboard, staff, passport) working. RBAC sidebar: GYM_OWNER=5 items, COACH=5 items, ATHLETE=1 item. T.BUTLER login: t.butler@chicago.kore / Seed@Chicago1.",
+  "rca_of_issue": "gym_to_response duplicate RCA: server.py defines gym_to_response twice: line 2178 (Sprint 25, includes gym_code/city/subscription_tier) and line 3690 (older version, includes address/description/coaches_count). Python module load overwrites the first with the second. All Sprint 25 routes calling gym_to_response got old format. Fix: renamed line 3690 function to _legacy_gym_to_response, updated callers at lines 3756 and 3775. Verified /api/gym/me now returns {gym: {gym_code: 'KORE01', city: 'MILANO', subscription_tier: 'elite', ...}}."
+}

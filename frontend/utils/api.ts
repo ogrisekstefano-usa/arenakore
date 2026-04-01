@@ -184,6 +184,23 @@ export const api = {
 
   getActionCenter: (token: string) => request('/kore/action-center', {}, token),
 
+  // ========== GYM_OWNER ENGINE ==========
+  getGymMe: (token: string) => request('/gym/me', {}, token),
+  getGymDashboard: (token: string) => request('/gym/dashboard', {}, token),
+  getGymStaff: (token: string) => request('/gym/staff', {}, token),
+  createGym: (data: { name: string; gym_code?: string; brand_color?: string; city?: string }, token: string) =>
+    request('/gym/create', { method: 'POST', body: JSON.stringify(data) }, token),
+  updateGym: (data: any, token: string) =>
+    request('/gym/update', { method: 'PUT', body: JSON.stringify(data) }, token),
+  addGymStaff: (email: string, role: string, token: string) =>
+    request('/gym/staff/add', { method: 'POST', body: JSON.stringify({ email, role }) }, token),
+  removeGymStaff: (userId: string, token: string) =>
+    request(`/gym/staff/${userId}`, { method: 'DELETE' }, token),
+  joinGym: (gymCode: string, role: string, token: string) =>
+    request('/gym/join', { method: 'POST', body: JSON.stringify({ gym_code: gymCode, role }) }, token),
+  updateUserRole: (userId: string, role: string, token: string) =>
+    request(`/gym/user-role/${userId}`, { method: 'PUT', body: JSON.stringify({ role }) }, token),
+
   // ========== COACH STUDIO ENGINE ==========
   getCoachAthletes: (token: string, sortBy?: string, sortOrder?: string, minScore?: number) => {
     const params = new URLSearchParams();

@@ -12,19 +12,47 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
-const NAV_ITEMS = [
+const NAV_ITEMS_GYM_OWNER = [
+  { href: '/coach-studio',               icon: 'grid',           label: 'PANOPTICON',  sub: 'Dashboard' },
+  { href: '/coach-studio/gym-dashboard', icon: 'business',       label: 'GYM HUB',     sub: 'Business View' },
+  { href: '/coach-studio/staff',         icon: 'people-circle',  label: 'STAFF',       sub: 'Manage Coaches' },
+  { href: '/coach-studio/athletes',      icon: 'people',         label: 'ATLETI',      sub: 'CRM Engine' },
+  { href: '/coach-studio/ai',            icon: 'hardware-chip',  label: 'AI COACH',    sub: 'Risk & Forecast' },
+];
+
+const NAV_ITEMS_COACH = [
   { href: '/coach-studio',          icon: 'grid',           label: 'PANOPTICON',  sub: 'Dashboard' },
   { href: '/coach-studio/athletes', icon: 'people',         label: 'ATLETI',      sub: 'CRM Engine' },
   { href: '/coach-studio/builder',  icon: 'construct',      label: 'ARCHITECT',   sub: 'Template Builder' },
   { href: '/coach-studio/crew',     icon: 'shield',         label: 'STRATEGIST',  sub: 'Battle Control' },
-  { href: '/coach-studio/ai',       icon: 'hardware-chip',  label: 'AI COACH',    sub: 'Injury & Forecast' },
+  { href: '/coach-studio/ai',       icon: 'hardware-chip',  label: 'AI COACH',    sub: 'Risk & Forecast' },
 ];
+
+const NAV_ITEMS_ATHLETE = [
+  { href: '/coach-studio/passport', icon: 'person',         label: 'PASSPORT',    sub: 'Il tuo profilo' },
+];
+
+function getNavItems(role: string | undefined) {
+  if (role === 'GYM_OWNER' || role === 'ADMIN') return NAV_ITEMS_GYM_OWNER;
+  if (role === 'COACH') return NAV_ITEMS_COACH;
+  return NAV_ITEMS_ATHLETE;
+}
+
+const ROLE_BADGE_CFG: Record<string, { color: string; bg: string }> = {
+  GYM_OWNER: { color: '#D4AF37', bg: 'rgba(212,175,55,0.12)' },
+  COACH:     { color: '#00F2FF', bg: 'rgba(0,242,255,0.08)' },
+  ATHLETE:   { color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.05)' },
+  ADMIN:     { color: '#AF52DE', bg: 'rgba(175,82,222,0.1)' },
+};
 
 export default function CoachStudioLayout() {
   const { user, token, isLoading } = useAuth();
   const router = useRouter();
   const path = usePathname();
   const insets = useSafeAreaInsets();
+  const role = user?.role || 'ATHLETE';
+  const NAV_ITEMS = getNavItems(role);
+  const roleCfg = ROLE_BADGE_CFG[role] || ROLE_BADGE_CFG.ATHLETE;
 
   // Mobile redirect (non-web only)
   if (Platform.OS !== 'web') {
@@ -62,8 +90,14 @@ export default function CoachStudioLayout() {
           <View style={l$.brandDot} />
           <View>
             <Text style={l$.brandName}>ARENAKORE</Text>
-            <Text style={l$.brandSub}>COACH STUDIO</Text>
+            <Text style={l$.brandSub}>COMMAND CENTER</Text>
           </View>
+        </View>
+
+        {/* Role badge */}
+        <View style={[l$.roleBadge, { backgroundColor: roleCfg.bg, borderColor: roleCfg.color + '40' }]}>
+          <View style={[l$.roleDot, { backgroundColor: roleCfg.color }]} />
+          <Text style={[l$.roleText, { color: roleCfg.color }]}>{role}</Text>
         </View>
 
         {/* Nav items */}
@@ -121,6 +155,9 @@ const l$ = StyleSheet.create({
   brand: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 32 },
   brandDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF' },
   brandName: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
+  roleBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, marginBottom: 16, alignSelf: 'flex-start' },
+  roleDot: { width: 5, height: 5, borderRadius: 3 },
+  roleText: { fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   brandSub: { color: 'rgba(0,242,255,0.6)', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
   nav: { flex: 1, gap: 4 },
   navItem: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 10 },

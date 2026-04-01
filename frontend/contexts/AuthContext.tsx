@@ -29,6 +29,7 @@ export interface User {
   username: string;
   email: string;
   role?: string;
+  gym_id?: string | null;
   sport?: string;
   xp: number;
   level: number;

@@ -81,6 +81,59 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     return user
 
 
+# ================================================================
+# RBAC — Role Based Access Control
+# ================================================================
+
+def normalize_role(user: dict) -> str:
+    """Normalize role to standard format. Legacy roles get mapped to ATHLETE."""
+    raw = user.get("role") or ""
+    # Handle legacy/non-standard roles
+    if raw in ("ADMIN", "GYM_OWNER", "COACH", "ATHLETE"):
+        return raw
+    if user.get("is_admin"):
+        return "ADMIN"
+    return "ATHLETE"
+
+
+def require_role(*allowed_roles: str):
+    """Factory for role-checking FastAPI dependencies. Founders and admins bypass checks."""
+    async def checker(current_user: dict = Depends(get_current_user)):
+        # Founders and admins have unrestricted access
+        if current_user.get("is_admin", False) or current_user.get("is_founder", False):
+            return current_user
+        role = normalize_role(current_user)
+        if role not in allowed_roles:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Accesso negato. Ruoli consentiti: {list(allowed_roles)}. Ruolo attuale: {role}"
+            )
+        return current_user
+    return checker
+
+
+def require_gym_access(current_user: dict = Depends(get_current_user)):
+    """Ensure user belongs to a gym (GYM_OWNER or COACH)."""
+    role = normalize_role(current_user)
+    if role not in ("ADMIN", "GYM_OWNER", "COACH") and not current_user.get("is_admin", False):
+        raise HTTPException(
+            status_code=403,
+            detail="Accesso consentito solo a Coach e GYM Owner"
+        )
+    return current_user
+
+
+async def get_user_gym(user: dict) -> Optional[dict]:
+    """Get the gym associated with a user (by gym_id or owned gym)."""
+    gym_id = user.get("gym_id")
+    if gym_id:
+        return await db.gyms.find_one({"_id": gym_id})
+    # GYM_OWNER: find their owned gym
+    if normalize_role(user) in ("GYM_OWNER", "ADMIN"):
+        return await db.gyms.find_one({"owner_id": user["_id"]})
+    return None
+
+
 class UserRegister(BaseModel):
     username: str
     email: str
@@ -167,12 +220,37 @@ class PvPSubmitRequest(BaseModel):
     peak_acceleration: Optional[float] = 0.0
 
 
+class GymCreate(BaseModel):
+    name: str
+    gym_code: Optional[str] = None
+    brand_color: Optional[str] = "#00F2FF"
+    city: Optional[str] = None
+
+
+class GymUpdate(BaseModel):
+    name: Optional[str] = None
+    brand_color: Optional[str] = None
+    gym_code: Optional[str] = None
+    city: Optional[str] = None
+
+
+class GymStaffAdd(BaseModel):
+    email: str
+    role: str = "COACH"  # "COACH" | "GYM_OWNER"
+
+
+class GymJoin(BaseModel):
+    gym_code: str
+    role: str = "ATHLETE"  # Role requested when joining
+
+
 def user_to_response(user: dict) -> dict:
     return {
         "id": str(user["_id"]),
         "username": user["username"],
         "email": user["email"],
-        "role": user.get("role"),
+        "role": normalize_role(user),  # Always normalized
+        "gym_id": str(user["gym_id"]) if user.get("gym_id") else None,
         "sport": user.get("sport"),
         "xp": user.get("xp", 0),
         "level": user.get("level", 1),
@@ -186,7 +264,7 @@ def user_to_response(user: dict) -> dict:
         "weight_kg": user.get("weight_kg"),
         "is_pro": (user.get("level", 1) >= 10 or user.get("xp", 0) >= 3000),
         "pro_unlocked": user.get("pro_unlocked", False),
-        "ghost_mode": user.get("ghost_mode", False),          # PRIVACY: hides real name in rankings
+        "ghost_mode": user.get("ghost_mode", False),
         "camera_enabled": user.get("camera_enabled", False),
         "mic_enabled": user.get("mic_enabled", False),
         "city": user.get("city"),
@@ -1683,7 +1761,7 @@ async def get_coach_athletes(
     sort_order: str = "desc",
     min_score: Optional[float] = None,
     max_score: Optional[float] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))
 ):
     """Coach Studio — Athlete analytics table with filters"""
     # Get all crews where current user is coach/owner
@@ -1734,7 +1812,7 @@ async def get_coach_athletes(
 
 
 @api_router.get("/coach/compliance")
-async def get_coach_compliance(current_user: dict = Depends(get_current_user)):
+async def get_coach_compliance(current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
     """Coach Studio — Template compliance chart data"""
     pushes = await db.challenge_pushes.find(
         {"coach_id": current_user["_id"]}
@@ -1776,7 +1854,7 @@ async def get_coach_compliance(current_user: dict = Depends(get_current_user)):
 @api_router.get("/coach/radar")
 async def get_coach_radar(
     ids: str = "",
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))
 ):
     """Coach Studio — DNA Radar data for up to 4 athletes comparison"""
     id_list = [i.strip() for i in ids.split(",") if i.strip()][:4]
@@ -1807,7 +1885,7 @@ async def get_coach_radar(
 @api_router.post("/coach/ai-suggestion")
 async def get_ai_training_suggestion(
     data: dict,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))
 ):
     """Coach Studio AI — Suggest training plan based on group DNA"""
     athlete_ids = data.get("athlete_ids", [])[:12]
@@ -1900,7 +1978,7 @@ def _build_suggestion(group_avg: dict, focus: str = None) -> dict:
 
 
 @api_router.get("/coach/heatmap")
-async def get_activity_heatmap(current_user: dict = Depends(get_current_user)):
+async def get_activity_heatmap(current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
     """Activity heatmap: scan counts per day for last 30 days"""
     coach_crews = await db.crews_v2.find({"owner_id": current_user["_id"]}).to_list(20)
     all_member_ids = list({mid for crew in coach_crews for mid in crew.get("members", [])})
@@ -1932,7 +2010,7 @@ async def get_activity_heatmap(current_user: dict = Depends(get_current_user)):
 
 
 @api_router.get("/coach/alerts")
-async def get_coach_alerts(current_user: dict = Depends(get_current_user)):
+async def get_coach_alerts(current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
     """AI Alert Center: underperforming athletes, expired passports, injury risks"""
     coach_crews = await db.crews_v2.find({"owner_id": current_user["_id"]}).to_list(20)
     all_member_ids = list({mid for crew in coach_crews for mid in crew.get("members", [])})
@@ -1960,7 +2038,7 @@ async def get_coach_alerts(current_user: dict = Depends(get_current_user)):
 
 
 @api_router.get("/coach/historical/{athlete_id}")
-async def get_athlete_historical(athlete_id: str, current_user: dict = Depends(get_current_user)):
+async def get_athlete_historical(athlete_id: str, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
     """Historical DNA trends — 6-month simulated trend toward current values"""
     try:
         user = await db.users.find_one({"_id": ObjectId(athlete_id)})
@@ -1986,7 +2064,7 @@ async def get_athlete_historical(athlete_id: str, current_user: dict = Depends(g
 
 
 @api_router.get("/coach/battle-stats")
-async def get_battle_stats(current_user: dict = Depends(get_current_user)):
+async def get_battle_stats(current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
     """Crew Strategist: battle history"""
     coach_crews = await db.crews_v2.find({"owner_id": current_user["_id"]}).to_list(10)
     if not coach_crews:
@@ -2006,7 +2084,7 @@ async def get_battle_stats(current_user: dict = Depends(get_current_user)):
 
 
 @api_router.post("/coach/battle-simulate")
-async def simulate_battle(data: dict, current_user: dict = Depends(get_current_user)):
+async def simulate_battle(data: dict, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
     """Weighted Average Calculator"""
     athlete_ids = data.get("athlete_ids", [])[:10]
     members_data = []
@@ -2028,7 +2106,7 @@ async def simulate_battle(data: dict, current_user: dict = Depends(get_current_u
 
 
 @api_router.get("/coach/ai-full")
-async def get_full_ai_analysis(current_user: dict = Depends(get_current_user)):
+async def get_full_ai_analysis(current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
     """AI Coach: injury risks + performance forecasts"""
     coach_crews = await db.crews_v2.find({"owner_id": current_user["_id"]}).to_list(20)
     all_member_ids = list({mid for crew in coach_crews for mid in crew.get("members", [])}) or [current_user["_id"]]
@@ -2059,7 +2137,7 @@ async def get_full_ai_analysis(current_user: dict = Depends(get_current_user)):
 
 
 @api_router.post("/coach/bulk-push")
-async def bulk_push_template(data: dict, current_user: dict = Depends(get_current_user)):
+async def bulk_push_template(data: dict, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
     """Bulk push template to crews or athletes"""
     template_id = data.get("template_id")
     crew_ids = data.get("crew_ids", [])
@@ -2084,6 +2162,212 @@ async def bulk_push_template(data: dict, current_user: dict = Depends(get_curren
         except Exception:
             pass
     return {"status": "pushed", "pushed_to_crews": pushed, "template_name": template.get("name")}
+
+
+# ================================================================
+# GYM_OWNER ENGINE — Multi-Tenancy & Staff Management
+# ================================================================
+
+import string as _string
+import secrets as _secrets
+
+def _gen_gym_code(n: int = 6) -> str:
+    return ''.join(_secrets.choice(_string.ascii_uppercase + _string.digits) for _ in range(n))
+
+
+def gym_to_response(gym: dict) -> dict:
+    return {
+        "id": str(gym["_id"]),
+        "name": gym.get("name", ""),
+        "gym_code": gym.get("gym_code", ""),
+        "brand_color": gym.get("brand_color", "#00F2FF"),
+        "city": gym.get("city"),
+        "owner_id": str(gym["owner_id"]) if gym.get("owner_id") else None,
+        "coaches": [str(c) for c in gym.get("coaches", [])],
+        "members_count": gym.get("members_count", 0),
+        "subscription_tier": gym.get("subscription_tier", "free"),
+        "created_at": gym["created_at"].isoformat() if gym.get("created_at") else None,
+    }
+
+
+@api_router.post("/gym/create")
+async def create_gym(data: GymCreate, current_user: dict = Depends(require_role("GYM_OWNER", "ADMIN"))):
+    """GYM_OWNER creates their gym"""
+    existing = await db.gyms.find_one({"owner_id": current_user["_id"]})
+    if existing:
+        raise HTTPException(status_code=400, detail="Hai già una palestra registrata")
+    now = datetime.utcnow()
+    gym_code = data.gym_code or _gen_gym_code()
+    # Ensure unique code
+    while await db.gyms.find_one({"gym_code": gym_code}):
+        gym_code = _gen_gym_code()
+    gym_doc = {
+        "name": data.name,
+        "gym_code": gym_code,
+        "brand_color": data.brand_color or "#00F2FF",
+        "city": data.city,
+        "owner_id": current_user["_id"],
+        "coaches": [],
+        "members_count": 1,
+        "subscription_tier": "free",
+        "created_at": now,
+    }
+    result = await db.gyms.insert_one(gym_doc)
+    # Set gym_id on the owner
+    await db.users.update_one({"_id": current_user["_id"]}, {"$set": {"gym_id": result.inserted_id}})
+    return {"status": "created", "gym": gym_to_response({**gym_doc, "_id": result.inserted_id})}
+
+
+@api_router.get("/gym/me")
+async def get_my_gym(current_user: dict = Depends(require_gym_access)):
+    """Get the gym associated with the current user"""
+    gym = await get_user_gym(current_user)
+    if not gym:
+        return {"gym": None, "message": "Nessuna palestra associata"}
+    # Count members
+    member_count = await db.users.count_documents({"gym_id": gym["_id"]})
+    gym["members_count"] = member_count
+    return {"gym": gym_to_response(gym)}
+
+
+@api_router.put("/gym/update")
+async def update_gym(data: GymUpdate, current_user: dict = Depends(require_role("GYM_OWNER", "ADMIN"))):
+    """GYM_OWNER updates gym brand/settings"""
+    gym = await db.gyms.find_one({"owner_id": current_user["_id"]})
+    if not gym:
+        raise HTTPException(status_code=404, detail="Palestra non trovata")
+    updates = {k: v for k, v in data.dict().items() if v is not None}
+    if "gym_code" in updates:
+        exists = await db.gyms.find_one({"gym_code": updates["gym_code"], "_id": {"$ne": gym["_id"]}})
+        if exists:
+            raise HTTPException(status_code=400, detail="Codice palestra già in uso")
+    if updates:
+        await db.gyms.update_one({"_id": gym["_id"]}, {"$set": updates})
+    updated = await db.gyms.find_one({"_id": gym["_id"]})
+    return {"status": "updated", "gym": gym_to_response(updated)}
+
+
+@api_router.get("/gym/staff")
+async def get_gym_staff(current_user: dict = Depends(require_gym_access)):
+    """List all coaches in the gym"""
+    gym = await get_user_gym(current_user)
+    if not gym:
+        return {"staff": [], "coaches_count": 0}
+    staff = await db.users.find({"gym_id": gym["_id"], "role": {"$in": ["COACH", "GYM_OWNER"]}}).to_list(50)
+    return {
+        "staff": [{"id": str(u["_id"]), "username": u.get("username"), "email": u.get("email"), "role": normalize_role(u), "level": u.get("level", 1), "xp": u.get("xp", 0)} for u in staff],
+        "coaches_count": sum(1 for u in staff if normalize_role(u) == "COACH"),
+    }
+
+
+@api_router.post("/gym/staff/add")
+async def add_gym_staff(data: GymStaffAdd, current_user: dict = Depends(require_role("GYM_OWNER", "ADMIN"))):
+    """GYM_OWNER adds a Coach to their gym"""
+    gym = await db.gyms.find_one({"owner_id": current_user["_id"]})
+    if not gym:
+        raise HTTPException(status_code=404, detail="Palestra non trovata")
+    target = await db.users.find_one({"email": data.email.lower()})
+    if not target:
+        raise HTTPException(status_code=404, detail=f"Utente non trovato: {data.email}")
+    if str(target["_id"]) == str(current_user["_id"]):
+        raise HTTPException(status_code=400, detail="Non puoi aggiungere te stesso come staff")
+    valid_roles = ("COACH", "GYM_OWNER", "ATHLETE")
+    if data.role not in valid_roles:
+        raise HTTPException(status_code=400, detail=f"Ruolo non valido. Scegli: {list(valid_roles)}")
+    await db.users.update_one({"_id": target["_id"]}, {"$set": {"gym_id": gym["_id"], "role": data.role}})
+    await db.gyms.update_one({"_id": gym["_id"]}, {"$addToSet": {"coaches": target["_id"]}})
+    # Notify the user
+    await db.notifications.insert_one({"user_id": target["_id"], "type": "gym_added", "title": "AGGIUNTO ALLA PALESTRA", "icon": "business", "color": "#D4AF37", "message": f"Sei stato aggiunto come {data.role} in {gym.get('name', 'palestra')}", "read": False, "created_at": datetime.utcnow()})
+    return {"status": "added", "username": target.get("username"), "role": data.role, "gym": gym.get("name")}
+
+
+@api_router.delete("/gym/staff/{user_id}")
+async def remove_gym_staff(user_id: str, current_user: dict = Depends(require_role("GYM_OWNER", "ADMIN"))):
+    """GYM_OWNER removes a staff member"""
+    gym = await db.gyms.find_one({"owner_id": current_user["_id"]})
+    if not gym:
+        raise HTTPException(status_code=404, detail="Palestra non trovata")
+    try:
+        target_oid = ObjectId(user_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID non valido")
+    await db.users.update_one({"_id": target_oid}, {"$unset": {"gym_id": ""}, "$set": {"role": "ATHLETE"}})
+    await db.gyms.update_one({"_id": gym["_id"]}, {"$pull": {"coaches": target_oid}})
+    return {"status": "removed"}
+
+
+@api_router.post("/gym/join")
+async def join_gym(data: GymJoin, current_user: dict = Depends(get_current_user)):
+    """User joins a gym via code"""
+    gym = await db.gyms.find_one({"gym_code": data.gym_code.upper()})
+    if not gym:
+        raise HTTPException(status_code=404, detail=f"Codice palestra non valido: {data.gym_code}")
+    if current_user.get("gym_id") == gym["_id"]:
+        raise HTTPException(status_code=400, detail="Sei già membro di questa palestra")
+    # Assign role (can only join as ATHLETE or COACH if gym_owner approves)
+    join_role = "ATHLETE" if data.role not in ("ATHLETE", "COACH") else data.role
+    await db.users.update_one({"_id": current_user["_id"]}, {"$set": {"gym_id": gym["_id"], "role": join_role}})
+    await db.gyms.update_one({"_id": gym["_id"]}, {"$inc": {"members_count": 1}})
+    return {"status": "joined", "gym_name": gym.get("name"), "role": join_role, "gym_code": gym.get("gym_code")}
+
+
+@api_router.get("/gym/dashboard")
+async def get_gym_dashboard(current_user: dict = Depends(require_role("GYM_OWNER", "ADMIN"))):
+    """GYM_OWNER business dashboard: active members, XP, coaches, subscriptions"""
+    gym = await get_user_gym(current_user)
+    if not gym:
+        return {"gym": None, "stats": {}, "message": "Crea prima una palestra"}
+    gym_id = gym["_id"]
+    # Aggregate stats
+    all_members = await db.users.find({"gym_id": gym_id}).to_list(500)
+    coaches = [u for u in all_members if normalize_role(u) == "COACH"]
+    athletes = [u for u in all_members if normalize_role(u) == "ATHLETE"]
+    total_xp = sum(u.get("xp", 0) for u in all_members)
+    avg_level = round(sum(u.get("level", 1) for u in all_members) / max(len(all_members), 1), 1)
+    # Crew stats
+    crew_count = await db.crews_v2.count_documents({"members": {"$in": [u["_id"] for u in all_members]}})
+    # Templates sent
+    template_count = await db.challenge_pushes.count_documents({"coach_id": current_user["_id"]})
+    # Recent battles
+    battle_count = await db.crew_battles.count_documents({"$or": [{"crew_a_id": {"$in": [str(u["_id"]) for u in all_members]}}, {"crew_b_id": {"$in": [str(u["_id"]) for u in all_members]}}]})
+    # Top performers
+    top_performers = sorted(all_members, key=lambda u: u.get("xp", 0), reverse=True)[:5]
+    return {
+        "gym": gym_to_response({**gym, "members_count": len(all_members)}),
+        "stats": {
+            "total_members": len(all_members),
+            "total_coaches": len(coaches),
+            "total_athletes": len(athletes),
+            "total_xp_generated": total_xp,
+            "avg_level": avg_level,
+            "crew_count": crew_count,
+            "templates_sent": template_count,
+            "battles_count": battle_count,
+            "subscription_tier": gym.get("subscription_tier", "free"),
+        },
+        "top_performers": [{"username": u.get("username"), "xp": u.get("xp", 0), "level": u.get("level", 1)} for u in top_performers],
+    }
+
+
+@api_router.put("/gym/user-role/{user_id}")
+async def update_user_role(user_id: str, data: dict, current_user: dict = Depends(require_role("GYM_OWNER", "ADMIN"))):
+    """GYM_OWNER changes a user's role within their gym"""
+    gym = await get_user_gym(current_user)
+    if not gym:
+        raise HTTPException(status_code=403, detail="Non sei owner di una palestra")
+    new_role = data.get("role")
+    if new_role not in ("ATHLETE", "COACH", "GYM_OWNER"):
+        raise HTTPException(status_code=400, detail="Ruolo non valido")
+    try:
+        target_oid = ObjectId(user_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID non valido")
+    # Verify target belongs to this gym
+    target = await db.users.find_one({"_id": target_oid, "gym_id": gym["_id"]})
+    if not target:
+        raise HTTPException(status_code=404, detail="Utente non trovato in questa palestra")
+    await db.users.update_one({"_id": target_oid}, {"$set": {"role": new_role}})
+    return {"status": "updated", "username": target.get("username"), "new_role": new_role}
 
 
 # =====================================================================
@@ -3403,7 +3687,7 @@ async def get_or_create_gym(owner_id, owner_username: str) -> dict:
     return gym
 
 
-def gym_to_response(gym: dict) -> dict:
+def _legacy_gym_to_response(gym: dict) -> dict:
     return {
         "id": str(gym["_id"]),
         "name": gym.get("name", ""),
@@ -3466,10 +3750,10 @@ class GymEventCreate(BaseModel):
 # === GYM PROFILE ===
 
 @api_router.get("/gym/me")
-async def get_my_gym(current_user: dict = Depends(get_current_user)):
-    """Get or auto-create the gym for current GYM_OWNER"""
+async def get_my_gym_legacy(current_user: dict = Depends(get_current_user)):
+    """Get or auto-create the gym for current GYM_OWNER (legacy endpoint)"""
     gym = await get_or_create_gym(current_user["_id"], current_user.get("username", "Owner"))
-    return gym_to_response(gym)
+    return _legacy_gym_to_response(gym)
 
 
 @api_router.put("/gym/me")
@@ -3488,10 +3772,7 @@ async def update_my_gym(data: GymUpdate, current_user: dict = Depends(get_curren
         await db.gyms.update_one({"_id": gym["_id"]}, {"$set": update_fields})
 
     updated = await db.gyms.find_one({"_id": gym["_id"]})
-    return gym_to_response(updated)
-
-
-# === COACH ASSOCIATION ===
+    return _legacy_gym_to_response(updated)
 
 @api_router.get("/gym/coaches")
 async def list_gym_coaches(current_user: dict = Depends(get_current_user)):
