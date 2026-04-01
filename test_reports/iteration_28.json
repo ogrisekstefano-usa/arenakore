@@ -1,0 +1,63 @@
+{
+  "summary": "Sprint 29 — NEXUS Registration 2-Phase Flow Testing. Backend: 17/17 tests pass (2 email normalization bugs found & fixed). Frontend: Phase 1 UI fully verified, Phase 2 UI fully verified, BUT critical post-registration navigation bug confirmed: user stays stuck on /register after successful API call.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/auth/register",
+        "issue": "Email duplicate check used data.email (original case) but stored data.email.strip().lower() — duplicate registrations were possible with mixed case (e.g. TEST_user@demo.app vs test_user@demo.app). FIXED at server.py line 366.",
+        "priority": "HIGH (FIXED)"
+      },
+      {
+        "endpoint": "POST /api/auth/login",
+        "issue": "Email lookup used data.email (original case) but stored emails are lowercase — login failed for users whose email was stored in different case. FIXED at server.py line 405.",
+        "priority": "HIGH (FIXED)"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Register Phase 2 → post-submit navigation",
+        "issue": "CRITICAL: BioDataPhase.handleForge (register.tsx) calls await register(...) successfully (backend returns 200 OK + token), but there is NO router.replace/router.push after the call. User stays stuck on /register forever. The try block exits without navigating. Login does: router.replace('/(tabs)/kore') or router.replace('/onboarding/step1') — same pattern needed here.",
+        "affected_testIDs": ["forgia-kore-id-btn"]
+      },
+      {
+        "flow": "AuthContext register type — gender",
+        "issue": "MINOR: AuthContext.register extra parameter TypeScript type (line 57-59) does not include gender field. register.tsx calls register(nickname, email, password, { age: ageN, gender }) — gender is passed but TypeScript type doesn't declare it. Functionally works (backend accepts it), but TypeScript may warn. Add gender?: string to extra type.",
+        "affected_testIDs": []
+      }
+    ],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_register_nexus.py",
+    "/app/test_reports/pytest/sprint29_register.xml"
+  ],
+  "action_items": [
+    "CRITICAL FIX — register.tsx BioDataPhase.handleForge: Add router.replace('/onboarding/step1') after await register(...) succeeds. Example: const handleForge = async () => { ... try { await register(...); router.replace('/onboarding/step1'); } catch ... }",
+    "MINOR FIX — AuthContext.tsx line 57-59: Add gender?: string to extra parameter type: register: (username: string, email: string, password: string, extra?: { height_cm?: number; weight_kg?: number; age?: number; training_level?: string; gender?: string; }) => Promise<User>"
+  ],
+  "critical_code_review_comments": [
+    "register.tsx BioDataPhase.handleForge missing router navigation after register() — user gets authenticated (token saved) but never leaves /register. This is a silent UX-breaking bug. The try block calls register() then ends with no navigation.",
+    "server.py: Two email normalization bugs (duplicate check + login lookup) were fixed. Now consistent: check, store, and login all use .strip().lower().",
+    "AuthContext.tsx: register() type signature missing gender in extra — minor TypeScript type mismatch",
+    "register.tsx handleForge: The loading state is never set to false on success (only in catch block). If there's a navigation bug and the user stays on the page, the button stays in loading state indefinitely. Should add setLoading(false) in finally block or before navigation."
+  ],
+  "updated_files": [
+    "/app/backend/server.py (line 366: email duplicate check normalized with .strip().lower())",
+    "/app/backend/server.py (line 405: login email lookup normalized with .strip().lower())",
+    "/app/backend/tests/test_register_nexus.py (new test file — 17 tests)"
+  ],
+  "success_rate": {
+    "backend": "100% (17/17 tests pass)",
+    "frontend": "85% — Phase 1 UI perfect, Phase 2 UI perfect, gender selector works, validation works, ATTIVA PROTOCOLLO transitions to Phase 2, FORGIA calls API successfully — but post-registration navigation broken (user stays on /register)"
+  },
+  "seed_data_creation": "Multiple TEST_ prefixed users created during backend testing (TEST_KORE_{ts}, TEST_FULLBIO_{ts}, TEST_ALTRO_{ts}, TEST_DUPE_NICK, etc.). UI test created test_ui_{ts}@demo.app, phase2_final@demo.app, phase2_final@demo.app users during Playwright tests.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Sprint 29 NEXUS Registration flow. Backend 100% (17/17). Frontend UI visually correct for both phases. CRITICAL: BioDataPhase.handleForge in register.tsx is missing router.replace('/onboarding/step1') after await register() succeeds. User is authenticated (token stored) but stuck on /register. Fix by adding router navigation after the register() call. Also fix AuthContext type to include gender?: string in extra. Backend email normalization bugs were fixed (register+login now use .strip().lower() for email lookups).",
+  "rca_of_issue": "Post-registration navigation bug RCA: BioDataPhase.handleForge calls await register() which internally stores token + sets user state in AuthContext. No router.replace() call exists in the try block after register() succeeds. Compare with login.tsx which calls router.replace('/(tabs)/kore') or router.replace('/onboarding/step1') after login(). The same pattern must be applied here. New users have onboarding_completed=false, so the correct navigation target is router.replace('/onboarding/step1'). Email normalization RCA: register endpoint stored emails as .strip().lower() (line 377) but the duplicate check (line 366) and login (line 405) used the original case — MongoDB string equality is case-sensitive so lookups against lowercase-stored emails failed for mixed-case input."
+}

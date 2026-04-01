@@ -218,11 +218,12 @@ class UserRegister(BaseModel):
     username: str
     email: str
     password: str
-    # Legacy Initiation fields (collected during onboarding ceremony)
+    # Bio-calibration fields
     height_cm: float | None = None
     weight_kg: float | None = None
     age: int | None = None
-    training_level: str | None = None  # LEGACY | ELITE | KORE
+    training_level: str | None = None
+    gender: str | None = None  # UOMO | DONNA | ALTRO
 
 
 class UserLogin(BaseModel):
@@ -362,7 +363,7 @@ async def register(data: UserRegister):
         raise HTTPException(status_code=400, detail="Password troppo corta (min. 8 caratteri)")
     if await db.users.find_one({"username": data.username}):
         raise HTTPException(status_code=400, detail="Username già in uso")
-    if await db.users.find_one({"email": data.email}):
+    if await db.users.find_one({"email": data.email.strip().lower()}):
         raise HTTPException(status_code=400, detail="Email già registrata")
 
     colors = ["#00E5FF", "#FFD700", "#FF3B30", "#34C759", "#AF52DE", "#FF9F0A"]
@@ -373,16 +374,19 @@ async def register(data: UserRegister):
 
     user = {
         "username": data.username.strip(),
-        "email": data.email.strip().lower(),  # Always store lowercase
+        "email": data.email.strip().lower(),
         "password_hash": hash_password(data.password),
         "role": None,
-        "sport": "ATHLETICS",  # Default sport — updated via profile
+        "sport": "ATHLETICS",
         "training_level": data.training_level or "LEGACY",
         "height_cm": data.height_cm,
         "weight_kg": data.weight_kg,
         "age": data.age,
+        "gender": data.gender,  # UOMO | DONNA | ALTRO
         "xp": 0,
         "level": 1,
+        "ak_credits": 0,
+        "unlocked_tools": [],
         "onboarding_completed": False,
         "avatar_color": random.choice(colors),
         "dna": None,
@@ -398,7 +402,7 @@ async def register(data: UserRegister):
 
 @api_router.post("/auth/login")
 async def login(data: UserLogin):
-    user = await db.users.find_one({"email": data.email})
+    user = await db.users.find_one({"email": data.email.strip().lower()})
     if not user or not verify_password(data.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Credenziali non valide")
     token = create_token(str(user["_id"]))
