@@ -1,0 +1,38 @@
+{
+  "summary": "Sprint 31 — Multisport Challenge Builder (TIMELINE + AUTOMATION + LEADERBOARD). Backend: 22/22 tests passed. Frontend: All 10 criteria verified — builder loads, 3-tab system works, challenge creation/timeline/day-editor/automation/leaderboard all fully functional.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "coach-studio/builder (LEADERBOARD tab)",
+        "issues": ["When switching to LEADERBOARD tab, the left SFIDE sidebar disappears (leaderboard is a full-width view without sidebar). This is intentional by design. No functional issue."]
+      }
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sprint31_multisport_builder.py",
+    "/app/test_reports/pytest/sprint31_multisport.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "INFO: builder.tsx is 768 lines — slightly over the 700-line guideline. Consider splitting DayColumn, DayEventEditor, GlobalLeaderboardChart, AutomationEngine into separate files for maintainability.",
+    "INFO: No testID attributes on interactive elements (challenge list items, tab buttons, day columns, discipline buttons, NUOVA REGOLA button). Recommend adding testIDs for future regression testing.",
+    "INFO: AUTOMATION tab requires a challenge to be selected first (no challenge selected → AutomationEngine not rendered). The tab click doesn't render the engine in the mainArea unless selectedChallenge is non-null. This is by design but could be improved with a hint state."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "100% — 22/22 tests passed",
+    "frontend": "100% — All 10 review criteria verified"
+  },
+  "seed_data_creation": "Several TEST_ challenges created during backend testing (TEST_IRON WEEK TEST, TEST_SCAFFOLD_7, TEST_DAYS_UPDATE, etc.)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Sprint 31 Multisport Challenge Builder is fully operational. Backend: POST /api/multisport/create (7-day scaffolding), GET /api/multisport (list), PUT /api/multisport/{id}/days (with discipline validation), PUT /api/multisport/{id}/automation (rule validation against AUTOMATION_TRIGGERS), GET /api/challenges/global-leaderboard all working correctly. Frontend builder.tsx: 3-tab system (TIMELINE/AUTOMATION/LEADERBOARD) with icons, left sidebar challenge list, new challenge form (name + days + CREA), 7-day DayColumn visual grid, DayEventEditor with 7 discipline buttons + REP TARGET + DURATA + NOTES + SALVA GIORNO, AutomationEngine with NUOVA REGOLA → R1 card with SE/ALLORA selectors + threshold input (60) + 6 triggers + 5 actions, LEADERBOARD empty state NESSUNA SFIDA ATTIVA with trophy icon. No bugs found.",
+  "rca_of_issue": "No bugs found — all features working as specified."
+}

@@ -2267,8 +2267,292 @@ async def get_my_drafts(current_user: dict = Depends(require_role("COACH", "GYM_
 # AK DROPS — Sweat-to-Credit Engine (exceeding biometric avg)
 # ================================================================
 
-CERTIFIED_TEMPLATES = [
-    {
+# ================================================================
+# MULTISPORT CHALLENGE ENGINE — Visual Timeline, Automation, Leaderboard
+# ================================================================
+
+DISCIPLINE_META = {
+    "endurance": {"label": "Endurance", "icon": "navigate",   "color": "#00F2FF", "exercise": "gps_run"},
+    "power":     {"label": "Power",     "icon": "barbell",    "color": "#FF453A", "exercise": "squat"},
+    "mobility":  {"label": "Mobility",  "icon": "body",       "color": "#34C759", "exercise": "lunge"},
+    "technique": {"label": "Technique", "icon": "ribbon",     "color": "#D4AF37", "exercise": "nexus_scan"},
+    "recovery":  {"label": "Recovery",  "icon": "moon",       "color": "#AF52DE", "exercise": "plank"},
+    "agility":   {"label": "Agility",   "icon": "flash",      "color": "#FF9500", "exercise": "punch"},
+    "nexus":     {"label": "NÈXUS Bio", "icon": "scan",       "color": "#00F2FF", "exercise": "squat"},
+}
+
+AUTOMATION_TRIGGERS = {
+    "scan_quality_low":  {"label": "Qualità scan bassa",      "axis": "technique", "op": "lt"},
+    "mobility_reduced":  {"label": "Mobilità ridotta",        "axis": "mobility",  "op": "lt"},
+    "recovery_low":      {"label": "Recovery bassa",          "axis": "recovery",  "op": "lt"},
+    "power_drop":        {"label": "Calo di forza",           "axis": "power",     "op": "lt"},
+    "pvp_win_streak":    {"label": "Streak vittorie PvP",     "axis": None,        "op": "gte"},
+    "days_inactive":     {"label": "Atleta inattivo (giorni)","axis": None,        "op": "gte"},
+}
+
+
+@api_router.post("/multisport/create")
+async def create_multisport_challenge(data: dict, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Create a new multi-day, multi-discipline challenge"""
+    name = data.get("name", "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Nome sfida richiesto")
+    now = datetime.utcnow()
+    start_raw = data.get("start_date")
+    start_date = datetime.fromisoformat(start_raw) if start_raw else now
+    duration_days = max(1, min(30, int(data.get("duration_days", 7))))
+    end_date = start_date + timedelta(days=duration_days - 1)
+    # Build day scaffolding
+    days = []
+    for d in range(duration_days):
+        day_date = start_date + timedelta(days=d)
+        days.append({
+            "day": d + 1,
+            "date": day_date.isoformat(),
+            "discipline": None,
+            "type": None,
+            "exercise": None,
+            "target_reps": None,
+            "target_time": None,
+            "target_distance_m": None,
+            "xp_reward": 100,
+            "notes": "",
+            "certified_template_id": None,
+        })
+    doc = {
+        "name": name,
+        "description": data.get("description", ""),
+        "coach_id": current_user["_id"],
+        "gym_id": current_user.get("gym_id"),
+        "days": days,
+        "automation_rules": [],
+        "participant_crew_ids": [],
+        "participant_user_ids": [],
+        "start_date": start_date,
+        "end_date": end_date,
+        "duration_days": duration_days,
+        "status": "draft",
+        "created_at": now,
+    }
+    result = await db.multisport_challenges.insert_one(doc)
+    doc["_id"] = result.inserted_id
+    return _challenge_to_resp(doc)
+
+
+def _challenge_to_resp(c: dict) -> dict:
+    return {
+        "id": str(c["_id"]),
+        "name": c.get("name"),
+        "description": c.get("description", ""),
+        "days": c.get("days", []),
+        "automation_rules": c.get("automation_rules", []),
+        "participant_crew_ids": [str(x) for x in c.get("participant_crew_ids", [])],
+        "duration_days": c.get("duration_days", 7),
+        "start_date": c["start_date"].isoformat() if isinstance(c.get("start_date"), datetime) else c.get("start_date"),
+        "end_date": c["end_date"].isoformat() if isinstance(c.get("end_date"), datetime) else c.get("end_date"),
+        "status": c.get("status", "draft"),
+        "created_at": c["created_at"].isoformat() if isinstance(c.get("created_at"), datetime) else None,
+    }
+
+
+@api_router.get("/multisport")
+async def list_multisport_challenges(current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    challenges = await db.multisport_challenges.find({"coach_id": current_user["_id"]}).sort("created_at", -1).to_list(30)
+    return {"challenges": [_challenge_to_resp(c) for c in challenges]}
+
+
+@api_router.get("/multisport/{challenge_id}")
+async def get_multisport_challenge(challenge_id: str, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    try:
+        c = await db.multisport_challenges.find_one({"_id": ObjectId(challenge_id), "coach_id": current_user["_id"]})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    if not c:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    return _challenge_to_resp(c)
+
+
+@api_router.put("/multisport/{challenge_id}/days")
+async def update_challenge_days(challenge_id: str, data: dict, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Update all days of a challenge (full replace)"""
+    try:
+        oid = ObjectId(challenge_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID non valido")
+    days = data.get("days", [])
+    # Validate disciplines
+    for day in days:
+        disc = day.get("discipline")
+        if disc and disc not in DISCIPLINE_META:
+            raise HTTPException(status_code=400, detail=f"Disciplina non valida: {disc}")
+    result = await db.multisport_challenges.update_one(
+        {"_id": oid, "coach_id": current_user["_id"]},
+        {"$set": {"days": days}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    updated = await db.multisport_challenges.find_one({"_id": oid})
+    return _challenge_to_resp(updated)
+
+
+@api_router.put("/multisport/{challenge_id}/automation")
+async def update_challenge_automation(challenge_id: str, data: dict, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Replace automation rules for a challenge"""
+    try:
+        oid = ObjectId(challenge_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID non valido")
+    rules = data.get("rules", [])
+    for rule in rules:
+        if rule.get("trigger") not in AUTOMATION_TRIGGERS:
+            raise HTTPException(status_code=400, detail=f"Trigger non valido: {rule.get('trigger')}")
+    result = await db.multisport_challenges.update_one(
+        {"_id": oid, "coach_id": current_user["_id"]},
+        {"$set": {"automation_rules": rules}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    return {"status": "updated", "rules_count": len(rules)}
+
+
+@api_router.post("/multisport/{challenge_id}/push")
+async def push_multisport_challenge(challenge_id: str, data: dict, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Push a challenge to crews/athletes and activate it"""
+    try:
+        oid = ObjectId(challenge_id)
+        c = await db.multisport_challenges.find_one({"_id": oid, "coach_id": current_user["_id"]})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    if not c:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    crew_ids = [ObjectId(cid) for cid in data.get("crew_ids", []) if cid]
+    now = datetime.utcnow()
+    await db.multisport_challenges.update_one(
+        {"_id": oid},
+        {"$set": {"status": "active", "participant_crew_ids": crew_ids, "pushed_at": now}}
+    )
+    # Notify all crew members
+    notif_count = 0
+    for cid in crew_ids:
+        crew = await db.crews_v2.find_one({"_id": cid})
+        if crew:
+            for mid in crew.get("members", []):
+                await db.notifications.insert_one({
+                    "user_id": mid,
+                    "type": "multisport_challenge",
+                    "title": "NUOVA SFIDA MULTI-DISCIPLINA",
+                    "icon": "calendar",
+                    "color": "#00F2FF",
+                    "message": f"Il tuo Coach ha lanciato '{c.get('name')}' — {c.get('duration_days')} giorni, multidisciplina.",
+                    "read": False,
+                    "created_at": now,
+                })
+                notif_count += 1
+    return {"status": "pushed", "crew_count": len(crew_ids), "notifications_sent": notif_count}
+
+
+@api_router.get("/multisport/{challenge_id}/progress")
+async def get_challenge_progress(challenge_id: str, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Real-time completion progress per crew"""
+    try:
+        oid = ObjectId(challenge_id)
+        c = await db.multisport_challenges.find_one({"_id": oid})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    if not c:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    total_days = c.get("duration_days", 7)
+    crew_progress = []
+    for cid in c.get("participant_crew_ids", []):
+        crew = await db.crews_v2.find_one({"_id": cid})
+        if not crew:
+            continue
+        # Count completions across all sessions/pushes linked to this challenge
+        members_completed = set()
+        completions = await db.ak_transactions.find({
+            "reason": "nexus_scan",
+            "user_id": {"$in": crew.get("members", [])},
+            "created_at": {"$gte": c.get("start_date", datetime.utcnow() - timedelta(days=30))}
+        }).to_list(500)
+        for comp in completions:
+            members_completed.add(str(comp["user_id"]))
+        member_count = max(len(crew.get("members", [])), 1)
+        team_pct = round(len(members_completed) / member_count * 100, 1)
+        # Weighted score: sum of individual progress
+        all_member_xp = 0
+        for mid in crew.get("members", []):
+            u = await db.users.find_one({"_id": mid})
+            if u:
+                all_member_xp += u.get("xp", 0)
+        avg_xp = round(all_member_xp / member_count)
+        crew_progress.append({
+            "crew_id": str(cid),
+            "crew_name": crew.get("name"),
+            "members_count": member_count,
+            "members_active": len(members_completed),
+            "completion_pct": team_pct,
+            "avg_xp": avg_xp,
+            "score": round(team_pct * 0.6 + min(100, avg_xp / 100) * 0.4, 1),
+        })
+    crew_progress.sort(key=lambda x: -x["score"])
+    return {"challenge": _challenge_to_resp(c), "leaderboard": crew_progress}
+
+
+@api_router.get("/challenges/global-leaderboard")
+async def get_global_challenge_leaderboard(current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Global crew challenge leaderboard across all active multisport challenges"""
+    active = await db.multisport_challenges.find({"status": "active"}).limit(10).to_list(10)
+    global_scores: dict = {}
+    for c in active:
+        for cid in c.get("participant_crew_ids", []):
+            crew = await db.crews_v2.find_one({"_id": cid})
+            if not crew:
+                continue
+            crew_name = crew.get("name", "?")
+            members = crew.get("members", [])
+            total_xp = 0
+            completed = set()
+            comps = await db.ak_transactions.find({
+                "reason": "nexus_scan",
+                "user_id": {"$in": members},
+                "created_at": {"$gte": c.get("start_date", datetime.utcnow() - timedelta(days=30))}
+            }).to_list(200)
+            for comp in comps:
+                completed.add(str(comp["user_id"]))
+            for mid in members:
+                u = await db.users.find_one({"_id": mid})
+                if u:
+                    total_xp += u.get("xp", 0)
+            mp = max(len(members), 1)
+            pct = round(len(completed) / mp * 100, 1)
+            score = round(pct * 0.6 + min(100, total_xp / mp / 100) * 0.4, 1)
+            key = str(cid)
+            if key not in global_scores or global_scores[key]["score"] < score:
+                global_scores[key] = {
+                    "crew_id":    str(cid),
+                    "crew_name":  crew_name,
+                    "gym":        current_user.get("city", "—"),
+                    "score":      score,
+                    "completion_pct": pct,
+                    "members_active": len(completed),
+                    "members_total": len(members),
+                    "challenge_name": c.get("name"),
+                    "avg_xp":    round(total_xp / mp),
+                }
+    result = sorted(global_scores.values(), key=lambda x: -x["score"])
+    return {"leaderboard": result, "total_active_challenges": len(active)}
+
+
+@api_router.get("/multisport/meta/disciplines")
+async def get_disciplines_meta(current_user: dict = Depends(get_current_user)):
+    """Metadata for all disciplines and automation triggers"""
+    return {
+        "disciplines": [{"key": k, **v} for k, v in DISCIPLINE_META.items()],
+        "automation_triggers": [{"key": k, **v} for k, v in AUTOMATION_TRIGGERS.items()],
+    }
+
+
+CERTIFIED_TEMPLATES = [    {
         "id": "ct_power_talosfit",
         "name": "POWER PROTOCOL ELITE",
         "discipline": "power",

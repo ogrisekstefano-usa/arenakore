@@ -226,6 +226,21 @@ export const api = {
   updateUserRole: (userId: string, role: string, token: string) =>
     request(`/gym/user-role/${userId}`, { method: 'PUT', body: JSON.stringify({ role }) }, token),
 
+  // ========== MULTISPORT CHALLENGE ENGINE ==========
+  createMultisportChallenge: (name: string, description: string, durationDays: number, token: string) =>
+    request('/multisport/create', { method: 'POST', body: JSON.stringify({ name, description, duration_days: durationDays }) }, token),
+  listMultisportChallenges: (token: string) => request('/multisport', {}, token),
+  getMultisportChallenge: (id: string, token: string) => request(`/multisport/${id}`, {}, token),
+  updateChallengeDays: (id: string, days: any[], token: string) =>
+    request(`/multisport/${id}/days`, { method: 'PUT', body: JSON.stringify({ days }) }, token),
+  updateChallengeAutomation: (id: string, rules: any[], token: string) =>
+    request(`/multisport/${id}/automation`, { method: 'PUT', body: JSON.stringify({ rules }) }, token),
+  pushMultisportChallenge: (id: string, crewIds: string[], token: string) =>
+    request(`/multisport/${id}/push`, { method: 'POST', body: JSON.stringify({ crew_ids: crewIds }) }, token),
+  getChallengeProgress: (id: string, token: string) => request(`/multisport/${id}/progress`, {}, token),
+  getGlobalChallengeLeaderboard: (token: string) => request('/challenges/global-leaderboard', {}, token),
+  getMultisportMeta: (token: string) => request('/multisport/meta/disciplines', {}, token),
+
   // ========== DNA ATHLETIC HUB — Multi-Skill & Crew CRM ==========
   getAthletesFullTable: (token: string, sortBy?: string, injuryLevel?: string) => {
     const p = new URLSearchParams();
