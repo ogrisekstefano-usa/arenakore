@@ -272,10 +272,13 @@ function BioDataPhase({
         nickname.trim().toUpperCase(),
         email,
         password,
-        { age: ageN, gender },
+        { age: ageN, gender } as any,
       );
+      // Navigation handled by AuthContext after successful registration
+      router.replace('/onboarding/step1');
     } catch (e: any) {
       setError(e?.message || 'Errore durante la registrazione');
+    } finally {
       setLoading(false);
     }
   };

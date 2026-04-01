@@ -55,6 +55,9 @@ interface AuthContextType {
   setActiveRole: (role: UserRole) => void;
   login: (email: string, password: string) => Promise<User>;
   register: (username: string, email: string, password: string, extra?: {
+    height_cm?: number; weight_kg?: number; age?: number;
+    training_level?: string; gender?: string;
+  }) => Promise<void>;
     height_cm?: number; weight_kg?: number; age?: number; training_level?: string;
   }) => Promise<User>;
   completeOnboarding: (role: string, sport: string) => Promise<void>;
