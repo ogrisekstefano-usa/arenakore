@@ -173,8 +173,9 @@ const l$ = StyleSheet.create({
   sidebarGlass: {
     backdropFilter: 'blur(24px)',
     WebkitBackdropFilter: 'blur(24px)',
-    background: 'rgba(5,5,5,0.88)',
-    borderRight: '1px solid rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(5,5,5,0.88)',
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(255,255,255,0.05)',
   },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 24 },
   brandDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF' },

@@ -97,10 +97,12 @@ def normalize_role(user: dict) -> str:
 
 
 def require_role(*allowed_roles: str):
-    """Factory for role-checking FastAPI dependencies. Founders and admins bypass checks."""
+    """Factory for role-checking FastAPI dependencies. Only admins bypass role checks.
+    Founders do NOT bypass — they must have the correct role set explicitly.
+    """
     async def checker(current_user: dict = Depends(get_current_user)):
-        # Founders and admins have unrestricted access
-        if current_user.get("is_admin", False) or current_user.get("is_founder", False):
+        # Only is_admin=True gets unrestricted access (not is_founder!)
+        if current_user.get("is_admin", False):
             return current_user
         role = normalize_role(current_user)
         if role not in allowed_roles:
@@ -2174,20 +2176,29 @@ async def get_live_events(current_user: dict = Depends(require_role("COACH", "GY
 @api_router.get("/coach/tier")
 async def get_coach_tier(current_user: dict = Depends(get_current_user)):
     """Get the subscription tier for feature gating on frontend"""
+    ENTERPRISE_FEATURES = {
+        "ai_injury_risk": True,
+        "historical_trends_extended": True,
+        "battle_simulator": True,
+        "live_monitor": True,
+        "bulk_push": True,
+        "export_csv": True,
+    }
     if current_user.get("is_founder") or current_user.get("is_admin"):
-        return {"tier": "elite", "is_enterprise": True}
+        return {"tier": "elite", "is_enterprise": True, "features": ENTERPRISE_FEATURES}
     gym = await get_user_gym(current_user)
     tier = gym.get("subscription_tier", "free") if gym else "free"
+    is_enterprise = tier in ("elite", "enterprise")
     return {
         "tier": tier,
-        "is_enterprise": tier in ("elite", "enterprise"),
+        "is_enterprise": is_enterprise,
         "features": {
-            "ai_injury_risk": tier in ("elite", "enterprise"),
-            "historical_trends_extended": tier in ("elite", "enterprise"),
-            "battle_simulator": tier in ("elite", "enterprise"),
-            "live_monitor": True,  # All tiers
+            "ai_injury_risk": is_enterprise,
+            "historical_trends_extended": is_enterprise,
+            "battle_simulator": is_enterprise,
+            "live_monitor": True,
             "bulk_push": tier != "free",
-            "export_csv": True,   # All tiers
+            "export_csv": True,
         }
     }
 

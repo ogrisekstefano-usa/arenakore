@@ -1,0 +1,50 @@
+{
+  "summary": "Sprint 26 FINAL Enterprise Ready regression test. Backend: 15/15 pass (2 WS HTTP probes skipped — known proxy/FastAPI limitation, actual WS confirmed via logs). Frontend: Panopticon loads with all 5 sections + toasts + LIVE MONITOR (WebSocket active). Athletes table: 9 athletes + CSV Export green button. FeatureGate component EXISTS but NOT integrated in ai.tsx — ENTERPRISE ONLY overlay won't show for non-elite users.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/ws/live-monitor/{gym_id} (HTTP probe)",
+        "issue": "FastAPI returns 404 for HTTP GET to WebSocket routes (expected FastAPI behavior). Actual WebSocket connections confirmed working — backend logs show multiple [accepted]/connection open/closed cycles during test run."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "FeatureGate — AI injury risk gating",
+        "issue": "FeatureGate component exists at components/studio/FeatureGate.tsx but is NOT imported or used in app/coach-studio/ai.tsx. When features.ai_injury_risk=false (non-elite user), the ENTERPRISE ONLY overlay will NOT appear. The component is built but not wired into the AI module.",
+        "affected_testIDs": ["ai.tsx — INJURY RISK PREDICTOR section"]
+      }
+    ],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sprint26_enterprise.py",
+    "/app/test_reports/pytest/sprint26_enterprise_final.xml"
+  ],
+  "action_items": [
+    "MISSING INTEGRATION — FeatureGate not wired in ai.tsx: Import FeatureGate from '../../components/studio/FeatureGate' in ai.tsx, and wrap the INJURY RISK PREDICTOR section with <FeatureGate featureKey='ai_injury_risk' features={tierData?.features}> to show ENTERPRISE ONLY overlay for non-elite users. Requires also fetching /api/coach/tier in ai.tsx.",
+    "INFO (no action): WebSocket HTTP probe returns 404 — this is standard FastAPI behavior. WS confirmed working via backend logs during test session."
+  ],
+  "critical_code_review_comments": [
+    "MISSING: FeatureGate integration in ai.tsx — Component created and well-structured, but never imported/used anywhere in the codebase. To complete Sprint 26 feature gating: ai.tsx must (1) fetch /api/coach/tier on mount, (2) wrap INJURY RISK PREDICTOR with <FeatureGate featureKey='ai_injury_risk' features={tierData?.features}>.",
+    "OK: require_role() correctly fixed — bypasses ONLY for is_admin=True, NOT for is_founder. ATHLETE user (is_founder=true, is_admin=false) gets 403 from all GYM_OWNER-only endpoints — verified.",
+    "OK: get_coach_tier() correctly returns full features dict for founders — {tier: 'elite', is_enterprise: true, features: {all 6 keys: true}} — verified.",
+    "OK: Glassmorphism sidebar CSS shorthand fix applied — no more 'Invalid style property of background/borderRight' console errors."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_sprint26_enterprise.py — Fixed athlete_token fixture to use unique timestamp email; updated WS HTTP probe tests to skip with explanation note"
+  ],
+  "success_rate": {
+    "backend": "100% (15/15 pass, 2 skipped WS HTTP probes — infrastructure limitation, WS protocol confirmed working)",
+    "frontend": "90% — Panopticon (5 sections OK), LIVE MONITOR (WebSocket active, green dot), Toast notifications (CRITICAL+WARNING), Athletes (9 rows + CSV green button) all PASS. FeatureGate overlay on AI module NOT integrated."
+  },
+  "seed_data_creation": "Created TEST_shield_{uid}@test.kore temp athlete for RBAC auth shield testing (auto-generated unique email per run).",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Sprint 26 final regression: 5/6 features fully verified. Only missing: FeatureGate integration in ai.tsx (component exists, not used). STEFANO login: ogrisek.stefano@gmail.com / Founder@KORE2026!. WebSocket shows green dot + 'WebSocket · Real-time' in LiveMonitorPanel on Panopticon. Backend logs confirm WS accepted connections during frontend tests.",
+  "rca_of_issue": "FeatureGate NOT integrated RCA: The FeatureGate component was created in components/studio/FeatureGate.tsx during Sprint 26 development but the integration step into app/coach-studio/ai.tsx was skipped. ai.tsx has no import of FeatureGate, no fetch of /api/coach/tier, and no conditional wrapping of INJURY RISK PREDICTOR section. Fix: add useEffect(() => api.getCoachTier(token).then(setTierData), [token]) to ai.tsx and wrap the injury risk section with <FeatureGate featureKey='ai_injury_risk' features={tierData?.features}>."
+}
