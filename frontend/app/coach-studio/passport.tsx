@@ -124,7 +124,7 @@ export default function AthletePasPport() {
 }
 
 const p$ = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000' }, content: { padding: 28, gap: 20, paddingBottom: 60 },
+  root: { flex: 1 }, content: { padding: 28, gap: 20, paddingBottom: 60 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 16, backgroundColor: '#0A0A0A', borderRadius: 14, padding: 18, borderWidth: 1, borderColor: '#1E1E1E' },
   avatar: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },

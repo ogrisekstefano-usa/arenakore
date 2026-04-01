@@ -224,7 +224,7 @@ export default function TalentScout() {
 }
 
 const t$ = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000' }, content: { padding: 28, gap: 18, paddingBottom: 60 },
+  root: { flex: 1 }, content: { padding: 28, gap: 18, paddingBottom: 60 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   pageTitle: { color: '#FFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
   pageSub: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '300', marginTop: 3, maxWidth: 400 },

@@ -1,20 +1,115 @@
 /**
- * DASHBOARD PANOPTICON — Global command overview
+ * NÈXUS COMMAND CENTER — Global Dashboard
+ * Widget-based layout · Dual-theme support
  */
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme, MONT, INTER } from '../../contexts/ThemeContext';
 import { api } from '../../utils/api';
-import { KPICard, ActivityHeatmap, AlertRow, SectionHeader } from '../../components/studio/StudioComponents';
+import { ActivityHeatmap, AlertRow } from '../../components/studio/StudioComponents';
 import { LiveMonitorPanel } from '../../components/studio/LiveMonitor';
-import { useToast } from '../../components/studio/StudioToast';
 
-export default function PanopticonDashboard() {
+// ── Widget Shell ──────────────────────────────────────────────────────────────
+function Widget({ title, subtitle, icon, iconColor, children, onExpand, span = 1 }: {
+  title: string; subtitle?: string; icon?: string; iconColor?: string;
+  children: React.ReactNode; onExpand?: () => void; span?: number;
+}) {
+  const { theme } = useTheme();
+  return (
+    <View style={[
+      w$.card,
+      { backgroundColor: theme.cardBg, borderColor: theme.cardBorder, flex: span },
+      Platform.OS === 'web' ? ({
+        boxShadow: theme.mode === 'light'
+          ? '0 2px 12px rgba(0,0,0,0.07)'
+          : '0 2px 16px rgba(0,0,0,0.4)',
+      } as any) : {},
+    ]}>
+      <View style={w$.header}>
+        <View style={w$.headerLeft}>
+          {icon && <Ionicons name={icon as any} size={14} color={iconColor || theme.accent} />}
+          <Text style={[w$.title, MONT('900'), { color: theme.text }]}>{title}</Text>
+          {subtitle && <Text style={[w$.subtitle, INTER('300'), { color: theme.textTer }]}>{subtitle}</Text>}
+        </View>
+        {onExpand && (
+          <TouchableOpacity onPress={onExpand}>
+            <Ionicons name="expand-outline" size={14} color={theme.textTer} />
+          </TouchableOpacity>
+        )}
+      </View>
+      {children}
+    </View>
+  );
+}
+import { Platform } from 'react-native';
+
+const w$ = StyleSheet.create({
+  card: { borderRadius: 14, borderWidth: 1, padding: 18, gap: 12 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
+  title: { fontSize: 12, letterSpacing: 2 },
+  subtitle: { fontSize: 10, letterSpacing: 1, marginLeft: 4 },
+});
+
+// ── KPI Card ──────────────────────────────────────────────────────────────────
+function KPITile({ label, value, sub, color, icon, trend }: any) {
+  const { theme } = useTheme();
+  return (
+    <View style={[kp$.tile, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+      <View style={kp$.top}>
+        <View style={[kp$.iconBg, { backgroundColor: color + '14' }]}>
+          <Ionicons name={icon} size={16} color={color} />
+        </View>
+        {trend && (
+          <View style={[kp$.trend, { backgroundColor: trend === 'up' ? theme.positive + '18' : theme.negative + '18' }]}>
+            <Ionicons name={trend === 'up' ? 'trending-up' : 'trending-down'} size={10} color={trend === 'up' ? theme.positive : theme.negative} />
+          </View>
+        )}
+      </View>
+      <Text style={[kp$.value, MONT(), { color: theme.text }]}>{value}</Text>
+      <Text style={[kp$.label, MONT('900'), { color: theme.textTer }]}>{label}</Text>
+      {sub && <Text style={[kp$.sub, INTER('300'), { color: theme.textTer }]}>{sub}</Text>}
+    </View>
+  );
+}
+const kp$ = StyleSheet.create({
+  tile: { flex: 1, borderRadius: 12, borderWidth: 1, padding: 14, gap: 6, minWidth: 120 },
+  top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  iconBg: { width: 30, height: 30, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  trend: { width: 22, height: 22, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
+  value: { fontSize: 26, letterSpacing: 0.5, lineHeight: 30 },
+  label: { fontSize: 9, letterSpacing: 2.5 },
+  sub: { fontSize: 10, letterSpacing: 0.5 },
+});
+
+// ── Quick Action ──────────────────────────────────────────────────────────────
+function QuickAction({ label, icon, color, onPress }: any) {
+  const { theme } = useTheme();
+  return (
+    <TouchableOpacity
+      style={[qa$.btn, { backgroundColor: color + '12', borderColor: color + '35' }]}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      <Ionicons name={icon} size={16} color={color} />
+      <Text style={[qa$.label, MONT('900'), { color }]}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+const qa$ = StyleSheet.create({
+  btn: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, flex: 1 },
+  label: { fontSize: 11, letterSpacing: 1.5 },
+});
+
+// ── Main Dashboard ─────────────────────────────────────────────────────────────
+export default function GlobalDashboard() {
   const { token, user } = useAuth();
+  const { theme } = useTheme();
   const router = useRouter();
-  const { addToast } = useToast();
   const [athletes, setAthletes] = useState<any>(null);
   const [compliance, setCompliance] = useState<any>(null);
   const [heatmap, setHeatmap] = useState<any>(null);
@@ -35,125 +130,199 @@ export default function PanopticonDashboard() {
     ]).then(([a, c, h, al, b, g]) => {
       setAthletes(a); setCompliance(c); setHeatmap(h);
       setAlerts(al); setBattles(b); setGymData(g?.gym);
-      // Show critical AI alerts as Toast notifications
-      const critical = (al?.alerts || []).filter((x: any) => x.severity === 'danger');
-      critical.slice(0, 2).forEach((al: any) => {
-        addToast(al.message, 'error', `CRITICAL — ${al.athlete}`);
-      });
-      const warnings = (al?.alerts || []).filter((x: any) => x.severity === 'warning');
-      warnings.slice(0, 1).forEach((al: any) => {
-        addToast(al.message, 'warning', `ATTENZIONE — ${al.athlete}`);
-      });
     }).catch(() => {}).finally(() => setLoading(false));
   }, [token]);
-
-  if (loading) return <View style={p$.center}><ActivityIndicator color="#00F2FF" /></View>;
 
   const avgDna = athletes?.athletes?.length
     ? Math.round(athletes.athletes.reduce((s: number, a: any) => s + a.dna_avg, 0) / athletes.athletes.length) : 0;
   const avgComp = compliance?.templates?.length
     ? Math.round(compliance.templates.reduce((s: number, t: any) => s + t.compliance_pct, 0) / compliance.templates.length) : 0;
+  const criticalAlerts = alerts?.alerts?.filter((a: any) => a.severity === 'danger')?.length || 0;
+
+  if (loading) return (
+    <View style={[pg$.loading, { backgroundColor: theme.bg }]}>
+      <ActivityIndicator color={theme.accent} size="small" />
+      <Text style={[pg$.loadingText, INTER('300'), { color: theme.textTer }]}>
+        Caricamento dati biometrici...
+      </Text>
+    </View>
+  );
 
   return (
-    <ScrollView style={p$.root} contentContainerStyle={p$.content}>
-      <View style={p$.pageHeader}>
+    <ScrollView
+      style={[pg$.root, { backgroundColor: theme.bg }]}
+      contentContainerStyle={pg$.content}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* ── PAGE HEADER ── */}
+      <Animated.View entering={FadeInDown.duration(300)} style={pg$.pageHeader}>
         <View>
-          <Text style={p$.pageTitle}>PANOPTICON</Text>
-          <Text style={p$.pageSub}>{user?.username?.toUpperCase()} · SHADOW SQUAD · {athletes?.total || 0} ATLETI</Text>
+          <Text style={[pg$.greeting, INTER('300'), { color: theme.textSec }]}>
+            Benvenuto, {user?.username?.toUpperCase()}
+          </Text>
+          <Text style={[pg$.pageTitle, MONT(), { color: theme.text }]}>
+            GLOBAL DASHBOARD
+          </Text>
         </View>
-        <TouchableOpacity style={p$.actionBtn} onPress={() => router.push('/coach-studio/builder' as any)}>
-          <Ionicons name="add" size={14} color="#000" />
-          <Text style={p$.actionBtnText}>NUOVO TEMPLATE</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* KPI Row */}
-      <View style={p$.kpiRow}>
-        <KPICard icon="👥" label="ATLETI ATTIVI" value={athletes?.total || 0} sub={`${athletes?.crew_count || 0} crew`} color="#00F2FF" />
-        <KPICard icon="🧬" label="DNA MEDIO" value={avgDna} sub="/ 100 KORE" color="#D4AF37" trend="up" />
-        <KPICard icon="⚡" label="COMPLIANCE" value={`${avgComp}%`} sub="template completion" color="#34C759" />
-        <KPICard icon="🛡" label="BATTLE W/L" value={`${battles?.wins || 0}/${battles?.losses || 0}`} sub={`${battles?.win_rate || 0}% win rate`} color="#AF52DE" />
-        <KPICard icon="📤" label="TEMPLATE" value={compliance?.total || 0} sub="inviati" color="#FF9500" />
-      </View>
-
-      {/* Two columns: heatmap + alerts */}
-      <View style={p$.twoCol}>
-        <View style={p$.col2}>
-          {heatmap?.grid && (
-            <ActivityHeatmap grid={heatmap.grid} totalScans={heatmap.total_scans} activeDays={heatmap.active_days} />
-          )}
-        </View>
-        <View style={p$.col2}>
-          <View style={p$.alertCard}>
-            <View style={p$.alertHeader}>
-              <Ionicons name="warning" size={14} color="#FF453A" />
-              <Text style={p$.alertTitle}>ALERT CENTER</Text>
-              {alerts?.critical > 0 && (
-                <View style={p$.critBadge}><Text style={p$.critText}>{alerts.critical} CRITICAL</Text></View>
-              )}
+        <View style={pg$.headerRight}>
+          {criticalAlerts > 0 && (
+            <View style={[pg$.alertBadge, { backgroundColor: theme.accentRed + '18', borderColor: theme.accentRed + '40' }]}>
+              <Ionicons name="warning" size={12} color={theme.accentRed} />
+              <Text style={[pg$.alertBadgeText, MONT('900'), { color: theme.accentRed }]}>
+                {criticalAlerts} CRITICAL
+              </Text>
             </View>
-            {(!alerts?.alerts || alerts.alerts.length === 0) ? (
-              <View style={p$.alertEmpty}>
-                <Ionicons name="checkmark-circle" size={24} color="#34C759" />
-                <Text style={p$.alertEmptyText}>Tutti i parametri nella norma</Text>
-              </View>
-            ) : (
-              alerts.alerts.slice(0, 6).map((al: any, i: number) => <AlertRow key={i} alert={al} />)
-            )}
-          </View>
+          )}
+          <Text style={[pg$.gymName, INTER('300'), { color: theme.textTer }]}>
+            {gymData?.name || 'NÈXUS GYM'} · {athletes?.total || 0} atleti
+          </Text>
         </View>
-      </View>
+      </Animated.View>
 
-      {/* LIVE MONITOR — Real-time scan feed */}
-      <View style={p$.section}>
-        <SectionHeader title="LIVE MONITOR" sub="Scan in tempo reale — WebSocket + polling" />
-        <LiveMonitorPanel gymId={gymData?.id} />
-      </View>
+      {/* ── KPI ROW ── */}
+      <Animated.View entering={FadeInDown.delay(60).duration(300)} style={pg$.kpiRow}>
+        <KPITile icon="people" label="ATLETI ATTIVI" value={athletes?.total || 0} sub={`${athletes?.crew_count || 0} crew`} color={theme.accent} trend="up" />
+        <KPITile icon="analytics" label="DNA MEDIO" value={avgDna} sub="/ 100 KORE" color={theme.accentGold} trend="up" />
+        <KPITile icon="checkmark-circle" label="COMPLIANCE" value={`${avgComp}%`} sub="template completion" color={theme.positive} />
+        <KPITile icon="shield" label="BATTLE W/L" value={`${battles?.wins || 0}/${battles?.losses || 0}`} sub={`${battles?.win_rate || 0}% win rate`} color="#AF52DE" />
+        <KPITile icon="document-text" label="TEMPLATE" value={compliance?.total || 0} sub="inviati" color={theme.accentGold} />
+      </Animated.View>
 
-      {/* Recent battles */}
-      {battles?.battles?.length > 0 && (
-        <View style={p$.section}>
-          <SectionHeader title="BATTLE RECENTI" sub="Crew battle history" />
-          {battles.battles.slice(0, 4).map((b: any) => (
-            <View key={b.id} style={p$.battleRow}>
-              <View style={[p$.resultPill, { backgroundColor: b.my_result === 'win' ? '#34C75920' : b.my_result === 'loss' ? '#FF453A20' : '#1E1E1E' }]}>
-                <Text style={[p$.resultText, { color: b.my_result === 'win' ? '#34C759' : b.my_result === 'loss' ? '#FF453A' : '#888' }]}>
-                  {b.my_result === 'win' ? 'WIN' : b.my_result === 'loss' ? 'LOSS' : (b.status || 'ACTIVE').toUpperCase()}
+      {/* ── WIDGET ROW 1: Heatmap + Alert Center ── */}
+      <Animated.View entering={FadeInDown.delay(120).duration(300)} style={pg$.widgetRow}>
+        {heatmap?.grid && (
+          <Widget title="SCAN ACTIVITY" subtitle="30 giorni" icon="pulse" span={3}>
+            <ActivityHeatmap grid={heatmap.grid} totalScans={heatmap.total_scans} activeDays={heatmap.active_days} />
+          </Widget>
+        )}
+        <Widget
+          title="ALERT CENTER"
+          subtitle={criticalAlerts > 0 ? `${criticalAlerts} critici` : 'Tutto ok'}
+          icon="warning"
+          iconColor={criticalAlerts > 0 ? theme.accentRed : theme.positive}
+          span={2}
+          onExpand={() => router.push('/coach-studio/ai' as any)}
+        >
+          {(!alerts?.alerts || alerts.alerts.length === 0) ? (
+            <View style={pg$.emptyState}>
+              <Ionicons name="checkmark-circle" size={22} color={theme.positive} />
+              <Text style={[pg$.emptyText, INTER('300'), { color: theme.textTer }]}>
+                Nessun alert attivo
+              </Text>
+            </View>
+          ) : alerts.alerts.slice(0, 4).map((al: any, i: number) => <AlertRow key={i} alert={al} />)}
+        </Widget>
+      </Animated.View>
+
+      {/* ── WIDGET ROW 2: Live Monitor + Top Performers ── */}
+      <Animated.View entering={FadeInDown.delay(180).duration(300)} style={pg$.widgetRow}>
+        <Widget title="LIVE MONITOR" subtitle="Real-time scans" icon="radio" span={3}>
+          <LiveMonitorPanel gymId={gymData?.id} />
+        </Widget>
+        <Widget title="TOP PERFORMERS" subtitle="Per DNA score" icon="trophy" iconColor={theme.accentGold} span={2}>
+          {(athletes?.athletes?.slice(0, 5) || []).map((a: any, i: number) => (
+            <View key={a.id} style={[pg$.perfRow, { borderBottomColor: theme.border }]}>
+              <Text style={[pg$.perfRank, MONT('900'), { color: theme.textTer }]}>#{i + 1}</Text>
+              <View style={[pg$.perfAvatar, { backgroundColor: a.avatar_color || theme.accent }]}>
+                <Text style={pg$.perfAvatarLetter}>{(a.username || '?')[0]}</Text>
+              </View>
+              <View style={pg$.perfInfo}>
+                <Text style={[pg$.perfName, MONT('700'), { color: theme.text }]} numberOfLines={1}>
+                  {a.username}
+                </Text>
+                <Text style={[pg$.perfSub, INTER('300'), { color: theme.textTer }]}>
+                  LVL {a.level} · {a.xp?.toLocaleString()} XP
                 </Text>
               </View>
-              <Text style={p$.battleName}>{b.crew_a} <Text style={p$.battleScore}>{b.score_a}</Text> vs <Text style={p$.battleScore}>{b.score_b}</Text> {b.crew_b}</Text>
-              <Text style={p$.battleDate}>{b.started_at?.slice(0, 10)}</Text>
+              <Text style={[pg$.perfDna, MONT('900'), {
+                color: a.dna_avg >= 80 ? theme.accentGold : theme.accent
+              }]}>
+                {a.dna_avg}
+              </Text>
             </View>
           ))}
-        </View>
+        </Widget>
+      </Animated.View>
+
+      {/* ── QUICK ACTIONS ── */}
+      <Animated.View entering={FadeInDown.delay(240).duration(300)}>
+        <Widget title="AZIONI RAPIDE" icon="flash" iconColor={theme.accentGold}>
+          <View style={pg$.actionRow}>
+            <QuickAction label="NUOVO TEMPLATE" icon="add-circle" color={theme.accent} onPress={() => router.push('/coach-studio/builder' as any)} />
+            <QuickAction label="SCOUT ATLETI" icon="star" color={theme.accentGold} onPress={() => router.push('/coach-studio/talent' as any)} />
+            <QuickAction label="AI ANALYSIS" icon="hardware-chip" color="#AF52DE" onPress={() => router.push('/coach-studio/ai' as any)} />
+            <QuickAction label="CREW BATTLE" icon="shield" color={theme.accentRed} onPress={() => router.push('/coach-studio/crew' as any)} />
+          </View>
+        </Widget>
+      </Animated.View>
+
+      {/* ── RECENT BATTLES ── */}
+      {battles?.battles?.length > 0 && (
+        <Animated.View entering={FadeInDown.delay(300).duration(300)}>
+          <Widget title="BATTLE RECENTI" subtitle="Crew battle history" icon="flash" iconColor={theme.accentRed}>
+            {battles.battles.slice(0, 4).map((b: any) => (
+              <View key={b.id} style={[pg$.battleRow, { borderBottomColor: theme.border }]}>
+                <View style={[pg$.resultPill, {
+                  backgroundColor: b.my_result === 'win' ? theme.positive + '18' : b.my_result === 'loss' ? theme.negative + '18' : theme.surface2,
+                  borderColor: b.my_result === 'win' ? theme.positive + '40' : b.my_result === 'loss' ? theme.negative + '40' : theme.border,
+                }]}>
+                  <Text style={[pg$.resultText, MONT('900'), {
+                    color: b.my_result === 'win' ? theme.positive : b.my_result === 'loss' ? theme.negative : theme.textTer
+                  }]}>
+                    {b.my_result === 'win' ? 'WIN' : b.my_result === 'loss' ? 'LOSS' : (b.status || 'ACTIVE').toUpperCase()}
+                  </Text>
+                </View>
+                <Text style={[pg$.battleName, INTER('400'), { color: theme.textSec, flex: 1 }]} numberOfLines={1}>
+                  {b.crew_a} <Text style={{ color: theme.text, fontWeight: '900' }}>{b.score_a}</Text>
+                  {' vs '}
+                  <Text style={{ color: theme.text, fontWeight: '900' }}>{b.score_b}</Text> {b.crew_b}
+                </Text>
+                <Text style={[pg$.battleDate, INTER('300'), { color: theme.textTer }]}>
+                  {b.started_at?.slice(0, 10)}
+                </Text>
+              </View>
+            ))}
+          </Widget>
+        </Animated.View>
       )}
     </ScrollView>
   );
 }
 
-const p$ = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000' }, content: { padding: 28, gap: 22, paddingBottom: 60 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  pageHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  pageTitle: { color: '#FFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
-  pageSub: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '300', marginTop: 4 },
-  actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#00F2FF', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 9 },
-  actionBtnText: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
-  kpiRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
-  twoCol: { flexDirection: 'row', gap: 16 },
-  col2: { flex: 1 },
-  alertCard: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 16, gap: 6, borderWidth: 1, borderColor: '#1E1E1E', minHeight: 200 },
-  alertHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  alertTitle: { flex: 1, color: '#FFF', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
-  critBadge: { backgroundColor: '#FF453A20', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, borderWidth: 1, borderColor: '#FF453A40' },
-  critText: { color: '#FF453A', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-  alertEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 20 },
-  alertEmptyText: { color: 'rgba(255,255,255,0.3)', fontSize: 12 },
-  section: { gap: 8 },
-  battleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#111' },
-  resultPill: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, minWidth: 46, alignItems: 'center' },
-  resultText: { fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-  battleName: { flex: 1, color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: '400' },
-  battleScore: { color: '#FFF', fontWeight: '900' },
-  battleDate: { color: 'rgba(255,255,255,0.25)', fontSize: 11 },
+const pg$ = StyleSheet.create({
+  root: { flex: 1 },
+  content: { padding: 24, gap: 16, paddingBottom: 48 },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  loadingText: { fontSize: 12, letterSpacing: 1 },
+
+  pageHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 4 },
+  greeting: { fontSize: 12, letterSpacing: 2, marginBottom: 2 },
+  pageTitle: { fontSize: 24, letterSpacing: 4 },
+  headerRight: { alignItems: 'flex-end', gap: 6 },
+  alertBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
+  alertBadgeText: { fontSize: 9, letterSpacing: 1.5 },
+  gymName: { fontSize: 11, letterSpacing: 1 },
+
+  kpiRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
+  widgetRow: { flexDirection: 'row', gap: 14, alignItems: 'flex-start' },
+
+  emptyState: { alignItems: 'center', paddingVertical: 20, gap: 8 },
+  emptyText: { fontSize: 12 },
+
+  perfRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderBottomWidth: 1 },
+  perfRank: { width: 20, fontSize: 11, textAlign: 'center' },
+  perfAvatar: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  perfAvatarLetter: { color: '#000', fontSize: 11, fontWeight: '900' },
+  perfInfo: { flex: 1, gap: 1 },
+  perfName: { fontSize: 12, letterSpacing: 0.5 },
+  perfSub: { fontSize: 10, letterSpacing: 0.5 },
+  perfDna: { fontSize: 16 },
+
+  actionRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+
+  battleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 7, borderBottomWidth: 1 },
+  resultPill: { borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1, minWidth: 42, alignItems: 'center' },
+  resultText: { fontSize: 9, letterSpacing: 1 },
+  battleName: { fontSize: 12 },
+  battleDate: { fontSize: 10 },
 });

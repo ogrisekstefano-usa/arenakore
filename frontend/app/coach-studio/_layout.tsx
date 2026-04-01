@@ -1,213 +1,299 @@
 /**
- * COACH STUDIO — Desktop Command Center Layout
- * Glassmorphism sidebar + Role-based nav + Auth Shield + Toast
+ * NÈXUS COMMAND CENTER — Main Layout
+ * Dual-theme (Dark/Light) · Slim Sidebar · Google Fonts (Montserrat + Inter)
  */
-import React from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, Platform,
-} from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
 import { Slot, useRouter, usePathname, Redirect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { FadeIn, useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import { ThemeProvider, useTheme, MONT, INTER } from '../../contexts/ThemeContext';
 import { StudioToastProvider } from '../../components/studio/StudioToast';
 
+// ── Inject Google Fonts (web only) ────────────────────────────────────────────
+function InjectFonts() {
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    if (document.getElementById('nexus-fonts')) return;
+    const link = document.createElement('link');
+    link.id = 'nexus-fonts';
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Inter:wght@300;400;500&display=swap';
+    document.head.appendChild(link);
+  }, []);
+  return null;
+}
+
+// ── Role-based nav ─────────────────────────────────────────────────────────────
 const NAV_ITEMS_GYM_OWNER = [
-  { href: '/coach-studio',               icon: 'grid',           label: 'PANOPTICON',  sub: 'Dashboard' },
-  { href: '/coach-studio/gym-dashboard', icon: 'business',       label: 'GYM HUB',     sub: 'Business View' },
-  { href: '/coach-studio/staff',         icon: 'people-circle',  label: 'STAFF',       sub: 'Manage Coaches' },
-  { href: '/coach-studio/athletes',      icon: 'people',         label: 'ATLETI',      sub: 'CRM Engine' },
-  { href: '/coach-studio/talent',        icon: 'star',           label: 'SCOUT',       sub: 'Talent Discovery' },
-  { href: '/coach-studio/ai',            icon: 'hardware-chip',  label: 'AI COACH',    sub: 'Risk & Forecast' },
+  { href: '/coach-studio',               icon: 'grid',           label: 'DASHBOARD',    sub: 'Global Overview' },
+  { href: '/coach-studio/athletes',      icon: 'people',         label: 'ATHLETE CRM',  sub: 'Biometric Data' },
+  { href: '/coach-studio/crew',          icon: 'shield',         label: 'CREW MGT',     sub: 'Battle Control' },
+  { href: '/coach-studio/builder',       icon: 'construct',      label: 'CHALLENGE',    sub: 'Builder' },
+  { href: '/coach-studio/talent',        icon: 'star',           label: 'SCOUTING',     sub: 'Talent Discovery' },
+  { href: '/coach-studio/ai',            icon: 'analytics',      label: 'BIO ANALYTICS',sub: 'AI Insights' },
+  { href: '/coach-studio/gym-dashboard', icon: 'business',       label: 'GYM HUB',      sub: 'Business View' },
+  { href: '/coach-studio/staff',         icon: 'people-circle',  label: 'STAFF',        sub: 'Manage Team' },
 ];
 
 const NAV_ITEMS_COACH = [
-  { href: '/coach-studio',          icon: 'grid',           label: 'PANOPTICON',  sub: 'Dashboard' },
-  { href: '/coach-studio/athletes', icon: 'people',         label: 'ATLETI',      sub: 'CRM Engine' },
-  { href: '/coach-studio/builder',  icon: 'construct',      label: 'ARCHITECT',   sub: 'Template Builder' },
-  { href: '/coach-studio/talent',   icon: 'star',           label: 'SCOUT',       sub: 'Talent Discovery' },
-  { href: '/coach-studio/crew',     icon: 'shield',         label: 'STRATEGIST',  sub: 'Battle Control' },
-  { href: '/coach-studio/ai',       icon: 'hardware-chip',  label: 'AI COACH',    sub: 'Risk & Forecast' },
+  { href: '/coach-studio',          icon: 'grid',           label: 'DASHBOARD',    sub: 'Global Overview' },
+  { href: '/coach-studio/athletes', icon: 'people',         label: 'ATHLETE CRM',  sub: 'Biometric Data' },
+  { href: '/coach-studio/crew',     icon: 'shield',         label: 'CREW MGT',     sub: 'Battle Control' },
+  { href: '/coach-studio/builder',  icon: 'construct',      label: 'CHALLENGE',    sub: 'Builder' },
+  { href: '/coach-studio/talent',   icon: 'star',           label: 'SCOUTING',     sub: 'Talent Discovery' },
+  { href: '/coach-studio/ai',       icon: 'analytics',      label: 'BIO ANALYTICS',sub: 'AI Insights' },
 ];
 
-const NAV_ITEMS_ATHLETE = [
-  { href: '/coach-studio/passport', icon: 'person',         label: 'PASSPORT',    sub: 'Il tuo profilo' },
-];
+const ROLE_BADGE: Record<string, { color: string; bg: string; label: string }> = {
+  GYM_OWNER: { color: '#D4AF37', bg: 'rgba(212,175,55,0.12)', label: 'OWNER' },
+  COACH:     { color: '#00F2FF', bg: 'rgba(0,242,255,0.08)',   label: 'COACH' },
+  ATHLETE:   { color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.05)', label: 'ATHLETE' },
+  ADMIN:     { color: '#AF52DE', bg: 'rgba(175,82,222,0.1)',   label: 'ADMIN' },
+};
 
 function getNavItems(role: string | undefined) {
   if (role === 'GYM_OWNER' || role === 'ADMIN') return NAV_ITEMS_GYM_OWNER;
-  if (role === 'COACH') return NAV_ITEMS_COACH;
-  return NAV_ITEMS_ATHLETE;
+  return NAV_ITEMS_COACH;
 }
 
-const ROLE_BADGE_CFG: Record<string, { color: string; bg: string }> = {
-  GYM_OWNER: { color: '#D4AF37', bg: 'rgba(212,175,55,0.12)' },
-  COACH:     { color: '#00F2FF', bg: 'rgba(0,242,255,0.08)' },
-  ATHLETE:   { color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.05)' },
-  ADMIN:     { color: '#AF52DE', bg: 'rgba(175,82,222,0.1)' },
-};
+// ── Theme Toggle ──────────────────────────────────────────────────────────────
+function ThemeToggle() {
+  const { mode, toggle, theme } = useTheme();
+  return (
+    <TouchableOpacity
+      onPress={toggle}
+      style={[tg$.wrap, {
+        backgroundColor: theme.surface2,
+        borderColor: theme.border2,
+      }]}
+      activeOpacity={0.8}
+    >
+      <View style={[tg$.pill, mode === 'light' && { left: '50%' as any, backgroundColor: theme.accent }]} />
+      <Ionicons name="moon" size={13} color={mode === 'dark' ? theme.accent : theme.textTer} />
+      <Ionicons name="sunny" size={13} color={mode === 'light' ? theme.accent : theme.textTer} />
+    </TouchableOpacity>
+  );
+}
+const tg$ = StyleSheet.create({
+  wrap: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 6, position: 'relative' },
+  pill: { position: 'absolute', left: 4, top: 4, width: '46%' as any, bottom: 4, borderRadius: 16, backgroundColor: 'rgba(0,242,255,0.3)', transition: 'left 0.2s' } as any,
+});
 
-export default function CoachStudioLayout() {
+// ── Nav Item ──────────────────────────────────────────────────────────────────
+function NavItem({ item, isActive, theme, onPress }: any) {
+  const bgOpacity = useSharedValue(isActive ? 1 : 0);
+  useEffect(() => { bgOpacity.value = withTiming(isActive ? 1 : 0, { duration: 200 }); }, [isActive]);
+  const animStyle = useAnimatedStyle(() => ({ opacity: 0.05 + bgOpacity.value * 0.95 }));
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={ni$.item}
+      activeOpacity={0.75}
+    >
+      {/* Active indicator */}
+      {isActive && (
+        <View style={[ni$.activeBar, { backgroundColor: theme.accent }]} />
+      )}
+      {/* Active bg */}
+      <Animated.View
+        style={[ni$.activeBg, {
+          backgroundColor: isActive ? theme.accent + '10' : 'transparent',
+        }]}
+      />
+      <Ionicons
+        name={item.icon as any}
+        size={17}
+        color={isActive ? theme.accent : theme.textTer}
+      />
+      <View style={ni$.text}>
+        <Text style={[ni$.label, MONT('900'), { color: isActive ? theme.text : theme.textSec }]}>
+          {item.label}
+        </Text>
+        <Text style={[ni$.sub, INTER('300'), { color: theme.textTer }]}>
+          {item.sub}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+const ni$ = StyleSheet.create({
+  item: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, position: 'relative', overflow: 'hidden' },
+  activeBar: { position: 'absolute', left: 0, top: 8, bottom: 8, width: 3, borderRadius: 2 },
+  activeBg: { ...StyleSheet.absoluteFillObject, borderRadius: 10 },
+  text: { flex: 1, gap: 1 },
+  label: { fontSize: 11, letterSpacing: 1.5 },
+  sub: { fontSize: 9, letterSpacing: 0.5 },
+});
+
+// ── Main Layout ────────────────────────────────────────────────────────────────
+function CommandCenterInner() {
   const { user, token, isLoading } = useAuth();
+  const { theme, mode } = useTheme();
   const router = useRouter();
   const path = usePathname();
-  const insets = useSafeAreaInsets();
   const role = user?.role || 'ATHLETE';
-  const NAV_ITEMS = getNavItems(role);
-  const roleCfg = ROLE_BADGE_CFG[role] || ROLE_BADGE_CFG.ATHLETE;
+  const navItems = getNavItems(role);
+  const roleBadge = ROLE_BADGE[role] || ROLE_BADGE.ATHLETE;
 
-  // Mobile redirect (non-web only)
-  if (Platform.OS !== 'web') {
-    return (
-      <View style={l$.mobileBlock}>
-        <Ionicons name="desktop-outline" size={40} color="rgba(255,255,255,0.3)" />
-        <Text style={l$.mobileTitle}>COACH STUDIO</Text>
-        <Text style={l$.mobileSub}>Disponibile solo su desktop.{`\n`}Accedi da browser per il Command Center.</Text>
-        <TouchableOpacity style={l$.mobileBack} onPress={() => router.push('/')}>
-          <Text style={l$.mobileBackText}>TORNA ALL'APP</Text>
+  // Auth redirect (must be in useEffect)
+  useEffect(() => {
+    if (!isLoading && !token && Platform.OS === 'web') {
+      router.replace('/login');
+    }
+  }, [token, isLoading]);
+
+  // Mobile guard
+  if (Platform.OS !== 'web') {    return (
+      <View style={[mob$.root, { backgroundColor: theme.bg }]}>
+        <Ionicons name="desktop-outline" size={36} color={theme.textTer} />
+        <Text style={[mob$.title, MONT(), { color: theme.text }]}>NÈXUS COMMAND CENTER</Text>
+        <Text style={[mob$.sub, INTER('300'), { color: theme.textSec }]}>
+          {'Disponibile solo su desktop.\nAccedi da browser per il Command Center.'}
+        </Text>
+        <TouchableOpacity style={[mob$.btn, { borderColor: theme.accent }]} onPress={() => router.push('/')}>
+          <Text style={[mob$.btnTxt, MONT('700'), { color: theme.accent }]}>TORNA ALL'APP</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  // Wait for auth state to hydrate before deciding to redirect
+  // Loading state
   if (isLoading) {
-    console.log('[CoachStudio] Auth loading, waiting...');
-    return null;
+    return (
+      <View style={{ flex: 1, backgroundColor: theme.bg, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator color={theme.accent} />
+      </View>
+    );
   }
 
-  // Auth redirect using Expo Router Redirect component (avoids "navigate before mount" error)
+  // Not authenticated → show spinner (redirect fires in useEffect)
   if (!token) {
-    console.log('[CoachStudio] No token after load, redirecting to login');
-    return <Redirect href="/login" />;
+    return (
+      <View style={{ flex: 1, backgroundColor: theme.bg, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator color={theme.accent} />
+      </View>
+    );
   }
-  console.log('[CoachStudio] Token found, rendering layout');
 
-  // ── AUTH SHIELD: ATHLETE role blocked from Coach Studio ──
+  // ATHLETE guard
   if (role === 'ATHLETE' && !user?.is_founder && !user?.is_admin) {
     return (
-      <View style={l$.athleteBlock}>
-        <Ionicons name="lock-closed" size={32} color="#FF453A" />
-        <Text style={l$.athleteTitle}>ACCESSO LIMITATO</Text>
-        <Text style={l$.athleteSub}>{'Il Coach Studio è riservato a Coach e GYM Owner.\nContatta il tuo Coach per accedere ai tuoi dati.'}</Text>
-        <TouchableOpacity style={l$.mobileBack} onPress={() => router.push('/')}>
-          <Text style={l$.mobileBackText}>TORNA ALL'APP</Text>
+      <View style={[mob$.root, { backgroundColor: theme.bg }]}>
+        <Ionicons name="lock-closed" size={28} color={theme.accentRed} />
+        <Text style={[mob$.title, MONT(), { color: theme.accentRed }]}>ACCESSO LIMITATO</Text>
+        <Text style={[mob$.sub, INTER('300'), { color: theme.textSec }]}>
+          {'Il Command Center è riservato a Coach e GYM Owner.'}
+        </Text>
+        <TouchableOpacity style={[mob$.btn, { borderColor: theme.accent }]} onPress={() => router.push('/')}>
+          <Text style={[mob$.btnTxt, MONT('700'), { color: theme.accent }]}>TORNA ALL'APP</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <StudioToastProvider>
-    <View style={l$.root}>
-      {/* Sidebar — Glassmorphism on web */}
-      <View style={[l$.sidebar, Platform.OS === 'web' ? { ...(l$.sidebarGlass as any) } : {}]}>
+    <View style={[l$.root, { backgroundColor: theme.bg }]}>
+      {/* ── SIDEBAR ── */}
+      <View style={[
+        l$.sidebar,
+        { backgroundColor: theme.navBg, borderRightColor: theme.navBorder },
+        Platform.OS === 'web' ? ({
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        } as any) : {},
+      ]}>
         {/* Brand */}
         <View style={l$.brand}>
-          <View style={l$.brandDot} />
+          <View style={[l$.brandAccent, { backgroundColor: theme.accent }]} />
           <View>
-            <Text style={l$.brandName}>ARENAKORE</Text>
-            <Text style={l$.brandSub}>COMMAND CENTER</Text>
+            <Text style={[l$.brandName, MONT(), { color: theme.text }]}>NÈXUS</Text>
+            <Text style={[l$.brandSub, INTER('300'), { color: theme.textTer }]}>COMMAND CENTER</Text>
           </View>
         </View>
 
-        {/* Role badge */}
-        <View style={[l$.roleBadge, { backgroundColor: roleCfg.bg, borderColor: roleCfg.color + '40' }]}>
-          <View style={[l$.roleDot, { backgroundColor: roleCfg.color }]} />
-          <Text style={[l$.roleText, { color: roleCfg.color }]}>{role}</Text>
-        </View>
-
-        {/* Nav items */}
+        {/* Navigation */}
         <View style={l$.nav}>
-          {NAV_ITEMS.map((item) => {
-            const isActive = path === item.href || (item.href !== '/coach-studio' && path.startsWith(item.href));
-            return (
-              <TouchableOpacity
-                key={item.href}
-                style={[l$.navItem, isActive && l$.navItemActive]}
-                onPress={() => router.push(item.href as any)}
-                activeOpacity={0.8}
-              >
-                <Ionicons name={item.icon as any} size={18} color={isActive ? '#00F2FF' : 'rgba(255,255,255,0.35)'} />
-                <View style={l$.navText}>
-                  <Text style={[l$.navLabel, isActive && { color: '#00F2FF' }]}>{item.label}</Text>
-                  <Text style={l$.navSub}>{item.sub}</Text>
-                </View>
-                {isActive && <View style={l$.navActive} />}
-              </TouchableOpacity>
-            );
-          })}
+          {navItems.map(item => (
+            <NavItem
+              key={item.href}
+              item={item}
+              isActive={path === item.href || (item.href !== '/coach-studio' && path.startsWith(item.href))}
+              theme={theme}
+              onPress={() => router.push(item.href as any)}
+            />
+          ))}
         </View>
 
-        {/* User info */}
-        <View style={l$.userRow}>
-          <View style={[l$.userAvatar, { backgroundColor: user?.avatar_color || '#00F2FF' }]}>
-            <Text style={l$.userLetter}>{(user?.username || 'C')[0].toUpperCase()}</Text>
+        {/* Bottom: user + theme toggle */}
+        <View style={[l$.bottom, { borderTopColor: theme.border }]}>
+          <ThemeToggle />
+          <View style={[l$.userRow]}>
+            <View style={[l$.avatar, { backgroundColor: user?.avatar_color || theme.accent }]}>
+              <Text style={[l$.avatarLetter, { color: '#000' }]}>{(user?.username || 'C')[0]}</Text>
+            </View>
+            <View style={l$.userInfo}>
+              <Text style={[l$.userName, MONT('700'), { color: theme.text }]} numberOfLines={1}>
+                {user?.username || 'COACH'}
+              </Text>
+              <View style={[l$.rolePill, { backgroundColor: roleBadge.bg }]}>
+                <Text style={[l$.roleText, MONT('900'), { color: roleBadge.color }]}>
+                  {roleBadge.label}
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/nexus-trigger')} style={l$.exitBtn}>
+              <Ionicons name="exit-outline" size={16} color={theme.textTer} />
+            </TouchableOpacity>
           </View>
-          <View style={l$.userInfo}>
-            <Text style={l$.userName}>{user?.username || 'COACH'}</Text>
-            <Text style={l$.userRole}>LVL {user?.level || 1}</Text>
-          </View>
-          <TouchableOpacity onPress={() => router.push('/(tabs)/nexus-trigger')}>
-            <Ionicons name="exit-outline" size={18} color="rgba(255,255,255,0.3)" />
-          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Main content */}
-      <View style={l$.main}>
+      {/* ── MAIN CONTENT ── */}
+      <View style={[l$.main, { backgroundColor: theme.bg }]}>
         <Slot />
       </View>
     </View>
-    </StudioToastProvider>
+  );
+}
+
+export default function CoachStudioLayout() {
+  return (
+    <ThemeProvider>
+      <StudioToastProvider>
+        <InjectFonts />
+        <CommandCenterInner />
+      </StudioToastProvider>
+    </ThemeProvider>
   );
 }
 
 const l$ = StyleSheet.create({
-  root: { flex: 1, flexDirection: 'row', backgroundColor: '#000000' },
-  sidebar: {
-    width: 220, backgroundColor: '#050505', borderRightWidth: 1,
-    borderRightColor: 'rgba(255,255,255,0.06)',
-    padding: 20, justifyContent: 'space-between',
-  },
-  // Glassmorphism (web-only via spread in JSX)
-  sidebarGlass: {
-    backdropFilter: 'blur(24px)',
-    WebkitBackdropFilter: 'blur(24px)',
-    backgroundColor: 'rgba(5,5,5,0.88)',
-    borderRightWidth: 1,
-    borderRightColor: 'rgba(255,255,255,0.05)',
-  },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 24 },
-  brandDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF' },
-  brandName: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
-  roleBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, marginBottom: 16, alignSelf: 'flex-start' },
-  roleDot: { width: 5, height: 5, borderRadius: 3 },
-  roleText: { fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-  brandSub: { color: 'rgba(0,242,255,0.6)', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
-  nav: { flex: 1, gap: 4 },
-  navItem: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 10 },
-  navItemActive: { backgroundColor: 'rgba(0,242,255,0.06)' },
-  navText: { flex: 1 },
-  navLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  navSub: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '300', letterSpacing: 1 },
-  navActive: { width: 3, height: 3, borderRadius: 2, backgroundColor: '#00F2FF' },
-  userRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 20, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)' },
-  userAvatar: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  userLetter: { color: '#000000', fontSize: 14, fontWeight: '900' },
-  userInfo: { flex: 1 },
-  userName: { color: '#FFFFFF', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
-  userRole: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '300' },
-  main: { flex: 1, backgroundColor: '#000000' },
-  // Mobile & restricted views
-  mobileBlock: { flex: 1, backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 32 },
-  mobileTitle: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
-  mobileSub: { color: 'rgba(255,255,255,0.4)', fontSize: 14, textAlign: 'center', lineHeight: 22 },
-  mobileBack: { marginTop: 16, borderWidth: 1, borderColor: '#00F2FF', borderRadius: 8, paddingHorizontal: 20, paddingVertical: 10 },
-  mobileBackText: { color: '#00F2FF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
-  // Auth Shield
-  athleteBlock: { flex: 1, backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center', gap: 14, padding: 40 },
-  athleteTitle: { color: '#FF453A', fontSize: 20, fontWeight: '900', letterSpacing: 3 },
-  athleteSub: { color: 'rgba(255,255,255,0.4)', fontSize: 13, textAlign: 'center', lineHeight: 20 },
+  root: { flex: 1, flexDirection: 'row' },
+  sidebar: { width: 210, borderRightWidth: 1, paddingTop: 20, paddingBottom: 16, justifyContent: 'space-between' },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, marginBottom: 28 },
+  brandAccent: { width: 4, height: 28, borderRadius: 2 },
+  brandName: { fontSize: 15, letterSpacing: 3 },
+  brandSub: { fontSize: 8, letterSpacing: 3, marginTop: 1 },
+  nav: { flex: 1, paddingHorizontal: 8, gap: 2 },
+  bottom: { paddingHorizontal: 12, paddingTop: 16, borderTopWidth: 1, gap: 12 },
+  userRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  avatar: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  avatarLetter: { fontSize: 13, fontWeight: '900' },
+  userInfo: { flex: 1, gap: 3, minWidth: 0 },
+  userName: { fontSize: 12, letterSpacing: 0.5 },
+  rolePill: { borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1, alignSelf: 'flex-start' },
+  roleText: { fontSize: 8, letterSpacing: 2 },
+  exitBtn: { padding: 4 },
+  main: { flex: 1 },
+});
+
+const mob$ = StyleSheet.create({
+  root: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, padding: 40 },
+  title: { fontSize: 18, letterSpacing: 3 },
+  sub: { fontSize: 13, textAlign: 'center', lineHeight: 20 },
+  btn: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 20, paddingVertical: 10 },
+  btnTxt: { fontSize: 12, letterSpacing: 2 },
 });

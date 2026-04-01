@@ -166,7 +166,7 @@ export default function AICoachAssistant() {
 }
 
 const ai$ = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000' }, content: { padding: 28, gap: 20, paddingBottom: 60 },
+  root: { flex: 1 }, content: { padding: 28, gap: 20, paddingBottom: 60 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   pageHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 },
   pageTitle: { color: '#FFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },

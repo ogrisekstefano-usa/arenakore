@@ -166,7 +166,7 @@ export default function GymDashboard() {
 }
 
 const g$ = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000' }, content: { padding: 28, gap: 22, paddingBottom: 60 },
+  root: { flex: 1 }, content: { padding: 28, gap: 22, paddingBottom: 60 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   pageTitle: { color: '#FFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },

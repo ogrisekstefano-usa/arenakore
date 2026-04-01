@@ -168,7 +168,7 @@ export default function CrewStrategist() {
 }
 
 const c$ = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000' }, content: { padding: 28, gap: 20, paddingBottom: 60 },
+  root: { flex: 1 }, content: { padding: 28, gap: 20, paddingBottom: 60 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   pageTitle: { color: '#FFF', fontSize: 20, fontWeight: '900', letterSpacing: 4, marginBottom: 4 },
   twoCol: { flexDirection: 'row', gap: 20, alignItems: 'flex-start' },
