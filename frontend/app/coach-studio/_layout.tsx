@@ -138,13 +138,6 @@ function CommandCenterInner() {
   const navItems = getNavItems(role);
   const roleBadge = ROLE_BADGE[role] || ROLE_BADGE.ATHLETE;
 
-  // Auth redirect (must be in useEffect)
-  useEffect(() => {
-    if (!isLoading && !token && Platform.OS === 'web') {
-      router.replace('/login');
-    }
-  }, [token, isLoading]);
-
   // Mobile guard
   if (Platform.OS !== 'web') {    return (
       <View style={[mob$.root, { backgroundColor: theme.bg }]}>
@@ -169,13 +162,9 @@ function CommandCenterInner() {
     );
   }
 
-  // Not authenticated → show spinner (redirect fires in useEffect)
-  if (!token) {
-    return (
-      <View style={{ flex: 1, backgroundColor: theme.bg, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={theme.accent} />
-      </View>
-    );
+  // Not authenticated → declarative redirect (no imperative router.replace)
+  if (!isLoading && !token) {
+    return <Redirect href="/login" />;
   }
 
   // ATHLETE guard
