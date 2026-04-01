@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AnimatedButton } from '../components/AnimatedButton';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 
 const PENDING_EVENT_KEY = '@arenakore_pending_event';
@@ -90,7 +91,7 @@ export default function Login() {
                 autoCapitalize="none"
               />
               <TouchableOpacity testID="login-toggle-pwd" onPress={() => setShowPassword(!showPassword)} style={styles.showHide}>
-                <Text style={styles.showHideText}>{showPassword ? 'NASCONDI' : 'MOSTRA'}</Text>
+                <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color="rgba(255,255,255,0.45)" />
               </TouchableOpacity>
             </View>
           </View>
