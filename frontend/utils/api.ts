@@ -108,6 +108,16 @@ export const api = {
 
   getNexusSessions: (token: string) => request('/nexus/sessions', {}, token),
 
+  // ═══ SESSION MODES: Practice & Ranked ═══
+  completeSessionV2: (data: { mode: string; exercise_type: string; reps: number; quality_score: number; duration_seconds: number; peak_acceleration?: number }, token: string) =>
+    request('/nexus/session/complete', { method: 'POST', body: JSON.stringify(data) }, token),
+
+  // ═══ LIVE WAITING ROOM ═══
+  joinLiveQueue: (data: { exercise_type: string; discipline: string }, token: string) =>
+    request('/live/join-queue', { method: 'POST', body: JSON.stringify(data) }, token),
+  getLiveQueueStatus: (token: string) => request('/live/queue-status', {}, token),
+  leaveLiveQueue: (token: string) => request('/live/leave-queue', { method: 'POST' }, token),
+
   // ========== BIO-EVOLUTION ENGINE — SPRINT 7 ==========
   getRescanEligibility: (token: string) => request('/nexus/rescan-eligibility', {}, token),
   completeBioscan: (token: string) => request('/nexus/bioscan', { method: 'POST' }, token),

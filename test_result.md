@@ -1157,19 +1157,79 @@ frontend:
         agent: "main"
         comment: "Fixed: _layout.tsx was comparing activeRole === 'GYM' but UserRole type uses 'GYM_OWNER'. Fixed to isGym = activeRole === 'GYM_OWNER'. Added Tabs.Screen for gym-hub and my-athletes with href=null. Fixed GymHub component receiving token prop it doesn't need (now uses useAuth internally). Tabs now correctly show GYM HUB for GYM_OWNER role and add ATLETI tab for COACH role."
 
+  - task: "6-Pillar NEXUS Grid (2x3 Layout)"
+    implemented: true
+    working: true
+    file: "frontend/app/(tabs)/nexus-trigger.tsx"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "6-Pillar grid fully rendered: SCAN BIOMETRICO, ALLENAMENTO, SFIDA UFFICIALE, DUELLO 1VS1, LIVE ARENA, THE FORGE. Each card has icon, title, subtitle, risk/reward tag. Dynamic width calculation. Screenshot verified."
+
+  - task: "Duel 48h Timeout with -50 FLUX Penalty"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "enforce_duel_timeouts() — checks pending/accepted/challenger_done duels for expired 48h timer. Applies -50 FLUX penalty, creates notifications. Scheduled hourly + lazy enforcement on GET /pvp/pending. Award function updated to handle negative amounts (penalties)."
+
+  - task: "Live Waiting Room Backend"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST /live/join-queue — joins queue, auto-matches if opponent found. GET /live/queue-status — polls for match. POST /live/leave-queue — leaves queue. Auto-cleanup of stale entries (5min TTL)."
+
+  - task: "Practice & Ranked Session Modes"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py, frontend/utils/api.ts"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST /nexus/session/complete — mode-specific FLUX rewards: practice=+5 flat, ranked=+50 for new PB or -20 for below PB. Anti-cheat validation included. Frontend API client updated with completeSessionV2, joinLiveQueue, getLiveQueueStatus, leaveLiveQueue."
+
+  - task: "Live Waiting Room Frontend"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/nexus-trigger.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "LiveWaitingRoom component with 4 states: idle, searching (pulsing animation + polling every 3s), matched (green checkmark), expired. Full OLED black UI with orange accent. Connected to backend queue endpoints."
+
+
 test_plan:
   current_focus:
-    - "Cyan Backgrounds → Black (Global UI Fix)"
-    - "NEXUS Proactive CTAs — 6 Cards"
-    - "Battle Modal — ChallengeInviteModal in Arena Tab"
-    - "Role-Based Navigation"
+    - "Duel 48h Timeout with -50 FLUX Penalty"
+    - "Live Waiting Room Backend"
+    - "Practice & Ranked Session Modes"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
     - agent: "main"
-      message: "SPRINT: UI REFRESH + NEXUS PROACTIVE ENGINE. IMPLEMENTED: (1) GLOBAL CYAN BG FIX: Changed all rgba(0,242,255,0.65) background-colors to rgba(0,242,255,0.07) across nexus-trigger.tsx, kore.tsx, dna.tsx, arena.tsx, index.tsx. Kept cyan for text and borders. (2) NEXUS PROACTIVE CTAs: 6 dynamic cards in NexusConsole ScrollView carousel. Data from getMyRank()+getMyCrews() APIs. Cards: SFIDA IL RIVALE, BOOST CREW, RE-CERTIFY DNA, SCALA LA CLASSIFICA, RISCATTA REWARD, PUSH AL COACH. (3) BATTLE MODAL: ChallengeInviteModal already in Arena tab - each athlete row has SFIDA button. (4) ROLE-BASED NAV FIX: Fixed 'GYM' → 'GYM_OWNER' UserRole comparison, added Tabs.Screen for gym-hub/my-athletes, fixed GymHub token prop. (5) FOUNDER PASSWORD: Reset to Founder@KORE2026! (was hash-mismatch in fork). PLEASE TEST: (A) Login with ogrisek.stefano@gmail.com / Founder@KORE2026! (B) Navigate to NEXUS tab → verify 6 proactive CTA cards in horizontal carousel below the 4 main buttons. (C) Navigate to ARENA tab → scroll to activity feed → tap SFIDA on any athlete → verify DNA comparison modal. (D) Check all tabs have BLACK backgrounds (no cyan backgrounds). (E) Navigate to each tab and verify no crashes. Base URL: https://arena-scan-lab.preview.emergentagent.com""
+      message: "6-PILLAR ECOSYSTEM IMPLEMENTATION COMPLETE. Backend: (1) enforce_duel_timeouts() — hourly scheduler + lazy on pvp/pending read. Penalizes no-shows with -50 FLUX, awards forfeit wins. (2) POST /live/join-queue + GET /live/queue-status + POST /live/leave-queue — Live Waiting Room with auto-matchmaking. (3) POST /nexus/session/complete — Practice (+5 FLUX) and Ranked (+50/-20 FLUX) modes with PB tracking. Frontend: 6-pillar grid (2x3) with SCAN, ALLENAMENTO, SFIDA UFFICIALE, DUELLO 1VS1, LIVE ARENA, THE FORGE. LiveWaitingRoom phase with animated search. PLEASE TEST: (A) Login ogrisek.stefano@gmail.com / Founder@KORE2026! (B) POST /api/live/join-queue with {exercise_type: squat, discipline: power} (C) POST /api/nexus/session/complete with {mode: practice, exercise_type: squat, reps: 15, quality_score: 85.0, duration_seconds: 60} (D) GET /api/pvp/pending — verify expired field in response. BASE URL: https://arena-scan-lab.preview.emergentagent.com"
 
     - agent: "main"
       message: "CRITICAL BUG FIXES APPLIED: (1) TAB NAVIGATION BUG: Testing found all tabs were shifted (NEXUS→gym-hub, DNA→nexus, RANK→dna). Root cause: CustomTabBar used state.routes[index]→TAB_CONFIG[index] mapping. With gym-hub at pos 2, all indices shifted. FIXED: CustomTabBar now filters state.routes to visibleRoutes matching current TAB_CONFIG names, uses route.name lookup for focused state. (2) LANDING PAGE gymBtn: Changed from solid cyan to dark bg with cyan border, icon color CYAN. (3) BACKEND trigger_live_battle: Now handles non-ObjectId battle IDs (legacy seeded data had integer IDs like '1','2'). All changes deployed. Backend restarted. PLEASE RETEST: (A) Login ogrisek.stefano@gmail.com / Founder@KORE2026! → (B) Test all 5 tabs navigate correctly (ARENA→KORE→NEXUS→DNA→RANK), (C) NEXUS tab shows 6 CTAs in carousel, (D) ARENA SFIDA button works (no 500 error now), (E) Landing page FOR COACHES card is dark not cyan."
@@ -1202,4 +1262,67 @@ agent_communication:
       - working: "NA"
         agent: "main"
         comment: "PVP ENGINE BUILT. 6 backend endpoints + anti-cheat AI + PvPChallengeModal + PvPPendingCard + GhostSessionHUD. PLEASE TEST: (A) Login, go to RANK tab, scroll to THE HUNT, tap 1v1 button on any athlete - PvPChallengeModal should open, (B) NEXUS tab should show SFIDE PVP section with pending challenge (T.BUTLER pending), (C) Backend: GET /api/pvp/pending should return challenge to T.BUTLER."
+
+  - task: "Live Queue Matchmaking API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/live/join-queue working correctly. Founder joined queue with status='waiting', position=1. Second user joined and immediately matched with founder, creating live battle with battle_id. Matchmaking system functional."
+
+  - task: "Live Queue Status Check API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/live/queue-status working correctly. Returns proper status ('waiting', 'matched', 'expired', 'not_in_queue'), queue position, and elapsed seconds. Auto-cleanup of stale entries functional."
+
+  - task: "Live Queue Leave API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/live/leave-queue working correctly. Returns status='left_queue' when user successfully leaves the waiting room."
+
+  - task: "NEXUS Session Complete API (Practice & Ranked Modes)"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/nexus/session/complete working correctly for both modes. Practice mode: +5 FLUX per session. Ranked mode: +50 FLUX for new PB, -20 FLUX for below PB. PVP score calculation, anti-cheat validation, and XP rewards all functional."
+
+  - task: "PvP Pending Challenges API (with Expired Field)"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/pvp/pending working correctly. Returns all required arrays: received, sent, active, AND expired. Expired challenges from last 24h included for visibility. Duel timeout enforcement working."
+
+  - agent: "testing"
+    message: "LIVE QUEUE & PVP ENDPOINTS TESTING COMPLETED: ALL 5 REQUESTED ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Test results: ✅ POST /api/live/join-queue - Live matchmaking working correctly, founder joined queue (waiting), second user joined and immediately matched with founder, creating live battle ✅ GET /api/live/queue-status - Queue status check working, returns proper status (waiting/matched/expired/not_in_queue), position, elapsed time ✅ POST /api/live/leave-queue - Leave queue working, returns status='left_queue' ✅ POST /api/nexus/session/complete - Session completion working for both modes: Practice (+5 FLUX), Ranked (+50 FLUX for new PB, -20 FLUX for below PB), PVP score calculation functional ✅ GET /api/pvp/pending - PvP pending working correctly, returns all required arrays including EXPIRED field. Live Queue matchmaking system is production-ready. FLUX economy integration working correctly. Authentication with founder credentials (ogrisek.stefano@gmail.com) and second user (d.rose@chicago.kore) successful."
 

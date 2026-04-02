@@ -25,6 +25,8 @@ import { api } from '../../utils/api';
 import { playAcceptPing, playRecordBroken, startBioScanHum, playBioMatchPing } from '../../utils/sounds';
 import { MotionAnalyzer, MotionState, ExerciseType, SkeletonPose } from '../../utils/MotionAnalyzer';
 import { profileDevice, DeviceProfile, DeviceTier, getTierLabel, getTrackingMode } from '../../utils/DeviceIntelligence';
+import { RemoteUXEngine } from '../../utils/RemoteUXEngine';
+import { FluxIcon } from '../../components/FluxIcon';
 
 // Extracted sub-components
 import { CyberGrid, DigitalShadow, ScanLine } from '../../components/nexus/NexusVisuals';
@@ -419,26 +421,47 @@ const ghost$ = StyleSheet.create({
 });
 
 // ========== NEXUS CONSOLE ==========
-function NexusConsole({ user, onScan, onForge, deviceTier, eligibility, myRank, myCrews }: {
-  user: any; onScan: () => void; onForge: () => void; deviceTier: DeviceTier; eligibility: any;
-  myRank: any; myCrews: any[];
+function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligibility, myRank, myCrews }: {
+  user: any; onScan: () => void; onForge: () => void; onPillarAction: (key: string) => void;
+  deviceTier: DeviceTier; eligibility: any; myRank: any; myCrews: any[];
 }) {
   const router = useRouter();
+  const { width: screenWidth } = Dimensions.get('window');
+  const cardW = Math.max(Math.min((screenWidth - 60) / 2, 175), 140);
   const isFounder = user?.is_founder || user?.is_admin;
   const founderShimmer = useSharedValue(0.7);
   useEffect(() => { founderShimmer.value = withRepeat(withSequence(withTiming(1, { duration: 1500 }), withTiming(0.7, { duration: 1500 })), -1, false); }, []);
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: founderShimmer.value }));
 
   const CONSOLE_ICONS: Record<string, { ionName: keyof typeof Ionicons.glyphMap; color: string }> = {
-    scan: { ionName: 'scan', color: '#00E5FF' }, forge: { ionName: 'construct', color: '#FFD700' },
-    hall: { ionName: 'trophy', color: '#FFD700' }, dna: { ionName: 'analytics', color: '#00E5FF' },
+    scan:     { ionName: 'scan',        color: '#00E5FF' },
+    practice: { ionName: 'barbell',     color: '#00FF87' },
+    ranked:   { ionName: 'trophy',      color: '#FFD700' },
+    duel:     { ionName: 'flash',       color: '#FF3B30' },
+    live:     { ionName: 'radio',       color: '#FF6B00' },
+    forge:    { ionName: 'construct',   color: '#FFD700' },
   };
   const buttons = [
-    { key: 'scan', title: 'NEXUS SCAN', sub: 'BIO-SKELETON TRACKING', image: CONSOLE_IMAGES.scan, action: onScan },
-    { key: 'forge', title: 'THE FORGE', sub: 'CREA \u00b7 SELEZIONA \u00b7 SFIDA', image: CONSOLE_IMAGES.forge, action: onForge },
-    { key: 'hall', title: 'HALL OF KORE', sub: 'LEADERBOARD GLOBALE', image: CONSOLE_IMAGES.hall, action: () => router.push('/(tabs)/hall') },
-    { key: 'dna', title: 'MY DNA', sub: 'STATS RADAR BIOMETRICO', image: CONSOLE_IMAGES.dna, action: () => router.push('/(tabs)/dna') },
+    { key: 'scan',     title: 'SCAN\nBIOMETRICO',      sub: 'DNA Tracking · 0 Risk',               action: onScan },
+    { key: 'practice', title: 'ALLENAMENTO',            sub: 'Practice · +5 FLUX/session',          action: () => onPillarAction('practice') },
+    { key: 'ranked',   title: 'SFIDA\nUFFICIALE',       sub: 'Ranked · +50 FLUX / -20 loss',        action: () => onPillarAction('ranked') },
+    { key: 'duel',     title: 'DUELLO\n1VS1',           sub: '48h timer · -50 no-show',             action: () => onPillarAction('duel') },
+    { key: 'live',     title: 'LIVE\nARENA',            sub: 'Real-time · Waiting Room',            action: () => onPillarAction('live') },
+    { key: 'forge',    title: 'THE\nFORGE',             sub: 'Crea · Gestisci · Sfida',             action: onForge },
   ];
+
+  // Pillar risk/reward indicator
+  const getRiskTag = (key: string) => {
+    switch (key) {
+      case 'scan': return { tag: 'ZERO RISK', color: '#00E5FF' };
+      case 'practice': return { tag: '+5 FLUX', color: '#00FF87' };
+      case 'ranked': return { tag: 'HIGH STAKES', color: '#FFD700' };
+      case 'duel': return { tag: '48H TIMER', color: '#FF3B30' };
+      case 'live': return { tag: 'REAL-TIME', color: '#FF6B00' };
+      case 'forge': return { tag: 'CREATE', color: '#FFD700' };
+      default: return { tag: '', color: '#555' };
+    }
+  };
 
   return (
     <View style={cn$.container} testID="nexus-console">
@@ -475,18 +498,35 @@ function NexusConsole({ user, onScan, onForge, deviceTier, eligibility, myRank, 
               )}
             </View>
           )}
+
+          {/* ═══ 6-PILLAR GRID (2x3) ═══ */}
           <View style={cn$.grid}>
-            {buttons.map((btn) => (
-              <TouchableOpacity key={btn.key} style={cn$.card} activeOpacity={0.85} onPress={btn.action}>
-                <ImageBackground source={{ uri: btn.image }} style={cn$.cardBg} imageStyle={cn$.cardImage}>
-                  <LinearGradient colors={['rgba(5,5,5,0.15)', 'rgba(5,5,5,0.6)', 'rgba(5,5,5,0.97)']} locations={[0, 0.35, 0.85]} style={cn$.cardGradient}>
-                    <Ionicons name={CONSOLE_ICONS[btn.key].ionName} size={32} color={CONSOLE_ICONS[btn.key].color} />
-                    <View style={cn$.cardBottom}><Text style={cn$.cardTitle}>{btn.title}</Text><Text style={cn$.cardSub}>{btn.sub}</Text></View>
-                  </LinearGradient>
-                </ImageBackground>
-              </TouchableOpacity>
-            ))}
+            {buttons.map((btn) => {
+              const icon = CONSOLE_ICONS[btn.key];
+              const risk = getRiskTag(btn.key);
+              return (
+                <TouchableOpacity key={btn.key} style={[cn$.card, { width: cardW }]} activeOpacity={0.82} onPress={btn.action}>
+                  <View style={[cn$.cardInner, { borderColor: icon.color + '22', minHeight: cardW * 1.1 }]}>
+                    {/* Icon Circle */}
+                    <View style={[cn$.cardIconWrap, { backgroundColor: icon.color + '12' }]}>
+                      <Ionicons name={icon.ionName} size={30} color={icon.color} />
+                    </View>
+                    {/* Title + Sub */}
+                    <View style={cn$.cardContent}>
+                      <Text style={[cn$.cardTitle, { color: icon.color }]} numberOfLines={2}>{btn.title}</Text>
+                      <Text style={cn$.cardSub} numberOfLines={2}>{btn.sub}</Text>
+                    </View>
+                    {/* Risk/Reward Tag */}
+                    <View style={[cn$.riskTag, { borderColor: risk.color + '44' }]}>
+                      <View style={[cn$.riskDot, { backgroundColor: risk.color }]} />
+                      <Text style={[cn$.riskText, { color: risk.color }]}>{risk.tag}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
+
           <NexusProactiveCTAs
             user={user}
             eligibility={eligibility}
@@ -519,14 +559,73 @@ const cn$ = StyleSheet.create({
   tierText: { color: '#00E5FF', fontSize: 13, fontWeight: '800', letterSpacing: 2, opacity: 0.6 },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 24, paddingBottom: 100 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 10 },
-  card: { width: (SW - 60) / 2, height: (SW - 60) / 2 * 1.2, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  cardBg: { flex: 1 },
-  cardImage: { borderRadius: 16 },
-  cardGradient: { flex: 1, justifyContent: 'space-between', padding: 16 },
-  cardBottom: { gap: 4 },
-  cardTitle: { color: '#FFD700', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
-  cardSub: { color: '#00E5FF', fontSize: 13, fontWeight: '400', letterSpacing: 1.5, opacity: 0.7 },
+
+  // ═══ 6-PILLAR GRID (2x3) ═══
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 12,
+  },
+  card: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  cardInner: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+    gap: 10,
+    justifyContent: 'space-between',
+  },
+  cardIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardContent: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    gap: 3,
+  },
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: '900',
+    letterSpacing: 1.5,
+    lineHeight: 18,
+  },
+  cardSub: {
+    color: 'rgba(255,255,255,0.40)',
+    fontSize: 11,
+    fontWeight: '500',
+    letterSpacing: 0.5,
+    lineHeight: 14,
+  },
+  riskTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  riskDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+  },
+  riskText: {
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 1.5,
+  },
+
   // BIO-SCAN ELIGIBILITY BANNER
   eligBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -538,7 +637,7 @@ const cn$ = StyleSheet.create({
   eligText: { flex: 1, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   eligTextActive: { color: '#00E5FF' },
   eligTextLocked: { color: 'rgba(255,255,255,0.3)' },
-  eligReadyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF', shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4 },
+  eligReadyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF' },
 });
 
 // ========== CHALLENGE FORGE ==========
@@ -1146,7 +1245,7 @@ function VictoryOverlay({ visible, xpChange }: { visible: boolean; xpChange?: nu
       <Ionicons name="trophy" size={48} color="#FFD700" />
       <Text style={vo$.victory}>VICTORY</Text>
       {xpChange && xpChange > 0 && (
-        <Text style={vo$.xp}>+{xpChange} XP · +50</Text>
+        <Text style={vo$.xp}>+{xpChange} FLUX</Text>
       )}
     </Animated.View>
   );
@@ -1186,14 +1285,179 @@ function Countdown({ onComplete }: { onComplete: () => void }) {
   );
 }
 
+// ========== LIVE WAITING ROOM ==========
+function LiveWaitingRoom({ user, token, onBack, onMatchFound }: {
+  user: any; token: string | null; onBack: () => void; onMatchFound: (battleId: string) => void;
+}) {
+  const [status, setStatus] = useState<'idle' | 'searching' | 'matched' | 'expired'>('idle');
+  const [queueData, setQueueData] = useState<any>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const pulseAnim = useSharedValue(0.5);
+  const ringScale = useSharedValue(1);
+
+  useEffect(() => {
+    pulseAnim.value = withRepeat(withSequence(withTiming(1, { duration: 800 }), withTiming(0.5, { duration: 800 })), -1, false);
+    ringScale.value = withRepeat(withSequence(withTiming(1.3, { duration: 1500 }), withTiming(1, { duration: 1500 })), -1, false);
+  }, []);
+
+  const pulseStyle = useAnimatedStyle(() => ({ opacity: pulseAnim.value }));
+  const ringStyle = useAnimatedStyle(() => ({ transform: [{ scale: ringScale.value }], opacity: interpolate(ringScale.value, [1, 1.3], [0.4, 0]) }));
+
+  const joinQueue = async () => {
+    if (!token) return;
+    setStatus('searching');
+    try {
+      const res = await api.joinLiveQueue({ exercise_type: 'squat', discipline: 'power' }, token);
+      setQueueData(res);
+      if (res.status === 'matched') {
+        setStatus('matched');
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+        setTimeout(() => onMatchFound(res.battle_id), 2000);
+      }
+    } catch (_) {}
+  };
+
+  // Poll for match every 3s
+  useEffect(() => {
+    if (status !== 'searching' || !token) return;
+    const iv = setInterval(async () => {
+      setElapsed(p => p + 3);
+      try {
+        const res = await api.getLiveQueueStatus(token);
+        if (res.status === 'matched') {
+          setStatus('matched');
+          setQueueData(res);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+          clearInterval(iv);
+          setTimeout(() => onMatchFound(res.battle_id), 2000);
+        } else if (res.status === 'expired' || res.status === 'not_in_queue') {
+          setStatus('expired');
+          clearInterval(iv);
+        }
+      } catch (_) {}
+    }, 3000);
+    return () => clearInterval(iv);
+  }, [status, token]);
+
+  const handleLeave = async () => {
+    if (token) await api.leaveLiveQueue(token).catch(() => {});
+    onBack();
+  };
+
+  return (
+    <View style={lw$.container}>
+      <CyberGrid intensity={0.15} />
+      <SafeAreaView style={lw$.safe}>
+        <View style={lw$.header}>
+          <Ionicons name="radio" size={28} color="#FF6B00" />
+          <Text style={lw$.title}>LIVE ARENA</Text>
+          <Text style={lw$.subtitle}>WAITING ROOM</Text>
+        </View>
+
+        <View style={lw$.center}>
+          {status === 'idle' && (
+            <Animated.View entering={FadeIn.duration(400)} style={lw$.idleWrap}>
+              <View style={lw$.iconCircle}>
+                <Ionicons name="radio" size={48} color="#FF6B00" />
+              </View>
+              <Text style={lw$.idleText}>ENTRA NELLA CODA LIVE</Text>
+              <Text style={lw$.idleSub}>Verrai abbinato a un avversario in tempo reale per una sfida dal vivo.</Text>
+              <TouchableOpacity style={lw$.joinBtn} onPress={joinQueue} activeOpacity={0.85}>
+                <Ionicons name="flash" size={18} color="#000" />
+                <Text style={lw$.joinBtnText}>CERCA AVVERSARIO</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
+
+          {status === 'searching' && (
+            <Animated.View entering={FadeIn.duration(300)} style={lw$.searchWrap}>
+              <View style={lw$.searchCircle}>
+                <Animated.View style={[lw$.ring, ringStyle]} />
+                <Animated.View style={[lw$.pulseIcon, pulseStyle]}>
+                  <Ionicons name="radio" size={40} color="#FF6B00" />
+                </Animated.View>
+              </View>
+              <Text style={lw$.searchText}>RICERCA IN CORSO...</Text>
+              <Text style={lw$.searchTimer}>{Math.floor(elapsed / 60)}:{(elapsed % 60).toString().padStart(2, '0')}</Text>
+              <Text style={lw$.searchSub}>Posizione in coda: {queueData?.position || '—'}</Text>
+            </Animated.View>
+          )}
+
+          {status === 'matched' && (
+            <Animated.View entering={FadeIn.duration(300)} style={lw$.matchWrap}>
+              <Ionicons name="checkmark-circle" size={64} color="#00FF87" />
+              <Text style={lw$.matchText}>MATCH TROVATO!</Text>
+              <Text style={lw$.matchOpp}>{queueData?.opponent_username?.toUpperCase() || 'AVVERSARIO'}</Text>
+              <Text style={lw$.matchSub}>Preparati per la sfida live...</Text>
+            </Animated.View>
+          )}
+
+          {status === 'expired' && (
+            <Animated.View entering={FadeIn.duration(300)} style={lw$.expiredWrap}>
+              <Ionicons name="time-outline" size={48} color="#FF3B30" />
+              <Text style={lw$.expiredText}>CODA SCADUTA</Text>
+              <Text style={lw$.expiredSub}>Nessun avversario trovato. Riprova.</Text>
+              <TouchableOpacity style={lw$.joinBtn} onPress={() => { setStatus('idle'); setElapsed(0); }} activeOpacity={0.85}>
+                <Text style={lw$.joinBtnText}>RIPROVA</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
+        </View>
+
+        <TouchableOpacity onPress={handleLeave} style={lw$.backBtn}>
+          <Ionicons name="arrow-back" size={16} color="#555" />
+          <Text style={lw$.backText}>TORNA AL NEXUS</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    </View>
+  );
+}
+
+const lw$ = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#000000' },
+  safe: { flex: 1 },
+  header: { alignItems: 'center', paddingTop: 24, gap: 4 },
+  title: { color: '#FF6B00', fontSize: 28, fontWeight: '900', letterSpacing: 6 },
+  subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '800', letterSpacing: 4 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },
+  // Idle
+  idleWrap: { alignItems: 'center', gap: 16 },
+  iconCircle: { width: 100, height: 100, borderRadius: 50, backgroundColor: 'rgba(255,107,0,0.08)', borderWidth: 2, borderColor: '#FF6B00', alignItems: 'center', justifyContent: 'center' },
+  idleText: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
+  idleSub: { color: '#AAAAAA', fontSize: 14, fontWeight: '400', textAlign: 'center', lineHeight: 20, maxWidth: 280 },
+  joinBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#FF6B00', borderRadius: 12, paddingHorizontal: 28, paddingVertical: 14, marginTop: 8 },
+  joinBtnText: { color: '#000', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
+  // Searching
+  searchWrap: { alignItems: 'center', gap: 16 },
+  searchCircle: { width: 120, height: 120, alignItems: 'center', justifyContent: 'center' },
+  ring: { position: 'absolute', width: 120, height: 120, borderRadius: 60, borderWidth: 2, borderColor: '#FF6B00' },
+  pulseIcon: {},
+  searchText: { color: '#FF6B00', fontSize: 18, fontWeight: '900', letterSpacing: 3 },
+  searchTimer: { color: '#FFFFFF', fontSize: 42, fontWeight: '900', letterSpacing: 2 },
+  searchSub: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
+  // Matched
+  matchWrap: { alignItems: 'center', gap: 12 },
+  matchText: { color: '#00FF87', fontSize: 24, fontWeight: '900', letterSpacing: 4 },
+  matchOpp: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
+  matchSub: { color: '#AAAAAA', fontSize: 14, fontWeight: '400' },
+  // Expired
+  expiredWrap: { alignItems: 'center', gap: 12 },
+  expiredText: { color: '#FF3B30', fontSize: 20, fontWeight: '900', letterSpacing: 3 },
+  expiredSub: { color: '#AAAAAA', fontSize: 14, fontWeight: '400' },
+  // Back
+  backBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16 },
+  backText: { color: '#555', fontSize: 14, fontWeight: '800', letterSpacing: 2 },
+});
+
 // ========== MAIN SCREEN ==========
 export default function NexusTriggerScreen() {
   const { user, token, logout, activeRole, setActiveRole, updateUser } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'tilt_setup' | 'countdown' | 'stabilizing' | 'scanning' | 'results'>('console');
+  const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'tilt_setup' | 'countdown' | 'stabilizing' | 'scanning' | 'results' | 'live_queue'>('console');
   const [exercise, setExercise] = useState<ExerciseType>('squat');
   const [forgeMode, setForgeMode] = useState<ForgeMode>('personal');
+  const [sessionMode, setSessionMode] = useState<'scan' | 'practice' | 'ranked'>('scan');
   const [motionState, setMotionState] = useState<MotionState | null>(null);
   const [motionActive, setMotionActive] = useState(false);
   const [goldFlash, setGoldFlash] = useState(false);
@@ -1446,12 +1710,54 @@ export default function NexusTriggerScreen() {
     setPhase('results');
   };
 
-  const handleResultClose = () => { setPhase('console'); setScanResult(null); setSessionId(null); setMotionState(null); setTimer(0); setMotionActive(false); setIsVictory(false); setDropsEarned(0); };
+  const handleResultClose = () => { setPhase('console'); setScanResult(null); setSessionId(null); setMotionState(null); setTimer(0); setMotionActive(false); setIsVictory(false); setDropsEarned(0); setSessionMode('scan'); };
   useEffect(() => () => { stopSensors(); }, []);
   const fmt = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
+  // ═══ PILLAR ACTION HANDLER ═══
+  const handlePillarAction = (key: string) => {
+    switch (key) {
+      case 'practice':
+        setSessionMode('practice');
+        setPhase('forge');
+        break;
+      case 'ranked':
+        setSessionMode('ranked');
+        setPhase('forge');
+        break;
+      case 'duel':
+        // Navigate to Arena tab for PvP duels
+        router.push('/(tabs)/arena');
+        break;
+      case 'live':
+        setPhase('live_queue');
+        break;
+      default:
+        break;
+    }
+  };
+
   if (phase === 'console') {
-    return <NexusConsole user={user} onScan={() => router.push({ pathname: '/onboarding/step2', params: { mode: 'rescan' } })} onForge={() => setPhase('forge')} deviceTier={deviceTier} eligibility={eligibility} myRank={myRank} myCrews={myCrews} />;
+    return (
+      <NexusConsole
+        user={user}
+        onScan={() => router.push({ pathname: '/onboarding/step2', params: { mode: 'rescan' } })}
+        onForge={() => { setSessionMode('scan'); setPhase('forge'); }}
+        onPillarAction={handlePillarAction}
+        deviceTier={deviceTier}
+        eligibility={eligibility}
+        myRank={myRank}
+        myCrews={myCrews}
+      />
+    );
+  }
+
+  // ═══ LIVE WAITING ROOM PHASE ═══
+  if (phase === 'live_queue') {
+    return <LiveWaitingRoom user={user} token={token} onBack={() => setPhase('console')} onMatchFound={(battleId) => {
+      // Future: start a live 1v1 scanning session
+      setPhase('forge');
+    }} />;
   }
 
   if (phase === 'tilt_setup') {

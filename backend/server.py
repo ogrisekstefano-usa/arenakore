@@ -1104,8 +1104,16 @@ async def seed_data():
         id='bio_evolution_notif',
         replace_existing=True,
     )
+    # ═══ DUEL TIMEOUT ENFORCER — Check every hour for expired 48h duels ═══
+    scheduler.add_job(
+        enforce_duel_timeouts,
+        'interval', hours=1,
+        id='duel_timeout_enforcer',
+        replace_existing=True,
+    )
     scheduler.start()
     logger.info("[NotifEngine] Scheduler started — running every 6h")
+    logger.info("[DuelEnforcer] Scheduler started — running every 1h")
     # THE FOUNDER PROTOCOL — Retroactive badge for first 100 users
     founder_count = await db.users.count_documents({"is_founder": True})
     if founder_count == 0:
@@ -3994,6 +4002,10 @@ AK_EARN_RULES = {
     "crew_battle_win": {"amount": 100, "label": "Vittoria Crew Battle"},
     "daily_login": {"amount": 5, "label": "Login giornaliero"},
     "first_scan": {"amount": 25, "label": "Primo Scan Nexus"},
+    "practice_session": {"amount": 5, "label": "Sessione Practice completata"},
+    "ranked_win": {"amount": 50, "label": "Vittoria Ranked"},
+    "ranked_loss": {"amount": -20, "label": "Sconfitta Ranked"},
+    "duel_timeout_penalty": {"amount": -50, "label": "Penalità timeout duello 48h"},
     "iap_pack_small": {"amount": 500, "label": "Acquisto Pack S"},
     "iap_pack_medium": {"amount": 1200, "label": "Acquisto Pack M"},
     "iap_pack_large": {"amount": 3000, "label": "Acquisto Pack L"},
@@ -4004,21 +4016,106 @@ async def award_ak_credits(user_id, reason: str, custom_amount: int = 0) -> int:
     """Award AK credits to a user. Returns new balance."""
     rule = AK_EARN_RULES.get(reason)
     amount = custom_amount if custom_amount else (rule["amount"] if rule else 0)
-    if amount <= 0:
+    if amount == 0:
         return 0
     label = rule["label"] if rule else reason
     now = datetime.utcnow()
     await db.users.update_one({"_id": user_id}, {"$inc": {"ak_credits": amount}})
+    tx_type = "earn" if amount > 0 else "penalty"
     await db.ak_transactions.insert_one({
         "user_id": user_id,
         "amount": amount,
         "reason": reason,
         "label": label,
-        "type": "earn",
+        "type": tx_type,
         "created_at": now,
     })
     user = await db.users.find_one({"_id": user_id})
-    return user.get("ak_credits", 0)
+    # Ensure balance doesn't go below 0
+    if user and user.get("ak_credits", 0) < 0:
+        await db.users.update_one({"_id": user_id}, {"$set": {"ak_credits": 0}})
+        return 0
+    return user.get("ak_credits", 0) if user else 0
+
+
+async def enforce_duel_timeouts():
+    """Check all active/pending duels for 48h expiration and apply -50 FLUX penalty"""
+    now = datetime.utcnow()
+    expired_duels = await db.pvp_challenges.find({
+        "status": {"$in": ["pending", "accepted", "challenger_done"]},
+        "expires_at": {"$lte": now},
+    }).to_list(100)
+
+    for duel in expired_duels:
+        duel_id = duel["_id"]
+        status = duel["status"]
+        challenger_id = duel["challenger_id"]
+        challenged_id = duel["challenged_id"]
+
+        if status == "pending":
+            # Challenged user never responded — they get penalized
+            await award_ak_credits(challenged_id, "duel_timeout_penalty")
+            await db.pvp_challenges.update_one({"_id": duel_id}, {"$set": {
+                "status": "expired",
+                "penalty_applied_to": str(challenged_id),
+                "expired_at": now,
+            }})
+            await db.notifications.insert_one({
+                "user_id": challenged_id,
+                "type": "duel_timeout",
+                "title": "DUELLO SCADUTO — PENALITÀ",
+                "message": f"Non hai risposto alla sfida di {duel.get('challenger_username', '?')} entro 48h. -50 FLUX.",
+                "icon": "time-outline", "color": "#FF3B30",
+                "read": False, "created_at": now,
+            })
+        elif status == "accepted":
+            # Both accepted but neither submitted — both get penalized
+            await award_ak_credits(challenger_id, "duel_timeout_penalty")
+            await award_ak_credits(challenged_id, "duel_timeout_penalty")
+            await db.pvp_challenges.update_one({"_id": duel_id}, {"$set": {
+                "status": "expired",
+                "penalty_applied_to": "both",
+                "expired_at": now,
+            }})
+            for uid in [challenger_id, challenged_id]:
+                await db.notifications.insert_one({
+                    "user_id": uid,
+                    "type": "duel_timeout",
+                    "title": "DUELLO SCADUTO — PENALITÀ",
+                    "message": "Nessuno ha completato lo scan entro 48h. -50 FLUX per entrambi.",
+                    "icon": "time-outline", "color": "#FF3B30",
+                    "read": False, "created_at": now,
+                })
+        elif status == "challenger_done":
+            # Challenger did their scan, challenged didn't — challenged gets penalty
+            await award_ak_credits(challenged_id, "duel_timeout_penalty")
+            # Challenger gets a win by forfeit
+            await award_ak_credits(challenger_id, "pvp_win")
+            await db.pvp_challenges.update_one({"_id": duel_id}, {"$set": {
+                "status": "forfeit",
+                "winner_id": challenger_id,
+                "winner_username": duel.get("challenger_username"),
+                "penalty_applied_to": str(challenged_id),
+                "expired_at": now,
+            }})
+            await db.notifications.insert_one({
+                "user_id": challenged_id,
+                "type": "duel_timeout",
+                "title": "DUELLO PERSO PER FORFEIT",
+                "message": f"Non hai completato lo scan entro 48h. {duel.get('challenger_username', '?')} vince per forfeit. -50 FLUX.",
+                "icon": "time-outline", "color": "#FF3B30",
+                "read": False, "created_at": now,
+            })
+            await db.notifications.insert_one({
+                "user_id": challenger_id,
+                "type": "duel_forfeit_win",
+                "title": "VITTORIA PER FORFEIT",
+                "message": f"{duel.get('challenged_username', '?')} non ha completato lo scan entro 48h. Vittoria automatica! +50 FLUX.",
+                "icon": "trophy", "color": "#FFD700",
+                "read": False, "created_at": now,
+            })
+
+    return len(expired_duels)
 
 
 @api_router.get("/ak/balance")
@@ -4291,7 +4388,10 @@ async def send_pvp_challenge(data: PvPChallengeRequest, current_user: dict = Dep
 
 @api_router.get("/pvp/pending")
 async def get_pvp_pending(current_user: dict = Depends(get_current_user)):
-    """Get pending PvP challenges (received + sent)"""
+    """Get pending PvP challenges (received + sent) — also enforces 48h timeout on read"""
+    # ═══ LAZY ENFORCEMENT: Check for expired duels on every read ═══
+    await enforce_duel_timeouts()
+
     received = await db.pvp_challenges.find({
         "challenged_id": current_user["_id"],
         "status": "pending",
@@ -4309,10 +4409,21 @@ async def get_pvp_pending(current_user: dict = Depends(get_current_user)):
         ]
     }).to_list(5)
 
+    # Also include recently expired for visibility
+    expired = await db.pvp_challenges.find({
+        "$or": [
+            {"challenger_id": current_user["_id"]},
+            {"challenged_id": current_user["_id"]},
+        ],
+        "status": {"$in": ["expired", "forfeit"]},
+        "expired_at": {"$gte": datetime.utcnow() - timedelta(hours=24)},
+    }).sort("expired_at", -1).to_list(5)
+
     return {
         "received": [pvp_challenge_to_response(c) for c in received],
         "sent": [pvp_challenge_to_response(c) for c in sent],
         "active": [pvp_challenge_to_response(c) for c in active],
+        "expired": [pvp_challenge_to_response(c) for c in expired],
     }
 
 
@@ -4518,6 +4629,239 @@ async def submit_pvp_result(challenge_id: str, data: PvPSubmitRequest, current_u
         "opponent_score": challenger_score,
         "xp_change": winner_xp_gain if is_winner else -loser_xp_loss,
         "anti_cheat": anti_cheat,
+    }
+
+
+# =====================================================================
+# LIVE WAITING ROOM — Real-time matchmaking queue
+# =====================================================================
+
+class LiveQueueRequest(BaseModel):
+    exercise_type: str = "squat"
+    discipline: str = "power"
+
+@api_router.post("/live/join-queue")
+async def join_live_queue(data: LiveQueueRequest, current_user: dict = Depends(get_current_user)):
+    """Join the Live Arena waiting room for real-time matchmaking"""
+    now = datetime.utcnow()
+    user_id = current_user["_id"]
+
+    # Remove stale entries (older than 5 min)
+    await db.live_queue.delete_many({"joined_at": {"$lt": now - timedelta(minutes=5)}})
+
+    # Check if already in queue
+    existing = await db.live_queue.find_one({"user_id": user_id, "status": "waiting"})
+    if existing:
+        return {"status": "already_waiting", "position": 1, "queue_id": str(existing["_id"])}
+
+    # Add to queue
+    entry = {
+        "user_id": user_id,
+        "username": current_user.get("username", "?"),
+        "exercise_type": data.exercise_type,
+        "discipline": data.discipline,
+        "level": current_user.get("level", 1),
+        "status": "waiting",
+        "joined_at": now,
+    }
+    result = await db.live_queue.insert_one(entry)
+
+    # Try to match immediately
+    opponent = await db.live_queue.find_one({
+        "user_id": {"$ne": user_id},
+        "exercise_type": data.exercise_type,
+        "status": "waiting",
+    })
+
+    if opponent:
+        # Match found! Create a live battle
+        battle_id = str(ObjectId())
+        await db.live_queue.update_many(
+            {"_id": {"$in": [result.inserted_id, opponent["_id"]]}},
+            {"$set": {"status": "matched", "battle_id": battle_id}}
+        )
+
+        live_battle = {
+            "_id": ObjectId(battle_id),
+            "type": "live_1v1",
+            "player_a_id": user_id,
+            "player_a_username": current_user.get("username", "?"),
+            "player_b_id": opponent["user_id"],
+            "player_b_username": opponent.get("username", "?"),
+            "exercise_type": data.exercise_type,
+            "discipline": data.discipline,
+            "status": "countdown",
+            "created_at": now,
+            "expires_at": now + timedelta(minutes=10),
+        }
+        await db.live_battles.insert_one(live_battle)
+
+        # Notify both players
+        for uid in [user_id, opponent["user_id"]]:
+            await db.notifications.insert_one({
+                "user_id": uid,
+                "type": "live_match_found",
+                "title": "MATCH TROVATO — LIVE ARENA",
+                "message": f"Avversario trovato! Preparati per la sfida live.",
+                "icon": "radio", "color": "#FF6B00",
+                "read": False, "created_at": now,
+                "meta": {"battle_id": battle_id},
+            })
+
+        return {
+            "status": "matched",
+            "battle_id": battle_id,
+            "opponent_username": opponent.get("username", "?"),
+            "opponent_level": opponent.get("level", 1),
+        }
+
+    # Count queue position
+    queue_count = await db.live_queue.count_documents({
+        "exercise_type": data.exercise_type,
+        "status": "waiting",
+    })
+
+    return {
+        "status": "waiting",
+        "position": queue_count,
+        "queue_id": str(result.inserted_id),
+    }
+
+
+@api_router.get("/live/queue-status")
+async def get_live_queue_status(current_user: dict = Depends(get_current_user)):
+    """Check if the user has been matched in the Live Arena"""
+    entry = await db.live_queue.find_one({
+        "user_id": current_user["_id"],
+        "status": {"$in": ["waiting", "matched"]},
+    })
+
+    if not entry:
+        return {"status": "not_in_queue"}
+
+    if entry["status"] == "matched":
+        battle = await db.live_battles.find_one({"_id": ObjectId(entry.get("battle_id", ""))})
+        if battle:
+            opp_username = battle["player_b_username"] if battle["player_a_id"] == current_user["_id"] else battle["player_a_username"]
+            return {
+                "status": "matched",
+                "battle_id": str(battle["_id"]),
+                "opponent_username": opp_username,
+            }
+
+    # Cleanup: auto-remove stale entries
+    if entry["joined_at"] < datetime.utcnow() - timedelta(minutes=5):
+        await db.live_queue.delete_one({"_id": entry["_id"]})
+        return {"status": "expired"}
+
+    queue_count = await db.live_queue.count_documents({
+        "exercise_type": entry["exercise_type"],
+        "status": "waiting",
+    })
+    return {"status": "waiting", "position": queue_count, "seconds_elapsed": int((datetime.utcnow() - entry["joined_at"]).total_seconds())}
+
+
+@api_router.post("/live/leave-queue")
+async def leave_live_queue(current_user: dict = Depends(get_current_user)):
+    """Leave the Live Arena waiting room"""
+    await db.live_queue.delete_many({"user_id": current_user["_id"], "status": "waiting"})
+    return {"status": "left_queue"}
+
+
+# =====================================================================
+# PRACTICE & RANKED SESSION MODES — FLUX Economy Integration
+# =====================================================================
+
+class SessionCompleteRequest(BaseModel):
+    mode: str  # "practice" | "ranked"
+    exercise_type: str = "squat"
+    reps: int
+    quality_score: float
+    duration_seconds: int
+    peak_acceleration: float = 0.0
+
+@api_router.post("/nexus/session/complete")
+async def complete_nexus_session_v2(data: SessionCompleteRequest, current_user: dict = Depends(get_current_user)):
+    """Complete a NEXUS session with mode-specific FLUX rewards"""
+    now = datetime.utcnow()
+    user_id = current_user["_id"]
+
+    anti_cheat = validate_scan_anti_cheat(data.reps, data.quality_score, data.duration_seconds, 60)
+    if not anti_cheat["valid"]:
+        return {"status": "rejected", "reason": "Anti-Cheat: scan non valido", "anti_cheat": anti_cheat}
+
+    pvp_score = round(data.reps * (0.5 + data.quality_score / 200), 1)
+
+    session_doc = {
+        "user_id": user_id,
+        "mode": data.mode,
+        "exercise_type": data.exercise_type,
+        "reps": data.reps,
+        "quality_score": data.quality_score,
+        "duration_seconds": data.duration_seconds,
+        "peak_acceleration": data.peak_acceleration,
+        "pvp_score": pvp_score,
+        "anti_cheat_score": anti_cheat["score"],
+        "created_at": now,
+    }
+
+    flux_earned = 0
+    flux_reason = ""
+
+    if data.mode == "practice":
+        # Practice: flat +5 FLUX per session
+        flux_earned = 5
+        flux_reason = "practice_session"
+        session_doc["flux_earned"] = flux_earned
+
+    elif data.mode == "ranked":
+        # Ranked: compare against user's personal best
+        personal_best = await db.nexus_sessions.find_one(
+            {"user_id": user_id, "exercise_type": data.exercise_type, "mode": "ranked"},
+            sort=[("pvp_score", -1)]
+        )
+        pb_score = personal_best["pvp_score"] if personal_best else 0
+
+        if pvp_score > pb_score:
+            # New personal best = +50 FLUX
+            flux_earned = 50
+            flux_reason = "ranked_win"
+            session_doc["is_personal_best"] = True
+            session_doc["previous_best"] = pb_score
+        else:
+            # Below personal best = -20 FLUX
+            flux_earned = -20
+            flux_reason = "ranked_loss"
+            session_doc["is_personal_best"] = False
+        session_doc["flux_earned"] = flux_earned
+
+    await db.nexus_sessions.insert_one(session_doc)
+
+    # Award/deduct FLUX
+    new_balance = 0
+    if flux_earned != 0:
+        new_balance = await award_ak_credits(user_id, flux_reason)
+
+    # Update XP
+    xp_earned = max(data.reps * 5, 10)
+    await db.users.update_one({"_id": user_id}, {"$inc": {"xp": xp_earned}})
+
+    updated_user = await db.users.find_one({"_id": user_id})
+
+    return {
+        "status": "completed",
+        "mode": data.mode,
+        "pvp_score": pvp_score,
+        "flux_earned": flux_earned,
+        "flux_balance": new_balance or updated_user.get("ak_credits", 0),
+        "xp_earned": xp_earned,
+        "is_personal_best": session_doc.get("is_personal_best", False),
+        "anti_cheat": anti_cheat,
+        "user": {
+            "xp": updated_user.get("xp", 0),
+            "level": updated_user.get("level", 1),
+            "ak_credits": updated_user.get("ak_credits", 0),
+        }
     }
 
 
