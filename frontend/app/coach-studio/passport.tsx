@@ -1,6 +1,6 @@
 /**
  * ATHLETE PASSPORT — Read-only profile for ATHLETE role
- * Shows their DNA, XP history, challenge history — no edit access
+ * Shows their DNA, FLUX history, challenge history — no edit access
  */
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
@@ -69,7 +69,7 @@ export default function AthletePasPport() {
         </View>
         <View style={p$.headerInfo}>
           <Text style={p$.name}>{user?.username?.toUpperCase() || '—'}</Text>
-          <Text style={p$.sub}>LVL {user?.level || 1} · {user?.xp?.toLocaleString() || 0} XP</Text>
+          <Text style={p$.sub}>LVL {user?.level || 1} · {user?.xp?.toLocaleString() || 0} FLUX</Text>
           <View style={p$.rolePill}>
             <Text style={p$.roleText}>ATHLETE · SOLA LETTURA</Text>
           </View>
@@ -108,7 +108,7 @@ export default function AthletePasPport() {
           <View style={p$.statsCard}>
             {[
               { label: 'LIVELLO', val: user?.level || 1, color: '#FFD700' },
-              { label: 'XP TOTALI', val: (user?.xp || 0).toLocaleString(), color: '#00E5FF' },
+              { label: 'FLUX TOTALI', val: (user?.xp || 0).toLocaleString(), color: '#00E5FF' },
               { label: 'DNA MEDIO', val: dnaAvg, color: '#AF52DE' },
             ].map((stat, i) => (
               <Animated.View key={stat.label} entering={FadeInDown.delay(i * 80).duration(200)} style={p$.statRow}>
@@ -130,28 +130,28 @@ const p$ = StyleSheet.create({
   avatar: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
   avatarLetter: { color: '#000', fontSize: 28, fontWeight: '900' },
   headerInfo: { flex: 1, gap: 4 },
-  name: { color: '#FFF', fontSize: 22, fontWeight: '900', letterSpacing: 2 },
-  sub: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '300', letterSpacing: 1 },
+  name: { color: '#FFF', fontSize: 24, fontWeight: '900', letterSpacing: 2 },
+  sub: { color: 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: '300', letterSpacing: 1 },
   rolePill: { alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  roleText: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  roleText: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   korScore: { alignItems: 'center' },
   koreVal: { color: '#FFD700', fontSize: 40, fontWeight: '900', letterSpacing: 2 },
-  koreLabel: { color: 'rgba(255,215,0,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 4 },
+  koreLabel: { color: 'rgba(255,215,0,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 4 },
   twoCol: { flexDirection: 'row', gap: 16, alignItems: 'flex-start' },
   radarCard: { flex: 1, backgroundColor: '#0A0A0A', borderRadius: 14, padding: 18, gap: 16, borderWidth: 1, borderColor: '#1E1E1E', alignItems: 'center' },
-  sectionLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '900', letterSpacing: 3, alignSelf: 'flex-start' },
+  sectionLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '900', letterSpacing: 3, alignSelf: 'flex-start' },
   dnaGrid: { width: '100%', gap: 8 },
   dnaItem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dnaLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '700', width: 70 },
-  dnaVal: { fontSize: 13, fontWeight: '900', width: 28 },
+  dnaLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '700', width: 70 },
+  dnaVal: { fontSize: 15, fontWeight: '900', width: 28 },
   dnaBar: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' },
   dnaFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 2 },
   statsCol: { flex: 1, gap: 14 },
   infoCard: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 18, gap: 10, borderWidth: 1, borderColor: '#1E1E1E', alignItems: 'center' },
-  infoTitle: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
-  infoText: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '300', lineHeight: 18, textAlign: 'center' },
+  infoTitle: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
+  infoText: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '300', lineHeight: 18, textAlign: 'center' },
   statsCard: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#1E1E1E', gap: 0 },
   statRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#111' },
-  statLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-  statVal: { fontSize: 20, fontWeight: '900' },
+  statLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  statVal: { fontSize: 22, fontWeight: '900' },
 });

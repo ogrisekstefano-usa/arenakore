@@ -25,7 +25,7 @@ function RiskBar({ pct, color }: { pct: number; color: string }) {
 const rb$ = StyleSheet.create({
   wrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   track: { flex: 1, height: 6, backgroundColor: '#1E1E1E', borderRadius: 3, overflow: 'hidden' },
-  pct: { fontSize: 11, fontWeight: '900', width: 32, textAlign: 'right' },
+  pct: { fontSize: 13, fontWeight: '900', width: 32, textAlign: 'right' },
 });
 
 export default function AICoachAssistant() {
@@ -148,7 +148,7 @@ export default function AICoachAssistant() {
                   </View>
                   <View style={ai$.forecastXp}>
                     <Text style={ai$.forecastXpVal}>+{(f.projected_xp_30d - f.current_xp).toLocaleString()}</Text>
-                    <Text style={ai$.forecastXpLabel}>XP previsti</Text>
+                    <Text style={ai$.forecastXpLabel}>FLUX previsti</Text>
                   </View>
                 </Animated.View>
               );
@@ -169,39 +169,39 @@ const ai$ = StyleSheet.create({
   root: { flex: 1 }, content: { padding: 28, gap: 20, paddingBottom: 60 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   pageHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 },
-  pageTitle: { color: '#FFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
-  pageSub: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '300', marginTop: 3 },
+  pageTitle: { color: '#FFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
+  pageSub: { color: 'rgba(255,255,255,0.30)', fontSize: 14, fontWeight: '300', marginTop: 3 },
   groupStats: { flexDirection: 'row', gap: 16 },
   groupStat: { alignItems: 'center', gap: 3 },
-  groupVal: { fontSize: 24, fontWeight: '900', letterSpacing: 1 },
-  groupLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  groupVal: { fontSize: 26, fontWeight: '900', letterSpacing: 1 },
+  groupLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   twoCol: { flexDirection: 'row', gap: 16, alignItems: 'flex-start' },
   col: { flex: 1 },
   sectionCard: { backgroundColor: '#0A0A0A', borderRadius: 14, padding: 18, gap: 10, borderWidth: 1, borderColor: '#1E1E1E' },
   secHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-  secTitle: { color: '#FFF', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  secTitle: { color: '#FFF', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
   emptyBlock: { alignItems: 'center', paddingVertical: 30, gap: 12 },
-  emptyText: { color: 'rgba(255,255,255,0.25)', fontSize: 12, textAlign: 'center', lineHeight: 18 },
+  emptyText: { color: 'rgba(255,255,255,0.25)', fontSize: 14, textAlign: 'center', lineHeight: 18 },
   riskRow: { backgroundColor: '#111', borderRadius: 10, padding: 12, gap: 8 },
   riskHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  riskAth: { flex: 1, color: '#FFF', fontSize: 14, fontWeight: '700' },
+  riskAth: { flex: 1, color: '#FFF', fontSize: 16, fontWeight: '700' },
   riskBadge: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 },
-  riskBadgeText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  riskBadgeText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   riskDetail: { flexDirection: 'row', gap: 16 },
   riskMeta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  riskMetaText: { color: '#AAAAAA', fontSize: 11 },
-  riskRec: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '300', lineHeight: 16, borderTopWidth: 1, borderTopColor: '#1E1E1E', paddingTop: 8 },
+  riskMetaText: { color: '#AAAAAA', fontSize: 13 },
+  riskRec: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '300', lineHeight: 16, borderTopWidth: 1, borderTopColor: '#1E1E1E', paddingTop: 8 },
   forecastRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#111' },
   forecastLeft: { flex: 1, gap: 3 },
   trendRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  forecastAth: { color: '#FFF', fontSize: 12, fontWeight: '700' },
-  forecastMeta: { color: 'rgba(255,255,255,0.3)', fontSize: 10 },
+  forecastAth: { color: '#FFF', fontSize: 14, fontWeight: '700' },
+  forecastMeta: { color: 'rgba(255,255,255,0.3)', fontSize: 12 },
   forecastRight: { alignItems: 'center' },
-  forecastDna: { fontSize: 18, fontWeight: '900', letterSpacing: 1 },
-  forecastDnaLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  forecastDna: { fontSize: 20, fontWeight: '900', letterSpacing: 1 },
+  forecastDnaLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   forecastXp: { alignItems: 'center', minWidth: 70 },
-  forecastXpVal: { color: '#FFD700', fontSize: 14, fontWeight: '900' },
-  forecastXpLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 9, marginTop: 2 },
+  forecastXpVal: { color: '#FFD700', fontSize: 16, fontWeight: '900' },
+  forecastXpLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 11, marginTop: 2 },
   aiNote: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#0A0A0A', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#1E1E1E' },
-  aiNoteText: { flex: 1, color: '#00E5FF22', fontSize: 11, fontWeight: '300' },
+  aiNoteText: { flex: 1, color: '#00E5FF22', fontSize: 13, fontWeight: '300' },
 });

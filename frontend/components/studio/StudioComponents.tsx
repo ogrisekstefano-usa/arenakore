@@ -69,12 +69,12 @@ export function ActivityHeatmap({ grid, totalScans, activeDays }: { grid: any[];
 const h$ = StyleSheet.create({
   wrap: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#1E1E1E', gap: 10 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  title: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   stats: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  stat: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700' },
+  stat: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '700' },
   statSep: { color: 'rgba(255,255,255,0.2)' },
   legend: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end' },
-  legendLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '400' },
+  legendLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: '400' },
   legendCell: { width: 12, height: 12, borderRadius: 2 },
 });
 
@@ -177,12 +177,12 @@ export function KPICard({ label, value, sub, color = '#00E5FF', icon, trend }: a
 const k$ = StyleSheet.create({
   card: { flex: 1, borderRadius: 12, padding: 18, gap: 6, borderWidth: 1, minWidth: 140 },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  icon: { fontSize: 20 },
+  icon: { fontSize: 22 },
   value: { letterSpacing: -0.5 },
   label: { letterSpacing: 2 },
   sub: {},
   trendBadge: { borderRadius: 6, width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
-  trendText: { fontSize: 12, fontWeight: '900' },
+  trendText: { fontSize: 14, fontWeight: '900' },
 });
 
 // ── Alert Row ──────────────────────────────────────────────────────────────
@@ -203,9 +203,9 @@ export function AlertRow({ alert }: { alert: any }) {
 const al$ = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: 10, paddingLeft: 10, borderLeftWidth: 2, marginBottom: 2 },
   left: { gap: 4, minWidth: 100 },
-  badge: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, alignSelf: 'flex-start' },
-  athlete: { color: '#FFFFFF', fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
-  message: { flex: 1, color: '#AAAAAA', fontSize: 12, fontWeight: '300', lineHeight: 17 },
+  badge: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, alignSelf: 'flex-start' },
+  athlete: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', letterSpacing: 0.5 },
+  message: { flex: 1, color: '#AAAAAA', fontSize: 14, fontWeight: '300', lineHeight: 17 },
 });
 
 // ── Section Header ─────────────────────────────────────────────────────────

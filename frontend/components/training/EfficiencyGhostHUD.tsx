@@ -122,7 +122,7 @@ const g$ = StyleSheet.create({
   },
   label: {
     color: 'rgba(255,255,255,0.4)',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '900',
     letterSpacing: 4,
   },
@@ -140,7 +140,7 @@ const g$ = StyleSheet.create({
     marginTop: 2,
   },
   tag: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '900',
     letterSpacing: 2,
   },

@@ -62,7 +62,7 @@ export default function MyAthletes() {
                   <Text style={s.sub}>{a.sport || 'ATHLETE'} · LVL {a.level || 1}</Text>
                 </View>
                 <View style={s.stats}>
-                  <Text style={s.xp}>{a.xp || 0} XP</Text>
+                  <Text style={s.xp}>{a.xp || 0} FLUX</Text>
                   {avg > 0 && (
                     <View style={s.dnaChip}>
                       <Text style={s.dnaChipText}>DNA {avg}</Text>
@@ -85,7 +85,7 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000000' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   sectionTitle: {
-    color: '#00E5FF22', fontSize: 11, fontWeight: '900',
+    color: '#00E5FF22', fontSize: 13, fontWeight: '900',
     letterSpacing: 4, marginBottom: 14,
   },
   card: {
@@ -95,13 +95,13 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   rankBox: { width: 32, alignItems: 'center' },
-  rank: { color: '#AAAAAA', fontSize: 13, fontWeight: '900' },
+  rank: { color: '#AAAAAA', fontSize: 15, fontWeight: '900' },
   info: { flex: 1, gap: 2 },
-  name: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
-  sub: { color: '#AAAAAA', fontSize: 12, fontWeight: '400' },
+  name: { color: '#FFFFFF', fontSize: 17, fontWeight: '900', letterSpacing: 1 },
+  sub: { color: '#AAAAAA', fontSize: 14, fontWeight: '400' },
   stats: { alignItems: 'flex-end', gap: 4 },
-  xp: { color: '#FFD700', fontSize: 13, fontWeight: '900' },
+  xp: { color: '#FFD700', fontSize: 15, fontWeight: '900' },
   dnaChip: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  dnaChipText: { color: '#00E5FF', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  dnaChipText: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
   actionBtn: { padding: 8 },
 });

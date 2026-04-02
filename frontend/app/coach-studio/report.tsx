@@ -95,7 +95,7 @@ function ReportKoreArc({ score, grade, color, size = 120 }: any) {
       <View style={{ position: 'absolute', top: 10, left: 0, right: 0, alignItems: 'center', justifyContent: 'center', height: size }}>
         <Text style={[{ color, fontSize: Math.round(size * 0.26), fontWeight: '900', letterSpacing: 1 }]}>{Math.round(score)}</Text>
         <View style={[{ backgroundColor: color + '20', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, borderWidth: 1, borderColor: color + '50' }]}>
-          <Text style={[{ color, fontSize: 11, fontWeight: '900', letterSpacing: 2 }]}>{grade}</Text>
+          <Text style={[{ color, fontSize: 13, fontWeight: '900', letterSpacing: 2 }]}>{grade}</Text>
         </View>
       </View>
     </View>
@@ -200,13 +200,13 @@ export default function TalentReportPage() {
           {/* Name + meta */}
           <View style={rp$.identInfo}>
             <View style={rp$.nameRow}>
-              <Text style={[rp$.athleteName, PJS('800'), { color: '#FFFFFF', fontSize: 24 }]}
+              <Text style={[rp$.athleteName, PJS('800'), { color: '#FFFFFF', fontSize: 26 }]}
                 {...(Platform.OS === 'web' ? { 'data-nexus-title': '1' } as any : {})}
               >{athlete.username?.toUpperCase()}</Text>
               <CertBadge certified={athlete.is_nexus_certified} size="sm" />
             </View>
             <Text style={[rp$.athleteMeta('300'), { color: 'rgba(255,255,255,0.5)' }]}>
-              {athlete.city} · LVL {athlete.level} · {athlete.xp?.toLocaleString()} XP
+              {athlete.city} · LVL {athlete.level} · {athlete.xp?.toLocaleString()} FLUX
             </Text>
             <View style={rp$.statusRow}>
               {athlete.is_free_agent ? (
@@ -281,7 +281,7 @@ export default function TalentReportPage() {
             <View style={rp$.forecastHeader}>
               <Ionicons name="hardware-chip" size={13} color="#00E5FF" />
               <Text style={[rp$.sectionTitle, MONT('700'), { color: '#00E5FF' }]}>AI FORECAST 30G</Text>
-              <Text style={[MONT('800'), { color: f30.trend_color || '#888', fontSize: 12 }]}>{f30.trend_label}</Text>
+              <Text style={[MONT('800'), { color: f30.trend_color || '#888', fontSize: 14 }]}>{f30.trend_label}</Text>
             </View>
             <View style={rp$.forecastMetrics}>
               {[
@@ -304,8 +304,8 @@ export default function TalentReportPage() {
                 <Ionicons name="warning" size={13} color={injury_risk.color} />
                 <Text style={[rp$.sectionTitle, MONT('700'), { color: injury_risk.color }]}>RISCHIO INFORTUNI</Text>
               </View>
-              <Text style={[MONT('800'), { color: injury_risk.color, fontSize: 22 }]}>{injury_risk.risk_pct}%</Text>
-              <Text style={[MONT('600'), { color: injury_risk.color, fontSize: 11, letterSpacing: 2 }]}>{injury_risk.level}</Text>
+              <Text style={[MONT('800'), { color: injury_risk.color, fontSize: 24 }]}>{injury_risk.risk_pct}%</Text>
+              <Text style={[MONT('600'), { color: injury_risk.color, fontSize: 13, letterSpacing: 2 }]}>{injury_risk.level}</Text>
               <Text style={[rp$.injuryRec('300')]}>{injury_risk.recommendation}</Text>
             </View>
           )}
@@ -354,67 +354,67 @@ const rp$ = StyleSheet.create({
   root: { flex: 1 },
   content: { padding: 24, paddingBottom: 60 },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14 },
-  loadingText: { fontSize: 13, letterSpacing: 1 },
+  loadingText: { fontSize: 15, letterSpacing: 1 },
   topActions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   back: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  backText: { fontSize: 13, letterSpacing: 1 },
+  backText: { fontSize: 15, letterSpacing: 1 },
   exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#FFD700', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 9, shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.35, shadowRadius: 10 },
-  exportBtnText: { color: '#000', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  exportBtnText: { color: '#000', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   // Trading card
   card: { backgroundColor: '#000000', borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
   cardStrip: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#0A0A0A', paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)' },
   stripLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   stripDot: { width: 6, height: 6, borderRadius: 3 },
-  stripTitle: { color: '#FFFFFF', fontSize: 11, letterSpacing: 4 },
-  stripDate: { color: 'rgba(255,255,255,0.25)', fontSize: 11 },
+  stripTitle: { color: '#FFFFFF', fontSize: 13, letterSpacing: 4 },
+  stripDate: { color: 'rgba(255,255,255,0.25)', fontSize: 13 },
   // Identity
   identity: { flexDirection: 'row', alignItems: 'center', padding: 20, gap: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)' },
   avatarRing: { width: 72, height: 72, borderRadius: 36, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center' },
   avatar: { width: 62, height: 62, borderRadius: 31, alignItems: 'center', justifyContent: 'center' },
-  avatarLetter: { color: '#000', fontSize: 26, fontWeight: '900' },
+  avatarLetter: { color: '#000', fontSize: 28, fontWeight: '900' },
   identInfo: { flex: 1, gap: 6 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   athleteName: { letterSpacing: 1 },
-  athleteMeta: { fontSize: 12 },
+  athleteMeta: { fontSize: 14 },
   statusRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   statusPill: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 9, paddingVertical: 3 },
-  statusText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  statusText: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   koreWrap: { alignItems: 'center', gap: 4 },
-  koreLabel: { fontSize: 9, letterSpacing: 3 },
+  koreLabel: { fontSize: 11, letterSpacing: 3 },
   penalty: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,59,48,0.08)', borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2 },
-  penaltyText: { color: '#FF3B30', fontSize: 8, letterSpacing: 1 },
+  penaltyText: { color: '#FF3B30', fontSize: 10, letterSpacing: 1 },
   // DNA section
   dnaSection: { flexDirection: 'row', padding: 20, gap: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)' },
   dnaSectionLeft: { alignItems: 'center', gap: 10 },
-  sectionTitle: { fontSize: 9, letterSpacing: 3, marginBottom: 8 },
+  sectionTitle: { fontSize: 11, letterSpacing: 3, marginBottom: 8 },
   legend: { flexDirection: 'row', gap: 12 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   legendDot: { width: 7, height: 7, borderRadius: 4 },
-  legendText: { color: 'rgba(255,255,255,0.4)', fontSize: 10 },
+  legendText: { color: 'rgba(255,255,255,0.4)', fontSize: 12 },
   dnaBreakdown: { flex: 1, gap: 8, justifyContent: 'center' },
   axisRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  axisLabel: { width: 30, fontSize: 10, letterSpacing: 1.5 },
+  axisLabel: { width: 30, fontSize: 12, letterSpacing: 1.5 },
   axisBarBg: { flex: 1, height: 5, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden', position: 'relative' },
   axisWorldLine: { position: 'absolute', top: 0, bottom: 0, width: 1.5, backgroundColor: '#FFD700', opacity: 0.6 },
   axisBarFill: { height: '100%', borderRadius: 3 },
-  axisVal: { fontSize: 13, width: 26, textAlign: 'right' },
-  axisDiff: { fontSize: 10, width: 28, textAlign: 'right' },
+  axisVal: { fontSize: 15, width: 26, textAlign: 'right' },
+  axisDiff: { fontSize: 12, width: 28, textAlign: 'right' },
   // Bottom row
   bottomRow: { flexDirection: 'row', padding: 16, gap: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)' },
   forecastCard: { flex: 1, backgroundColor: '#0A0A0A', borderRadius: 12, padding: 14, gap: 10, borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)' },
   forecastHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   forecastMetrics: { flexDirection: 'row', justifyContent: 'space-around' },
   forecastMetric: { alignItems: 'center', gap: 3 },
-  forecastVal: { fontSize: 18 },
-  forecastLabel: { fontSize: 8, letterSpacing: 2 },
+  forecastVal: { fontSize: 20 },
+  forecastLabel: { fontSize: 10, letterSpacing: 2 },
   injuryCard: { flex: 1, backgroundColor: '#0A0A0A', borderRadius: 12, padding: 14, gap: 6, borderWidth: 1 },
-  injuryRec: { color: 'rgba(255,255,255,0.30)', fontSize: 10, lineHeight: 14 },
+  injuryRec: { color: 'rgba(255,255,255,0.30)', fontSize: 12, lineHeight: 14 },
   // Coach note
   noteSection: { padding: 16, gap: 10 },
   noteHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  noteInput: { borderWidth: 1, borderRadius: 10, padding: 12, fontSize: 13, minHeight: 80 } as any,
-  noteText: { fontSize: 12, lineHeight: 18 },
+  noteInput: { borderWidth: 1, borderRadius: 10, padding: 12, fontSize: 15, minHeight: 80 } as any,
+  noteText: { fontSize: 14, lineHeight: 18 },
   // Footer
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', padding: 14, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.07)', backgroundColor: '#0A0A0A' },
-  footerText: { color: 'rgba(255,255,255,0.2)', fontSize: 10, letterSpacing: 0.5 },
+  footerText: { color: 'rgba(255,255,255,0.2)', fontSize: 12, letterSpacing: 0.5 },
 });

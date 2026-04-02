@@ -184,8 +184,8 @@ const ni$ = StyleSheet.create({
   activeBar: { position: 'absolute', left: 0, top: 8, bottom: 8, width: 3, borderRadius: 2 },
   activeBg: { ...StyleSheet.absoluteFillObject, borderRadius: 10 },
   text: { flex: 1, gap: 1 },
-  label: { fontSize: 11, letterSpacing: 1.5 },
-  sub: { fontSize: 9, letterSpacing: 0.5 },
+  label: { fontSize: 13, letterSpacing: 1.5 },
+  sub: { fontSize: 11, letterSpacing: 0.5 },
 });
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
@@ -324,25 +324,25 @@ const l$ = StyleSheet.create({
   sidebar: { width: 210, borderRightWidth: 1, paddingTop: 20, paddingBottom: 16, justifyContent: 'space-between' },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 24, marginBottom: 28 },
   brandAccent: { width: 4, height: 28, borderRadius: 2 },
-  brandName: { fontSize: 15, letterSpacing: 3 },
-  brandSub: { fontSize: 8, letterSpacing: 3, marginTop: 1 },
+  brandName: { fontSize: 17, letterSpacing: 3 },
+  brandSub: { fontSize: 10, letterSpacing: 3, marginTop: 1 },
   nav: { flex: 1, paddingHorizontal: 8, gap: 2 },
   bottom: { paddingHorizontal: 12, paddingTop: 16, borderTopWidth: 1, gap: 12 },
   userRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   avatar: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  avatarLetter: { fontSize: 13, fontWeight: '900' },
+  avatarLetter: { fontSize: 15, fontWeight: '900' },
   userInfo: { flex: 1, gap: 3, minWidth: 0 },
-  userName: { fontSize: 12, letterSpacing: 0.5 },
+  userName: { fontSize: 14, letterSpacing: 0.5 },
   rolePill: { borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1, alignSelf: 'flex-start' },
-  roleText: { fontSize: 8, letterSpacing: 2 },
+  roleText: { fontSize: 10, letterSpacing: 2 },
   exitBtn: { padding: 4 },
   main: { flex: 1 },
 });
 
 const mob$ = StyleSheet.create({
   root: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, padding: 40 },
-  title: { fontSize: 18, letterSpacing: 3 },
-  sub: { fontSize: 13, textAlign: 'center', lineHeight: 20 },
+  title: { fontSize: 20, letterSpacing: 3 },
+  sub: { fontSize: 15, textAlign: 'center', lineHeight: 20 },
   btn: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 20, paddingVertical: 10 },
-  btnTxt: { fontSize: 12, letterSpacing: 2 },
+  btnTxt: { fontSize: 14, letterSpacing: 2 },
 });

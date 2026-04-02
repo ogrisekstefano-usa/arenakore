@@ -1,6 +1,6 @@
 /**
  * GYM HUB — Business Dashboard for GYM_OWNER
- * XP generated, members, coaches, subscription tier
+ * FLUX generated, members, coaches, subscription tier
  */
 import React, { useEffect, useState } from 'react';
 import {
@@ -78,7 +78,7 @@ export default function GymDashboard() {
       {/* Business KPIs */}
       <View style={g$.kpiRow}>
         <KPICard icon="👥" label="MEMBRI TOTALI" value={stats.total_members || 0} sub={`${stats.total_coaches || 0} coach`} color="#00E5FF" />
-        <KPICard icon="⚡" label="XP GENERATI" value={(stats.total_xp_generated || 0).toLocaleString()} sub="della palestra" color="#FFD700" />
+        <KPICard icon="⚡" label="FLUX GENERATI" value={(stats.total_xp_generated || 0).toLocaleString()} sub="della palestra" color="#FFD700" />
         <KPICard icon="📊" label="LIVELLO MEDIO" value={stats.avg_level || 1} sub="atleti" color="#00FF87" />
         <KPICard icon="🛡" label="BATTLE" value={stats.battles_count || 0} sub="totali" color="#AF52DE" />
         <KPICard icon="📤" label="TEMPLATE" value={stats.templates_sent || 0} sub="inviati" color="#FF9500" />
@@ -89,7 +89,7 @@ export default function GymDashboard() {
         {/* Left: Top Performers */}
         <View style={g$.col}>
           <View style={g$.sectionCard}>
-            <SectionHeader title="TOP PERFORMERS" sub="Atleti con più XP" />
+            <SectionHeader title="TOP PERFORMERS" sub="Atleti con più FLUX" />
             {(data?.top_performers || []).map((p: any, i: number) => (
               <Animated.View key={p.username} entering={FadeInDown.delay(i * 60).duration(200)} style={g$.performerRow}>
                 <View style={g$.performerRank}>
@@ -99,7 +99,7 @@ export default function GymDashboard() {
                   <Text style={g$.perfName}>{p.username}</Text>
                   <Text style={g$.perfMeta}>LVL {p.level}</Text>
                 </View>
-                <Text style={g$.perfXp}>{p.xp?.toLocaleString()} XP</Text>
+                <Text style={g$.perfXp}>{p.xp?.toLocaleString()} FLUX</Text>
               </Animated.View>
             ))}
           </View>
@@ -169,32 +169,32 @@ const g$ = StyleSheet.create({
   root: { flex: 1 }, content: { padding: 28, gap: 22, paddingBottom: 60 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  pageTitle: { color: '#FFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
-  pageSub: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '300', marginTop: 4 },
+  pageTitle: { color: '#FFF', fontSize: 24, fontWeight: '900', letterSpacing: 4 },
+  pageSub: { color: 'rgba(255,255,255,0.30)', fontSize: 14, fontWeight: '300', marginTop: 4 },
   tierBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
-  tierIcon: { fontSize: 16 },
-  tierText: { fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  tierIcon: { fontSize: 18 },
+  tierText: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   kpiRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
   twoCol: { flexDirection: 'row', gap: 16, alignItems: 'flex-start' },
   col: { flex: 1 },
   sectionCard: { backgroundColor: '#0A0A0A', borderRadius: 14, padding: 18, gap: 10, borderWidth: 1, borderColor: '#1E1E1E' },
   performerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#111' },
   performerRank: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#1E1E1E', alignItems: 'center', justifyContent: 'center' },
-  rankNum: { color: '#FFF', fontSize: 13, fontWeight: '900' },
+  rankNum: { color: '#FFF', fontSize: 15, fontWeight: '900' },
   performerInfo: { flex: 1 },
-  perfName: { color: '#FFF', fontSize: 13, fontWeight: '700' },
-  perfMeta: { color: 'rgba(255,255,255,0.3)', fontSize: 11 },
-  perfXp: { color: '#FFD700', fontSize: 14, fontWeight: '900' },
+  perfName: { color: '#FFF', fontSize: 15, fontWeight: '700' },
+  perfMeta: { color: 'rgba(255,255,255,0.3)', fontSize: 13 },
+  perfXp: { color: '#FFD700', fontSize: 16, fontWeight: '900' },
   settingsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   settingRow: { gap: 5 },
-  settingLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
-  settingValue: { color: '#FFF', fontSize: 14, fontWeight: '700' },
-  settingInput: { color: '#FFF', backgroundColor: '#111', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 7, fontSize: 14, borderWidth: 1, borderColor: '#1E1E1E', outlineStyle: 'none' } as any,
+  settingLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  settingValue: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  settingInput: { color: '#FFF', backgroundColor: '#111', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 7, fontSize: 16, borderWidth: 1, borderColor: '#1E1E1E', outlineStyle: 'none' } as any,
   codePill: { backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5, alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)' },
-  codeText: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 4 },
+  codeText: { color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
   saveBtn: { backgroundColor: '#FFD700', borderRadius: 8, paddingVertical: 11, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
   saveBtnOff: { opacity: 0.4 },
-  saveBtnText: { color: '#000', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
+  saveBtnText: { color: '#000', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
   joinInfo: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginTop: 4 },
-  joinText: { flex: 1, color: 'rgba(0,229,255,0.45)', fontSize: 11, fontWeight: '300', lineHeight: 16 },
+  joinText: { flex: 1, color: 'rgba(0,229,255,0.45)', fontSize: 13, fontWeight: '300', lineHeight: 16 },
 });

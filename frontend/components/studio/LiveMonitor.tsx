@@ -52,7 +52,7 @@ function EventRow({ event, idx }: { event: LiveEvent & { isNew?: boolean }; idx:
         </Text>
       </View>
       <View style={e$.right}>
-        {event.xp_earned ? <Text style={e$.xp}>+{event.xp_earned} XP</Text> : null}
+        {event.xp_earned ? <Text style={e$.xp}>+{event.xp_earned} FLUX</Text> : null}
         <Text style={e$.age}>{ageLabel}</Text>
       </View>
     </Animated.View>
@@ -62,13 +62,13 @@ function EventRow({ event, idx }: { event: LiveEvent & { isNew?: boolean }; idx:
 const e$ = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, paddingHorizontal: 10, borderLeftWidth: 2, borderRadius: 4, marginBottom: 2 },
   avatar: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  avatarLetter: { color: '#000', fontSize: 12, fontWeight: '900' },
+  avatarLetter: { color: '#000', fontSize: 14, fontWeight: '900' },
   info: { flex: 1, gap: 1 },
-  name: { color: '#FFF', fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
-  detail: { color: 'rgba(255,255,255,0.30)', fontSize: 10, fontWeight: '300' },
+  name: { color: '#FFF', fontSize: 14, fontWeight: '700', letterSpacing: 0.5 },
+  detail: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '300' },
   right: { alignItems: 'flex-end', gap: 1 },
-  xp: { color: '#FFD700', fontSize: 11, fontWeight: '900' },
-  age: { color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '300' },
+  xp: { color: '#FFD700', fontSize: 13, fontWeight: '900' },
+  age: { color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: '300' },
 });
 
 export function LiveMonitorPanel({ gymId }: { gymId: string | null | undefined }) {
@@ -167,8 +167,8 @@ const lm$ = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statusDot: { width: 6, height: 6, borderRadius: 3 },
-  title: { color: '#FFF', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
-  sub: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '300', letterSpacing: 1 },
+  title: { color: '#FFF', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
+  sub: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '300', letterSpacing: 1 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 24, gap: 10 },
-  emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 12, textAlign: 'center', lineHeight: 18 },
+  emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 14, textAlign: 'center', lineHeight: 18 },
 });

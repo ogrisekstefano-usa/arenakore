@@ -83,21 +83,21 @@ export { CATEGORIES_MAP };
 const m$ = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' },
   card: { backgroundColor: '#111', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, gap: 12 },
-  title: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 1 },
-  subtitle: { color: '#AAAAAA', fontSize: 16, marginBottom: 4 },
+  title: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
+  subtitle: { color: '#AAAAAA', fontSize: 18, marginBottom: 4 },
   input: {
     backgroundColor: '#1A1A1A', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14,
-    color: '#FFFFFF', fontSize: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)',
+    color: '#FFFFFF', fontSize: 17, borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)',
   },
-  catTitle: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
+  catTitle: { color: 'rgba(255,255,255,0.5)', fontSize: 15, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
   catRow: { gap: 8, paddingVertical: 4 },
   catChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#2A2A2A',
   },
-  catLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
+  catLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
   createBtn: { backgroundColor: '#FFD700', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
-  createBtnText: { color: '#000000', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
+  createBtnText: { color: '#000000', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
   cancelBtn: { alignItems: 'center', paddingVertical: 8 },
-  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '600' },
+  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 19, fontWeight: '600' },
 });

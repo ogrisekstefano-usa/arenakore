@@ -142,7 +142,7 @@ function SecurityPhase({ onNext }: { onNext: (email: string, password: string) =
         {/* Email */}
         <View style={styles.fieldGroup}>
           <Text style={[styles.fieldLabel, MONT]}>EMAIL</Text>
-          <View style={[styles.fieldWrap, emailOk && email ? { borderColor: GREEN } : {}]}>
+          <View style={[styles.fieldWrap, email.length > 0 ? { borderColor: emailOk ? GREEN : RED } : {}]}>
             <Ionicons name="mail" size={16} color="rgba(255,255,255,0.3)" style={styles.fieldIcon} />
             <TextInput
               style={[styles.fieldInput, MONT]}
@@ -550,7 +550,7 @@ const styles = StyleSheet.create({
   },
   navBackText: {
     color: 'rgba(255,255,255,0.5)',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '300',
     letterSpacing: 0.5,
   },
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
   },
   nexusBrandText: {
     color: CYAN,
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '900',
     letterSpacing: 4,
   },
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
   phaseLabel: {
     flex: 1,
     color: 'rgba(255,255,255,0.4)',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '300',
     letterSpacing: 3,
   },
@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
   },
   phaseSub: {
     color: 'rgba(255,255,255,0.4)',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '300',
     lineHeight: 18,
     letterSpacing: 0.5,
@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
   fieldGroup: { gap: 7 },
   fieldLabel: {
     color: 'rgba(255,255,255,0.30)',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '300',
     letterSpacing: 3,
   },
@@ -675,7 +675,7 @@ const styles = StyleSheet.create({
   fieldInput: {
     flex: 1,
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: '300',
     letterSpacing: 0.5,
     // web only:
@@ -685,7 +685,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   fieldHint: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '300',
     letterSpacing: 0.5,
     color: 'rgba(255,255,255,0.3)',
@@ -717,7 +717,7 @@ const styles = StyleSheet.create({
   termsText: {
     flex: 1,
     color: '#AAAAAA',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '300',
     lineHeight: 18,
     letterSpacing: 0.3,
@@ -741,7 +741,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#FF3B30',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '300',
     letterSpacing: 0.5,
   },
@@ -763,7 +763,7 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     color: '#000000',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '900',
     letterSpacing: 3,
   },
@@ -791,7 +791,7 @@ const styles = StyleSheet.create({
   },
   genderLabel: {
     color: 'rgba(255,255,255,0.6)',
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '900',
     letterSpacing: 1.5,
   },
@@ -811,7 +811,7 @@ const styles = StyleSheet.create({
   calibText: {
     flex: 1,
     color: '#00E5FF22',
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '300',
     lineHeight: 16,
     letterSpacing: 0.3,
@@ -827,13 +827,13 @@ const styles = StyleSheet.create({
   },
   loginLinkText: {
     color: 'rgba(255,255,255,0.30)',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '300',
     letterSpacing: 0.5,
   },
   loginLinkCta: {
     color: CYAN,
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '900',
     letterSpacing: 2,
   },
@@ -853,7 +853,7 @@ const styles = StyleSheet.create({
   },
   chameleonLabel: {
     color: 'rgba(255,255,255,0.3)',
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '900',
     letterSpacing: 3,
   },
@@ -892,14 +892,14 @@ const styles = StyleSheet.create({
   },
   chameleonCardTitle: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '800',
     letterSpacing: 1,
     marginBottom: 3,
   },
   chameleonCardSub: {
     color: '#AAAAAA',
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '300',
     lineHeight: 16,
   },

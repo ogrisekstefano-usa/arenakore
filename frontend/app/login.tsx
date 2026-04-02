@@ -22,6 +22,12 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Real-time validation
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const passwordValid = password.length >= 6;
+  const emailBorder = email.length === 0 ? '#222222' : emailValid ? '#00E5FF' : '#FF3B30';
+  const pwdBorder = password.length === 0 ? '#222222' : passwordValid ? '#00E5FF' : '#FF3B30';
+
   const handleLogin = async () => {
     if (!email || !password) { setError('Inserisci email e password'); return; }
     setLoading(true);
@@ -67,7 +73,7 @@ export default function Login() {
             <Text style={styles.label}>EMAIL</Text>
             <TextInput
               testID="login-email-input"
-              style={styles.input}
+              style={[styles.input, { borderColor: emailBorder }]}
               value={email}
               onChangeText={setEmail}
               placeholder="la-tua@email.com"
@@ -79,7 +85,7 @@ export default function Login() {
 
           <View style={styles.fieldGroup}>
             <Text style={styles.label}>PASSWORD</Text>
-            <View style={styles.pwdContainer}>
+            <View style={[styles.pwdContainer, { borderColor: pwdBorder }]}>
               <TextInput
                 testID="login-password-input"
                 style={styles.pwdInput}
@@ -134,36 +140,36 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
   content: { paddingHorizontal: 24, flexGrow: 1 },
   backBtn: { marginBottom: 32 },
-  backText: { color: '#00E5FF', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  backText: { color: '#00E5FF', fontSize: 14, fontWeight: '700', letterSpacing: 1 },
   title: { color: '#FFFFFF', fontSize: 44, fontWeight: '900', letterSpacing: 0.5 },
-  subtitle: { color: '#555555', fontSize: 14, marginTop: 6, marginBottom: 40 },
+  subtitle: { color: '#555555', fontSize: 16, marginTop: 6, marginBottom: 40 },
   form: { gap: 20 },
   fieldGroup: { gap: 8 },
-  label: { color: '#00E5FF', fontSize: 11, fontWeight: '700', letterSpacing: 2 },
+  label: { color: '#00E5FF', fontSize: 13, fontWeight: '700', letterSpacing: 2 },
   input: {
     backgroundColor: '#111111', borderWidth: 1, borderColor: '#222222',
-    borderRadius: 8, padding: 16, color: '#FFFFFF', fontSize: 16,
+    borderRadius: 8, padding: 16, color: '#FFFFFF', fontSize: 18,
   },
   pwdContainer: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#111111', borderWidth: 1, borderColor: '#222222', borderRadius: 8,
   },
-  pwdInput: { flex: 1, padding: 16, color: '#FFFFFF', fontSize: 16 },
+  pwdInput: { flex: 1, padding: 16, color: '#FFFFFF', fontSize: 18 },
   showHide: { paddingHorizontal: 24 },
-  showHideText: { color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
-  error: { color: '#FF3B30', fontSize: 13, textAlign: 'center' },
+  showHideText: { color: '#00E5FF', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  error: { color: '#FF3B30', fontSize: 15, textAlign: 'center' },
   loginButton: {
     backgroundColor: '#00E5FF', borderRadius: 8,
     paddingVertical: 18, alignItems: 'center', marginTop: 8,
   },
-  loginButtonText: { color: '#000000', fontSize: 16, fontWeight: '800', letterSpacing: 2 },
-  registerLink: { color: '#555555', fontSize: 14, textAlign: 'center', marginTop: 8 },
+  loginButtonText: { color: '#000000', fontSize: 18, fontWeight: '800', letterSpacing: 2 },
+  registerLink: { color: '#555555', fontSize: 16, textAlign: 'center', marginTop: 8 },
   registerLinkBold: { color: '#00E5FF', fontWeight: '700' },
   recoverRow: {
     alignItems: 'center', paddingVertical: 14,
     borderTopWidth: 1, borderTopColor: '#111', marginTop: 4,
   },
   recoverText: {
-    color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 3,
+    color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 3,
   },
 });

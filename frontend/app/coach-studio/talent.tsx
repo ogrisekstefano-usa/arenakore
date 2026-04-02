@@ -215,8 +215,8 @@ export default function TalentScout() {
               <Text style={[t$.rowDna, { color: ath.dna_avg >= 80 ? '#FFD700' : '#FFFFFF' }]}>{ath.dna_avg}</Text>
               {/* ⚡ Efficiency Ratio — primary metric */}
               <View style={{ width: 54, alignItems: 'center' }}>
-                <Text style={[t$.rowScore, { color: ath.efficiency_ratio >= 80 ? '#FFD700' : tier.color, fontSize: 15 }]}>{ath.efficiency_ratio}</Text>
-                <Text style={{ fontSize: 8, color: 'rgba(255,255,255,0.25)', letterSpacing: 1 }}>⚡EFF</Text>
+                <Text style={[t$.rowScore, { color: ath.efficiency_ratio >= 80 ? '#FFD700' : tier.color, fontSize: 17 }]}>{ath.efficiency_ratio}</Text>
+                <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', letterSpacing: 1 }}>⚡EFF</Text>
               </View>
               {/* Tier */}
               <View style={[t$.rowTier, { backgroundColor: tier.bg }]}>
@@ -227,11 +227,11 @@ export default function TalentScout() {
               <View style={{ width: 60, alignItems: 'center' }}>
                 {ath.is_free_agent ? (
                   <View style={[t$.statusPill, { backgroundColor: 'rgba(0,255,135,0.1)', borderColor: 'rgba(0,255,135,0.3)' }]}>
-                    <Text style={{ color: '#00FF87', fontSize: 8, fontWeight: '900' }}>⚡ FREE</Text>
+                    <Text style={{ color: '#00FF87', fontSize: 10, fontWeight: '900' }}>⚡ FREE</Text>
                   </View>
                 ) : (
                   <View style={[t$.statusPill, { backgroundColor: 'rgba(0,229,255,0.06)', borderColor: '#00E5FF22' }]}>
-                    <Text style={{ color: '#00E5FF', fontSize: 8, fontWeight: '700' }}>🛡 CREW</Text>
+                    <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '700' }}>🛡 CREW</Text>
                   </View>
                 )}
               </View>
@@ -246,7 +246,7 @@ export default function TalentScout() {
                   {isDrafting ? <ActivityIndicator color="#000" size="small" /> : (
                     <>
                       <Ionicons name={ath.already_drafted ? 'checkmark-circle' : 'people'} size={11} color={ath.already_drafted ? '#00FF87' : '#000'} />
-                      <Text style={[t$.draftBtnText, ath.already_drafted && { color: '#00FF87' }, { fontSize: 9, letterSpacing: 0.5 }]}>
+                      <Text style={[t$.draftBtnText, ath.already_drafted && { color: '#00FF87' }, { fontSize: 11, letterSpacing: 0.5 }]}>
                         {ath.already_drafted ? 'IN SQUAD' : 'INVITE'}
                       </Text>
                     </>
@@ -296,62 +296,62 @@ export default function TalentScout() {
 const t$ = StyleSheet.create({
   root: { flex: 1 }, content: { padding: 28, gap: 18, paddingBottom: 60 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  pageTitle: { color: '#FFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
-  pageSub: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '300', marginTop: 3, maxWidth: 400 },
+  pageTitle: { color: '#FFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
+  pageSub: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '300', marginTop: 3, maxWidth: 400 },
   draftCount: { alignItems: 'center', backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)' },
-  draftCountVal: { color: '#FFD700', fontSize: 24, fontWeight: '900' },
-  draftCountLabel: { color: 'rgba(255,215,0,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  draftCountVal: { color: '#FFD700', fontSize: 26, fontWeight: '900' },
+  draftCountLabel: { color: 'rgba(255,215,0,0.5)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   filters: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' },
   filterWrap: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#0A0A0A', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: '#1E1E1E' },
-  filterInput: { color: '#FFF', fontSize: 12, width: 150, outlineStyle: 'none' } as any,
+  filterInput: { color: '#FFF', fontSize: 14, width: 150, outlineStyle: 'none' } as any,
   sortRow: { flexDirection: 'row', gap: 6 },
   sortBtn: { borderWidth: 1, borderColor: '#1E1E1E', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
   sortBtnActive: { borderColor: 'rgba(255,215,0,0.5)', backgroundColor: 'rgba(255,215,0,0.06)' },
-  sortText: { color: 'rgba(255,255,255,0.30)', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  sortText: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   legend: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 14, gap: 8, borderWidth: 1, borderColor: '#1E1E1E' },
-  legendTitle: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
-  legendDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '300', lineHeight: 16 },
+  legendTitle: { color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  legendDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '300', lineHeight: 16 },
   tierRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   tierPill: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  tierLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  tierLabel: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   table: { backgroundColor: '#0A0A0A', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#1E1E1E' },
   tableHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#111', paddingVertical: 10, paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: '#1E1E1E' },
-  th: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '900', letterSpacing: 2, width: 60, textAlign: 'center' },
+  th: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '900', letterSpacing: 2, width: 60, textAlign: 'center' },
   loadRow: { alignItems: 'center', paddingVertical: 30 },
   emptyRow: { alignItems: 'center', paddingVertical: 30, gap: 10 },
-  emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 12 },
+  emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 14 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10, paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: '#111' },
-  rowRank: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '900', width: 24, textAlign: 'center' },
+  rowRank: { color: 'rgba(255,255,255,0.2)', fontSize: 14, fontWeight: '900', width: 24, textAlign: 'center' },
   rowAthlete: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   rowAvatar: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  rowAvatarLetter: { color: '#000', fontSize: 13, fontWeight: '900' },
+  rowAvatarLetter: { color: '#000', fontSize: 15, fontWeight: '900' },
   rowInfo: { flex: 1 },
-  rowName: { color: '#FFF', fontSize: 13, fontWeight: '700', letterSpacing: 0.5 },
-  rowMeta: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '300' },
-  rowDna: { width: 40, fontSize: 13, fontWeight: '900', textAlign: 'center' },
-  rowScore: { width: 50, fontSize: 15, fontWeight: '900', textAlign: 'center' },
+  rowName: { color: '#FFF', fontSize: 15, fontWeight: '700', letterSpacing: 0.5 },
+  rowMeta: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '300' },
+  rowDna: { width: 40, fontSize: 15, fontWeight: '900', textAlign: 'center' },
+  rowScore: { width: 50, fontSize: 17, fontWeight: '900', textAlign: 'center' },
   rowTier: { width: 70, flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, justifyContent: 'center' },
-  rowTierText: { fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-  rowLevel: { width: 40, color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '400', textAlign: 'center' },
+  rowTierText: { fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  rowLevel: { width: 40, color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '400', textAlign: 'center' },
   draftBtn: { width: 68, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: '#FFD700', borderRadius: 8, paddingVertical: 7 },
   draftBtnDone: { backgroundColor: 'rgba(0,255,135,0.08)', borderWidth: 1, borderColor: 'rgba(0,255,135,0.3)' },
-  draftBtnText: { color: '#000', fontSize: 10, fontWeight: '900' },
+  draftBtnText: { color: '#000', fontSize: 12, fontWeight: '900' },
   reportBtn: { width: 68, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: 'rgba(175,82,222,0.12)', borderRadius: 8, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(175,82,222,0.3)' },
-  reportBtnText: { color: '#AF52DE', fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
+  reportBtnText: { color: '#AF52DE', fontSize: 11, fontWeight: '900', letterSpacing: 0.5 },
   // NEW: pill filter row
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' },
   pill: { borderWidth: 1, borderColor: '#1E1E1E', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: '#0A0A0A' },
   pillActive: { borderColor: 'rgba(255,215,0,0.5)', backgroundColor: 'rgba(255,215,0,0.08)' },
-  pillText: { color: 'rgba(255,255,255,0.30)', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  pillText: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
   pillDivider: { width: 1, height: 20, backgroundColor: '#1E1E1E' },
   statusPill: { borderWidth: 1, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 3, alignItems: 'center' },
   draftsSection: { gap: 10 },
   draftRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#0A0A0A', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#1E1E1E' },
   draftAvatar: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  draftAvatarLetter: { color: '#000', fontSize: 14, fontWeight: '900' },
+  draftAvatarLetter: { color: '#000', fontSize: 16, fontWeight: '900' },
   draftInfo: { flex: 1 },
-  draftName: { color: '#FFF', fontSize: 13, fontWeight: '700' },
-  draftMeta: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '300', marginTop: 2 },
+  draftName: { color: '#FFF', fontSize: 15, fontWeight: '700' },
+  draftMeta: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '300', marginTop: 2 },
   draftStatus: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
-  draftStatusText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  draftStatusText: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
 });

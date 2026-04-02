@@ -78,11 +78,11 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
     const recordText = recordsBroken.length > 0
       ? `\nRecord: ${recordsBroken.join(', ').toUpperCase()}`
       : '';
-    const xpText = xpEarned ? `\n+${xpEarned} XP guadagnati!` : '';
+    const xpText = xpEarned ? `\n+${xpEarned} FLUX guadagnati!` : '';
 
     try {
       await Share.share({
-        message: `ARENAKORE TALENT CARD\n${'━'.repeat(15)}\n${user.username?.toUpperCase()}\nLVL ${user.level} | ${user.xp} XP\n${user.sport?.toUpperCase() || 'ATLETA'}${xpText}${recordText}\n\n${statsText}\n\nOVR: ${avgStat}/100\n${'━'.repeat(15)}\n#ArenaKore #${user.sport} #Performance`,
+        message: `ARENAKORE TALENT CARD\n${'━'.repeat(15)}\n${user.username?.toUpperCase()}\nLVL ${user.level} | ${user.xp} FLUX\n${user.sport?.toUpperCase() || 'ATLETA'}${xpText}${recordText}\n\n${statsText}\n\nOVR: ${avgStat}/100\n${'━'.repeat(15)}\n#ArenaKore #${user.sport} #Performance`,
         title: `${user.username} - ArenaKore Talent Card`,
       });
     } catch (e) {
@@ -121,7 +121,7 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
           <Text style={styles.sport}>{user.sport?.toUpperCase() || 'ATLETA'}</Text>
           <View style={styles.levelRow}>
             <Text style={styles.levelBadge}>LVL {user.level}</Text>
-            <Text style={styles.xpBadge}>{user.xp} XP</Text>
+            <Text style={styles.xpBadge}>{user.xp} FLUX</Text>
           </View>
         </View>
         <View style={styles.ovrCircle}>
@@ -135,7 +135,7 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
         <View style={styles.challengeRow}>
           <Text style={styles.challengeLabel}>ULTIMA SFIDA</Text>
           <Text style={styles.challengeTitle}>{challengeTitle}</Text>
-          {xpEarned && <Text style={styles.challengeXP}>+{xpEarned} XP</Text>}
+          {xpEarned && <Text style={styles.challengeXP}>+{xpEarned} FLUX</Text>}
         </View>
       )}
 
@@ -219,9 +219,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
   },
   cardBrand: { flexDirection: 'row', gap: 4 },
-  brandArena: { color: '#FFFFFF', fontSize: 17, fontWeight: '900', letterSpacing: -0.5 },
-  brandDare: { color: '#FFD700', fontSize: 17, fontWeight: '900', letterSpacing: -0.5 },
-  cardType: { color: '#00E5FF', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
+  brandArena: { color: '#FFFFFF', fontSize: 19, fontWeight: '900', letterSpacing: -0.5 },
+  brandDare: { color: '#FFD700', fontSize: 19, fontWeight: '900', letterSpacing: -0.5 },
+  cardType: { color: '#00E5FF', fontSize: 14, fontWeight: '800', letterSpacing: 3 },
   divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.08)' },
 
   profileRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -229,37 +229,37 @@ const styles = StyleSheet.create({
     width: 48, height: 48, borderRadius: 24,
     alignItems: 'center', justifyContent: 'center',
   },
-  avatarText: { color: '#000000', fontSize: 20, fontWeight: '900' },
+  avatarText: { color: '#000000', fontSize: 22, fontWeight: '900' },
   profileInfo: { flex: 1, gap: 2 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  username: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
+  username: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 1 },
   founderBadge: {
     backgroundColor: 'rgba(255,215,0,0.15)',
     borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2,
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.4)',
   },
-  founderText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
-  sport: { color: '#00E5FF', fontSize: 14, fontWeight: '700', letterSpacing: 2 },
+  founderText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  sport: { color: '#00E5FF', fontSize: 16, fontWeight: '700', letterSpacing: 2 },
   levelRow: { flexDirection: 'row', gap: 8, marginTop: 2 },
-  levelBadge: { color: '#FFD700', fontSize: 13, fontWeight: '800' },
-  xpBadge: { color: '#888', fontSize: 13, fontWeight: '700' },
+  levelBadge: { color: '#FFD700', fontSize: 15, fontWeight: '800' },
+  xpBadge: { color: '#888', fontSize: 15, fontWeight: '700' },
   ovrCircle: {
     width: 52, height: 52, borderRadius: 26,
     backgroundColor: 'rgba(0,229,255,0.08)',
     borderWidth: 2, borderColor: '#00E5FF44',
     alignItems: 'center', justifyContent: 'center',
   },
-  ovrVal: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
-  ovrLabel: { color: '#00E5FF', fontSize: 10, fontWeight: '800', letterSpacing: 2 },
+  ovrVal: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
+  ovrLabel: { color: '#00E5FF', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
 
   challengeRow: {
     backgroundColor: 'rgba(255,215,0,0.06)',
     borderRadius: 8, padding: 10,
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)',
   },
-  challengeLabel: { color: '#888', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
-  challengeTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '400', marginTop: 2 },
-  challengeXP: { color: '#FFD700', fontSize: 15, fontWeight: '800', marginTop: 2 },
+  challengeLabel: { color: '#888', fontSize: 13, fontWeight: '400', letterSpacing: 2 },
+  challengeTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '400', marginTop: 2 },
+  challengeXP: { color: '#FFD700', fontSize: 17, fontWeight: '800', marginTop: 2 },
 
   recordRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -267,18 +267,18 @@ const styles = StyleSheet.create({
     borderRadius: 6, padding: 8,
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
   },
-  recordIcon: { fontSize: 16 },
-  recordText: { color: '#FFD700', fontSize: 14, fontWeight: '700', letterSpacing: 1 },
+  recordIcon: { fontSize: 18 },
+  recordText: { color: '#FFD700', fontSize: 16, fontWeight: '700', letterSpacing: 1 },
 
   dataRow: { flexDirection: 'row', gap: 12 },
   statsCol: { flex: 1, gap: 6, justifyContent: 'center' },
   statRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  statLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '400', width: 28 },
+  statLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '400', width: 28 },
   statLabelBroken: { color: '#FFD700' },
   statBarOuter: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' },
   statBarInner: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 2 },
   statBarBroken: { backgroundColor: '#FFD700' },
-  statVal: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '800', width: 24, textAlign: 'right' },
+  statVal: { color: 'rgba(255,255,255,0.6)', fontSize: 15, fontWeight: '800', width: 24, textAlign: 'right' },
   statValBroken: { color: '#FFD700' },
 
   visualCol: { alignItems: 'center', gap: 8 },
@@ -298,5 +298,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.3)',
   },
-  shareBtnText: { color: '#00E5FF', fontSize: 14, fontWeight: '800', letterSpacing: 2 },
+  shareBtnText: { color: '#00E5FF', fontSize: 16, fontWeight: '800', letterSpacing: 2 },
 });

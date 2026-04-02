@@ -51,8 +51,8 @@ const fg$ = StyleSheet.create({
     gap: 8, borderRadius: 12,
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
   },
-  title: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
-  subtitle: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '300', letterSpacing: 1.5 },
+  title: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
+  subtitle: { color: 'rgba(255,255,255,0.30)', fontSize: 14, fontWeight: '300', letterSpacing: 1.5 },
   upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FFD700', borderRadius: 8, paddingHorizontal: 24, paddingVertical: 8, marginTop: 4 },
-  upgradeBtnText: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  upgradeBtnText: { color: '#000', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
 });

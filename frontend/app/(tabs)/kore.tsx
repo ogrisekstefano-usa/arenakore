@@ -81,15 +81,15 @@ function CityDropdown({ city, onSelect }: { city: string; onSelect: (c: string) 
 }
 const cd$ = StyleSheet.create({
   trigger: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'transparent', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', alignSelf: 'flex-start' },
-  cityText: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  cityText: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' },
   sheet: { maxHeight: '50%', borderTopLeftRadius: 20, borderTopRightRadius: 20, overflow: 'hidden' },
   sheetInner: { padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', borderTopLeftRadius: 20, borderTopRightRadius: 20 },
-  sheetTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 4, marginBottom: 12 },
+  sheetTitle: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 4, marginBottom: 12 },
   sheetDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginBottom: 8 },
   option: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 4 },
   optionActive: { backgroundColor: 'transparent', borderRadius: 8, paddingHorizontal: 10 },
-  optionText: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
+  optionText: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 15, fontWeight: '800', letterSpacing: 1.5 },
   optionTextActive: { color: '#00E5FF' },
 });
 
@@ -155,18 +155,18 @@ const ph$ = StyleSheet.create({
   topGlow: { height: 2, backgroundColor: '#00E5FF', opacity: 0.6 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16 },
   avatar: { width: 54, height: 54, borderRadius: 27, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  avatarLetter: { color: '#000000', fontSize: 20, fontWeight: '900' },
+  avatarLetter: { color: '#000000', fontSize: 22, fontWeight: '900' },
   identInfo: { flex: 1, gap: 4 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   username: { color: '#FFFFFF', fontSize: 32, fontWeight: '900', letterSpacing: 1, flexShrink: 1 },
   founderBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)', flexShrink: 0 },
-  founderText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
-  sport: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
+  founderText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  sport: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '800', letterSpacing: 2 },
   badgeRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   lvlBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'transparent', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  lvlText: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
+  lvlText: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(255,215,0,0.07)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)' },
-  proText: { color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
+  proText: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
 });
 
 // ========== RANK INFOGRAPHIC ==========
@@ -259,24 +259,24 @@ const ri$ = StyleSheet.create({
   container: { marginHorizontal: 24, marginBottom: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF' },
-  title: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
+  title: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
   cardsRow: { flexDirection: 'row', gap: 10, marginBottom: 12 },
   rankCard: { flex: 1, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   rankInner: { padding: 14, alignItems: 'center', gap: 6 },
   rankIcon: { width: 30, height: 30, borderRadius: 15, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  rankType: { color: 'rgba(255,255,255,0.70)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  rankType: { color: 'rgba(255,255,255,0.70)', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   rankNum: { color: '#00E5FF', fontSize: 36, fontWeight: '900', letterSpacing: 1 },
-  rankOf: { color: '#AAAAAA', fontSize: 13, fontWeight: '400', letterSpacing: 1, marginTop: -4 },
+  rankOf: { color: '#AAAAAA', fontSize: 15, fontWeight: '400', letterSpacing: 1, marginTop: -4 },
   topBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, marginTop: 2 },
-  topText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  topText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   domSection: { gap: 8, marginBottom: 8 },
   barWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  barLabel: { width: 70, fontSize: 9, fontWeight: '900', letterSpacing: 2, textAlign: 'right' },
+  barLabel: { width: 70, fontSize: 11, fontWeight: '900', letterSpacing: 2, textAlign: 'right' },
   barBg: { flex: 1, height: 6, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 3, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 3 },
-  barPct: { width: 42, fontSize: 11, fontWeight: '900', letterSpacing: 0.5, textAlign: 'right' },
+  barPct: { width: 42, fontSize: 13, fontWeight: '900', letterSpacing: 0.5, textAlign: 'right' },
   rivalRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, paddingLeft: 2 },
-  rivalText: { color: 'rgba(255,255,255,0.70)', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+  rivalText: { color: 'rgba(255,255,255,0.70)', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
 });
 
 // ========== AFFILIATIONS ==========
@@ -377,24 +377,24 @@ function Affiliations({ affiliData, token, onRefresh }: { affiliData: any; token
 const af$ = StyleSheet.create({
   container: { marginHorizontal: 24, marginBottom: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  title: { flex: 1, color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
+  title: { flex: 1, color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
   editBtn: { padding: 8, backgroundColor: 'transparent', borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   infoRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   infoCard: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  infoText: { color: '#AAAAAA', fontSize: 10, fontWeight: '800', letterSpacing: 1.5, flex: 1 },
-  input: { flex: 1, color: '#FFFFFF', fontSize: 11, fontWeight: '800', letterSpacing: 1, paddingVertical: 0, borderBottomWidth: 1, borderBottomColor: 'rgba(0,229,255,0.2)' },
+  infoText: { color: '#AAAAAA', fontSize: 12, fontWeight: '800', letterSpacing: 1.5, flex: 1 },
+  input: { flex: 1, color: '#FFFFFF', fontSize: 13, fontWeight: '800', letterSpacing: 1, paddingVertical: 0, borderBottomWidth: 1, borderBottomColor: 'rgba(0,229,255,0.2)' },
   saveBtn: { alignSelf: 'flex-end', backgroundColor: '#00E5FF', borderRadius: 8, paddingHorizontal: 20, paddingVertical: 8, marginBottom: 8 },
-  saveTxt: { color: '#000000', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  saveTxt: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   crewSection: { gap: 6, marginTop: 4 },
-  crewLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 4 },
+  crewLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '900', letterSpacing: 3, marginBottom: 4 },
   crewRow: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   crewDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00E5FF' },
-  crewName: { flex: 1, color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
-  crewMeta: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+  crewName: { flex: 1, color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1.5 },
+  crewMeta: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   ownerBadge: { backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)' },
-  ownerText: { color: '#FFD700', fontSize: 8, fontWeight: '900', letterSpacing: 1 },
+  ownerText: { color: '#FFD700', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
   emptyCrews: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center', paddingVertical: 16 },
-  emptyText: { color: '#AAAAAA', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
+  emptyText: { color: '#AAAAAA', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
 });
 
 // ========== ACTION CENTER ==========
@@ -456,7 +456,7 @@ function ActionCenter({ actionData }: { actionData: any }) {
                 <Text style={ac$.itemTitle} numberOfLines={1}>{item.title}</Text>
                 <View style={ac$.itemMeta}>
                   {item.sport && <Text style={ac$.itemSport}>{item.sport.toUpperCase()}</Text>}
-                  {item.xp_reward > 0 && <Text style={ac$.itemXp}>+{item.xp_reward} XP</Text>}
+                  {item.xp_reward > 0 && <Text style={ac$.itemXp}>+{item.xp_reward} FLUX</Text>}
                   {item.status && <Text style={ac$.itemStatus}>{item.status.toUpperCase()}</Text>}
                   {item.from_username && <Text style={ac$.itemFrom}>DA: {item.from_username.toUpperCase()}</Text>}
                   {item.gym_name && <Text style={ac$.itemFrom}>{item.gym_name.toUpperCase()}</Text>}
@@ -473,28 +473,28 @@ function ActionCenter({ actionData }: { actionData: any }) {
 const ac$ = StyleSheet.create({
   container: { marginHorizontal: 24, marginBottom: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  title: { flex: 1, color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
+  title: { flex: 1, color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
   tabs: { flexDirection: 'row', gap: 8, marginBottom: 10 },
   tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   tabActive: { backgroundColor: 'rgba(255,59,48,0.08)', borderColor: 'rgba(255,59,48,0.25)' },
   tabActivePending: { backgroundColor: 'rgba(255,215,0,0.08)', borderColor: 'rgba(255,215,0,0.25)' },
-  tabText: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  tabText: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   tabTextActive: { color: '#FF3B30' },
   tabTextPending: { color: '#FFD700' },
   badge: { backgroundColor: 'rgba(255,59,48,0.2)', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 1, minWidth: 18, alignItems: 'center' },
-  badgeText: { color: '#FF3B30', fontSize: 10, fontWeight: '900' },
+  badgeText: { color: '#FF3B30', fontSize: 12, fontWeight: '900' },
   empty: { alignItems: 'center', justifyContent: 'center', paddingVertical: 24, gap: 8 },
-  emptyText: { color: '#AAAAAA', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
+  emptyText: { color: '#AAAAAA', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
   list: { gap: 6 },
   item: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   itemDot: { width: 8, height: 8, borderRadius: 4 },
   itemContent: { flex: 1, gap: 3 },
-  itemTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
+  itemTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
   itemMeta: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  itemSport: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
-  itemXp: { color: '#FFD700', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-  itemStatus: { color: '#00E5FF', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
-  itemFrom: { color: '#AAAAAA', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
+  itemSport: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
+  itemXp: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  itemStatus: { color: '#00E5FF', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
+  itemFrom: { color: '#AAAAAA', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
 });
 
 // ========== KORE CARD + WALLET ==========
@@ -708,37 +708,37 @@ function KoreCard({ user, rankData }: { user: any; rankData: any }) {
 const kc$ = StyleSheet.create({
   container: { marginBottom: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, paddingBottom: 10 },
-  sectionTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 4 },
+  sectionTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
   card: { marginHorizontal: 24, borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   cardInner: { padding: 14, gap: 10 },
   scanLayer: { borderRadius: 20, backgroundColor: '#0a0a0a', zIndex: 0 },
   cardTopGlow: { height: 2, backgroundColor: '#00E5FF', opacity: 0.6, marginHorizontal: -14, marginTop: -14 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  brandSm: { color: '#AAAAAA', fontSize: 8, fontWeight: '800', letterSpacing: 4 },
-  cardType: { color: '#00E5FF', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
+  brandSm: { color: '#AAAAAA', fontSize: 10, fontWeight: '800', letterSpacing: 4 },
+  cardType: { color: '#00E5FF', fontSize: 17, fontWeight: '900', letterSpacing: 3 },
   founderBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 4, borderWidth: 1, borderColor: '#FFD700', flexShrink: 0 },
-  founderText: { color: '#FFD700', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  founderText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   dnaSection: { gap: 5 },
-  dnaCap: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '900', letterSpacing: 3, marginBottom: 4 },
+  dnaCap: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '900', letterSpacing: 3, marginBottom: 4 },
   dnaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dnaLabel: { color: '#AAAAAA', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, width: 32 },
+  dnaLabel: { color: '#AAAAAA', fontSize: 13, fontWeight: '900', letterSpacing: 1.5, width: 32 },
   dnaBar: { flex: 1, height: 4, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden' },
   dnaFill: { height: '100%', borderRadius: 2 },
-  dnaVal: { fontSize: 12, fontWeight: '900', letterSpacing: 1, width: 26, textAlign: 'right' },
+  dnaVal: { fontSize: 14, fontWeight: '900', letterSpacing: 1, width: 26, textAlign: 'right' },
   divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)' },
   bottomRow: { flexDirection: 'row', gap: 14, alignItems: 'center' },
   qrBox: { backgroundColor: '#000000', borderRadius: 8, padding: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   rightSide: { flex: 1, gap: 6 },
   bStat: { gap: 1 },
-  bStatLabel: { color: '#AAAAAA', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  bStatLabel: { color: '#AAAAAA', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   bStatVal: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: 1 },
-  serial: { color: 'rgba(0,229,255,0.45)', fontSize: 10, fontWeight: '800', letterSpacing: 2 },
+  serial: { color: 'rgba(0,229,255,0.45)', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
   walletRow: { flexDirection: 'row', gap: 8, marginHorizontal: 24, marginTop: 8 },
   appleBtn: { flex: 1, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   googleBtn: { flex: 1, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(66,133,244,0.2)' },
   btnInner: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 12 },
-  btnSm: { color: '#AAAAAA', fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
-  btnBig: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
+  btnSm: { color: '#AAAAAA', fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
+  btnBig: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 0.5 },
 });
 
 // ========== WALLET MODAL STYLES ==========
@@ -748,15 +748,15 @@ const wm$ = StyleSheet.create({
   cardInner: { padding: 24, alignItems: 'center', gap: 12 },
   topGlow: { height: 2, width: '110%', backgroundColor: '#00E5FF', opacity: 0.6, marginHorizontal: -24, marginTop: -24, marginBottom: 8 },
   iconCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'transparent', borderWidth: 2, borderColor: '#00E5FF', alignItems: 'center', justifyContent: 'center' },
-  title: { color: '#00E5FF', fontSize: 24, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
-  subtitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 3, textAlign: 'center', marginTop: -4 },
+  title: { color: '#00E5FF', fontSize: 26, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
+  subtitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '900', letterSpacing: 3, textAlign: 'center', marginTop: -4 },
   divider: { height: 1, width: '100%', backgroundColor: 'rgba(255,255,255,0.06)' },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', paddingHorizontal: 4 },
-  infoLabel: { color: 'rgba(255,255,255,0.70)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
-  infoVal: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
-  note: { color: 'rgba(0,229,255,0.7)', fontSize: 13, fontWeight: '400', letterSpacing: 1, textAlign: 'center' },
+  infoLabel: { color: 'rgba(255,255,255,0.70)', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
+  infoVal: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
+  note: { color: 'rgba(0,229,255,0.7)', fontSize: 15, fontWeight: '400', letterSpacing: 1, textAlign: 'center' },
   closeBtn: { marginTop: 6, width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, borderRadius: 12, backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-  closeTxt: { color: '#00E5FF', fontSize: 14, fontWeight: '400', letterSpacing: 4 },
+  closeTxt: { color: '#00E5FF', fontSize: 16, fontWeight: '400', letterSpacing: 4 },
 });
 
 // ========== CITY RANKING — REAL-TIME KORE_SCORE ==========
@@ -947,46 +947,46 @@ function CityRanking({
 const cr$ = StyleSheet.create({
   container: { marginHorizontal: 24, marginBottom: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  title: { flex: 1, color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
+  title: { flex: 1, color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
   cityBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: 'transparent', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
-  cityBtnText: { color: '#00E5FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  cityBtnText: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   // Modal
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'flex-end' },
   sheet: { maxHeight: '50%', borderTopLeftRadius: 20, borderTopRightRadius: 20, overflow: 'hidden' },
   sheetInner: { padding: 20, borderWidth: 1, borderColor: 'rgba(255,215,0,0.1)', borderTopLeftRadius: 20, borderTopRightRadius: 20 },
-  sheetTitle: { color: '#FFFFFF', fontSize: 11, fontWeight: '900', letterSpacing: 4, marginBottom: 12 },
+  sheetTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 4, marginBottom: 12 },
   sheetDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginBottom: 8 },
   cityOption: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 11, paddingHorizontal: 4 },
   cityOptionActive: { backgroundColor: 'rgba(255,215,0,0.05)', borderRadius: 8, paddingHorizontal: 10 },
-  cityOptionText: { flex: 1, color: '#AAAAAA', fontSize: 15, fontWeight: '400', letterSpacing: 1.5 },
+  cityOptionText: { flex: 1, color: '#AAAAAA', fontSize: 17, fontWeight: '400', letterSpacing: 1.5 },
   // Card
   card: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)' },
   cardInner: { paddingBottom: 8 },
   cardTopBar: { height: 2, backgroundColor: '#FFD700', opacity: 0.7, marginBottom: 12 },
   loader: { paddingVertical: 28, alignItems: 'center' },
   empty: { paddingVertical: 28, alignItems: 'center', gap: 8 },
-  emptyText: { color: '#AAAAAA', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
+  emptyText: { color: '#AAAAAA', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
   // "First athlete" motivating empty state
   emptyTitleFirst: {
-    color: '#AAAAAA', fontSize: 11, fontWeight: '900',
+    color: '#AAAAAA', fontSize: 13, fontWeight: '900',
     letterSpacing: 3, textAlign: 'center', lineHeight: 18,
   },
   emptyCity: {
-    color: '#FFD700', fontSize: 22, fontWeight: '900', letterSpacing: 2,
+    color: '#FFD700', fontSize: 24, fontWeight: '900', letterSpacing: 2,
     textShadowColor: 'rgba(255,215,0,0.7)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10,
   },
   emptyDominate: {
-    color: '#00E5FF22', fontSize: 10, fontWeight: '900', letterSpacing: 5,
+    color: '#00E5FF22', fontSize: 12, fontWeight: '900', letterSpacing: 5,
   },
   // Meta
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginBottom: 10 },
-  metaCity: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
-  metaCount: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
+  metaCity: { color: '#FFD700', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
+  metaCount: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '400', letterSpacing: 2 },
   // Athlete row
   athleteRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
@@ -995,27 +995,27 @@ const cr$ = StyleSheet.create({
   },
   athleteRowMe: { backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 10, borderBottomWidth: 0, marginHorizontal: 6, marginVertical: 2, borderLeftWidth: 3, borderLeftColor: '#00E5FF' },
   medalBox: { width: 24, alignItems: 'center' },
-  rankNum: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '400' },
+  rankNum: { color: 'rgba(255,255,255,0.3)', fontSize: 16, fontWeight: '400' },
   avatarDot: { width: 8, height: 8, borderRadius: 4 },
   athleteInfo: { flex: 1, gap: 2 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  athleteName: { color: '#FFFFFF', fontSize: 15, fontWeight: '800', letterSpacing: 1, flexShrink: 1 },
+  athleteName: { color: '#FFFFFF', fontSize: 17, fontWeight: '800', letterSpacing: 1, flexShrink: 1 },
   athleteNameMe: { color: '#00E5FF' },
   founderPill: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)' },
   founderPillText: { color: '#FFD700', fontSize: 7, fontWeight: '900', letterSpacing: 1 },
   mePill: { backgroundColor: 'transparent', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
   mePillText: { color: '#00E5FF', fontSize: 7, fontWeight: '900', letterSpacing: 1 },
-  athleteSub: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '400', letterSpacing: 1 },
+  athleteSub: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '400', letterSpacing: 1 },
   // Score
   scoreBox: { alignItems: 'flex-end', minWidth: 44 },
-  scoreVal: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
-  scoreLabel: { color: '#AAAAAA', fontSize: 8, fontWeight: '400', letterSpacing: 2 },
+  scoreVal: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 1 },
+  scoreLabel: { color: '#AAAAAA', fontSize: 10, fontWeight: '400', letterSpacing: 2 },
   // My rank outside top10
   myRankRow: { paddingHorizontal: 24, paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#00E5FF22', alignItems: 'center' },
-  myRankText: { color: '#00E5FF22', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
+  myRankText: { color: '#00E5FF22', fontSize: 14, fontWeight: '400', letterSpacing: 2 },
 });
 
-// ========== XP PROGRESS ==========
+// ========== FLUX PROGRESS ==========
 function XpProgress({ user }: { user: any }) {
   const xp = (user?.xp || 0) as number;
   const xpPerLevel = 500;
@@ -1029,12 +1029,12 @@ function XpProgress({ user }: { user: any }) {
     <Animated.View entering={FadeInDown.delay(450)} style={xp$.container}>
       <View style={xp$.header}>
         <Ionicons name="flash" size={13} color="#FFD700" />
-        <Text style={xp$.title}>XP PROGRESSION</Text>
+        <Text style={xp$.title}>FLUX PROGRESSION</Text>
         <Text style={xp$.lvl}>LVL {user?.level || 1}</Text>
       </View>
       <View style={xp$.barBg}><Animated.View style={[xp$.barFill, barStyle]} /></View>
       <View style={xp$.meta}>
-        <Text style={xp$.current}>{xp.toLocaleString()} XP</Text>
+        <Text style={xp$.current}>{xp.toLocaleString()} FLUX</Text>
         <Text style={xp$.next}>{remaining} AL PROSSIMO LVL</Text>
       </View>
     </Animated.View>
@@ -1043,13 +1043,13 @@ function XpProgress({ user }: { user: any }) {
 const xp$ = StyleSheet.create({
   container: { marginHorizontal: 24, marginBottom: 16 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  title: { flex: 1, color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
-  lvl: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+  title: { flex: 1, color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
+  lvl: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
   barBg: { height: 6, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 3, overflow: 'hidden', marginBottom: 8 },
   barFill: { height: '100%', backgroundColor: '#FFD700', borderRadius: 3 },
   meta: { flexDirection: 'row', justifyContent: 'space-between' },
-  current: { color: '#FFFFFF', fontSize: 12, fontWeight: '900' },
-  next: { color: '#AAAAAA', fontSize: 9, fontWeight: '700' },
+  current: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
+  next: { color: '#AAAAAA', fontSize: 11, fontWeight: '700' },
 });
 
 
@@ -1138,20 +1138,20 @@ function OfferteScout({ token, refreshUser }: { token: string | null; refreshUse
 const os$ = StyleSheet.create({
   section: { marginHorizontal: 24, marginBottom: 12 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  title: { flex: 1, color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  title: { flex: 1, color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   countPill: { backgroundColor: '#FFD700', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
-  countText: { color: '#000', fontSize: 11, fontWeight: '900' },
+  countText: { color: '#000', fontSize: 13, fontWeight: '900' },
   card: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)', marginBottom: 8 },
   coachAvatar: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  coachAvatarLetter: { color: '#000', fontSize: 16, fontWeight: '900' },
+  coachAvatarLetter: { color: '#000', fontSize: 18, fontWeight: '900' },
   info: { flex: 1, gap: 3 },
-  coachName: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
-  message: { color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '300', lineHeight: 15 },
+  coachName: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  message: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '300', lineHeight: 15 },
   actions: { flexDirection: 'row', gap: 8, flexShrink: 0 },
   acceptBtn: { backgroundColor: '#00E5FF', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', minWidth: 60 },
-  acceptText: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  acceptText: { color: '#000', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   declineBtn: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 },
-  declineText: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '400' },
+  declineText: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '400' },
 });
 
 // ── SCOUT VISIBILITY TOGGLE ──────────────────────────────────────────────────
@@ -1183,8 +1183,8 @@ function ScoutVisibilityToggle({ user, token, refreshUser }: { user: any; token:
 const sv$ = StyleSheet.create({
   card: { marginHorizontal: 24, marginBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', gap: 12 },
   left: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  title: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  sub: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '300', marginTop: 2, lineHeight: 15 },
+  title: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  sub: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '300', marginTop: 2, lineHeight: 15 },
   toggle: { width: 44, height: 26, borderRadius: 13, padding: 3, justifyContent: 'center', alignItems: 'center' },
   toggleOn: { backgroundColor: '#00E5FF' },
   toggleOff: { backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
@@ -1340,7 +1340,7 @@ export default function KoreTab() {
               </TouchableOpacity>
             </Animated.View>
 
-            {/* 8. XP PROGRESS */}
+            {/* 8. FLUX PROGRESS */}
             <XpProgress user={user} />
           </ScrollView>
 
@@ -1380,7 +1380,7 @@ const s = StyleSheet.create({
 const ps$ = StyleSheet.create({
   wrap: { marginHorizontal: 24, marginBottom: 8 },
   btn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'transparent', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  txt: { flex: 1, color: 'rgba(0,229,255,0.7)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  txt: { flex: 1, color: 'rgba(0,229,255,0.7)', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
 });
 
 // MY POSITION HUD — fixed bottom bar
@@ -1398,32 +1398,32 @@ const hud$ = StyleSheet.create({
   },
   inner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   col: { alignItems: 'center', gap: 2 },
-  city: { color: '#00E5FF', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
-  label: { color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
-  rank: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 1 },
-  rankSub: { color: '#00E5FF22', fontSize: 12, fontWeight: '700' },
-  score: { color: '#FFD700', fontSize: 16, fontWeight: '900' },
-  hint: { color: 'rgba(255,215,0,0.5)', fontSize: 8, fontWeight: '800', letterSpacing: 1, textAlign: 'center' },
+  city: { color: '#00E5FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  label: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  rank: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
+  rankSub: { color: '#00E5FF22', fontSize: 14, fontWeight: '700' },
+  score: { color: '#FFD700', fontSize: 18, fontWeight: '900' },
+  hint: { color: 'rgba(255,215,0,0.5)', fontSize: 10, fontWeight: '800', letterSpacing: 1, textAlign: 'center' },
 });
 
 const bsc$ = StyleSheet.create({
   card: { marginHorizontal: 24, marginBottom: 10, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   info: { flex: 1, gap: 3 },
-  label: { color: '#AAAAAA', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
-  status: { color: '#00E5FF', fontSize: 13, fontWeight: '700' },
+  label: { color: '#AAAAAA', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  status: { color: '#00E5FF', fontSize: 15, fontWeight: '700' },
   btn: { backgroundColor: '#00E5FF', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9 },
   btnRed: { backgroundColor: '#FF3B30' },
-  btnText: { color: '#000000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  btnText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
 });
 
 const goals$ = StyleSheet.create({
   card: { marginHorizontal: 24, marginBottom: 10, backgroundColor: 'rgba(255,215,0,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)' },
-  title: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '900', letterSpacing: 4, marginBottom: 14 },
+  title: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '900', letterSpacing: 4, marginBottom: 14 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   badge: { flex: 1, minWidth: '44%', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   badgeDone: { borderColor: 'rgba(255,215,0,0.15)', backgroundColor: 'rgba(255,215,0,0.04)' },
-  badgeLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, textAlign: 'center' },
-  badgePct: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '300', letterSpacing: 1 },
+  badgeLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5, textAlign: 'center' },
+  badgePct: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '300', letterSpacing: 1 },
 });
 

@@ -36,9 +36,9 @@ const styles = StyleSheet.create({
   container: { backgroundColor: '#000000', paddingHorizontal: 24, paddingBottom: 10 },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   brand: { flexDirection: 'row', gap: 3 },
-  brandArena: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
-  brandKore: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
-  title: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 4 },
+  brandArena: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
+  brandKore: { color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
+  title: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 4 },
   rightRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   menuBtn: { padding: 6 },
 });

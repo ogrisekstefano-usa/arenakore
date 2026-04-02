@@ -239,56 +239,56 @@ const s = StyleSheet.create({
 
   // Back
   back: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 20 },
-  backTxt: { color: CYAN, fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  backTxt: { color: CYAN, fontSize: 15, fontWeight: '900', letterSpacing: 2 },
 
   // Header
   header: { marginBottom: 24, gap: 6 },
   iconBox: { width: 56, height: 56, borderRadius: 16, backgroundColor: '#00E5FF22', borderWidth: 1, borderColor: '#00E5FF44', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  title: { color: CYAN, fontSize: 14, fontWeight: '900', letterSpacing: 6 },
+  title: { color: CYAN, fontSize: 16, fontWeight: '900', letterSpacing: 6 },
   titleBig: { color: '#FFFFFF', fontSize: 42, fontWeight: '900', letterSpacing: 4, lineHeight: 48 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14 },
-  subtitle: { color: '#AAAAAA', fontSize: 14, fontWeight: '400', lineHeight: 22, letterSpacing: 0.3 },
+  subtitle: { color: '#AAAAAA', fontSize: 16, fontWeight: '400', lineHeight: 22, letterSpacing: 0.3 },
 
   // Pillars
   pillarsRow: { flexDirection: 'row', gap: 8, marginBottom: 28 },
   pillar: { flex: 1, alignItems: 'center', gap: 6, backgroundColor: '#00E5FF22', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#00E5FF44' },
-  pillarTxt: { color: '#AAAAAA', fontSize: 9, fontWeight: '900', letterSpacing: 1, textAlign: 'center' },
+  pillarTxt: { color: '#AAAAAA', fontSize: 11, fontWeight: '900', letterSpacing: 1, textAlign: 'center' },
 
   // Form
   form: { gap: 16 },
-  sectionLabel: { color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 4 },
+  sectionLabel: { color: CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 4 },
   field: { gap: 8 },
-  fieldLabel: { color: '#AAAAAA', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
-  input: { backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', borderRadius: 12, padding: 16, color: CYAN, fontSize: 16, fontWeight: '800', letterSpacing: 1 },
+  fieldLabel: { color: '#AAAAAA', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  input: { backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', borderRadius: 12, padding: 16, color: CYAN, fontSize: 18, fontWeight: '800', letterSpacing: 1 },
   picker: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   pickerSelected: { borderColor: '#00E5FF44' },
-  pickerValTxt: { color: CYAN, fontSize: 16, fontWeight: '800', letterSpacing: 1 },
-  pickerPlaceholder: { color: '#00E5FF22', fontSize: 16, fontWeight: '400' },
+  pickerValTxt: { color: CYAN, fontSize: 18, fontWeight: '800', letterSpacing: 1 },
+  pickerPlaceholder: { color: '#00E5FF22', fontSize: 18, fontWeight: '400' },
   errorBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#FF3B3022', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#FF3B3044' },
-  errorTxt: { color: '#FF3B30', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
+  errorTxt: { color: '#FF3B30', fontSize: 13, fontWeight: '800', letterSpacing: 1 },
   submitBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: CYAN, borderRadius: 12, paddingVertical: 18 },
   submitBtnLoading: { backgroundColor: '#00E5FF22' },
-  submitTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 3 },
-  disclaimerTxt: { color: '#AAAAAA', fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 18 },
+  submitTxt: { color: BG, fontSize: 16, fontWeight: '900', letterSpacing: 3 },
+  disclaimerTxt: { color: '#AAAAAA', fontSize: 15, fontWeight: '400', textAlign: 'center', lineHeight: 18 },
 
   // Success
   successWrap: { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
   successCard: { width: '100%', alignItems: 'center', gap: 12, backgroundColor: '#0a0a0a', borderRadius: 20, padding: 32, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   successIcon: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#00E5FF22', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: CYAN },
   successTitle: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
-  successSub: { color: GOLD, fontSize: 16, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
+  successSub: { color: GOLD, fontSize: 18, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
   successDivider: { height: 1, width: '100%', backgroundColor: 'rgba(255,255,255,0.07)' },
-  successNote: { color: '#AAAAAA', fontSize: 14, fontWeight: '400', textAlign: 'center', lineHeight: 20, letterSpacing: 0.5 },
+  successNote: { color: '#AAAAAA', fontSize: 16, fontWeight: '400', textAlign: 'center', lineHeight: 20, letterSpacing: 0.5 },
   doneBtn: { marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#00E5FF22', borderWidth: 1, borderColor: '#00E5FF44', borderRadius: 12, paddingVertical: 14, paddingHorizontal: 32 },
-  doneBtnTxt: { color: CYAN, fontSize: 14, fontWeight: '900', letterSpacing: 4 },
+  doneBtnTxt: { color: CYAN, fontSize: 16, fontWeight: '900', letterSpacing: 4 },
 
   // Modal
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'flex-end' },
   modalSheet: { backgroundColor: '#0a0a0a', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, maxHeight: '55%', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  modalTitle: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 4, marginBottom: 12 },
+  modalTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 4, marginBottom: 12 },
   modalDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.07)', marginBottom: 8 },
   cityOption: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
   cityOptionActive: { backgroundColor: '#00E5FF22', borderRadius: 8, paddingHorizontal: 8 },
-  cityTxt: { flex: 1, color: '#AAAAAA', fontSize: 14, fontWeight: '400', letterSpacing: 1 },
+  cityTxt: { flex: 1, color: '#AAAAAA', fontSize: 16, fontWeight: '400', letterSpacing: 1 },
   cityTxtActive: { color: CYAN },
 });

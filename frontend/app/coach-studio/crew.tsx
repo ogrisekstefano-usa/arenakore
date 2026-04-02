@@ -122,7 +122,7 @@ export default function CrewStrategist() {
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={[c$.athName, isSelected && { color: '#00E5FF' }]}>{ath.username}</Text>
-                      <Text style={c$.athMeta}>KORE {ath.dna_avg} · {ath.xp?.toLocaleString()} XP</Text>
+                      <Text style={c$.athMeta}>KORE {ath.dna_avg} · {ath.xp?.toLocaleString()} FLUX</Text>
                     </View>
                     {isSelected && <Ionicons name="checkmark-circle" size={16} color="#00E5FF" />}
                   </TouchableOpacity>
@@ -154,7 +154,7 @@ export default function CrewStrategist() {
                     <View key={i} style={c$.breakdownRow}>
                       <Text style={c$.breakdownName}>{b.username}</Text>
                       <Text style={c$.breakdownScore}>KORE {b.kore_score}</Text>
-                      <Text style={c$.breakdownXp}>{b.xp?.toLocaleString()} XP</Text>
+                      <Text style={c$.breakdownXp}>{b.xp?.toLocaleString()} FLUX</Text>
                     </View>
                   ))}
                 </View>
@@ -170,43 +170,43 @@ export default function CrewStrategist() {
 const c$ = StyleSheet.create({
   root: { flex: 1 }, content: { padding: 28, gap: 20, paddingBottom: 60 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  pageTitle: { color: '#FFF', fontSize: 20, fontWeight: '900', letterSpacing: 4, marginBottom: 4 },
+  pageTitle: { color: '#FFF', fontSize: 22, fontWeight: '900', letterSpacing: 4, marginBottom: 4 },
   twoCol: { flexDirection: 'row', gap: 20, alignItems: 'flex-start' },
   leftCol: { flex: 1.2, gap: 12 },
   rightCol: { flex: 1, gap: 12 },
   statsRow: { flexDirection: 'row', gap: 12 },
   statBox: { flex: 1, backgroundColor: '#0A0A0A', borderRadius: 10, padding: 14, alignItems: 'center', borderWidth: 1, borderColor: '#1E1E1E' },
   statVal: { fontSize: 28, fontWeight: '900', letterSpacing: 1 },
-  statLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '900', letterSpacing: 2, marginTop: 4 },
+  statLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '900', letterSpacing: 2, marginTop: 4 },
   battleList: { backgroundColor: '#0A0A0A', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#1E1E1E' },
   battleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderBottomWidth: 1, borderBottomColor: '#111' },
   pill: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  pillText: { fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  pillText: { fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   battleInfo: { flex: 1, gap: 2 },
-  battleMatch: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: '700' },
-  battleScore: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '300' },
-  battleDate: { color: 'rgba(255,255,255,0.2)', fontSize: 11 },
+  battleMatch: { color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: '700' },
+  battleScore: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '300' },
+  battleDate: { color: 'rgba(255,255,255,0.2)', fontSize: 13 },
   empty: { alignItems: 'center', padding: 30, gap: 12 },
-  emptyText: { color: 'rgba(255,255,255,0.25)', fontSize: 12, textAlign: 'center', lineHeight: 18 },
+  emptyText: { color: 'rgba(255,255,255,0.25)', fontSize: 14, textAlign: 'center', lineHeight: 18 },
   simCard: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 16, gap: 12, borderWidth: 1, borderColor: '#1E1E1E' },
-  simDesc: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '300', lineHeight: 17 },
+  simDesc: { color: 'rgba(255,255,255,0.30)', fontSize: 14, fontWeight: '300', lineHeight: 17 },
   athRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#111' },
   athRowSel: { backgroundColor: '#00E5FF0A', borderRadius: 8 },
   athAvatar: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  athLetter: { color: '#000', fontSize: 12, fontWeight: '900' },
-  athName: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: '700' },
-  athMeta: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '300' },
+  athLetter: { color: '#000', fontSize: 14, fontWeight: '900' },
+  athName: { color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: '700' },
+  athMeta: { color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '300' },
   simBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#FFD700', borderRadius: 8, paddingVertical: 11 },
   simBtnOff: { opacity: 0.4 },
-  simBtnText: { color: '#000', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  simBtnText: { color: '#000', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
   simResult: { backgroundColor: '#111', borderRadius: 10, padding: 14, gap: 6 },
-  simResultLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
+  simResultLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
   simScore: { color: '#00E5FF', fontSize: 40, fontWeight: '900', letterSpacing: 2 },
-  simIntensity: { fontSize: 11, fontWeight: '900', letterSpacing: 2 },
-  simNote: { color: 'rgba(255,255,255,0.30)', fontSize: 11, fontWeight: '300', lineHeight: 16 },
+  simIntensity: { fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  simNote: { color: 'rgba(255,255,255,0.30)', fontSize: 13, fontWeight: '300', lineHeight: 16 },
   breakdownList: { gap: 4 },
   breakdownRow: { flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 4 },
-  breakdownName: { flex: 1, color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '700' },
-  breakdownScore: { color: '#FFD700', fontSize: 11, fontWeight: '700' },
-  breakdownXp: { color: 'rgba(255,255,255,0.25)', fontSize: 10 },
+  breakdownName: { flex: 1, color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '700' },
+  breakdownScore: { color: '#FFD700', fontSize: 13, fontWeight: '700' },
+  breakdownXp: { color: 'rgba(255,255,255,0.25)', fontSize: 12 },
 });

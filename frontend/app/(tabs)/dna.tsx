@@ -515,10 +515,10 @@ const styles = StyleSheet.create({
   heroImageStyle: { opacity: 0.35 },
   heroGradient: { flex: 1, paddingTop: 16 },
   dnaHeader: { paddingHorizontal: 24, paddingBottom: 8, gap: 4 },
-  dnaLabel: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 4 },
+  dnaLabel: { color: '#00E5FF', fontSize: 16, fontWeight: '900', letterSpacing: 4 },
   dnaSport: { color: '#FFFFFF', fontSize: 32, fontWeight: '900', letterSpacing: 2, textTransform: 'uppercase' },
   roleBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, marginTop: 4 },
-  roleText: { fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  roleText: { fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   chartGlass: {
     alignItems: 'center', marginTop: 8, marginHorizontal: 24,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: 12,
@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
     borderRadius: 10, padding: 10, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
     justifyContent: 'center', marginTop: 8,
   },
-  glowBannerText: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+  glowBannerText: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
   noData: { padding: 40, alignItems: 'center', gap: 12 },
   noDataIconWrap: {
     width: 72, height: 72, borderRadius: 36,
@@ -539,8 +539,8 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
     alignItems: 'center', justifyContent: 'center',
   },
-  noDataTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
-  noDataText: { color: '#AAAAAA', fontSize: 16, textAlign: 'center', lineHeight: 22 },
+  noDataTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '900', letterSpacing: 3 },
+  noDataText: { color: '#AAAAAA', fontSize: 18, textAlign: 'center', lineHeight: 22 },
   firstScanCta: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'transparent', borderRadius: 10,
@@ -549,7 +549,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   firstScanDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF' },
-  firstScanCtaText: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  firstScanCtaText: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   // Eligibility Banner
   eligibilityBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderColor: 'rgba(255,255,255,0.07)',
   },
-  eligibilityText: { flex: 1, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  eligibilityText: { flex: 1, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   eligibilityTextActive: { color: '#00E5FF' },
   eligibilityTextLocked: { color: '#AAAAAA' },
   avgDnaBadge: {
@@ -573,7 +573,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 3,
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
   },
-  avgDnaText: { color: '#FFD700', fontSize: 13, fontWeight: '900' },
+  avgDnaText: { color: '#FFD700', fontSize: 15, fontWeight: '900' },
   // Evolution glow banner
   evoBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -581,14 +581,14 @@ const styles = StyleSheet.create({
     borderRadius: 10, padding: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center', marginTop: 8,
   },
-  evoBannerText: { color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  evoBannerText: { color: '#00E5FF', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   // Stat card improvement
   statCardImproved: { borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'transparent' },
   statCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   improvBadge: { borderRadius: 6, paddingHorizontal: 5, paddingVertical: 2 },
   improvPos: { backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.3)' },
   improvNeg: { backgroundColor: 'rgba(255,59,48,0.08)', borderWidth: 0.5, borderColor: 'rgba(255,59,48,0.2)' },
-  improvText: { fontSize: 11, fontWeight: '900' },
+  improvText: { fontSize: 13, fontWeight: '900' },
   improvTextPos: { color: '#00E5FF' },
   improvTextNeg: { color: '#FF3B30' },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 24, gap: 8, marginTop: 16 },
@@ -598,21 +598,21 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', gap: 3,
   },
   statCardBroken: { borderColor: 'rgba(255,215,0,0.25)', backgroundColor: 'rgba(255,215,0,0.03)' },
-  statLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
-  statValue: { color: '#FFFFFF', fontSize: 24, fontWeight: '900' },
+  statLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '800', letterSpacing: 1.5 },
+  statValue: { color: '#FFFFFF', fontSize: 26, fontWeight: '900' },
   statValueBroken: { color: '#FFD700' },
   statBar: { height: 3, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden', marginTop: 2 },
   statFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 2 },
   statFillBroken: { backgroundColor: '#FFD700' },
   newRecordRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
-  newRecordBadge: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  newRecordBadge: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   talentSection: { marginTop: 20 },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 24, paddingBottom: 12,
   },
   sectionTitle: {
-    color: '#FFFFFF', fontSize: 18, fontWeight: '900',
+    color: '#FFFFFF', fontSize: 20, fontWeight: '900',
     letterSpacing: 3, textTransform: 'uppercase',
   },
   // ===== TALOSFIT PARTNER BANNER — SPRINT 10 =====
@@ -643,13 +643,13 @@ const styles = StyleSheet.create({
     borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.22)',
   },
-  talosPartnerText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  talosPartnerText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   talosBannerTitle: {
-    color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1,
+    color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 1,
     lineHeight: 22,
   },
   talosBannerBody: {
-    color: '#AAAAAA', fontSize: 14,
+    color: '#AAAAAA', fontSize: 16,
     fontWeight: '600', lineHeight: 17,
   },
   talosBannerBodyAccent: {
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,215,0,0.4)',
     paddingBottom: 1,
   },
-  talosCtaText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2.5 },
+  talosCtaText: { color: '#FFD700', fontSize: 15, fontWeight: '900', letterSpacing: 2.5 },
   talosRight: { alignItems: 'center', gap: 2, width: 52 },
   talosLogoWrap: {
     width: 40, height: 40, borderRadius: 12,
@@ -671,10 +671,10 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   talosLogoT: {
-    color: '#FFD700', fontSize: 22, fontWeight: '900', letterSpacing: 0.5,
+    color: '#FFD700', fontSize: 24, fontWeight: '900', letterSpacing: 0.5,
   },
-  talosLogoName: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  talosLogoFit: { color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  talosLogoName: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  talosLogoFit: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   // Notification Bell
   notifBell: { position: 'relative', padding: 4 },
   notifBellBadge: {
@@ -684,7 +684,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     paddingHorizontal: 3,
   },
-  notifBellBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '900' },
+  notifBellBadgeText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
   // History Section
   historySectionWrap: {
     marginHorizontal: 24, marginTop: 16,
@@ -697,12 +697,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24, paddingVertical: 14,
   },
   historyToggleLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  historyToggleLabel: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  historyToggleLabel: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   historyCountBadge: {
     backgroundColor: 'rgba(255,215,0,0.15)', borderRadius: 8,
     paddingHorizontal: 7, paddingVertical: 2,
   },
-  historyCountText: { color: '#FFD700', fontSize: 12, fontWeight: '900' },
+  historyCountText: { color: '#FFD700', fontSize: 14, fontWeight: '900' },
   historyContent: { borderTopWidth: 1, borderTopColor: 'rgba(255,215,0,0.1)', paddingBottom: 16 },
   multiRadarWrap: { alignItems: 'center', paddingVertical: 16 },
   timelineWrap: { paddingHorizontal: 24, gap: 0 },
@@ -712,29 +712,29 @@ const styles = StyleSheet.create({
   timelineLine: { width: 2, flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginTop: 4 },
   timelineInfo: { flex: 1, gap: 4 },
   timelineTopRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  timelineDate: { color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: '400', letterSpacing: 1 },
+  timelineDate: { color: 'rgba(255,255,255,0.6)', fontSize: 16, fontWeight: '400', letterSpacing: 1 },
   timelineTypeBadge: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1 },
-  timelineTypeText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
-  timelineAvg: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '700', letterSpacing: 1 },
+  timelineTypeText: { fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  timelineAvg: { color: 'rgba(255,255,255,0.3)', fontSize: 15, fontWeight: '700', letterSpacing: 1 },
   timelineAvgVal: { color: '#AAAAAA', fontWeight: '900' },
 });
 
 const ins$ = StyleSheet.create({
   card: { marginHorizontal: 24, marginBottom: 12, backgroundColor: 'rgba(255,215,0,0.05)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,215,0,0.18)' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  title: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
-  insightText: { color: '#FFFFFF', fontSize: 14, fontWeight: '400', lineHeight: 20, marginBottom: 6 },
-  tipText: { color: '#AAAAAA', fontSize: 13, fontWeight: '400', lineHeight: 20, marginBottom: 10 },
+  title: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
+  insightText: { color: '#FFFFFF', fontSize: 16, fontWeight: '400', lineHeight: 20, marginBottom: 6 },
+  tipText: { color: '#AAAAAA', fontSize: 15, fontWeight: '400', lineHeight: 20, marginBottom: 10 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)', gap: 2 },
-  statLabel: { color: '#AAAAAA', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
-  statVal: { color: '#FF3B30', fontSize: 13, fontWeight: '900' },
+  statLabel: { color: '#AAAAAA', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  statVal: { color: '#FF3B30', fontSize: 15, fontWeight: '900' },
   templateBtn: { flex: 1, backgroundColor: '#FFD700', borderRadius: 8, paddingVertical: 9, alignItems: 'center' },
-  templateText: { color: '#000000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  templateText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
 });
 
 const pvp$ = StyleSheet.create({
   btn: { marginHorizontal: 24, marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#00E5FF', borderRadius: 10, paddingVertical: 13 },
-  text: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  text: { color: '#000000', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
 });
 

@@ -117,15 +117,15 @@ function BubbleLevel({ tiltAngle, isCorrect }: { tiltAngle: number; isCorrect: b
 
 const bl$ = StyleSheet.create({
   container: { alignItems: 'center', gap: 8 },
-  label: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  label: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   track: { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 30, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', overflow: 'hidden', position: 'relative' },
   targetZone: { position: 'absolute', top: 0, bottom: 0, backgroundColor: 'rgba(0,229,255,0.1)', borderRadius: 20 },
   targetLine: { position: 'absolute', top: 8, bottom: 8, width: 2, backgroundColor: CYAN, opacity: 0.6 },
   bubble: { position: 'absolute', elevation: 4 },
   labels: { flexDirection: 'row', justifyContent: 'space-between', width: 220, paddingHorizontal: 4 },
-  labelSub: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '300', letterSpacing: 1 },
-  angleVal: { fontSize: 16, fontWeight: '900', letterSpacing: 2 },
-  feedback: { fontSize: 12, fontWeight: '900', letterSpacing: 2, marginTop: 4 },
+  labelSub: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '300', letterSpacing: 1 },
+  angleVal: { fontSize: 18, fontWeight: '900', letterSpacing: 2 },
+  feedback: { fontSize: 14, fontWeight: '900', letterSpacing: 2, marginTop: 4 },
 });
 
 // ── ScreenFlash beacon ────────────────────────────────────────────────────────
@@ -433,33 +433,33 @@ const styles = StyleSheet.create({
 
   header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   headerDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: CYAN, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
-  headerTitle: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  headerTitle: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
   skipBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  skipText: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5 },
+  skipText: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '700', letterSpacing: 1.5 },
 
   phase: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 28 },
-  instruction: { color: 'rgba(255,255,255,0.75)', fontSize: 16, fontWeight: '300', textAlign: 'center', lineHeight: 22, letterSpacing: 0.5, maxWidth: 280 },
+  instruction: { color: 'rgba(255,255,255,0.75)', fontSize: 18, fontWeight: '300', textAlign: 'center', lineHeight: 22, letterSpacing: 0.5, maxWidth: 280 },
 
   // Tilt diagram
   tiltDiagram: { alignItems: 'center', position: 'relative', height: 60 },
   groundLine: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
-  tipText: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '300', textAlign: 'center', letterSpacing: 0.3, lineHeight: 20 },
-  feedback: { fontSize: 13, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
+  tipText: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '300', textAlign: 'center', letterSpacing: 0.3, lineHeight: 20 },
+  feedback: { fontSize: 15, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
 
   // Countdown
   countdownWrap: { alignItems: 'center', gap: 8 },
   countdownNum: { color: CYAN, fontSize: 140, fontWeight: '800', letterSpacing: -2, lineHeight: 148 },
-  countdownLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '900', letterSpacing: 4 },
+  countdownLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '900', letterSpacing: 4 },
   distanceGuide: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   distanceLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.15)', maxWidth: 120, borderStyle: 'dashed' },
-  distanceLabel: { color: '#00E5FF22', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  distanceLabel: { color: '#00E5FF22', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
 
   // Flash beacon
   bigInstruction: { color: '#FFFFFF', fontSize: 40, fontWeight: '900', letterSpacing: 6, textAlign: 'center' },
-  bigSub: { color: '#AAAAAA', fontSize: 15, fontWeight: '300', textAlign: 'center', lineHeight: 22, letterSpacing: 0.5 },
+  bigSub: { color: '#AAAAAA', fontSize: 17, fontWeight: '300', textAlign: 'center', lineHeight: 22, letterSpacing: 0.5 },
   beaconInfo: { gap: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   beaconRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  beaconText: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '300', flex: 1 },
+  beaconText: { color: 'rgba(255,255,255,0.5)', fontSize: 15, fontWeight: '300', flex: 1 },
   startNowBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: CYAN, borderRadius: 14, paddingVertical: 16, paddingHorizontal: 40, alignSelf: 'stretch', marginTop: 8 },
-  startNowText: { color: '#000', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
+  startNowText: { color: '#000', fontSize: 17, fontWeight: '900', letterSpacing: 3 },
 });

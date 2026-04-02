@@ -84,9 +84,9 @@ export function TrainingTemplateCard() {
         {/* Name — hero */}
         <Text style={c$.templateName}>{t.name.toUpperCase()}</Text>
 
-        {/* XP + difficulty in one line */}
+        {/* FLUX + difficulty in one line */}
         <View style={c$.metaRow}>
-          <Text style={c$.xpBig}>+{t.xp_reward} XP</Text>
+          <Text style={c$.xpBig}>+{t.xp_reward} FLUX</Text>
           <View style={[c$.diffPill, { borderColor: diff.color + '50' }]}>
             <Text style={[c$.diffText, { color: diff.color }]}>{diff.label}</Text>
           </View>
@@ -123,23 +123,23 @@ const c$ = StyleSheet.create({
   section: { marginTop: 12, marginBottom: 4 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, marginBottom: 8 },
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FFD700', shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
-  sectionTitle: { flex: 1, color: 'rgba(255,255,255,0.30)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  sectionTitle: { flex: 1, color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   donePill: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  doneText: { color: '#00FF87', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  doneText: { color: '#00FF87', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
   card: { marginHorizontal: 24, backgroundColor: '#000000', borderRadius: 16, padding: 18, borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)', gap: 14 },
-  templateName: { color: '#FFFFFF', fontSize: 19, fontWeight: '900', letterSpacing: 2, lineHeight: 24 },
+  templateName: { color: '#FFFFFF', fontSize: 21, fontWeight: '900', letterSpacing: 2, lineHeight: 24 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
-  xpBig: { color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 1 },
+  xpBig: { color: '#FFD700', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
   diffPill: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  diffText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
-  discLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '300', letterSpacing: 1 },
+  diffText: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
+  discLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '300', letterSpacing: 1 },
   dnaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dnaLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  dnaLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   dnaBar: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' },
   dnaFill: { height: '100%', backgroundColor: '#FFD700', borderRadius: 2 },
-  dnaVal: { color: 'rgba(255,215,0,0.7)', fontSize: 11, fontWeight: '700', width: 34, textAlign: 'right' },
+  dnaVal: { color: 'rgba(255,215,0,0.7)', fontSize: 13, fontWeight: '700', width: 34, textAlign: 'right' },
   startBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: '#FFD700', borderRadius: 12, paddingVertical: 16 },
   startBtnDone: { backgroundColor: 'rgba(0,255,135,0.06)', borderWidth: 1, borderColor: 'rgba(0,255,135,0.2)' },
-  startBtnText: { color: '#000000', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
-  startBtnDoneText: { color: '#00FF87', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  startBtnText: { color: '#000000', fontSize: 17, fontWeight: '900', letterSpacing: 3 },
+  startBtnDoneText: { color: '#00FF87', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
 });

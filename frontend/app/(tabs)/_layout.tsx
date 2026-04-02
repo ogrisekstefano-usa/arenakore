@@ -151,7 +151,7 @@ const $ = StyleSheet.create({
     backgroundColor: '#00E5FF',
   },
   label: {
-    color: '#AAAAAA', fontSize: 9, fontWeight: '900',
+    color: '#AAAAAA', fontSize: 11, fontWeight: '900',
     letterSpacing: 2, textTransform: 'uppercase',
   },
   labelActive: {
@@ -161,7 +161,7 @@ const $ = StyleSheet.create({
     flex: 1, alignItems: 'center', justifyContent: 'center',
   },
   centerLabel: {
-    color: '#AAAAAA', fontSize: 9, fontWeight: '900',
+    color: '#AAAAAA', fontSize: 11, fontWeight: '900',
     letterSpacing: 2, marginTop: 38,
   },
   nexusWrap: {

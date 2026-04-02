@@ -91,7 +91,7 @@ function RepCounter({ reps, targetReps, dnaPotential, quality }: {
 const rc$ = StyleSheet.create({
   wrap: { alignItems: 'flex-end' },
   reps: { fontSize: 72, fontWeight: '900', letterSpacing: -2, lineHeight: 72, textShadowColor: 'rgba(0,0,0,0.9)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 16 },
-  target: { color: 'rgba(255,255,255,0.2)', fontSize: 16, fontWeight: '300', letterSpacing: 1 },
+  target: { color: 'rgba(255,255,255,0.2)', fontSize: 18, fontWeight: '300', letterSpacing: 1 },
 });
 
 // ── Time Arc (top, minimal) ───────────────────────────────────────────────────
@@ -109,7 +109,7 @@ function TimeDisplay({ remaining, targetTime }: { remaining: number; targetTime:
 const td$ = StyleSheet.create({
   wrap: {},
   time: { fontSize: 32, fontWeight: '900', letterSpacing: 1 },
-  unit: { fontSize: 14, fontWeight: '300', color: 'rgba(255,255,255,0.3)' },
+  unit: { fontSize: 16, fontWeight: '300', color: 'rgba(255,255,255,0.3)' },
 });
 
 // ── Main HUD ──────────────────────────────────────────────────────────────────

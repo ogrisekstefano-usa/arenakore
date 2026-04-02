@@ -53,11 +53,11 @@ export function AKBadge({ compact = false }: { compact?: boolean }) {
 
 const ak$ = StyleSheet.create({
   badge: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(255,215,0,0.3)' },
-  badgeIcon: { fontSize: 20 },
-  badgeVal: { color: '#FFD700', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
-  badgeLabel: { color: 'rgba(255,215,0,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  badgeIcon: { fontSize: 22 },
+  badgeVal: { color: '#FFD700', fontSize: 22, fontWeight: '900', letterSpacing: 1 },
+  badgeLabel: { color: 'rgba(255,215,0,0.5)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   badgeCompact: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)' },
-  badgeValCompact: { color: '#FFD700', fontSize: 12, fontWeight: '900' },
+  badgeValCompact: { color: '#FFD700', fontSize: 14, fontWeight: '900' },
 });
 
 // ── Tool Card ─────────────────────────────────────────────────────────────────
@@ -141,17 +141,17 @@ const tc$ = StyleSheet.create({
   cardUnlocked: { borderColor: 'rgba(0,255,135,0.2)', backgroundColor: 'rgba(0,255,135,0.03)' },
   iconWrap: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   info: { flex: 1, gap: 3 },
-  name: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  desc: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '300', lineHeight: 15 },
-  lockedReason: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5, marginTop: 2 },
+  name: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  desc: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '300', lineHeight: 15 },
+  lockedReason: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5, marginTop: 2 },
   unlockedBadge: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
-  unlockedText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  unlockedText: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,149,0,0.08)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(255,149,0,0.25)' },
-  proText: { color: '#FF9500', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  proText: { color: '#FF9500', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   unlockBtn: { alignItems: 'center', backgroundColor: '#FFD700', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, minWidth: 64 },
   unlockBtnOff: { backgroundColor: 'rgba(255,255,255,0.06)' },
-  unlockCost: { color: '#000', fontSize: 12, fontWeight: '900' },
-  unlockLabel: { color: '#000', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  unlockCost: { color: '#000', fontSize: 14, fontWeight: '900' },
+  unlockLabel: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
 });
 
 // ── Earn Guide ────────────────────────────────────────────────────────────────
@@ -179,11 +179,11 @@ function EarnGuide() {
 }
 const eg$ = StyleSheet.create({
   wrap: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  title: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 12 },
+  title: { color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '900', letterSpacing: 3, marginBottom: 12 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   item: { flex: 1, minWidth: '44%', flexDirection: 'row', alignItems: 'center', gap: 8 },
-  label: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '400' },
-  ak: { fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  label: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '400' },
+  ak: { fontSize: 14, fontWeight: '900', letterSpacing: 1 },
 });
 
 // ── Main KORE VAULT ───────────────────────────────────────────────────────────
@@ -269,8 +269,8 @@ const kv$ = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FFD700', shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
-  title: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
-  subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '300', marginTop: -4 },
+  title: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
+  subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '300', marginTop: -4 },
   toolsList: { gap: 8 },
 });
 
@@ -306,10 +306,10 @@ export function ToolLock({ toolId, toolName, costAk, requiresPro = false, onNavi
 
 const tl$ = StyleSheet.create({
   overlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.82)', borderRadius: 16, zIndex: 50, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  name: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
-  cost: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '300' },
+  name: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
+  cost: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '300' },
   proPill: { backgroundColor: 'rgba(255,149,0,0.1)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,149,0,0.3)' },
-  proText: { color: '#FF9500', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  proText: { color: '#FF9500', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   cta: { marginTop: 6, backgroundColor: 'rgba(255,215,0,0.12)', borderRadius: 8, paddingHorizontal: 24, paddingVertical: 8, borderWidth: 1, borderColor: '#FFD700' },
-  ctaText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  ctaText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
 });

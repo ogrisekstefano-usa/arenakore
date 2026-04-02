@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     color: '#00E5FF',
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '900',
     letterSpacing: 3,
   },
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   },
   titleLine1: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '900',
     letterSpacing: 8,
     opacity: 0.5,
@@ -301,13 +301,13 @@ const styles = StyleSheet.create({
   },
   scoreLabel: {
     color: '#AAAAAA',
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '400',
     letterSpacing: 2,
   },
   scoreValue: {
     color: '#FFD700',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '900',
     letterSpacing: 1,
   },
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   },
   dividerLabel: {
     color: '#AAAAAA',
-    fontSize: 8,
+    fontSize: 10,
     fontWeight: '800',
     letterSpacing: 2,
   },
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     color: '#AAAAAA',
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
     letterSpacing: 1.5,
   },
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     color: '#FFD700',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '900',
     letterSpacing: 3,
   },

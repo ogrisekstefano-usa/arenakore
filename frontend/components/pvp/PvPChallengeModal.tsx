@@ -1,6 +1,6 @@
 /**
  * ARENAKORE — PvP CHALLENGE MODAL
- * Send a 1v1 challenge: choose discipline + XP stake
+ * Send a 1v1 challenge: choose discipline + FLUX stake
  */
 import React, { useState } from 'react';
 import {
@@ -20,10 +20,10 @@ const DISCIPLINES = [
 ];
 
 const STAKES = [
-  { xp: 50,  label: '50 XP',  sub: 'Partita amichevole' },
-  { xp: 100, label: '100 XP', sub: 'Standard' },
-  { xp: 200, label: '200 XP', sub: 'Alta posta' },
-  { xp: 500, label: '500 XP', sub: 'All-in KORE' },
+  { xp: 50,  label: '50 FLUX',  sub: 'Partita amichevole' },
+  { xp: 100, label: '100 FLUX', sub: 'Standard' },
+  { xp: 200, label: '200 FLUX', sub: 'Alta posta' },
+  { xp: 500, label: '500 FLUX', sub: 'All-in KORE' },
 ];
 
 interface Props {
@@ -47,7 +47,7 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
   const handleSend = async () => {
     if (!token) return;
     if (!canAfford) {
-      Alert.alert('XP INSUFFICIENTI', `Ti servono ${stake} XP. Hai ${user?.xp || 0} XP.`);
+      Alert.alert('XP INSUFFICIENTI', `Ti servono ${stake} XP. Hai ${user?.xp || 0} FLUX.`);
       return;
     }
     setSending(true);
@@ -56,7 +56,7 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       Alert.alert(
         'SFIDA INVIATA',
-        `${opponent.username} ha ricevuto la tua sfida ${selectedDisc.label}!\n${stake} XP in palio.`,
+        `${opponent.username} ha ricevuto la tua sfida ${selectedDisc.label}!\n${stake} FLUX in palio.`,
         [{ text: 'OK', onPress: () => { onClose(); onChallengeSent?.(); } }]
       );
     } catch (e: any) {
@@ -90,7 +90,7 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
                   <Text style={m$.faceLetter}>{(user?.username || 'TU')[0].toUpperCase()}</Text>
                 </View>
                 <Text style={m$.faceName} numberOfLines={1}>{(user?.username || 'TU').toUpperCase()}</Text>
-                <Text style={m$.faceXp}>{user?.xp?.toLocaleString()} XP</Text>
+                <Text style={m$.faceXp}>{user?.xp?.toLocaleString()} FLUX</Text>
               </View>
 
               {/* VS */}
@@ -104,7 +104,7 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
                   <Text style={m$.faceLetter}>{opponent.username[0].toUpperCase()}</Text>
                 </View>
                 <Text style={m$.faceName} numberOfLines={1}>{opponent.username.toUpperCase()}</Text>
-                <Text style={m$.faceXp}>{opponent.xp?.toLocaleString() || '?'} XP</Text>
+                <Text style={m$.faceXp}>{opponent.xp?.toLocaleString() || '?'} FLUX</Text>
               </View>
             </View>
 
@@ -168,7 +168,7 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
               ) : (
                 <>
                   <Ionicons name="flash-sharp" size={18} color="#050505" />
-                  <Text style={m$.ctaText}>LANCIA LA SFIDA · {stake} XP</Text>
+                  <Text style={m$.ctaText}>LANCIA LA SFIDA · {stake} FLUX</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -187,16 +187,16 @@ const m$ = StyleSheet.create({
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  title: { color: '#FF3B30', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#FF3B30', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
   // Face-off
   faceOff: { flexDirection: 'row', alignItems: 'center', marginBottom: 22, paddingVertical: 16, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.03)' },
   faceCard: { flex: 1, alignItems: 'flex-start', paddingHorizontal: 24, gap: 6 },
   faceAvatar: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
-  faceLetter: { color: '#000000', fontSize: 24, fontWeight: '900' },
-  faceName: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
-  faceXp: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '300', letterSpacing: 1 },
+  faceLetter: { color: '#000000', fontSize: 26, fontWeight: '900' },
+  faceName: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
+  faceXp: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '300', letterSpacing: 1 },
   faceVs: { alignItems: 'center', justifyContent: 'center', width: 44 },
-  vsText: { color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
+  vsText: { color: '#FFD700', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
   // Legacy (cleanup)
   opponentRow: { display: 'none' },
   opponentAvatar: { display: 'none' },
@@ -207,15 +207,15 @@ const m$ = StyleSheet.create({
   vsBadge: { display: 'none' },
   myInfo: { display: 'none' },
   // Section labels
-  sectionLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 10, marginTop: 4 },
+  sectionLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '900', letterSpacing: 3, marginBottom: 10, marginTop: 4 },
   discCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 12,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginBottom: 8,
   },
   discInfo: { flex: 1 },
-  discLabel: { color: 'rgba(255,255,255,0.75)', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
-  discSub: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '300', marginTop: 2 },
+  discLabel: { color: 'rgba(255,255,255,0.75)', fontSize: 16, fontWeight: '900', letterSpacing: 1.5 },
+  discSub: { color: 'rgba(255,255,255,0.25)', fontSize: 13, fontWeight: '300', marginTop: 2 },
   stakesRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   stakeBtn: {
     flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10,
@@ -223,14 +223,14 @@ const m$ = StyleSheet.create({
   },
   stakeBtnActive: { borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.08)' },
   stakeBtnDisabled: { opacity: 0.3 },
-  stakeXp: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
-  stakeSub: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '300', letterSpacing: 0.5, textAlign: 'center', marginTop: 2 },
+  stakeXp: { color: '#FFFFFF', fontSize: 15, fontWeight: '900' },
+  stakeSub: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '300', letterSpacing: 0.5, textAlign: 'center', marginTop: 2 },
   warningRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
-  warningText: { color: '#FF9500', fontSize: 12, fontWeight: '700' },
+  warningText: { color: '#FF9500', fontSize: 14, fontWeight: '700' },
   cta: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: '#FF3B30', borderRadius: 12, paddingVertical: 16, marginTop: 4,
   },
   ctaDisabled: { opacity: 0.4 },
-  ctaText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  ctaText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
 });

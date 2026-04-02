@@ -160,17 +160,17 @@ const kg$ = StyleSheet.create({
   center: { position: 'absolute', alignItems: 'center', justifyContent: 'center', gap: 4 },
   score: { fontSize: 38, fontWeight: '900', letterSpacing: 1 },
   gradeBadge: { borderRadius: 6, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2 },
-  grade: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  grade: { fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   penaltyBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(255,59,48,0.1)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 },
-  penaltyText: { color: '#FF3B30', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-  verdict: { fontSize: 10, textAlign: 'center', lineHeight: 14, paddingHorizontal: 8, fontWeight: '300' },
+  penaltyText: { color: '#FF3B30', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  verdict: { fontSize: 12, textAlign: 'center', lineHeight: 14, paddingHorizontal: 8, fontWeight: '300' },
   bars: { width: '100%', gap: 6, paddingHorizontal: 8 },
   barRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  barLabel: { width: 56, fontSize: 8, letterSpacing: 1.5, color: 'rgba(255,255,255,0.30)' },
+  barLabel: { width: 56, fontSize: 10, letterSpacing: 1.5, color: 'rgba(255,255,255,0.30)' },
   barTrack: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 2 },
-  barVal: { fontSize: 11, width: 32, textAlign: 'right' },
-  barContrib: { fontSize: 8, color: 'rgba(255,255,255,0.2)', letterSpacing: 0.3, width: 56, textAlign: 'right' },
+  barVal: { fontSize: 13, width: 32, textAlign: 'right' },
+  barContrib: { fontSize: 10, color: 'rgba(255,255,255,0.2)', letterSpacing: 0.3, width: 56, textAlign: 'right' },
 });
 
 // ── Injury Risk Badge ─────────────────────────────────────────────────────────
@@ -186,7 +186,7 @@ function RiskBadge({ risk }: { risk: any }) {
 const rb$ = StyleSheet.create({
   badge: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1 },
   dot: { width: 5, height: 5, borderRadius: 3 },
-  text: { fontSize: 9, letterSpacing: 1.5 },
+  text: { fontSize: 11, letterSpacing: 1.5 },
 });
 
 // ── Scan Trend Sparkline ──────────────────────────────────────────────────────
@@ -338,8 +338,8 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
           </View>
           <Text style={[dp$.riskRec('300'), { color: theme.textSec }]}>{ir.recommendation}</Text>
           <View style={dp$.riskDetail}>
-            <Text style={[MONT('400'), { color: theme.textTer, fontSize: 10 }]}>⬆ {ir.dominant} · ⬇ {ir.weak}</Text>
-            {ir.low_recovery && <View style={[dp$.recovWarn, { borderColor: '#AF52DE40' }]}><Text style={[{ color: '#AF52DE', fontSize: 10 }('300')]}>⚠ Recovery bassa</Text></View>}
+            <Text style={[MONT('400'), { color: theme.textTer, fontSize: 12 }]}>⬆ {ir.dominant} · ⬇ {ir.weak}</Text>
+            {ir.low_recovery && <View style={[dp$.recovWarn, { borderColor: '#AF52DE40' }]}><Text style={[{ color: '#AF52DE', fontSize: 12 }('300')]}>⚠ Recovery bassa</Text></View>}
           </View>
         </View>
 
@@ -397,37 +397,37 @@ const dp$ = StyleSheet.create({
   panel: { width: 310, borderLeftWidth: 1, paddingTop: 16, flexShrink: 0 },
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 24, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
   avatar: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
-  avatarLetter: { color: '#000', fontSize: 17, fontWeight: '900' },
+  avatarLetter: { color: '#000', fontSize: 19, fontWeight: '900' },
   headerInfo: { flex: 1, gap: 2 },
-  name: { fontSize: 14, letterSpacing: 1 },
-  meta: { fontSize: 10, letterSpacing: 0.5 },
-  crewBadge: { fontSize: 10, letterSpacing: 1 },
+  name: { fontSize: 16, letterSpacing: 1 },
+  meta: { fontSize: 12, letterSpacing: 0.5 },
+  crewBadge: { fontSize: 12, letterSpacing: 1 },
   closeBtn: { padding: 4 },
   section: { paddingHorizontal: 24, paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
-  sectionTitle: { fontSize: 9, letterSpacing: 3 },
+  sectionTitle: { fontSize: 11, letterSpacing: 3 },
   radarWrap: { alignItems: 'center' },
   axisGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   axisItem: { flex: 1, minWidth: 44, alignItems: 'center', borderRadius: 8, paddingVertical: 6 },
-  axisLabel: { fontSize: 8, letterSpacing: 1.5 },
-  axisVal: { fontSize: 15 },
+  axisLabel: { fontSize: 10, letterSpacing: 1.5 },
+  axisVal: { fontSize: 17 },
   riskHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  riskPct: { marginLeft: 'auto' as any, fontSize: 16 },
+  riskPct: { marginLeft: 'auto' as any, fontSize: 18 },
   riskBar: { height: 4, borderRadius: 2, overflow: 'hidden' },
   riskFill: { height: '100%', borderRadius: 2 },
-  riskRec: { fontSize: 11, lineHeight: 15 },
+  riskRec: { fontSize: 13, lineHeight: 15 },
   riskDetail: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   recovWarn: { borderWidth: 1, borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2 },
   trendRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  trendLabel: { fontSize: 11 },
+  trendLabel: { fontSize: 13 },
   secHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   penaltyTag: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2, backgroundColor: 'rgba(255,59,48,0.08)' },
-  penaltyTagText: { color: '#FF3B30', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
+  penaltyTagText: { color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   msRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  msLabel: { flex: 1, fontSize: 11 },
-  msVal: { fontSize: 14 },
-  msInput: { width: 60, borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 5, fontSize: 12, textAlign: 'right' } as any,
+  msLabel: { flex: 1, fontSize: 13 },
+  msVal: { fontSize: 16 },
+  msInput: { width: 60, borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 5, fontSize: 14, textAlign: 'right' } as any,
   saveBtn: { borderRadius: 8, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', marginTop: 6 },
-  saveBtnText: { color: '#000', fontSize: 11, letterSpacing: 2 },
+  saveBtnText: { color: '#000', fontSize: 13, letterSpacing: 2 },
 });
 
 // ── Crew Panel ────────────────────────────────────────────────────────────────
@@ -585,7 +585,7 @@ function CrewPanel() {
             <View key={inv.id} style={cp$.pendingRow}>
               <View style={{ flex: 1 }}>
                 <Text style={[cp$.pendingCrew, MONT('700'), { color: theme.text }]}>{inv.crew_name}</Text>
-                <Text style={[MONT('300'), { color: theme.textTer, fontSize: 11 }]}>
+                <Text style={[MONT('300'), { color: theme.textTer, fontSize: 13 }]}>
                   Da {inv.invited_by} · Ruolo: {inv.role}
                 </Text>
               </View>
@@ -614,13 +614,13 @@ function CrewPanel() {
           <Text style={[cp$.sectionTitle, MONT('900'), { color: theme.textTer }]}>INVITI INVIATI</Text>
           {data.sent_invitations.slice(0, 5).map((inv: any) => (
             <View key={inv.id} style={cp$.sentRow}>
-              <Text style={[MONT('400'), { flex: 1, color: theme.textSec, fontSize: 12 }]}>{inv.invitee}</Text>
-              <Text style={[MONT('300'), { color: theme.textTer, fontSize: 11 }]}>{inv.crew_name}</Text>
+              <Text style={[MONT('400'), { flex: 1, color: theme.textSec, fontSize: 14 }]}>{inv.invitee}</Text>
+              <Text style={[MONT('300'), { color: theme.textTer, fontSize: 13 }]}>{inv.crew_name}</Text>
               <View style={[cp$.statusPill, {
                 backgroundColor: inv.status === 'accepted' ? '#00FF8715' : inv.status === 'declined' ? '#FF3B3015' : theme.surface2,
                 borderColor: inv.status === 'accepted' ? '#00FF8740' : inv.status === 'declined' ? '#FF3B3040' : theme.border,
               }]}>
-                <Text style={[MONT('900'), { fontSize: 8, letterSpacing: 1.5, color: inv.status === 'accepted' ? '#00FF87' : inv.status === 'declined' ? '#FF3B30' : theme.textTer }]}>
+                <Text style={[MONT('900'), { fontSize: 10, letterSpacing: 1.5, color: inv.status === 'accepted' ? '#00FF87' : inv.status === 'declined' ? '#FF3B30' : theme.textTer }]}>
                   {(inv.status || 'PENDING').toUpperCase()}
                 </Text>
               </View>
@@ -638,43 +638,43 @@ const cp$ = StyleSheet.create({
   crewCard: { borderRadius: 14, borderWidth: 1, padding: 16, gap: 14 },
   crewHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   crewName: { flex: 1, gap: 3 },
-  crewTitle: { fontSize: 16, letterSpacing: 2 },
-  crewMeta: { fontSize: 10, letterSpacing: 0.5 },
+  crewTitle: { fontSize: 18, letterSpacing: 2 },
+  crewMeta: { fontSize: 12, letterSpacing: 0.5 },
   crewStats: { alignItems: 'center' },
   crewDnaScore: { fontSize: 28, letterSpacing: 1 },
-  crewDnaLabel: { fontSize: 8, letterSpacing: 3 },
+  crewDnaLabel: { fontSize: 10, letterSpacing: 3 },
   radarRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   axisLabels: { flex: 1, gap: 5 },
   axisRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  axisName: { width: 24, fontSize: 9, letterSpacing: 1 },
+  axisName: { width: 24, fontSize: 11, letterSpacing: 1 },
   axisBarBg: { flex: 1, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.07)', overflow: 'hidden' },
   axisBarFill: { height: '100%', borderRadius: 2 },
-  axisNum: { width: 26, fontSize: 10, textAlign: 'right' },
+  axisNum: { width: 26, fontSize: 12, textAlign: 'right' },
   memberList: { gap: 6 },
   memberRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   memberAvatar: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  memberLetter: { color: '#000', fontSize: 10, fontWeight: '900' },
-  memberName: { flex: 1, fontSize: 12, letterSpacing: 0.3 },
+  memberLetter: { color: '#000', fontSize: 12, fontWeight: '900' },
+  memberName: { flex: 1, fontSize: 14, letterSpacing: 0.3 },
   rolePill: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 },
-  roleTxt: { fontSize: 8, letterSpacing: 1.5 },
-  memberDna: { fontSize: 12, width: 28, textAlign: 'right' },
-  moreMem: { fontSize: 10, textAlign: 'right' },
+  roleTxt: { fontSize: 10, letterSpacing: 1.5 },
+  memberDna: { fontSize: 14, width: 28, textAlign: 'right' },
+  moreMem: { fontSize: 12, textAlign: 'right' },
   inviteBox: { borderRadius: 10, borderWidth: 1, padding: 12, gap: 8 },
-  inviteTitle: { fontSize: 9, letterSpacing: 2.5 },
-  inviteInput: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 12 } as any,
+  inviteTitle: { fontSize: 11, letterSpacing: 2.5 },
+  inviteInput: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 14 } as any,
   roleRow: { flexDirection: 'row', gap: 6, alignItems: 'center' },
   roleOpt: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 6, borderColor: 'rgba(255,255,255,0.07)' },
-  roleOptTxt: { fontSize: 9, letterSpacing: 1.5 },
+  roleOptTxt: { fontSize: 11, letterSpacing: 1.5 },
   inviteBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 8, paddingVertical: 8 },
-  inviteBtnTxt: { fontSize: 10, letterSpacing: 1.5 },
+  inviteBtnTxt: { fontSize: 12, letterSpacing: 1.5 },
   section: { borderRadius: 14, borderWidth: 1, padding: 14, gap: 10 },
-  sectionTitle: { fontSize: 9, letterSpacing: 3 },
+  sectionTitle: { fontSize: 11, letterSpacing: 3 },
   pendingRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
-  pendingCrew: { fontSize: 13, letterSpacing: 0.5 },
+  pendingCrew: { fontSize: 15, letterSpacing: 0.5 },
   acceptBtn: { borderRadius: 7, paddingHorizontal: 12, paddingVertical: 7, alignItems: 'center' },
-  acceptTxt: { color: '#000', fontSize: 10, letterSpacing: 1.5 },
+  acceptTxt: { color: '#000', fontSize: 12, letterSpacing: 1.5 },
   declineBtn: { borderWidth: 1, borderRadius: 7, paddingHorizontal: 10, paddingVertical: 7 },
-  declineTxt: { fontSize: 10 },
+  declineTxt: { fontSize: 12 },
   sentRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 5 },
   statusPill: { borderWidth: 1, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 },
 });
@@ -862,24 +862,24 @@ const am$ = StyleSheet.create({
   topBar: { borderBottomWidth: 1, paddingHorizontal: 24, paddingVertical: 10, gap: 10 },
   viewSwitch: { flexDirection: 'row', gap: 8 },
   viewBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: 'transparent', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
-  viewBtnTxt: { fontSize: 11, letterSpacing: 1.5 },
+  viewBtnTxt: { fontSize: 13, letterSpacing: 1.5 },
   filterRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   searchBox: { flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, minWidth: 160 },
-  searchInput: { fontSize: 12, flex: 1, outlineStyle: 'none' } as any,
+  searchInput: { fontSize: 14, flex: 1, outlineStyle: 'none' } as any,
   sortBtn: { borderWidth: 1, borderColor: 'transparent', borderRadius: 6, paddingHorizontal: 9, paddingVertical: 5 },
-  sortTxt: { fontSize: 9, letterSpacing: 2 },
+  sortTxt: { fontSize: 11, letterSpacing: 2 },
   splitView: { flex: 1, flexDirection: 'row' },
   tableArea: { flex: 1 },
   loadWrap: { alignItems: 'center', paddingTop: 40 },
   koreGradePill: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1 },
-  koreGradeText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  koreGradeText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   tableHead: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 12, borderBottomWidth: 1, gap: 8 },
-  th: { fontSize: 8, letterSpacing: 2.5, width: 50, textAlign: 'center' },
+  th: { fontSize: 10, letterSpacing: 2.5, width: 50, textAlign: 'center' },
   tableRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 14, borderBottomWidth: 1, gap: 8, position: 'relative' },
   rowIndicator: { position: 'absolute', left: 0, top: 4, bottom: 4, width: 3, borderRadius: 2 },
   athleteCell: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   rowAvatar: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  rowAvatarLetter: { color: '#000', fontSize: 12, fontWeight: '900' },
-  td: { fontSize: 13, width: 50, textAlign: 'center' },
-  tdSub: { fontSize: 10, letterSpacing: 0.3 },
+  rowAvatarLetter: { color: '#000', fontSize: 14, fontWeight: '900' },
+  td: { fontSize: 15, width: 50, textAlign: 'center' },
+  tdSub: { fontSize: 12, letterSpacing: 0.3 },
 });

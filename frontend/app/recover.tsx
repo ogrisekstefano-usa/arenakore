@@ -356,11 +356,11 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: 24, flexGrow: 1 },
 
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 32 },
-  backTxt: { color: CYAN, fontSize: 13, fontWeight: '400', letterSpacing: 2 },
+  backTxt: { color: CYAN, fontSize: 15, fontWeight: '400', letterSpacing: 2 },
 
   header: { marginBottom: 8 },
   brand: {
-    color: GOLD, fontSize: 14, fontWeight: '400', letterSpacing: 8, marginBottom: 4,
+    color: GOLD, fontSize: 16, fontWeight: '400', letterSpacing: 8, marginBottom: 4,
   },
   titleBig: {
     color: '#FFFFFF', fontSize: 42, fontWeight: '900', letterSpacing: 0.5,
@@ -373,19 +373,19 @@ const s = StyleSheet.create({
   },
 
   stepLabel: {
-    color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 4,
+    color: CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 4,
     marginTop: 28, marginBottom: 24,
   },
 
   form: { gap: 20 },
-  body: { color: '#555555', fontSize: 14, lineHeight: 22 },
+  body: { color: '#555555', fontSize: 16, lineHeight: 22 },
   emailHighlight: { color: CYAN, fontWeight: '700' },
 
   fieldWrap: { gap: 8 },
-  fieldLabel: { color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  fieldLabel: { color: CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   input: {
     backgroundColor: '#111111', borderWidth: 1, borderColor: '#222',
-    borderRadius: 8, padding: 16, color: '#FFFFFF', fontSize: 16, fontWeight: '700',
+    borderRadius: 8, padding: 16, color: '#FFFFFF', fontSize: 18, fontWeight: '700',
   },
 
   // 6-Box OTP grid — neon cyan (width/height injected dynamically from otpBoxW)
@@ -393,7 +393,7 @@ const s = StyleSheet.create({
   otpBox: {
     borderRadius: 8,
     backgroundColor: '#00E5FF', borderWidth: 2, borderColor: '#1A1A1A',
-    color: '#00E5FF', fontSize: 26, fontWeight: '900', textAlign: 'center',
+    color: '#00E5FF', fontSize: 28, fontWeight: '900', textAlign: 'center',
   },
   otpBoxFilled: {
     borderColor: '#00E5FF',
@@ -407,9 +407,9 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
     borderRadius: 8, paddingHorizontal: 24, paddingVertical: 10,
   },
-  devTxt: { color: GOLD, fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  devTxt: { color: GOLD, fontSize: 14, fontWeight: '700', letterSpacing: 1 },
 
-  error: { color: '#FF3B30', fontSize: 13, fontWeight: '700', textAlign: 'center' },
+  error: { color: '#FF3B30', fontSize: 15, fontWeight: '700', textAlign: 'center' },
 
   cta: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
@@ -417,21 +417,21 @@ const s = StyleSheet.create({
     paddingVertical: 18, marginTop: 8,
   },
   ctaLoading: { opacity: 0.7 },
-  ctaTxt: { color: '#000000', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  ctaTxt: { color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
 
   resendBtn: { alignItems: 'center', paddingVertical: 12 },
-  resendTxt: { color: '#333', fontSize: 12, fontWeight: '700', letterSpacing: 2 },
+  resendTxt: { color: '#333', fontSize: 14, fontWeight: '700', letterSpacing: 2 },
 
   pwdRow: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#111111', borderWidth: 1, borderColor: '#222',
     borderRadius: 8,
   },
-  pwdInput: { flex: 1, padding: 16, color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  pwdInput: { flex: 1, padding: 16, color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
   eye: { paddingHorizontal: 24 },
   strengthBar: { height: 3, backgroundColor: '#1A1A1A', borderRadius: 2, overflow: 'hidden' },
   strengthFill: { height: '100%', borderRadius: 2 },
-  mismatch: { color: '#FF3B30', fontSize: 12, fontWeight: '700' },
+  mismatch: { color: '#FF3B30', fontSize: 14, fontWeight: '700' },
 
   // Done screen
   doneWrap: { flex: 1, justifyContent: 'center', paddingTop: 20 },
@@ -454,14 +454,14 @@ const s = StyleSheet.create({
     shadowColor: GOLD, shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6, shadowRadius: 20,
   },
-  doneTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 6 },
+  doneTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 6 },
   doneTitleBig: { color: GOLD, fontSize: 36, fontWeight: '900', letterSpacing: 0.5, marginTop: -8 },
   doneDivider: { height: 1, width: '100%', backgroundColor: 'rgba(255,255,255,0.06)', marginVertical: 4 },
-  doneBody: { color: '#555555', fontSize: 13, textAlign: 'center', lineHeight: 20 },
+  doneBody: { color: '#555555', fontSize: 15, textAlign: 'center', lineHeight: 20 },
   doneBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 10, backgroundColor: CYAN, borderRadius: 8,
     paddingVertical: 16, width: '100%', marginTop: 8,
   },
-  doneBtnTxt: { color: '#000000', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  doneBtnTxt: { color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
 });

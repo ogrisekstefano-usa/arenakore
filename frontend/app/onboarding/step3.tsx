@@ -307,9 +307,9 @@ const s = StyleSheet.create({
 
   // Header
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  brand: { color: GOLD, fontSize: 11, fontWeight: '900', letterSpacing: 6 },
+  brand: { color: GOLD, fontSize: 13, fontWeight: '900', letterSpacing: 6 },
   stepPill: { backgroundColor: '#00E5FF22', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-  stepTxt: { color: CYAN, fontSize: 12, fontWeight: '400', letterSpacing: 2 },
+  stepTxt: { color: CYAN, fontSize: 14, fontWeight: '400', letterSpacing: 2 },
 
   // Progress
   progBar: { height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 32, overflow: 'hidden' },
@@ -319,7 +319,7 @@ const s = StyleSheet.create({
   titleWrap: { marginBottom: 32, gap: 0 },
   titleLine1: {
     color: GOLD,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '900',
     letterSpacing: 8,
     // Gold outer-glow
@@ -352,7 +352,7 @@ const s = StyleSheet.create({
   },
   subtitle: {
     color: 'rgba(255,255,255,0.30)',
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '700',
     letterSpacing: 1.5,
     lineHeight: 18,
@@ -362,14 +362,14 @@ const s = StyleSheet.create({
   group: { marginBottom: 28, gap: 14 },
   groupHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   groupDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: CYAN },
-  groupLabel: { color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 4 },
+  groupLabel: { color: CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 4 },
 
   // Fields
   fieldRow: { flexDirection: 'row', gap: 12 },
   fieldHalf: { flex: 1, gap: 7 },
   fieldLabel: {
     color: '#E0E0E0',            // off-white — highly readable on dark bg
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '900',
     letterSpacing: 3,
   },
@@ -382,7 +382,7 @@ const s = StyleSheet.create({
     borderRadius: 10,
     padding: 16,
     color: CYAN,
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '900',
     letterSpacing: 1,
     marginTop: 2,
@@ -431,18 +431,18 @@ const s = StyleSheet.create({
   levelTextGroup: { gap: 3 },
   levelLabel: {
     color: '#AAAAAA',  // off-white (inactive)
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '900',
     letterSpacing: 2,
   },
   levelLabelActive: { color: CYAN },
   levelDesc: {
     color: '#A0A0A0',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '400',
     letterSpacing: 0.2,
   },
-  levelDescActive: { color: 'rgba(0,229,255,0.8)', fontSize: 13, fontWeight: '400' },
+  levelDescActive: { color: 'rgba(0,229,255,0.8)', fontSize: 15, fontWeight: '400' },
   levelGlow: {
     width: 6, height: 6, borderRadius: 3, backgroundColor: CYAN,
     shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4,
@@ -455,14 +455,14 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)',
     borderRadius: 8, padding: 12, marginBottom: 16,
   },
-  errorText: { color: '#FF3B30', fontSize: 11, fontWeight: '800', letterSpacing: 1, flex: 1 },
+  errorText: { color: '#FF3B30', fontSize: 13, fontWeight: '800', letterSpacing: 1, flex: 1 },
 
   // Ghost mode styles
   ghostWrap: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginBottom: 12 },
   ghostLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   ghostText: { flex: 1, gap: 2 },
-  ghostTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  ghostDesc: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '400', letterSpacing: 1 },
+  ghostTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  ghostDesc: { color: 'rgba(255,255,255,0.30)', fontSize: 14, fontWeight: '400', letterSpacing: 1 },
   cta: {
     backgroundColor: CYAN,
     borderRadius: 10,
@@ -477,10 +477,10 @@ const s = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
-  ctaTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+  ctaTxt: { color: BG, fontSize: 16, fontWeight: '900', letterSpacing: 3 },
   ctaNote: {
     color: '#AAAAAA',
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '800',
     letterSpacing: 2,
     textAlign: 'center',

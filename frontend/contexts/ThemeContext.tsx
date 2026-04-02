@@ -33,7 +33,7 @@ export const THEMES = {
     positive:    '#00FF87',
     negative:    '#FF3B30',
     titleColor:  '#FFFFFF',
-    cardRadius:  20,
+    cardRadius:  16,
     cardShadow:  false,
     cardShadowCss: 'none',
   },

@@ -1608,12 +1608,12 @@ export default function NexusBioScan() {
             </G>
           )}
 
-          {/* XP Estimation floating */}
+          {/* FLUX Estimation floating */}
           {phase === 'beats' && currentBeat >= 2 && (
             <G opacity={0.6}>
               <SvgText x={SCAN_W - 14} y={SCAN_H * 0.12}
                 fill="#FFD700" fontSize={8} fontWeight="900" textAnchor="end" letterSpacing={1}>
-                XP EST: +47
+                FLUX EST: +47
               </SvgText>
             </G>
           )}
@@ -1853,16 +1853,16 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(5,5,5,0.95)', zIndex: 20,
   },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  brand: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
+  brand: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
     backgroundColor: '#00E5FF22',
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
-  stepTxt: { color: '#00E5FF', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
+  stepTxt: { color: '#00E5FF', fontSize: 14, fontWeight: '400', letterSpacing: 2 },
   detectRow: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },
   detectDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF' },
-  detectTxt: { color: '#00E5FF', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
+  detectTxt: { color: '#00E5FF', fontSize: 13, fontWeight: '400', letterSpacing: 2 },
 
   // Scan area
   scanArea: { position: 'relative', overflow: 'hidden' },
@@ -1897,46 +1897,46 @@ const s = StyleSheet.create({
   footerCenter: { alignItems: 'center', gap: 8 },
 
   // Loading
-  loadingTxt: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  loadingTxt: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
 
   // Detecting / Positioning
-  statusLabel: { color: '#00E5FF', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
+  statusLabel: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
   detectBar: { width: '100%', height: 4, backgroundColor: '#111', borderRadius: 2, overflow: 'hidden' },
   detectFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 2 },
-  detectNote: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '400', letterSpacing: 1.5 },
-  detectCount: { color: '#00E5FF', fontSize: 26, fontWeight: '400', letterSpacing: 2 },
+  detectNote: { color: 'rgba(255,255,255,0.30)', fontSize: 14, fontWeight: '400', letterSpacing: 1.5 },
+  detectCount: { color: '#00E5FF', fontSize: 28, fontWeight: '400', letterSpacing: 2 },
   positioningRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   positioningDot: {
     width: 8, height: 8, borderRadius: 4, backgroundColor: '#00E5FF',
   },
-  positioningTxt: { color: '#00E5FF', fontSize: 14, fontWeight: '400', letterSpacing: 3 },
+  positioningTxt: { color: '#00E5FF', fontSize: 16, fontWeight: '400', letterSpacing: 3 },
 
   // Stabilizing
   stabilityRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' },
   stabPct: { color: '#00E5FF', fontSize: 28, fontWeight: '400', width: 60, textAlign: 'center' as const },
   stabBar: { flex: 1, height: 5, backgroundColor: '#111', borderRadius: 3, overflow: 'hidden' },
   stabFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 3 },
-  tieneTxt: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  tieneTxt: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
 
   // Countdown
-  countdownLabel: { color: '#FFD700', fontSize: 9, fontWeight: '900', letterSpacing: 4 },
+  countdownLabel: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 4 },
   countdownBig: { color: '#FFD700', fontSize: 64, fontWeight: '900', letterSpacing: 2, lineHeight: 68 },
-  countdownNote: { color: 'rgba(255,215,0,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  countdownNote: { color: 'rgba(255,215,0,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
 
   // Pose Check
-  poseCommand: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1, textAlign: 'center' as const },
-  poseSubCommand: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 3, textAlign: 'center' as const },
+  poseCommand: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 1, textAlign: 'center' as const },
+  poseSubCommand: { color: '#00E5FF', fontSize: 16, fontWeight: '900', letterSpacing: 3, textAlign: 'center' as const },
   poseTimerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, width: '100%' },
   poseTimerBg: { flex: 1, height: 6, backgroundColor: '#111', borderRadius: 3, overflow: 'hidden' },
   poseTimerFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 3 },
-  poseTimerText: { color: '#00E5FF', fontSize: 14, fontWeight: '900', width: 80, textAlign: 'right' as const },
-  poseWarning: { color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-  poseOk: { color: '#00E5FF', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  poseTimerText: { color: '#00E5FF', fontSize: 16, fontWeight: '900', width: 80, textAlign: 'right' as const },
+  poseWarning: { color: '#FF3B30', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  poseOk: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
 
   // Beats
   beatLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   beatDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00E5FF' },
-  beatLabel: { color: '#00E5FF', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
+  beatLabel: { color: '#00E5FF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
   beatInstruction: {
     color: '#FFFFFF', fontSize: 32, fontWeight: '900',
     letterSpacing: 1.5,
@@ -1947,7 +1947,7 @@ const s = StyleSheet.create({
   },
   beatBar: { width: '100%', height: 4, backgroundColor: '#111', borderRadius: 2, overflow: 'hidden' },
   beatFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 2 },
-  beatPct: { color: '#AAAAAA', fontSize: 12, fontWeight: '900' },
+  beatPct: { color: '#AAAAAA', fontSize: 14, fontWeight: '900' },
 
   // Approved
   approvedWrap: { alignItems: 'center', gap: 8 },
@@ -1956,7 +1956,7 @@ const s = StyleSheet.create({
     letterSpacing: 0.5, textAlign: 'center',
   },
   approvedSub: {
-    color: '#FFFFFF', fontSize: 20, fontWeight: '900',
+    color: '#FFFFFF', fontSize: 22, fontWeight: '900',
     letterSpacing: 6, textAlign: 'center',
   },
 });
@@ -1971,7 +1971,7 @@ const dbg$ = StyleSheet.create({
     marginTop: 8,
   },
   txt: {
-    color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 3,
+    color: '#FF3B30', fontSize: 12, fontWeight: '900', letterSpacing: 3,
   },
 });
 
@@ -1983,7 +1983,7 @@ const cw$ = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'center',
   },
   txt: {
-    color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 2,
+    color: '#FFD700', fontSize: 20, fontWeight: '900', letterSpacing: 2,
     textShadowColor: 'rgba(255,215,0,0.8)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 10,
@@ -1998,7 +1998,7 @@ const fps$ = StyleSheet.create({
     borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
-  txt: { color: '#00E5FF', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  txt: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   low: { color: '#FF3B30' }, // red when below 20fps
 });
 
@@ -2012,7 +2012,7 @@ const fallback$ = StyleSheet.create({
     marginTop: 10,
   },
   txt: {
-    color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 2,
+    color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 2,
   },
 });
 
@@ -2029,7 +2029,7 @@ const feet$ = StyleSheet.create({
     textShadowRadius: 12,
   },
   sub: {
-    color: 'rgba(255,159,10,0.7)', fontSize: 14, fontWeight: '900', letterSpacing: 3,
+    color: 'rgba(255,159,10,0.7)', fontSize: 16, fontWeight: '900', letterSpacing: 3,
   },
 });
 
@@ -2048,24 +2048,24 @@ const prv$ = StyleSheet.create({
   },
   topBar: { height: 2, backgroundColor: '#00E5FF', opacity: 0.6, marginHorizontal: -24, marginTop: -24, marginBottom: 8 },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  label: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  msg: { color: '#E0E0E0', fontSize: 13, fontWeight: '600', lineHeight: 22 },
+  label: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+  msg: { color: '#E0E0E0', fontSize: 15, fontWeight: '600', lineHeight: 22 },
   highlight: { color: '#00E5FF', fontWeight: '900' },
   row: { gap: 10 },
   acceptBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: '#00E5FF', borderRadius: 10, paddingVertical: 14,
   },
-  acceptTxt: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  acceptTxt: { color: '#000000', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   cancelBtn: {
     alignItems: 'center', paddingVertical: 10,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', borderRadius: 10,
   },
-  cancelTxt: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
+  cancelTxt: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '700', letterSpacing: 1 },
   // Auto-accept countdown
   countdownRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14, backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 8, padding: 10 },
-  countdownTxt: { color: 'rgba(255,215,0,0.7)', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
-  countdownNum: { color: '#FFD700', fontSize: 14, fontWeight: '900' },
+  countdownTxt: { color: 'rgba(255,215,0,0.7)', fontSize: 13, fontWeight: '800', letterSpacing: 1 },
+  countdownNum: { color: '#FFD700', fontSize: 16, fontWeight: '900' },
 });
 
 // ── CAMERA ERROR styles
@@ -2081,6 +2081,6 @@ const camErr$ = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)',
     marginHorizontal: 32,
   },
-  title: { color: '#FF3B30', fontSize: 16, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
-  desc: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '400', letterSpacing: 1, textAlign: 'center', lineHeight: 18 },
+  title: { color: '#FF3B30', fontSize: 18, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
+  desc: { color: 'rgba(255,255,255,0.5)', fontSize: 15, fontWeight: '400', letterSpacing: 1, textAlign: 'center', lineHeight: 18 },
 });

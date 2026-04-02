@@ -87,7 +87,7 @@ export function PvPPendingCard() {
           <View style={[p$.disciplineBar, { backgroundColor: DISC_COLORS[ch.discipline] + '20', borderColor: DISC_COLORS[ch.discipline] + '40' }]}>
             <Ionicons name={DISC_ICONS[ch.discipline] || 'flash'} size={12} color={DISC_COLORS[ch.discipline]} />
             <Text style={[p$.disciplineText, { color: DISC_COLORS[ch.discipline] }]}>{ch.discipline_label}</Text>
-            <View style={p$.stakePill}><Text style={p$.stakeText}>{ch.xp_stake} XP</Text></View>
+            <View style={p$.stakePill}><Text style={p$.stakeText}>{ch.xp_stake} FLUX</Text></View>
           </View>
           <View style={p$.cardBody}>
             <Text style={p$.challengerName}>{ch.challenger_username.toUpperCase()}</Text>
@@ -163,34 +163,34 @@ const p$ = StyleSheet.create({
   section: { marginTop: 10, marginBottom: 4 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, marginBottom: 8 },
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FF3B30', shadowColor: '#FF3B30', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
-  sectionTitle: { flex: 1, color: '#AAAAAA', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  sectionTitle: { flex: 1, color: '#AAAAAA', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
   badgeCount: { backgroundColor: '#FF3B30', borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2 },
-  badgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '900' },
+  badgeText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
   card: { marginHorizontal: 24, marginBottom: 8, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)', gap: 8 },
   disciplineBar: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1 },
-  disciplineText: { flex: 1, fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  disciplineText: { flex: 1, fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   stakePill: { backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 },
-  stakeText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  stakeText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   cardBody: { gap: 2 },
-  challengerName: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
-  cardSub: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '400' },
+  challengerName: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
+  cardSub: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '400' },
   actionsRow: { flexDirection: 'row', gap: 8 },
   acceptBtn: { flex: 1, backgroundColor: '#00E5FF', borderRadius: 8, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', minHeight: 38 },
-  acceptText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  acceptText: { color: '#000000', fontSize: 15, fontWeight: '900', letterSpacing: 1.5 },
   declineBtn: { paddingHorizontal: 24, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
-  declineText: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  declineText: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '700', letterSpacing: 1 },
   activeCard: { marginHorizontal: 24, marginBottom: 8, backgroundColor: 'rgba(255,59,48,0.06)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,59,48,0.25)', gap: 6 },
   activeHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  activeLabel: { flex: 1, color: '#FF3B30', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  activeLabel: { flex: 1, color: '#FF3B30', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   discPill: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, backgroundColor: 'rgba(255,255,255,0.06)' },
-  discPillText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
-  opponentText: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '700' },
+  discPillText: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
+  opponentText: { color: 'rgba(255,255,255,0.6)', fontSize: 15, fontWeight: '700' },
   ghostAvail: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(0,229,255,0.06)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
-  ghostAvailText: { color: 'rgba(0,229,255,0.7)', fontSize: 11, fontWeight: '700' },
+  ghostAvailText: { color: 'rgba(0,229,255,0.7)', fontSize: 13, fontWeight: '700' },
   scanBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#FF3B30', borderRadius: 10, paddingVertical: 12 },
-  scanBtnText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  scanBtnText: { color: '#000000', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   waitingRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  waitingText: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '400' },
+  waitingText: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '400' },
   sentRow: { marginHorizontal: 24, flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6 },
-  sentText: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '400' },
+  sentText: { color: 'rgba(255,255,255,0.25)', fontSize: 13, fontWeight: '400' },
 });

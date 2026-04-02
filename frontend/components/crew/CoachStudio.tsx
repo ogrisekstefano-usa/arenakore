@@ -157,7 +157,7 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
                   </View>
                   <View style={cs$.statItem}>
                     <Ionicons name="flash" size={12} color="#FFD700" />
-                    <Text style={[cs$.stat, { color: '#FFD700' }]}>{t.xp_reward} XP</Text>
+                    <Text style={[cs$.stat, { color: '#FFD700' }]}>{t.xp_reward} FLUX</Text>
                   </View>
                 </View>
                 {t.description ? <Text style={cs$.cardDesc}>{t.description}</Text> : null}
@@ -246,14 +246,14 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
                 myCrews.map((crew) => (
                   <TouchableOpacity key={crew.id} style={cs$.pushCrewItem} onPress={() => handlePush(crew.id)} disabled={pushing === crew.id} activeOpacity={0.8}>
                     <View style={{ flex: 1, gap: 2 }}>
-                      <Text style={{ color: '#FFF', fontSize: 17, fontWeight: '900' }}>{crew.name}</Text>
-                      <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '600' }}>{crew.members_count} membri {'\u00b7'} {crew.xp_total} XP</Text>
+                      <Text style={{ color: '#FFF', fontSize: 19, fontWeight: '900' }}>{crew.name}</Text>
+                      <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: '600' }}>{crew.members_count} membri {'\u00b7'} {crew.xp_total} FLUX</Text>
                     </View>
                     {pushing === crew.id ? (
                       <ActivityIndicator color="#FFD700" size="small" />
                     ) : (
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Text style={{ color: '#FFD700', fontSize: 15, fontWeight: '900' }}>INVIA</Text>
+                        <Text style={{ color: '#FFD700', fontSize: 17, fontWeight: '900' }}>INVIA</Text>
                         <Ionicons name="arrow-forward" size={14} color="#FFD700" />
                       </View>
                     )}
@@ -274,36 +274,36 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
 const cs$ = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 24, gap: 12 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
-  headerTitle: { color: '#FFD700', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
-  headerSub: { color: '#AAAAAA', fontSize: 13, fontWeight: '400', letterSpacing: 1 },
+  headerTitle: { color: '#FFD700', fontSize: 22, fontWeight: '900', letterSpacing: 2 },
+  headerSub: { color: '#AAAAAA', fontSize: 15, fontWeight: '400', letterSpacing: 1 },
   createBtn: { borderRadius: 14, overflow: 'hidden' },
   createGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 16 },
-  createText: { color: '#000000', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
+  createText: { color: '#000000', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
   emptyState: { alignItems: 'center', paddingTop: 60, gap: 8 },
-  emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
-  emptySub: { color: '#AAAAAA', fontSize: 15, fontWeight: '400' },
+  emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 19, fontWeight: '900', letterSpacing: 2 },
+  emptySub: { color: '#AAAAAA', fontSize: 17, fontWeight: '400' },
   card: {
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, gap: 10,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   cardTitleRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  cardName: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
+  cardName: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 1 },
   diffBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1 },
-  diffText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  diffText: { fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
   deleteBtn: { padding: 4 },
   cardStats: { flexDirection: 'row', gap: 14, flexWrap: 'wrap' },
   statItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  stat: { color: '#AAAAAA', fontSize: 14, fontWeight: '800' },
-  cardDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontStyle: 'italic' },
+  stat: { color: '#AAAAAA', fontSize: 16, fontWeight: '800' },
+  cardDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 16, fontStyle: 'italic' },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  usesText: { color: '#AAAAAA', fontSize: 13, fontWeight: '400' },
+  usesText: { color: '#AAAAAA', fontSize: 15, fontWeight: '400' },
   pushBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: 'rgba(255,215,0,0.12)', paddingHorizontal: 24, paddingVertical: 8,
     borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
   },
-  pushText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  pushText: { color: '#FFD700', fontSize: 15, fontWeight: '900', letterSpacing: 1.5 },
   pushCrewItem: {
     flexDirection: 'row', alignItems: 'center', paddingVertical: 14,
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.45)',
@@ -318,12 +318,12 @@ const ct$ = StyleSheet.create({
     padding: 24, paddingBottom: 40, gap: 8, borderWidth: 1, borderColor: 'rgba(255,215,0,0.1)',
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  title: { color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 3 },
-  subtitle: { color: 'rgba(255,255,255,0.4)', fontSize: 15, textAlign: 'center', marginBottom: 8 },
-  label: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
+  title: { color: '#FFD700', fontSize: 20, fontWeight: '900', letterSpacing: 3 },
+  subtitle: { color: 'rgba(255,255,255,0.4)', fontSize: 17, textAlign: 'center', marginBottom: 8 },
+  label: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
   input: {
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 12,
-    color: '#FFF', fontSize: 17, fontWeight: '400', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    color: '#FFF', fontSize: 19, fontWeight: '400', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   exRow: { flexDirection: 'row', gap: 10 },
   exBtn: {
@@ -331,18 +331,18 @@ const ct$ = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)',
   },
   exBtnActive: { borderColor: '#00E5FF', backgroundColor: '#00E5FF22' },
-  exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
+  exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
   diffRow: { flexDirection: 'row', gap: 6 },
   diffBtn: {
     flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', gap: 2,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)',
   },
-  diffLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  diffLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
   numRow: { flexDirection: 'row', gap: 10 },
   numCol: { flex: 1 },
   saveBtn: { borderRadius: 12, overflow: 'hidden', marginTop: 8 },
   saveGrad: { paddingVertical: 16, alignItems: 'center' },
-  saveText: { color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
+  saveText: { color: '#000000', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
   cancelBtn: { paddingVertical: 10, alignItems: 'center' },
-  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: '700' },
+  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '700' },
 });

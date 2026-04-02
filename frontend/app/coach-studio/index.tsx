@@ -53,8 +53,8 @@ const w$ = StyleSheet.create({
   card: { borderRadius: 14, borderWidth: 1, padding: 18, gap: 12 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
-  title: { fontSize: 12, letterSpacing: 2 },
-  subtitle: { fontSize: 10, letterSpacing: 1, marginLeft: 4 },
+  title: { fontSize: 14, letterSpacing: 2 },
+  subtitle: { fontSize: 12, letterSpacing: 1, marginLeft: 4 },
 });
 
 // ── KPI Card ──────────────────────────────────────────────────────────────────
@@ -83,9 +83,9 @@ const kp$ = StyleSheet.create({
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   iconBg: { width: 30, height: 30, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   trend: { width: 22, height: 22, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
-  value: { fontSize: 26, letterSpacing: 0.5, lineHeight: 30 },
-  label: { fontSize: 9, letterSpacing: 2.5 },
-  sub: { fontSize: 10, letterSpacing: 0.5 },
+  value: { fontSize: 28, letterSpacing: 0.5, lineHeight: 30 },
+  label: { fontSize: 11, letterSpacing: 2.5 },
+  sub: { fontSize: 12, letterSpacing: 0.5 },
 });
 
 // ── Quick Action ──────────────────────────────────────────────────────────────
@@ -104,7 +104,7 @@ function QuickAction({ label, icon, color, onPress }: any) {
 }
 const qa$ = StyleSheet.create({
   btn: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 24, paddingVertical: 10, flex: 1 },
-  label: { fontSize: 11, letterSpacing: 1.5 },
+  label: { fontSize: 13, letterSpacing: 1.5 },
 });
 
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
@@ -236,7 +236,7 @@ export default function GlobalDashboard() {
                   {a.username}
                 </Text>
                 <Text style={[pg$.perfSub('300'), { color: theme.textTer }]}>
-                  LVL {a.level} · {a.xp?.toLocaleString()} XP
+                  LVL {a.level} · {a.xp?.toLocaleString()} FLUX
                 </Text>
               </View>
               <Text style={[pg$.perfDna, MONT('900'), {
@@ -298,36 +298,36 @@ const pg$ = StyleSheet.create({
   root: { flex: 1 },
   content: { padding: 24, gap: 16, paddingBottom: 48 },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
-  loadingText: { fontSize: 12, letterSpacing: 1 },
+  loadingText: { fontSize: 14, letterSpacing: 1 },
 
   pageHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 4 },
-  greeting: { fontSize: 12, letterSpacing: 2, marginBottom: 2 },
-  pageTitle: { fontSize: 24, letterSpacing: 4 },
+  greeting: { fontSize: 14, letterSpacing: 2, marginBottom: 2 },
+  pageTitle: { fontSize: 26, letterSpacing: 4 },
   headerRight: { alignItems: 'flex-end', gap: 6 },
   alertBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
-  alertBadgeText: { fontSize: 9, letterSpacing: 1.5 },
-  gymName: { fontSize: 11, letterSpacing: 1 },
+  alertBadgeText: { fontSize: 11, letterSpacing: 1.5 },
+  gymName: { fontSize: 13, letterSpacing: 1 },
 
   kpiRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
   widgetRow: { flexDirection: 'row', gap: 14, alignItems: 'flex-start' },
 
   emptyState: { alignItems: 'center', paddingVertical: 20, gap: 8 },
-  emptyText: { fontSize: 12 },
+  emptyText: { fontSize: 14 },
 
   perfRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderBottomWidth: 1 },
-  perfRank: { width: 20, fontSize: 11, textAlign: 'center' },
+  perfRank: { width: 20, fontSize: 13, textAlign: 'center' },
   perfAvatar: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  perfAvatarLetter: { color: '#000', fontSize: 11, fontWeight: '900' },
+  perfAvatarLetter: { color: '#000', fontSize: 13, fontWeight: '900' },
   perfInfo: { flex: 1, gap: 1 },
-  perfName: { fontSize: 12, letterSpacing: 0.5 },
-  perfSub: { fontSize: 10, letterSpacing: 0.5 },
-  perfDna: { fontSize: 16 },
+  perfName: { fontSize: 14, letterSpacing: 0.5 },
+  perfSub: { fontSize: 12, letterSpacing: 0.5 },
+  perfDna: { fontSize: 18 },
 
   actionRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
 
   battleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 7, borderBottomWidth: 1 },
   resultPill: { borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1, minWidth: 42, alignItems: 'center' },
-  resultText: { fontSize: 9, letterSpacing: 1 },
-  battleName: { fontSize: 12 },
-  battleDate: { fontSize: 10 },
+  resultText: { fontSize: 11, letterSpacing: 1 },
+  battleName: { fontSize: 14 },
+  battleDate: { fontSize: 12 },
 });

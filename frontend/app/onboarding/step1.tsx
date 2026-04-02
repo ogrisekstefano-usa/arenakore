@@ -458,13 +458,13 @@ const s = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 12,
   },
-  brand: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
+  brand: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
     backgroundColor: 'transparent',
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: '#00E5FF44',
   },
-  stepTxt: { color: '#00E5FF', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
+  stepTxt: { color: '#00E5FF', fontSize: 14, fontWeight: '400', letterSpacing: 2 },
   progBar: {
     height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 28, overflow: 'hidden',
   },
@@ -473,7 +473,7 @@ const s = StyleSheet.create({
   // ── HERO — NEXUS CALIBRATION with Gold Outer-Glow
   heroWrap: { gap: 2, marginBottom: 16 },
   heroTagline: {
-    color: 'rgba(255,215,0,0.4)', fontSize: 9, fontWeight: '900',
+    color: 'rgba(255,215,0,0.4)', fontSize: 11, fontWeight: '900',
     letterSpacing: 6, marginBottom: 4,
   },
   heroLine1: {
@@ -502,7 +502,7 @@ const s = StyleSheet.create({
   // ── BODY TEXT — Off-White #E0E0E0
   bodyWrap: { marginBottom: 20 },
   bodyText: {
-    color: '#E0E0E0', fontSize: 14, fontWeight: '400',
+    color: '#E0E0E0', fontSize: 16, fontWeight: '400',
     letterSpacing: 0.5, lineHeight: 20,
   },
 
@@ -513,10 +513,10 @@ const s = StyleSheet.create({
   warningDot: {
     width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFD700',
   },
-  warningTxt: { color: '#FFD700', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
+  warningTxt: { color: '#FFD700', fontSize: 14, fontWeight: '400', letterSpacing: 2 },
   specList: { gap: 7, marginBottom: 12 },
   specRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  specTxt: { color: '#888', fontSize: 12, fontWeight: '400', letterSpacing: 1.5 },
+  specTxt: { color: '#888', fontSize: 14, fontWeight: '400', letterSpacing: 1.5 },
 
   // Voice section — SALA COMANDI
   voiceSection: { gap: 6, marginBottom: 'auto' as any },
@@ -533,14 +533,14 @@ const s = StyleSheet.create({
   },
   voiceLabelRow: { flexDirection: 'row', alignItems: 'center' },
   voiceLabel: {
-    flex: 1, color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 2,
+    flex: 1, color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 2,
   },
   keywordHint: {
-    color: 'rgba(255,215,0,0.4)', fontSize: 9, fontWeight: '900',
+    color: 'rgba(255,215,0,0.4)', fontSize: 11, fontWeight: '900',
     letterSpacing: 3, textAlign: 'center',
   },
   transcript: {
-    color: '#AAAAAA', fontSize: 8, fontWeight: '700',
+    color: '#AAAAAA', fontSize: 10, fontWeight: '700',
     letterSpacing: 1, textAlign: 'center',
   },
 
@@ -562,7 +562,7 @@ const s = StyleSheet.create({
   },
   ctaGold: { backgroundColor: '#FFD700', opacity: 0.7 },
   ctaTxt: {
-    color: '#000000', fontSize: 14, fontWeight: '900', letterSpacing: 2,
+    color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 2,
   },
   micBtn: {
     width: 58, height: 58, borderRadius: 10,
@@ -576,7 +576,7 @@ const s = StyleSheet.create({
     shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 10,
   },
   orLabel: {
-    color: '#AAAAAA', fontSize: 11, fontWeight: '400',
+    color: '#AAAAAA', fontSize: 13, fontWeight: '400',
     letterSpacing: 2, textAlign: 'center',
   },
 });

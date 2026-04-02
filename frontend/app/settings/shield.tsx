@@ -73,7 +73,7 @@ export default function PrivacyShield() {
   const handleWipe = useCallback(() => {
     Alert.alert(
       'ELIMINA DATI BIOMETRICI',
-      'Questa azione cancellerà permanentemente il tuo DNA Score, le bio-scan history e i permessi camera/mic. Il profilo base (nome, XP, livello) rimarrà intatto.\n\nAzione IRREVERSIBILE.',
+      'Questa azione cancellerà permanentemente il tuo DNA Score, le bio-scan history e i permessi camera/mic. Il profilo base (nome, FLUX, livello) rimarrà intatto.\n\nAzione IRREVERSIBILE.',
       [
         { text: 'ANNULLA', style: 'cancel' },
         {
@@ -207,37 +207,37 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: 24 },
 
   back: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 20 },
-  backTxt: { color: CYAN, fontSize: 13, fontWeight: '400', letterSpacing: 2 },
+  backTxt: { color: CYAN, fontSize: 15, fontWeight: '400', letterSpacing: 2 },
 
   header: { marginBottom: 28, gap: 4, alignItems: 'flex-start' },
   shieldIcon: { width: 60, height: 60, borderRadius: 20, backgroundColor: '#00E5FF22', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  title: { color: CYAN, fontSize: 13, fontWeight: '400', letterSpacing: 6 },
+  title: { color: CYAN, fontSize: 15, fontWeight: '400', letterSpacing: 6 },
   titleBig: { color: '#FFFFFF', fontSize: 44, fontWeight: '400', letterSpacing: 0.5, lineHeight: 48 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6 },
-  subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
 
   pillar: { flexDirection: 'row', gap: 14, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 12, padding: 16, marginBottom: 10, borderWidth: 1 },
   pillarIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   pillarBody: { flex: 1, gap: 6 },
-  pillarTitle: { fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  pillarDesc: { color: '#E0E0E0', fontSize: 11, fontWeight: '700', lineHeight: 18 },
+  pillarTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  pillarDesc: { color: '#E0E0E0', fontSize: 13, fontWeight: '700', lineHeight: 18 },
 
   ghostCard: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginBottom: 24, gap: 10 },
   ghostHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   ghostIconBox: { width: 40, height: 40, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' },
   ghostInfo: { flex: 1, gap: 2 },
-  ghostTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  ghostDesc: { color: '#AAAAAA', fontSize: 14, fontWeight: '400', lineHeight: 18 },
+  ghostTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  ghostDesc: { color: '#AAAAAA', fontSize: 16, fontWeight: '400', lineHeight: 18 },
   ghostActive: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(136,136,136,0.1)', borderRadius: 8, padding: 10 },
-  ghostActiveTxt: { color: '#888', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
+  ghostActiveTxt: { color: '#888', fontSize: 13, fontWeight: '400', letterSpacing: 2 },
 
   wipeSection: { gap: 10, marginBottom: 28 },
-  wipeLabel: { color: '#FF3B30', fontSize: 11, fontWeight: '400', letterSpacing: 4 },
+  wipeLabel: { color: '#FF3B30', fontSize: 13, fontWeight: '400', letterSpacing: 4 },
   wipeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: 'rgba(255,59,48,0.06)', borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)', borderRadius: 10, paddingVertical: 16 },
   wipeBtnLoading: { opacity: 0.5 },
-  wipeBtnTxt: { color: '#FF3B30', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
-  wipeNote: { color: '#AAAAAA', fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 18 },
+  wipeBtnTxt: { color: '#FF3B30', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
+  wipeNote: { color: '#AAAAAA', fontSize: 15, fontWeight: '400', textAlign: 'center', lineHeight: 18 },
 
   footer: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center', paddingTop: 8 },
-  footerTxt: { color: 'rgba(0,229,255,0.2)', fontSize: 8, fontWeight: '400', letterSpacing: 2 },
+  footerTxt: { color: 'rgba(0,229,255,0.2)', fontSize: 10, fontWeight: '400', letterSpacing: 2 },
 });

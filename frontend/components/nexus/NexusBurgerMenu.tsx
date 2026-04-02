@@ -31,14 +31,14 @@ export function PulseTicker({ reduced }: { reduced?: boolean }) {
   if (reduced) {
     return (
       <View style={{ height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: '#00E5FF22', justifyContent: 'center' }}>
-        <Text numberOfLines={1} style={{ color: '#00E5FF', fontSize: 9, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.5, paddingHorizontal: 8 }}>[LIVE FEED] LONDON: ALEX_K PUNCH (98Q) {'\u2022'} TOKYO: WORLD RECORD</Text>
+        <Text numberOfLines={1} style={{ color: '#00E5FF', fontSize: 11, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.5, paddingHorizontal: 8 }}>[LIVE FEED] LONDON: ALEX_K PUNCH (98Q) {'\u2022'} TOKYO: WORLD RECORD</Text>
       </View>
     );
   }
   return (
     <View style={{ height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: '#00E5FF22', justifyContent: 'center' }}>
       <Animated.View style={[{ flexDirection: 'row', width: SW * 6 }, s]}>
-        <Text style={{ color: '#00E5FF', fontSize: 9, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.7 }}>{TXT}{TXT}</Text>
+        <Text style={{ color: '#00E5FF', fontSize: 11, fontWeight: '600', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.7 }}>{TXT}{TXT}</Text>
       </Animated.View>
     </View>
   );
@@ -169,49 +169,49 @@ const bm$ = StyleSheet.create({
   panel: { width: SW * 0.72, height: '100%' },
   panelInner: { flex: 1, paddingTop: 60, borderLeftWidth: 1.5, borderLeftColor: 'rgba(0,229,255,0.1)' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 8 },
-  headerTitle: { color: '#00E5FF', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
-  closeX: { color: '#555', fontSize: 22 },
+  headerTitle: { color: '#00E5FF', fontSize: 14, fontWeight: '800', letterSpacing: 3 },
+  closeX: { color: '#555', fontSize: 24 },
   tierBadge: {
     marginHorizontal: 20, marginBottom: 16, paddingVertical: 8, paddingHorizontal: 24,
     backgroundColor: '#00E5FF22', borderRadius: 8,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', gap: 2,
   },
-  tierLabel: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
-  tierSub: { color: '#555', fontSize: 8, fontWeight: '600', letterSpacing: 1 },
+  tierLabel: { color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  tierSub: { color: '#555', fontSize: 10, fontWeight: '600', letterSpacing: 1 },
   item: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 16, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)' },
   itemText: { flex: 1, gap: 2 },
-  itemLabel: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-  itemSub: { color: '#555', fontSize: 10 },
+  itemLabel: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  itemSub: { color: '#555', fontSize: 12 },
   founderPride: {
     margin: 20, backgroundColor: 'rgba(255,215,0,0.05)', borderRadius: 14,
     padding: 18, borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)', alignItems: 'center', gap: 10,
   },
-  founderQuote: { color: '#FFD700', fontSize: 11, fontWeight: '600', fontStyle: 'italic', textAlign: 'center', lineHeight: 17, opacity: 0.85 },
+  founderQuote: { color: '#FFD700', fontSize: 13, fontWeight: '600', fontStyle: 'italic', textAlign: 'center', lineHeight: 17, opacity: 0.85 },
   logoutBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 16,
     paddingHorizontal: 20, marginTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(255,59,48,0.08)',
   },
-  logoutLabel: { color: 'rgba(255,59,48,0.7)', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
-  logoutSub: { color: 'rgba(255,59,48,0.35)', fontSize: 10 },
+  logoutLabel: { color: 'rgba(255,59,48,0.7)', fontSize: 15, fontWeight: '800', letterSpacing: 2 },
+  logoutSub: { color: 'rgba(255,59,48,0.35)', fontSize: 12 },
   adminSection: { marginTop: 8, paddingHorizontal: 20 },
   sectionDivider: { height: 1, backgroundColor: 'rgba(255,59,48,0.08)', marginBottom: 12 },
-  sectionTitle: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
-  adminTitle: { color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 4 },
-  adminSub: { color: '#555', fontSize: 8, fontWeight: '700', letterSpacing: 1, marginBottom: 12 },
+  sectionTitle: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
+  adminTitle: { color: '#FF3B30', fontSize: 12, fontWeight: '900', letterSpacing: 3, marginBottom: 4 },
+  adminSub: { color: '#555', fontSize: 10, fontWeight: '700', letterSpacing: 1, marginBottom: 12 },
   roleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   roleBtn: {
     width: '47%' as any, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.02)',
     alignItems: 'center', gap: 4, position: 'relative' as any,
   },
-  roleLabel: { color: '#888', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
+  roleLabel: { color: '#888', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   roleDot: { position: 'absolute' as any, top: 6, right: 6, width: 6, height: 6, borderRadius: 3 },
   activeRoleBar: {
     marginTop: 12, padding: 10, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.02)',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', alignItems: 'center', gap: 2,
   },
-  activeRoleText: { fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  activeRoleDesc: { color: '#555', fontSize: 8, fontWeight: '600' },
+  activeRoleText: { fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  activeRoleDesc: { color: '#555', fontSize: 10, fontWeight: '600' },
   gymSection: { marginTop: 4 },
-  footer: { color: '#333', fontSize: 9, fontWeight: '600', letterSpacing: 1, paddingHorizontal: 20, paddingBottom: 30 },
+  footer: { color: '#333', fontSize: 11, fontWeight: '600', letterSpacing: 1, paddingHorizontal: 20, paddingBottom: 30 },
 });
