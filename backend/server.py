@@ -333,9 +333,9 @@ class ChallengeEngineComplete(BaseModel):
     kg: Optional[float] = 0.0
     quality_score: Optional[float] = 80.0
     has_video_proof: bool = False
-    # AUTO_COUNT: reps/quality from NEXUS
-    # MANUAL_ENTRY: user-entered reps/seconds/kg
-    # SENSOR_IMPORT: imported data (mock)
+    proof_type: Optional[str] = "NONE"  # "NONE" | "GPS_IMPORT" | "VIDEO_TIME_CHECK" | "PEER_CONFIRMATION"
+    declared_time: Optional[float] = 0.0
+    video_duration: Optional[float] = 0.0
 
 
 # FLUX multipliers per validation mode
@@ -344,6 +344,92 @@ VALIDATION_FLUX_MULTIPLIERS = {
     "MANUAL_ENTRY": 0.5,   # 50% — No sensor proof
     "SENSOR_IMPORT": 0.75, # 75% — External device
 }
+
+# FLUX multipliers per verification status
+VERIFICATION_FLUX_MULTIPLIERS = {
+    "UNVERIFIED": 0.5,       # Grey — manual, no proof
+    "PROOF_PENDING": 0.75,   # Yellow — video uploaded, awaiting check
+    "AI_VERIFIED": 1.0,      # Cyan — NEXUS/Sensor/GPS confirmed
+}
+
+# World records reference (approximate) for biometric sanity check
+WORLD_RECORDS = {
+    "squat": {"max_reps_60s": 70, "max_kg": 500},
+    "pushup": {"max_reps_60s": 90, "max_kg": 0},
+    "burpee": {"max_reps_60s": 40, "max_kg": 0},
+    "pullup": {"max_reps_60s": 50, "max_kg": 200},
+    "deadlift": {"max_reps_60s": 30, "max_kg": 501},
+    "bench_press": {"max_reps_60s": 50, "max_kg": 355},
+    "plank": {"max_seconds": 600, "max_kg": 0},
+    "skip": {"max_reps_60s": 300, "max_kg": 0},
+    "lunge": {"max_reps_60s": 60, "max_kg": 200},
+}
+
+
+def biometric_sanity_check(exercise_type: str, reps: int, seconds: float, kg: float, user_personal_bests: dict) -> dict:
+    """Check if submitted data is biometrically plausible.
+    Returns: {passed: bool, flags: [...], requires_video: bool, message: str}
+    """
+    flags = []
+    requires_video = False
+
+    wr = WORLD_RECORDS.get(exercise_type, {"max_reps_60s": 100, "max_kg": 500, "max_seconds": 600})
+
+    # Check against world records
+    if reps > 0 and reps > wr.get("max_reps_60s", 999):
+        flags.append("EXCEEDS_WORLD_RECORD_REPS")
+        requires_video = True
+    if kg > 0 and kg > wr.get("max_kg", 999):
+        flags.append("EXCEEDS_WORLD_RECORD_KG")
+        requires_video = True
+    if seconds > 0 and seconds > wr.get("max_seconds", 99999):
+        flags.append("EXCEEDS_WORLD_RECORD_TIME")
+
+    # Check against personal bests (+50% spike)
+    pb_reps = user_personal_bests.get("best_reps", 0)
+    pb_kg = user_personal_bests.get("best_kg", 0)
+    pb_seconds = user_personal_bests.get("best_seconds", 0)
+
+    if pb_reps > 0 and reps > pb_reps * 1.5:
+        flags.append("SPIKE_OVER_PB_REPS")
+        requires_video = True
+    if pb_kg > 0 and kg > pb_kg * 1.5:
+        flags.append("SPIKE_OVER_PB_KG")
+        requires_video = True
+
+    passed = not requires_video
+    if requires_video:
+        message = "Kore, questo è un incremento mostruoso! Per validarlo nella classifica Ranked e ricevere il 100% dei FLUX, abbiamo bisogno di una prova video."
+    else:
+        message = "INTEGRITY OK"
+
+    return {
+        "passed": passed,
+        "flags": flags,
+        "requires_video": requires_video,
+        "message": message,
+    }
+
+
+async def get_user_personal_bests(user_id, exercise_type: str) -> dict:
+    """Fetch user's personal bests for a given exercise from completed challenges"""
+    pipeline = [
+        {"$match": {"user_id": user_id, "status": "completed", "exercise_type": exercise_type}},
+        {"$group": {
+            "_id": None,
+            "best_reps": {"$max": "$results.reps"},
+            "best_kg": {"$max": "$results.kg"},
+            "best_seconds": {"$max": "$results.seconds"},
+        }}
+    ]
+    result = await db.challenges_engine.aggregate(pipeline).to_list(1)
+    if result:
+        return {
+            "best_reps": result[0].get("best_reps", 0) or 0,
+            "best_kg": result[0].get("best_kg", 0) or 0,
+            "best_seconds": result[0].get("best_seconds", 0) or 0,
+        }
+    return {"best_reps": 0, "best_kg": 0, "best_seconds": 0}
 
 # Tag → DNA stat mapping for increment prediction
 TAG_DNA_MAP = {
@@ -4976,7 +5062,7 @@ async def create_challenge_engine(data: ChallengeEngineCreate, current_user: dic
 
 @api_router.post("/challenge/complete")
 async def complete_challenge_engine(data: ChallengeEngineComplete, current_user: dict = Depends(get_current_user)):
-    """Complete a challenge — calculate FLUX, DNA increment, generate Verdict"""
+    """Complete a challenge — Biometric Sanity Check, Verification Status, FLUX, DNA, Verdict"""
     now = datetime.utcnow()
     user_id = current_user["_id"]
 
@@ -4991,32 +5077,56 @@ async def complete_challenge_engine(data: ChallengeEngineComplete, current_user:
         raise HTTPException(status_code=400, detail="Sfida già completata")
 
     val_mode = data.validation_mode.upper()
-    flux_multiplier = VALIDATION_FLUX_MULTIPLIERS.get(val_mode, 0.5)
-    ranked_eligible = val_mode == "AUTO_COUNT"
+    proof_type = (data.proof_type or "NONE").upper()
 
-    # Calculate base FLUX from performance
     reps = data.reps or 0
     seconds = data.seconds or 0
     kg = data.kg or 0
     quality = data.quality_score or 80.0
 
-    # Base FLUX: reps * 2 + quality_bonus + kg_bonus
+    # ═══ BIOMETRIC SANITY CHECK ═══
+    exercise_type = challenge.get("exercise_type", "squat")
+    personal_bests = await get_user_personal_bests(user_id, exercise_type)
+    sanity = biometric_sanity_check(exercise_type, reps, seconds, kg, personal_bests)
+
+    # Determine verification_status
+    if val_mode == "AUTO_COUNT":
+        verification_status = "AI_VERIFIED"
+    elif val_mode == "SENSOR_IMPORT":
+        verification_status = "AI_VERIFIED"
+    elif val_mode == "MANUAL_ENTRY":
+        if proof_type == "VIDEO_TIME_CHECK" or data.has_video_proof:
+            verification_status = "PROOF_PENDING"
+        elif proof_type == "GPS_IMPORT":
+            verification_status = "AI_VERIFIED"
+        elif proof_type == "PEER_CONFIRMATION":
+            verification_status = "PROOF_PENDING"
+        else:
+            verification_status = "UNVERIFIED"
+    else:
+        verification_status = "UNVERIFIED"
+
+    # If sanity check failed and no video proof, force UNVERIFIED
+    if not sanity["passed"] and not data.has_video_proof and proof_type not in ("VIDEO_TIME_CHECK", "GPS_IMPORT"):
+        verification_status = "UNVERIFIED"
+
+    # Use verification-based multiplier (overrides validation_mode multiplier)
+    flux_multiplier = VERIFICATION_FLUX_MULTIPLIERS.get(verification_status, 0.5)
+    ranked_eligible = verification_status == "AI_VERIFIED"
+
+    # Base FLUX
     base_flux = max(10, reps * 2 + int(quality / 10) + int(kg / 5))
-    # Apply multiplier
     earned_flux = int(base_flux * flux_multiplier)
-    # Cap at 200 per session
     earned_flux = min(earned_flux, 200)
 
-    # DNA Increment Prediction — based on dominant tag
+    # DNA Increment Prediction
     tags = challenge.get("tags", ["POWER"])
     dominant_tag = tags[0] if tags else "POWER"
     dna_stats_affected = TAG_DNA_MAP.get(dominant_tag, ["forza", "potenza"])
 
-    # Current user DNA
     user_doc = await db.users.find_one({"_id": user_id})
     current_dna = user_doc.get("dna", {})
 
-    # Calculate predicted DNA increment (small: 0.5-3.0 per stat)
     performance_ratio = min(1.0, (quality / 100) * (min(reps, 50) / 20))
     dna_increment = round(0.5 + performance_ratio * 2.5, 1)
 
@@ -5030,7 +5140,7 @@ async def complete_challenge_engine(data: ChallengeEngineComplete, current_user:
             "increment": round(predicted_val - current_val, 1),
         }
 
-    # Determine hero data
+    # Hero data
     hero_data = {}
     if seconds > 0:
         mins = int(seconds) // 60
@@ -5049,31 +5159,30 @@ async def complete_challenge_engine(data: ChallengeEngineComplete, current_user:
     else:
         new_balance = user_doc.get("ak_credits", 0)
 
-    # Anti-cheat note for manual
-    anti_cheat_note = None
-    if val_mode == "MANUAL_ENTRY" and not data.has_video_proof:
-        anti_cheat_note = "Risultati manuali senza prova video non concorrono alle Classifiche Pro (Ranked)."
+    # Integrity status
+    integrity_ok = sanity["passed"] and verification_status in ("AI_VERIFIED", "PROOF_PENDING")
 
-    # Update challenge document
+    # Update challenge
     await db.challenges_engine.update_one({"_id": ObjectId(data.challenge_id)}, {"$set": {
         "status": "completed",
         "completed_at": now,
         "results": {
-            "reps": reps,
-            "seconds": seconds,
-            "kg": kg,
-            "quality_score": quality,
-            "has_video_proof": data.has_video_proof,
+            "reps": reps, "seconds": seconds, "kg": kg,
+            "quality_score": quality, "has_video_proof": data.has_video_proof,
         },
+        "proof_type": proof_type,
+        "verification_status": verification_status,
+        "sanity_check": sanity,
+        "integrity_ok": integrity_ok,
         "verdict": {
-            "base_flux": base_flux,
-            "flux_multiplier": flux_multiplier,
-            "earned_flux": earned_flux,
-            "validation_mode": val_mode,
+            "base_flux": base_flux, "flux_multiplier": flux_multiplier,
+            "earned_flux": earned_flux, "validation_mode": val_mode,
             "ranked_eligible": ranked_eligible,
-            "hero_data": hero_data,
-            "dna_predictions": dna_predictions,
-            "anti_cheat_note": anti_cheat_note,
+            "hero_data": hero_data, "dna_predictions": dna_predictions,
+            "verification_status": verification_status,
+            "integrity_ok": integrity_ok,
+            "sanity_check": sanity,
+            "proof_type": proof_type,
         },
     }})
 
@@ -5089,9 +5198,13 @@ async def complete_challenge_engine(data: ChallengeEngineComplete, current_user:
             "ranked_eligible": ranked_eligible,
             "dna_predictions": dna_predictions,
             "dominant_tag": dominant_tag,
-            "dominant_color": TAG_COLORS.get(dominant_tag, "#00E5FF"),
+            "dominant_color": TAG_COLORS.get(dominant_tag, "#007AFF"),
             "tags": tags,
-            "anti_cheat_note": anti_cheat_note,
+            "verification_status": verification_status,
+            "integrity_ok": integrity_ok,
+            "sanity_check": sanity,
+            "proof_type": proof_type,
+            "personal_bests": personal_bests,
         }
     }
 
@@ -5123,6 +5236,69 @@ async def get_user_active_challenges(current_user: dict = Depends(get_current_us
         c["_id"] = str(c["_id"])
         c["user_id"] = str(c["user_id"])
     return {"challenges": challenges}
+
+
+# ═══ TRUST ENGINE: Sanity Check Pre-flight & Peer Confirmation ═══
+
+class SanityCheckRequest(BaseModel):
+    exercise_type: str = "squat"
+    reps: Optional[int] = 0
+    seconds: Optional[float] = 0.0
+    kg: Optional[float] = 0.0
+
+@api_router.post("/challenge/sanity-check")
+async def pre_flight_sanity_check(data: SanityCheckRequest, current_user: dict = Depends(get_current_user)):
+    """Pre-flight biometric sanity check before submitting manual data"""
+    pbs = await get_user_personal_bests(current_user["_id"], data.exercise_type)
+    result = biometric_sanity_check(data.exercise_type, data.reps or 0, data.seconds or 0, data.kg or 0, pbs)
+    result["personal_bests"] = pbs
+    return result
+
+
+class PeerConfirmRequest(BaseModel):
+    challenge_id: str
+    confirmed: bool = True
+
+@api_router.post("/challenge/peer-confirm")
+async def peer_confirm_challenge(data: PeerConfirmRequest, current_user: dict = Depends(get_current_user)):
+    """Crew Battle: confirm or dispute an opponent's result"""
+    try:
+        challenge = await db.challenges_engine.find_one({"_id": ObjectId(data.challenge_id)})
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID sfida non valido")
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+
+    # Only update if PROOF_PENDING
+    now = datetime.utcnow()
+    if data.confirmed:
+        new_status = "AI_VERIFIED"
+        await db.challenges_engine.update_one(
+            {"_id": ObjectId(data.challenge_id)},
+            {"$set": {
+                "verification_status": new_status,
+                "peer_confirmed_by": str(current_user["_id"]),
+                "peer_confirmed_at": now,
+                "integrity_ok": True,
+            }}
+        )
+    else:
+        new_status = "UNVERIFIED"
+        await db.challenges_engine.update_one(
+            {"_id": ObjectId(data.challenge_id)},
+            {"$set": {
+                "verification_status": new_status,
+                "peer_disputed_by": str(current_user["_id"]),
+                "peer_disputed_at": now,
+                "integrity_ok": False,
+            }}
+        )
+
+    return {
+        "status": "updated",
+        "verification_status": new_status,
+        "challenge_id": data.challenge_id,
+    }
 
 
 # ====================================

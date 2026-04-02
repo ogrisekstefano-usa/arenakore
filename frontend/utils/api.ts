@@ -121,10 +121,14 @@ export const api = {
   // ═══ CHALLENGE ENGINE — Tags & Validation ═══
   createChallenge: (data: { title: string; exercise_type: string; tags: string[]; validation_mode: string; target_reps?: number; target_seconds?: number; target_kg?: number; mode?: string }, token: string) =>
     request('/challenge/create', { method: 'POST', body: JSON.stringify(data) }, token),
-  completeChallenge: (data: { challenge_id: string; validation_mode: string; reps?: number; seconds?: number; kg?: number; quality_score?: number; has_video_proof?: boolean }, token: string) =>
+  completeChallenge: (data: { challenge_id: string; validation_mode: string; reps?: number; seconds?: number; kg?: number; quality_score?: number; has_video_proof?: boolean; proof_type?: string; declared_time?: number; video_duration?: number }, token: string) =>
     request('/challenge/complete', { method: 'POST', body: JSON.stringify(data) }, token),
   getChallenge: (id: string, token: string) => request(`/challenge/${id}`, {}, token),
   getActiveChallenges: (token: string) => request('/challenge/user/active', {}, token),
+  sanityCheck: (data: { exercise_type: string; reps?: number; seconds?: number; kg?: number }, token: string) =>
+    request('/challenge/sanity-check', { method: 'POST', body: JSON.stringify(data) }, token),
+  peerConfirm: (data: { challenge_id: string; confirmed: boolean }, token: string) =>
+    request('/challenge/peer-confirm', { method: 'POST', body: JSON.stringify(data) }, token),
 
   // ========== BIO-EVOLUTION ENGINE — SPRINT 7 ==========
   getRescanEligibility: (token: string) => request('/nexus/rescan-eligibility', {}, token),
