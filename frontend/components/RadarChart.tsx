@@ -136,13 +136,15 @@ export function RadarChart({ stats, size = 280, glowing = false, recordsBroken =
                 key={`lbl-${i}`}
                 x={lp.x}
                 y={lp.y}
-                fill={broken ? '#FFD700' : '#888888'}
-                fontSize={broken ? 11 : 10}
-                fontWeight={broken ? 'bold' : 'normal'}
+                fill={broken ? '#FFD700' : '#999999'}
+                fontSize={broken ? 13 : 12}
+                fontWeight="800"
+                fontFamily="Syne, Montserrat, sans-serif"
                 textAnchor="middle"
                 alignmentBaseline="middle"
+                letterSpacing={0.5}
               >
-                {broken ? `★ ${a.label}` : a.label}
+                {broken ? `★ ${a.label.toUpperCase()}` : a.label.toUpperCase()}
               </SvgText>
             );
           })}

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Stack, useRouter, usePathname } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
@@ -16,6 +17,20 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 
 SplashScreen.preventAutoHideAsync();
+
+// ── Inject Google Fonts for Web (Montserrat + Plus Jakarta Sans + Syne) ──
+function InjectWebFonts() {
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    if (document.getElementById('ak-global-fonts')) return;
+    const link = document.createElement('link');
+    link.id = 'ak-global-fonts';
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap';
+    document.head.appendChild(link);
+  }, []);
+  return null;
+}
 
 const PENDING_EVENT_KEY = '@arenakore_pending_event';
 
@@ -92,6 +107,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AuthProvider>
+          <InjectWebFonts />
           <DeepLinkHandler />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
