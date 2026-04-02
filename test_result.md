@@ -1218,18 +1218,28 @@ frontend:
         comment: "LiveWaitingRoom component with 4 states: idle, searching (pulsing animation + polling every 3s), matched (green checkmark), expired. Full OLED black UI with orange accent. Connected to backend queue endpoints."
 
 
+  - task: "Challenge Engine — Tags & Validation System"
+    implemented: true
+    working: true
+    file: "backend/server.py, frontend/components/challenge/ChallengeEngine.tsx, frontend/utils/api.ts"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "FULL IMPLEMENTATION: (1) Backend: POST /challenge/create (tags, validation_mode), POST /challenge/complete (FLUX calc with multiplier), GET /challenge/{id}, GET /challenge/user/active. (2) Frontend ChallengeEngine: 4-phase flow (Tag Selection → Validation Mode → Manual Entry/Sensor Mock → THE VERDICT). Tag immersion (POWER=red, FLOW=green, PULSE=cyan). Anti-cheat disclaimer for manual entry. FLUX transparency with strikethrough base→multiplied. DNA Radar increment preview with SVG. Screenshot verified all phases working correctly."
+
 test_plan:
   current_focus:
-    - "Duel 48h Timeout with -50 FLUX Penalty"
-    - "Live Waiting Room Backend"
-    - "Practice & Ranked Session Modes"
+    - "Challenge Engine Backend Endpoints"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
     - agent: "main"
-      message: "6-PILLAR ECOSYSTEM IMPLEMENTATION COMPLETE. Backend: (1) enforce_duel_timeouts() — hourly scheduler + lazy on pvp/pending read. Penalizes no-shows with -50 FLUX, awards forfeit wins. (2) POST /live/join-queue + GET /live/queue-status + POST /live/leave-queue — Live Waiting Room with auto-matchmaking. (3) POST /nexus/session/complete — Practice (+5 FLUX) and Ranked (+50/-20 FLUX) modes with PB tracking. Frontend: 6-pillar grid (2x3) with SCAN, ALLENAMENTO, SFIDA UFFICIALE, DUELLO 1VS1, LIVE ARENA, THE FORGE. LiveWaitingRoom phase with animated search. PLEASE TEST: (A) Login ogrisek.stefano@gmail.com / Founder@KORE2026! (B) POST /api/live/join-queue with {exercise_type: squat, discipline: power} (C) POST /api/nexus/session/complete with {mode: practice, exercise_type: squat, reps: 15, quality_score: 85.0, duration_seconds: 60} (D) GET /api/pvp/pending — verify expired field in response. BASE URL: https://arena-scan-lab.preview.emergentagent.com"
+      message: "CHALLENGE ENGINE COMPLETE. Backend: POST /api/challenge/create — accepts tags [POWER,FLOW,PULSE], validation_mode [AUTO_COUNT,MANUAL_ENTRY,SENSOR_IMPORT]. POST /api/challenge/complete — calculates FLUX with multiplier (100%/50%/75%), DNA increment predictions, hero data, anti-cheat notes. Frontend: ChallengeEngine component with DarkBase color immersion, 4-phase flow, VerdictScreen. PLEASE TEST: (A) Login ogrisek.stefano@gmail.com / Founder@KORE2026! (B) POST /api/challenge/create {title: 'TEST POWER', exercise_type: 'squat', tags: ['POWER'], validation_mode: 'MANUAL_ENTRY', mode: 'personal'} (C) POST /api/challenge/complete {challenge_id: <from B>, validation_mode: 'MANUAL_ENTRY', reps: 25, seconds: 60, kg: 20, quality_score: 85, has_video_proof: false} — verify earned_flux is 50% of base, ranked_eligible is false, dna_predictions has forza+potenza. (D) POST /api/challenge/create with tags: ['FLOW'], validation_mode: 'AUTO_COUNT' — verify ranked_eligible is true, flux_multiplier is 1.0. BASE URL: https://arena-scan-lab.preview.emergentagent.com"
 
     - agent: "main"
       message: "CRITICAL BUG FIXES APPLIED: (1) TAB NAVIGATION BUG: Testing found all tabs were shifted (NEXUS→gym-hub, DNA→nexus, RANK→dna). Root cause: CustomTabBar used state.routes[index]→TAB_CONFIG[index] mapping. With gym-hub at pos 2, all indices shifted. FIXED: CustomTabBar now filters state.routes to visibleRoutes matching current TAB_CONFIG names, uses route.name lookup for focused state. (2) LANDING PAGE gymBtn: Changed from solid cyan to dark bg with cyan border, icon color CYAN. (3) BACKEND trigger_live_battle: Now handles non-ObjectId battle IDs (legacy seeded data had integer IDs like '1','2'). All changes deployed. Backend restarted. PLEASE RETEST: (A) Login ogrisek.stefano@gmail.com / Founder@KORE2026! → (B) Test all 5 tabs navigate correctly (ARENA→KORE→NEXUS→DNA→RANK), (C) NEXUS tab shows 6 CTAs in carousel, (D) ARENA SFIDA button works (no 500 error now), (E) Landing page FOR COACHES card is dark not cyan."
@@ -1325,4 +1335,44 @@ agent_communication:
 
   - agent: "testing"
     message: "LIVE QUEUE & PVP ENDPOINTS TESTING COMPLETED: ALL 5 REQUESTED ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Test results: ✅ POST /api/live/join-queue - Live matchmaking working correctly, founder joined queue (waiting), second user joined and immediately matched with founder, creating live battle ✅ GET /api/live/queue-status - Queue status check working, returns proper status (waiting/matched/expired/not_in_queue), position, elapsed time ✅ POST /api/live/leave-queue - Leave queue working, returns status='left_queue' ✅ POST /api/nexus/session/complete - Session completion working for both modes: Practice (+5 FLUX), Ranked (+50 FLUX for new PB, -20 FLUX for below PB), PVP score calculation functional ✅ GET /api/pvp/pending - PvP pending working correctly, returns all required arrays including EXPIRED field. Live Queue matchmaking system is production-ready. FLUX economy integration working correctly. Authentication with founder credentials (ogrisek.stefano@gmail.com) and second user (d.rose@chicago.kore) successful."
+
+backend:
+  - task: "Challenge Engine - Create Challenge API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/challenge/create working correctly for all scenarios. POWER tag with MANUAL_ENTRY mode returns dominant_tag=POWER, dominant_color=#FF3B30, ranked_eligible=false, flux_multiplier=0.5. FLOW tag with AUTO_COUNT mode returns ranked_eligible=true, flux_multiplier=1.0, dominant_color=#00FF87. Validation correctly rejects empty tags with 'Almeno un tag obbligatorio' error."
+
+  - task: "Challenge Engine - Complete Challenge API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/challenge/complete working correctly. FLUX calculation functional (earned 31 FLUX with 0.5 multiplier for MANUAL_ENTRY), DNA predictions generated for forza/potenza stats, anti_cheat_note present for manual entries without video proof, hero_data included, ranked_eligible=false for manual validation. Validation correctly rejects invalid challenge_id with 'Sfida non trovata' error."
+
+  - task: "Challenge Engine - Get Active Challenges API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/challenge/user/active working correctly. Returns challenges array with proper structure, retrieved 2 active challenges successfully. All challenge objects contain required fields (challenge_id, status, tags, etc.)."
+
+  - agent: "testing"
+    message: "CHALLENGE ENGINE BACKEND TESTING COMPLETED: ALL 6 REQUESTED ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Test results: ✅ POST /api/challenge/create (POWER tag + MANUAL_ENTRY) - Challenge creation working correctly, returns challenge_id, dominant_tag=POWER, dominant_color=#FF3B30, ranked_eligible=false, flux_multiplier=0.5 ✅ POST /api/challenge/complete - Challenge completion working correctly, earned FLUX=31 (50% reduction due to MANUAL_ENTRY), DNA predictions for forza/potenza, anti_cheat_note present, hero_data included ✅ POST /api/challenge/create (FLOW tag + AUTO_COUNT) - Challenge creation working correctly, ranked_eligible=true, flux_multiplier=1.0, dominant_color=#00FF87 ✅ Validation: Empty tags - Correctly rejected with 'Almeno un tag obbligatorio' error (400) ✅ Validation: Invalid challenge_id - Correctly rejected with 'Sfida non trovata' error (404) ✅ GET /api/challenge/user/active - Active challenges retrieval working correctly, returned 2 challenges. Challenge Engine is production-ready with proper FLUX calculation, DNA predictions, validation modes, and anti-cheat measures. Authentication with founder credentials (ogrisek.stefano@gmail.com / Founder@KORE2026!) successful."
 

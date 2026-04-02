@@ -308,6 +308,58 @@ class GymCreate(BaseModel):
     city: Optional[str] = None
 
 
+# =====================================================================
+# CHALLENGE ENGINE — Tags & Validation Modes
+# =====================================================================
+
+class ChallengeEngineCreate(BaseModel):
+    """Create a tagged challenge with validation mode"""
+    title: str = "SFIDA PERSONALE"
+    exercise_type: str = "squat"
+    tags: List[str]  # ["POWER", "FLOW", "PULSE"] — at least one
+    validation_mode: str  # "AUTO_COUNT" | "MANUAL_ENTRY" | "SENSOR_IMPORT"
+    target_reps: Optional[int] = None
+    target_seconds: Optional[int] = None
+    target_kg: Optional[float] = None
+    mode: str = "personal"  # "personal" | "ranked" | "duel"
+
+
+class ChallengeEngineComplete(BaseModel):
+    """Complete/close a challenge with results"""
+    challenge_id: str
+    validation_mode: str  # "AUTO_COUNT" | "MANUAL_ENTRY" | "SENSOR_IMPORT"
+    reps: Optional[int] = 0
+    seconds: Optional[float] = 0.0
+    kg: Optional[float] = 0.0
+    quality_score: Optional[float] = 80.0
+    has_video_proof: bool = False
+    # AUTO_COUNT: reps/quality from NEXUS
+    # MANUAL_ENTRY: user-entered reps/seconds/kg
+    # SENSOR_IMPORT: imported data (mock)
+
+
+# FLUX multipliers per validation mode
+VALIDATION_FLUX_MULTIPLIERS = {
+    "AUTO_COUNT": 1.0,     # 100% — Full NEXUS validation
+    "MANUAL_ENTRY": 0.5,   # 50% — No sensor proof
+    "SENSOR_IMPORT": 0.75, # 75% — External device
+}
+
+# Tag → DNA stat mapping for increment prediction
+TAG_DNA_MAP = {
+    "POWER": ["forza", "potenza"],
+    "FLOW": ["agilita", "tecnica"],
+    "PULSE": ["velocita", "resistenza"],
+}
+
+# Tag colors
+TAG_COLORS = {
+    "POWER": "#FF3B30",
+    "FLOW": "#00FF87",
+    "PULSE": "#00E5FF",
+}
+
+
 class GymUpdate(BaseModel):
     name: Optional[str] = None
     brand_color: Optional[str] = None
@@ -4863,6 +4915,214 @@ async def complete_nexus_session_v2(data: SessionCompleteRequest, current_user: 
             "ak_credits": updated_user.get("ak_credits", 0),
         }
     }
+
+
+# =====================================================================
+# CHALLENGE ENGINE — Create, Complete, Verdict
+# =====================================================================
+
+@api_router.post("/challenge/create")
+async def create_challenge_engine(data: ChallengeEngineCreate, current_user: dict = Depends(get_current_user)):
+    """Create a tagged challenge with validation mode"""
+    now = datetime.utcnow()
+    user_id = current_user["_id"]
+
+    # Validate tags
+    valid_tags = {"POWER", "FLOW", "PULSE"}
+    tags = [t.upper() for t in data.tags if t.upper() in valid_tags]
+    if not tags:
+        raise HTTPException(status_code=400, detail="Almeno un tag obbligatorio: POWER, FLOW, PULSE")
+
+    # Validate validation mode
+    valid_modes = {"AUTO_COUNT", "MANUAL_ENTRY", "SENSOR_IMPORT"}
+    if data.validation_mode.upper() not in valid_modes:
+        raise HTTPException(status_code=400, detail="Modalità non valida. Usa: AUTO_COUNT, MANUAL_ENTRY, SENSOR_IMPORT")
+
+    # Determine dominant tag (first one)
+    dominant_tag = tags[0]
+    dominant_color = TAG_COLORS.get(dominant_tag, "#00E5FF")
+
+    challenge_doc = {
+        "user_id": user_id,
+        "username": current_user.get("username", "KORE"),
+        "title": data.title,
+        "exercise_type": data.exercise_type,
+        "tags": tags,
+        "dominant_tag": dominant_tag,
+        "dominant_color": dominant_color,
+        "validation_mode": data.validation_mode.upper(),
+        "mode": data.mode,
+        "target_reps": data.target_reps,
+        "target_seconds": data.target_seconds,
+        "target_kg": data.target_kg,
+        "status": "active",
+        "created_at": now,
+        "ranked_eligible": data.validation_mode.upper() == "AUTO_COUNT",
+    }
+
+    result = await db.challenges_engine.insert_one(challenge_doc)
+
+    return {
+        "challenge_id": str(result.inserted_id),
+        "status": "active",
+        "tags": tags,
+        "dominant_tag": dominant_tag,
+        "dominant_color": dominant_color,
+        "validation_mode": data.validation_mode.upper(),
+        "ranked_eligible": challenge_doc["ranked_eligible"],
+        "flux_multiplier": VALIDATION_FLUX_MULTIPLIERS.get(data.validation_mode.upper(), 0.5),
+    }
+
+
+@api_router.post("/challenge/complete")
+async def complete_challenge_engine(data: ChallengeEngineComplete, current_user: dict = Depends(get_current_user)):
+    """Complete a challenge — calculate FLUX, DNA increment, generate Verdict"""
+    now = datetime.utcnow()
+    user_id = current_user["_id"]
+
+    # Fetch challenge
+    try:
+        challenge = await db.challenges_engine.find_one({"_id": ObjectId(data.challenge_id), "user_id": user_id})
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID sfida non valido")
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    if challenge.get("status") == "completed":
+        raise HTTPException(status_code=400, detail="Sfida già completata")
+
+    val_mode = data.validation_mode.upper()
+    flux_multiplier = VALIDATION_FLUX_MULTIPLIERS.get(val_mode, 0.5)
+    ranked_eligible = val_mode == "AUTO_COUNT"
+
+    # Calculate base FLUX from performance
+    reps = data.reps or 0
+    seconds = data.seconds or 0
+    kg = data.kg or 0
+    quality = data.quality_score or 80.0
+
+    # Base FLUX: reps * 2 + quality_bonus + kg_bonus
+    base_flux = max(10, reps * 2 + int(quality / 10) + int(kg / 5))
+    # Apply multiplier
+    earned_flux = int(base_flux * flux_multiplier)
+    # Cap at 200 per session
+    earned_flux = min(earned_flux, 200)
+
+    # DNA Increment Prediction — based on dominant tag
+    tags = challenge.get("tags", ["POWER"])
+    dominant_tag = tags[0] if tags else "POWER"
+    dna_stats_affected = TAG_DNA_MAP.get(dominant_tag, ["forza", "potenza"])
+
+    # Current user DNA
+    user_doc = await db.users.find_one({"_id": user_id})
+    current_dna = user_doc.get("dna", {})
+
+    # Calculate predicted DNA increment (small: 0.5-3.0 per stat)
+    performance_ratio = min(1.0, (quality / 100) * (min(reps, 50) / 20))
+    dna_increment = round(0.5 + performance_ratio * 2.5, 1)
+
+    dna_predictions = {}
+    for stat in dna_stats_affected:
+        current_val = current_dna.get(stat, 50)
+        predicted_val = min(100, round(current_val + dna_increment, 1))
+        dna_predictions[stat] = {
+            "current": current_val,
+            "predicted": predicted_val,
+            "increment": round(predicted_val - current_val, 1),
+        }
+
+    # Determine hero data
+    hero_data = {}
+    if seconds > 0:
+        mins = int(seconds) // 60
+        secs = int(seconds) % 60
+        hero_data = {"value": f"{mins:02d}:{secs:02d}", "unit": "TEMPO", "label": "DURATA SFIDA"}
+    elif reps > 0:
+        hero_data = {"value": str(reps), "unit": "REP", "label": "RIPETIZIONI COMPLETATE"}
+    elif kg > 0:
+        hero_data = {"value": f"{kg:.1f}", "unit": "KG", "label": "PESO SOLLEVATO"}
+    else:
+        hero_data = {"value": str(int(quality)), "unit": "%", "label": "QUALITÀ ESECUZIONE"}
+
+    # Award FLUX
+    if earned_flux > 0:
+        new_balance = await award_ak_credits(user_id, "nexus_scan", earned_flux)
+    else:
+        new_balance = user_doc.get("ak_credits", 0)
+
+    # Anti-cheat note for manual
+    anti_cheat_note = None
+    if val_mode == "MANUAL_ENTRY" and not data.has_video_proof:
+        anti_cheat_note = "Risultati manuali senza prova video non concorrono alle Classifiche Pro (Ranked)."
+
+    # Update challenge document
+    await db.challenges_engine.update_one({"_id": ObjectId(data.challenge_id)}, {"$set": {
+        "status": "completed",
+        "completed_at": now,
+        "results": {
+            "reps": reps,
+            "seconds": seconds,
+            "kg": kg,
+            "quality_score": quality,
+            "has_video_proof": data.has_video_proof,
+        },
+        "verdict": {
+            "base_flux": base_flux,
+            "flux_multiplier": flux_multiplier,
+            "earned_flux": earned_flux,
+            "validation_mode": val_mode,
+            "ranked_eligible": ranked_eligible,
+            "hero_data": hero_data,
+            "dna_predictions": dna_predictions,
+            "anti_cheat_note": anti_cheat_note,
+        },
+    }})
+
+    return {
+        "status": "completed",
+        "verdict": {
+            "hero_data": hero_data,
+            "base_flux": base_flux,
+            "flux_multiplier": flux_multiplier,
+            "earned_flux": earned_flux,
+            "flux_balance": new_balance,
+            "validation_mode": val_mode,
+            "ranked_eligible": ranked_eligible,
+            "dna_predictions": dna_predictions,
+            "dominant_tag": dominant_tag,
+            "dominant_color": TAG_COLORS.get(dominant_tag, "#00E5FF"),
+            "tags": tags,
+            "anti_cheat_note": anti_cheat_note,
+        }
+    }
+
+
+@api_router.get("/challenge/{challenge_id}")
+async def get_challenge_engine(challenge_id: str, current_user: dict = Depends(get_current_user)):
+    """Get challenge details"""
+    try:
+        challenge = await db.challenges_engine.find_one({"_id": ObjectId(challenge_id)})
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID sfida non valido")
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+
+    challenge["_id"] = str(challenge["_id"])
+    challenge["user_id"] = str(challenge["user_id"])
+    return challenge
+
+
+@api_router.get("/challenge/user/active")
+async def get_user_active_challenges(current_user: dict = Depends(get_current_user)):
+    """Get all active challenges for current user"""
+    challenges = await db.challenges_engine.find({
+        "user_id": current_user["_id"],
+        "status": "active",
+    }).sort("created_at", -1).to_list(10)
+
+    for c in challenges:
+        c["_id"] = str(c["_id"])
+        c["user_id"] = str(c["user_id"])
+    return {"challenges": challenges}
 
 
 # ====================================

@@ -118,6 +118,14 @@ export const api = {
   getLiveQueueStatus: (token: string) => request('/live/queue-status', {}, token),
   leaveLiveQueue: (token: string) => request('/live/leave-queue', { method: 'POST' }, token),
 
+  // ═══ CHALLENGE ENGINE — Tags & Validation ═══
+  createChallenge: (data: { title: string; exercise_type: string; tags: string[]; validation_mode: string; target_reps?: number; target_seconds?: number; target_kg?: number; mode?: string }, token: string) =>
+    request('/challenge/create', { method: 'POST', body: JSON.stringify(data) }, token),
+  completeChallenge: (data: { challenge_id: string; validation_mode: string; reps?: number; seconds?: number; kg?: number; quality_score?: number; has_video_proof?: boolean }, token: string) =>
+    request('/challenge/complete', { method: 'POST', body: JSON.stringify(data) }, token),
+  getChallenge: (id: string, token: string) => request(`/challenge/${id}`, {}, token),
+  getActiveChallenges: (token: string) => request('/challenge/user/active', {}, token),
+
   // ========== BIO-EVOLUTION ENGINE — SPRINT 7 ==========
   getRescanEligibility: (token: string) => request('/nexus/rescan-eligibility', {}, token),
   completeBioscan: (token: string) => request('/nexus/bioscan', { method: 'POST' }, token),

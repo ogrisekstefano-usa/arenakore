@@ -40,6 +40,7 @@ import { EfficiencyGhostHUD } from '../../components/training/EfficiencyGhostHUD
 import { AKBadge } from '../../components/KoreVault';
 import { CertifiedByPros } from '../../components/training/CertifiedByPros';
 import { TiltGuideOverlay } from '../../components/TiltGuideOverlay';
+import { ChallengeEngine } from '../../components/challenge/ChallengeEngine';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -1454,10 +1455,11 @@ export default function NexusTriggerScreen() {
   const { user, token, logout, activeRole, setActiveRole, updateUser } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'tilt_setup' | 'countdown' | 'stabilizing' | 'scanning' | 'results' | 'live_queue'>('console');
+  const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'challenge_engine' | 'tilt_setup' | 'countdown' | 'stabilizing' | 'scanning' | 'results' | 'live_queue'>('console');
   const [exercise, setExercise] = useState<ExerciseType>('squat');
   const [forgeMode, setForgeMode] = useState<ForgeMode>('personal');
   const [sessionMode, setSessionMode] = useState<'scan' | 'practice' | 'ranked'>('scan');
+  const [challengeContext, setChallengeContext] = useState<{ id: string; tags: string[]; color: string } | null>(null);
   const [motionState, setMotionState] = useState<MotionState | null>(null);
   const [motionActive, setMotionActive] = useState(false);
   const [goldFlash, setGoldFlash] = useState(false);
@@ -1719,11 +1721,11 @@ export default function NexusTriggerScreen() {
     switch (key) {
       case 'practice':
         setSessionMode('practice');
-        setPhase('forge');
+        setPhase('challenge_engine');
         break;
       case 'ranked':
         setSessionMode('ranked');
-        setPhase('forge');
+        setPhase('challenge_engine');
         break;
       case 'duel':
         // Navigate to Arena tab for PvP duels
@@ -1742,12 +1744,30 @@ export default function NexusTriggerScreen() {
       <NexusConsole
         user={user}
         onScan={() => router.push({ pathname: '/onboarding/step2', params: { mode: 'rescan' } })}
-        onForge={() => { setSessionMode('scan'); setPhase('forge'); }}
+        onForge={() => { setSessionMode('scan'); setPhase('challenge_engine'); }}
         onPillarAction={handlePillarAction}
         deviceTier={deviceTier}
         eligibility={eligibility}
         myRank={myRank}
         myCrews={myCrews}
+      />
+    );
+  }
+
+  // ═══ CHALLENGE ENGINE PHASE ═══
+  if (phase === 'challenge_engine') {
+    return (
+      <ChallengeEngine
+        user={user}
+        token={token}
+        exerciseType={exercise}
+        sessionMode={sessionMode === 'practice' ? 'personal' : sessionMode === 'ranked' ? 'ranked' : 'personal'}
+        onBack={() => { setPhase('console'); setSessionMode('scan'); }}
+        onAutoScan={(challengeId, tags, color) => {
+          setChallengeContext({ id: challengeId, tags, color });
+          setPhase('tilt_setup');
+        }}
+        onComplete={() => { setPhase('console'); setSessionMode('scan'); setChallengeContext(null); }}
       />
     );
   }
