@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme, PJS, MONT, INTER, fz } from '../../contexts/ThemeContext';
+import { useTheme, PJS, MONT, fz } from '../../contexts/ThemeContext';
 import { api } from '../../utils/api';
 import { ActivityHeatmap, AlertRow } from '../../components/studio/StudioComponents';
 import { LiveMonitorPanel } from '../../components/studio/LiveMonitor';
@@ -74,7 +74,7 @@ function KPITile({ label, value, sub, color, icon, trend }: any) {
       </View>
       <Text style={[kp$.value, MONT(), { color: theme.text }]}>{value}</Text>
       <Text style={[kp$.label, MONT('900'), { color: theme.textTer }]}>{label}</Text>
-      {sub && <Text style={[kp$.sub, INTER('300'), { color: theme.textTer }]}>{sub}</Text>}
+      {sub && <Text style={[kp$.sub('300'), { color: theme.textTer }]}>{sub}</Text>}
     </View>
   );
 }
@@ -144,7 +144,7 @@ export default function GlobalDashboard() {
   if (loading) return (
     <View style={[pg$.loading, { backgroundColor: theme.bg }]}>
       <ActivityIndicator color={theme.accent} size="small" />
-      <Text style={[pg$.loadingText, INTER('300'), { color: theme.textTer }]}>
+      <Text style={[pg$.loadingText('300'), { color: theme.textTer }]}>
         Caricamento dati biometrici...
       </Text>
     </View>
@@ -178,7 +178,7 @@ export default function GlobalDashboard() {
               </Text>
             </View>
           )}
-          <Text style={[pg$.gymName, INTER('300'), { color: theme.textTer }]}>
+          <Text style={[pg$.gymName('300'), { color: theme.textTer }]}>
             {gymData?.name || 'NÈXUS GYM'} · {athletes?.total || 0} atleti
           </Text>
         </View>
@@ -211,7 +211,7 @@ export default function GlobalDashboard() {
           {(!alerts?.alerts || alerts.alerts.length === 0) ? (
             <View style={pg$.emptyState}>
               <Ionicons name="checkmark-circle" size={22} color={theme.positive} />
-              <Text style={[pg$.emptyText, INTER('300'), { color: theme.textTer }]}>
+              <Text style={[pg$.emptyText('300'), { color: theme.textTer }]}>
                 Nessun alert attivo
               </Text>
             </View>
@@ -235,7 +235,7 @@ export default function GlobalDashboard() {
                 <Text style={[pg$.perfName, MONT('700'), { color: theme.text }]} numberOfLines={1}>
                   {a.username}
                 </Text>
-                <Text style={[pg$.perfSub, INTER('300'), { color: theme.textTer }]}>
+                <Text style={[pg$.perfSub('300'), { color: theme.textTer }]}>
                   LVL {a.level} · {a.xp?.toLocaleString()} XP
                 </Text>
               </View>
@@ -277,12 +277,12 @@ export default function GlobalDashboard() {
                     {b.my_result === 'win' ? 'WIN' : b.my_result === 'loss' ? 'LOSS' : (b.status || 'ACTIVE').toUpperCase()}
                   </Text>
                 </View>
-                <Text style={[pg$.battleName, INTER('400'), { color: theme.textSec, flex: 1 }]} numberOfLines={1}>
+                <Text style={[pg$.battleName('400'), { color: theme.textSec, flex: 1 }]} numberOfLines={1}>
                   {b.crew_a} <Text style={{ color: theme.text, fontWeight: '900' }}>{b.score_a}</Text>
                   {' vs '}
                   <Text style={{ color: theme.text, fontWeight: '900' }}>{b.score_b}</Text> {b.crew_b}
                 </Text>
-                <Text style={[pg$.battleDate, INTER('300'), { color: theme.textTer }]}>
+                <Text style={[pg$.battleDate('300'), { color: theme.textTer }]}>
                   {b.started_at?.slice(0, 10)}
                 </Text>
               </View>

@@ -15,8 +15,8 @@ export const THEMES = {
     surface:     '#0A0A0A',
     surface2:    '#111111',
     surface3:    '#161616',
-    border:      'rgba(255,255,255,0.07)',
-    border2:     'rgba(255,255,255,0.07)',
+    border:      '#1F2937',
+    border2:     '#1F2937',
     text:        '#FFFFFF',
     textSec:     '#AAAAAA',
     textTer:     'rgba(255,255,255,0.30)',
@@ -26,10 +26,10 @@ export const THEMES = {
     accentGreen: '#00FF87',
     shadow:      'rgba(0,0,0,0.6)',
     navBg:       '#000000',
-    navBorder:   'rgba(255,255,255,0.07)',
+    navBorder:   '#1F2937',
     inputBg:     'rgba(255,255,255,0.04)',
     cardBg:      '#0A0A0A',
-    cardBorder:  'rgba(255,255,255,0.07)',
+    cardBorder:  '#1F2937',
     positive:    '#00FF87',
     negative:    '#FF3B30',
     titleColor:  '#FFFFFF',
@@ -45,9 +45,9 @@ export const THEMES = {
     surface3:    '#E8E8E8',
     border:      '#D1D5DB',
     border2:     '#C1C5CB',
-    text:        '#111111',
-    textSec:     '#4B5563',
-    textTer:     '#9CA3AF',
+    text:        '#000000',        // Nero Assoluto
+    textSec:     '#374151',        // Grigio Antracite Leggibile
+    textTer:     '#6B7280',
     accent:      '#1D4ED8',
     accentGold:  '#92400E',
     accentRed:   '#DC2626',
@@ -102,12 +102,6 @@ export const MONT = (weight: '300' | '400' | '500' | '600' | '700' | '800' | '90
     },
     default: { fontWeight: weight },
   });
-
-/**
- * INTER — backwards compat, mappa a MONT
- */
-export const INTER = (weight: '300' | '400' | '500' | '600' = '400'): any =>
-  MONT(weight);
 
 // ── Context ───────────────────────────────────────────────────────────────────
 interface ThemeCtx {

@@ -1,7 +1,7 @@
 /**
  * ARENAKORE — NÈXUS REGISTRATION PROTOCOL
  * Phase 1: Security Form  →  Phase 2: Bio-Data Calibration
- * Design: OLED Black · Cyan Neon · Glassmorphism · Montserrat 900 / Inter 300
+ * Design: OLED Black · Cyan Neon · Glassmorphism · Montserrat 800/400
  */
 import React, { useState, useRef, useEffect } from 'react';
 import {
@@ -22,7 +22,6 @@ import { useAuth } from '../contexts/AuthContext';
 
 // ── Font helpers ─────────────────────────────────────────────────────────────
 const MONT: any = Platform.select({ web: { fontFamily: 'Montserrat, sans-serif' }, default: {} });
-const INTER: any = Platform.select({ web: { fontFamily: 'Inter, -apple-system, sans-serif' }, default: {} });
 const GLASS: any = Platform.select({
   web: { backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' },
   default: {},
@@ -76,7 +75,7 @@ function PasswordField({
       <Ionicons name="lock-closed" size={16} color="rgba(255,255,255,0.3)" style={styles.fieldIcon} />
       <TextInput
         ref={forwardRef as any}
-        style={[styles.fieldInput, INTER]}
+        style={[styles.fieldInput, MONT]}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
@@ -129,24 +128,24 @@ function SecurityPhase({ onNext }: { onNext: (email: string, password: string) =
       {/* Titolo */}
       <View style={styles.phaseHeader}>
         <CyanDot />
-        <Text style={[styles.phaseLabel, INTER]}>PROTOCOLLO SICUREZZA</Text>
+        <Text style={[styles.phaseLabel, MONT]}>PROTOCOLLO SICUREZZA</Text>
         <View style={styles.stepPills}>
           <View style={[styles.stepPill, styles.stepPillActive]} />
           <View style={styles.stepPill} />
         </View>
       </View>
       <Text style={[styles.phaseTitle, MONT]}>CREA IL{'\n'}TUO ACCESSO</Text>
-      <Text style={[styles.phaseSub, INTER]}>Questi dati proteggono il tuo profilo biometrico</Text>
+      <Text style={[styles.phaseSub, MONT]}>Questi dati proteggono il tuo profilo biometrico</Text>
 
       {/* Glass card */}
       <View style={[styles.glassCard, GLASS]}>
         {/* Email */}
         <View style={styles.fieldGroup}>
-          <Text style={[styles.fieldLabel, INTER]}>EMAIL</Text>
+          <Text style={[styles.fieldLabel, MONT]}>EMAIL</Text>
           <View style={[styles.fieldWrap, emailOk && email ? { borderColor: GREEN } : {}]}>
             <Ionicons name="mail" size={16} color="rgba(255,255,255,0.3)" style={styles.fieldIcon} />
             <TextInput
-              style={[styles.fieldInput, INTER]}
+              style={[styles.fieldInput, MONT]}
               value={email}
               onChangeText={setEmail}
               placeholder="atleta@dominio.com"
@@ -164,7 +163,7 @@ function SecurityPhase({ onNext }: { onNext: (email: string, password: string) =
 
         {/* Password */}
         <View style={styles.fieldGroup}>
-          <Text style={[styles.fieldLabel, INTER]}>PASSWORD</Text>
+          <Text style={[styles.fieldLabel, MONT]}>PASSWORD</Text>
           <PasswordField
             value={password}
             onChangeText={setPwd}
@@ -173,16 +172,16 @@ function SecurityPhase({ onNext }: { onNext: (email: string, password: string) =
             onToggleEye={() => setShowPwd(v => !v)}
           />
           {password.length > 0 && password.length < 8 && (
-            <Text style={[styles.fieldHint, { color: RED }, INTER]}>Troppo corta</Text>
+            <Text style={[styles.fieldHint, { color: RED }, MONT]}>Troppo corta</Text>
           )}
           {password.length >= 8 && (
-            <Text style={[styles.fieldHint, { color: GREEN }, INTER]}>✓ Sicura</Text>
+            <Text style={[styles.fieldHint, { color: GREEN }, MONT]}>✓ Sicura</Text>
           )}
         </View>
 
         {/* Confirm Password */}
         <View style={styles.fieldGroup}>
-          <Text style={[styles.fieldLabel, INTER]}>RIPETI PASSWORD</Text>
+          <Text style={[styles.fieldLabel, MONT]}>RIPETI PASSWORD</Text>
           <PasswordField
             value={confirm}
             onChangeText={setConfirm}
@@ -192,7 +191,7 @@ function SecurityPhase({ onNext }: { onNext: (email: string, password: string) =
             onToggleEye={() => setShowConf(v => !v)}
           />
           {confirm.length > 0 && (
-            <Text style={[styles.fieldHint, { color: confirm === password ? GREEN : RED }, INTER]}>
+            <Text style={[styles.fieldHint, { color: confirm === password ? GREEN : RED }, MONT]}>
               {confirm === password ? '✓ Le password coincidono' : '✗ Non coincidono'}
             </Text>
           )}
@@ -204,7 +203,7 @@ function SecurityPhase({ onNext }: { onNext: (email: string, password: string) =
         <View style={[styles.checkbox, terms && styles.checkboxActive]}>
           {terms && <Ionicons name="checkmark" size={12} color="#000" />}
         </View>
-        <Text style={[styles.termsText, INTER]}>
+        <Text style={[styles.termsText, MONT]}>
           Accetto i{' '}
           <Text style={styles.termsLink}>Termini e le Condizioni</Text>
           {' '}e il trattamento dei{' '}
@@ -217,7 +216,7 @@ function SecurityPhase({ onNext }: { onNext: (email: string, password: string) =
       {error ? (
         <Animated.View entering={FadeIn.duration(200)} style={styles.errorRow}>
           <Ionicons name="alert-circle" size={14} color={RED} />
-          <Text style={[styles.errorText, INTER]}>{error}</Text>
+          <Text style={[styles.errorText, MONT]}>{error}</Text>
         </Animated.View>
       ) : null}
 
@@ -297,25 +296,25 @@ function BioDataPhase({
           <Ionicons name="arrow-back" size={18} color="rgba(255,255,255,0.5)" />
         </TouchableOpacity>
         <CyanDot />
-        <Text style={[styles.phaseLabel, INTER]}>CALIBRAZIONE AI</Text>
+        <Text style={[styles.phaseLabel, MONT]}>CALIBRAZIONE AI</Text>
         <View style={styles.stepPills}>
           <View style={styles.stepPill} />
           <View style={[styles.stepPill, styles.stepPillActive]} />
         </View>
       </View>
       <Text style={[styles.phaseTitle, MONT]}>PROFILO{'\n'}BIOMETRICO</Text>
-      <Text style={[styles.phaseSub, INTER]}>
+      <Text style={[styles.phaseSub, MONT]}>
         Questi dati calibrano le soglie di performance dell'AI nei passaggi successivi
       </Text>
 
       <View style={[styles.glassCard, GLASS]}>
         {/* Nickname */}
         <View style={styles.fieldGroup}>
-          <Text style={[styles.fieldLabel, INTER]}>KORE NICKNAME</Text>
+          <Text style={[styles.fieldLabel, MONT]}>KORE NICKNAME</Text>
           <View style={[styles.fieldWrap, nickname.length >= 3 ? { borderColor: CYAN } : {}]}>
             <Ionicons name="person" size={16} color="rgba(255,255,255,0.3)" style={styles.fieldIcon} />
             <TextInput
-              style={[styles.fieldInput, INTER]}
+              style={[styles.fieldInput, MONT]}
               value={nickname}
               onChangeText={t => setNickname(t.replace(/[^a-zA-Z0-9_\-\.]/g, ''))}
               placeholder="es. TITAN_V"
@@ -327,12 +326,12 @@ function BioDataPhase({
               <Ionicons name="checkmark-circle" size={16} color={CYAN} style={{ marginRight: 4 }} />
             )}
           </View>
-          <Text style={[styles.fieldHint, INTER]}>Solo lettere, numeri e _ - . (min 3)</Text>
+          <Text style={[styles.fieldHint, MONT]}>Solo lettere, numeri e _ - . (min 3)</Text>
         </View>
 
         {/* Gender */}
         <View style={styles.fieldGroup}>
-          <Text style={[styles.fieldLabel, INTER]}>GENERE</Text>
+          <Text style={[styles.fieldLabel, MONT]}>GENERE</Text>
           <View style={styles.genderRow}>
             {GENDERS.map(g => (
               <TouchableOpacity
@@ -356,11 +355,11 @@ function BioDataPhase({
 
         {/* Age */}
         <View style={styles.fieldGroup}>
-          <Text style={[styles.fieldLabel, INTER]}>ETÀ</Text>
+          <Text style={[styles.fieldLabel, MONT]}>ETÀ</Text>
           <View style={[styles.fieldWrap, { maxWidth: 160 }, age && parseInt(age) >= 13 ? { borderColor: CYAN } : {}]}>
             <Ionicons name="calendar" size={16} color="rgba(255,255,255,0.3)" style={styles.fieldIcon} />
             <TextInput
-              style={[styles.fieldInput, INTER]}
+              style={[styles.fieldInput, MONT]}
               value={age}
               onChangeText={t => setAge(t.replace(/[^0-9]/g, '').slice(0, 2))}
               placeholder="es. 25"
@@ -369,14 +368,14 @@ function BioDataPhase({
               maxLength={2}
             />
           </View>
-          <Text style={[styles.fieldHint, INTER]}>Età minima: 13 anni</Text>
+          <Text style={[styles.fieldHint, MONT]}>Età minima: 13 anni</Text>
         </View>
       </View>
 
       {/* Calibration note */}
       <View style={styles.calibNote}>
         <Ionicons name="hardware-chip" size={12} color={CYAN} />
-        <Text style={[styles.calibText, INTER]}>
+        <Text style={[styles.calibText, MONT]}>
           L'AI usa questi parametri per calibrare le soglie di performance NEXUS personalizzate
         </Text>
       </View>
@@ -385,14 +384,14 @@ function BioDataPhase({
       {error ? (
         <Animated.View entering={FadeIn.duration(200)} style={styles.errorRow}>
           <Ionicons name="alert-circle" size={14} color={RED} />
-          <Text style={[styles.errorText, INTER]}>{error}</Text>
+          <Text style={[styles.errorText, MONT]}>{error}</Text>
         </Animated.View>
       ) : null}
 
       {/* ── CHAMELEON ENGINE — Biforcazione Fast Entry / NÈXUS Certification ── */}
       <View style={styles.chameleonDivider}>
         <View style={styles.chameleonLine} />
-        <Text style={[styles.chameleonLabel, INTER]}>SCEGLI IL TUO PERCORSO</Text>
+        <Text style={[styles.chameleonLabel, MONT]}>SCEGLI IL TUO PERCORSO</Text>
         <View style={styles.chameleonLine} />
       </View>
 
@@ -409,7 +408,7 @@ function BioDataPhase({
           </View>
           <View>
             <Text style={[styles.chameleonCardTitle, MONT]}>FAST ENTRY</Text>
-            <Text style={[styles.chameleonCardSub, INTER]}>Entra subito nell'app.{'\n'}Bio-Certificazione completabile dopo.</Text>
+            <Text style={[styles.chameleonCardSub, MONT]}>Entra subito nell'app.{'\n'}Bio-Certificazione completabile dopo.</Text>
           </View>
         </View>
         <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.3)" />
@@ -432,7 +431,7 @@ function BioDataPhase({
               </View>
               <View>
                 <Text style={[styles.chameleonCardTitle, MONT, { color: CYAN }]}>NÈXUS CERTIFICATION</Text>
-                <Text style={[styles.chameleonCardSub, INTER]}>Scansione biometrica completa.{'\n'}KORE SCORE certificato e validato AI.</Text>
+                <Text style={[styles.chameleonCardSub, MONT]}>Scansione biometrica completa.{'\n'}KORE SCORE certificato e validato AI.</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={18} color={CYAN} />
@@ -479,7 +478,7 @@ export default function Register() {
           <Animated.View entering={FadeIn.duration(400)} style={styles.topNav}>
             <TouchableOpacity onPress={() => router.back()} style={styles.navBack}>
               <Ionicons name="chevron-back" size={20} color="rgba(255,255,255,0.5)" />
-              <Text style={[styles.navBackText, INTER]}>Indietro</Text>
+              <Text style={[styles.navBackText, MONT]}>Indietro</Text>
             </TouchableOpacity>
             <View style={styles.nexusBrand}>
               <View style={styles.nexusDot} />
@@ -502,7 +501,7 @@ export default function Register() {
 
           {/* Login link */}
           <Animated.View entering={FadeInDown.delay(600).duration(300)} style={styles.loginLink}>
-            <Text style={[styles.loginLinkText, INTER]}>Hai già un account?</Text>
+            <Text style={[styles.loginLinkText, MONT]}>Hai già un account?</Text>
             <TouchableOpacity onPress={() => router.push('/login')}>
               <Text style={[styles.loginLinkCta, MONT]}>ACCEDI</Text>
             </TouchableOpacity>

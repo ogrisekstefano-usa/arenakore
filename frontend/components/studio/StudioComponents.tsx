@@ -1,12 +1,12 @@
 /**
  * COACH STUDIO — Shared SVG Chart Components
  * ActivityHeatmap, LineChart, RadarChart, AlertBadge
- * Updated: Plus Jakarta Sans titles + theme-aware cards
+ * Updated: Montserrat titles + theme-aware cards
  */
 import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import Svg, { Rect, Line, Polyline, Polygon, Circle, Text as SvgText, G } from 'react-native-svg';
-import { useTheme, PJS, MONT, INTER, fz } from '../../contexts/ThemeContext';
+import { useTheme, PJS, MONT, fz } from '../../contexts/ThemeContext';
 
 const DNA_KEYS = ['velocita','forza','resistenza','agilita','tecnica','potenza'];
 const DNA_SHORT = ['VEL','FOR','RES','AGI','TEC','POT'];

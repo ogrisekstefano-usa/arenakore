@@ -1298,7 +1298,7 @@ export default function KoreTab() {
 
           {/* GOALS */}
           <GoalsSection user={user} />
-          {/* AK DROPS Wallet — locked for Fast Entry */}
+          {/* FLUX Wallet — locked for Fast Entry */}
           <AKDropsWallet user={user} />
           {/* OFFERTE SCOUT — incoming draft invitations */}
           <OfferteScout token={token} refreshUser={refreshUser} />

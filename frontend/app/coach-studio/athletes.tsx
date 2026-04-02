@@ -11,7 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path as KPath, Circle as KCircle, Polygon, Line, Text as SvgText, Circle } from 'react-native-svg';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme, PJS, MONT, INTER, fz } from '../../contexts/ThemeContext';
+import { useTheme, PJS, MONT, fz } from '../../contexts/ThemeContext';
 import { api } from '../../utils/api';
 
 // ── 6-Axis Radar ──────────────────────────────────────────────────────────────
@@ -140,12 +140,12 @@ function KoreScoreGauge({ kore, size = 160 }: { kore: any; size?: number }) {
         <View style={kg$.bars}>
           {Object.values(breakdown as Record<string, any>).map((b: any) => (
             <View key={b.label} style={kg$.barRow}>
-              <Text style={[kg$.barLabel, INTER('300')]}>{b.label}</Text>
+              <Text style={[kg$.barLabel('300')]}>{b.label}</Text>
               <View style={kg$.barTrack}>
                 <View style={[kg$.barFill, { width: `${b.value}%` as any, backgroundColor: b.color }]} />
               </View>
               <Text style={[kg$.barVal, MONT('900'), { color: b.color }]}>{b.value}</Text>
-              <Text style={[kg$.barContrib, INTER('300')]}>{b.weight * 100}%→{b.contribution}</Text>
+              <Text style={[kg$.barContrib('300')]}>{b.weight * 100}%→{b.contribution}</Text>
             </View>
           ))}
         </View>
@@ -276,7 +276,7 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
         </View>
         <View style={dp$.headerInfo}>
           <Text style={[dp$.name, MONT(), { color: theme.text }]}>{profile.username}</Text>
-          <Text style={[dp$.meta, INTER('300'), { color: theme.textSec }]}>
+          <Text style={[dp$.meta('300'), { color: theme.textSec }]}>
             LVL {profile.level} · #{profile.global_rank} Global · {profile.city}
           </Text>
           {profile.crews?.length > 0 && (
@@ -317,7 +317,7 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
           <View style={dp$.axisGrid}>
             {SIX_AXES.map((k, i) => (
               <View key={k} style={[dp$.axisItem, { backgroundColor: theme.surface2 }]}>
-                <Text style={[dp$.axisLabel, INTER('300'), { color: theme.textTer }]}>{SIX_LABELS[i]}</Text>
+                <Text style={[dp$.axisLabel('300'), { color: theme.textTer }]}>{SIX_LABELS[i]}</Text>
                 <Text style={[dp$.axisVal, MONT('900'), { color: SIX_COLORS[i % SIX_COLORS.length] }]}>
                   {profile.six_axis?.[k] ?? '—'}
                 </Text>
@@ -336,10 +336,10 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
           <View style={[dp$.riskBar, { backgroundColor: theme.surface2 }]}>
             <View style={[dp$.riskFill, { width: `${ir.risk_pct}%` as any, backgroundColor: ir.color }]} />
           </View>
-          <Text style={[dp$.riskRec, INTER('300'), { color: theme.textSec }]}>{ir.recommendation}</Text>
+          <Text style={[dp$.riskRec('300'), { color: theme.textSec }]}>{ir.recommendation}</Text>
           <View style={dp$.riskDetail}>
-            <Text style={[INTER(), { color: theme.textTer, fontSize: 10 }]}>⬆ {ir.dominant} · ⬇ {ir.weak}</Text>
-            {ir.low_recovery && <View style={[dp$.recovWarn, { borderColor: '#AF52DE40' }]}><Text style={[{ color: '#AF52DE', fontSize: 10 }, INTER('300')]}>⚠ Recovery bassa</Text></View>}
+            <Text style={[MONT('400'), { color: theme.textTer, fontSize: 10 }]}>⬆ {ir.dominant} · ⬇ {ir.weak}</Text>
+            {ir.low_recovery && <View style={[dp$.recovWarn, { borderColor: '#AF52DE40' }]}><Text style={[{ color: '#AF52DE', fontSize: 10 }('300')]}>⚠ Recovery bassa</Text></View>}
           </View>
         </View>
 
@@ -348,7 +348,7 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
           <Text style={[dp$.sectionTitle, MONT('900'), { color: theme.textTer }]}>TREND SCAN NEXUS</Text>
           <View style={dp$.trendRow}>
             <TrendSparkline trend={profile.scan_trend || []} direction={profile.trend_direction} />
-            <Text style={[dp$.trendLabel, INTER('300'), { color: profile.trend_direction === 'up' ? '#00FF87' : profile.trend_direction === 'down' ? '#FF3B30' : theme.textTer }]}>
+            <Text style={[dp$.trendLabel('300'), { color: profile.trend_direction === 'up' ? '#00FF87' : profile.trend_direction === 'down' ? '#FF3B30' : theme.textTer }]}>
               {profile.trend_direction === 'up' ? '↑ In miglioramento' : profile.trend_direction === 'down' ? '↓ In calo' : '→ Stabile'}
             </Text>
           </View>
@@ -365,7 +365,7 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
           {MS_FIELDS.map(f => (
             <View key={f.key} style={dp$.msRow}>
               <Ionicons name={f.icon as any} size={13} color={f.color} />
-              <Text style={[dp$.msLabel, INTER('300'), { color: theme.textSec }]}>{f.label}</Text>
+              <Text style={[dp$.msLabel('300'), { color: theme.textSec }]}>{f.label}</Text>
               {editMode ? (
                 <TextInput
                   style={[dp$.msInput, { backgroundColor: theme.surface2, color: theme.text, borderColor: theme.border }]}
@@ -481,7 +481,7 @@ function CrewPanel() {
           <View style={cp$.crewHeader}>
             <View style={cp$.crewName}>
               <Text style={[cp$.crewTitle, MONT(), { color: theme.text }]}>{crew.name}</Text>
-              <Text style={[cp$.crewMeta, INTER('300'), { color: theme.textTer }]}>
+              <Text style={[cp$.crewMeta('300'), { color: theme.textTer }]}>
                 {crew.members_count} membri · DNA {crew.weighted_dna} (pesato) · {crew.battle_wins}V/{crew.battle_total - crew.battle_wins}S
               </Text>
             </View>
@@ -489,7 +489,7 @@ function CrewPanel() {
               <Text style={[cp$.crewDnaScore, MONT(), { color: crew.weighted_dna >= 75 ? theme.accentGold : theme.accent }]}>
                 {crew.weighted_dna}
               </Text>
-              <Text style={[cp$.crewDnaLabel, INTER('300'), { color: theme.textTer }]}>KORE</Text>
+              <Text style={[cp$.crewDnaLabel('300'), { color: theme.textTer }]}>KORE</Text>
             </View>
           </View>
 
@@ -500,7 +500,7 @@ function CrewPanel() {
               <View style={cp$.axisLabels}>
                 {SIX_AXES.map((k, i) => (
                   <View key={k} style={cp$.axisRow}>
-                    <Text style={[cp$.axisName, INTER('300'), { color: theme.textTer }]}>{SIX_LABELS[i]}</Text>
+                    <Text style={[cp$.axisName('300'), { color: theme.textTer }]}>{SIX_LABELS[i]}</Text>
                     <View style={cp$.axisBarBg}>
                       <View style={[cp$.axisBarFill, { width: `${crew.avg_six_axis[k]}%` as any, backgroundColor: SIX_COLORS[i % SIX_COLORS.length] }]} />
                     </View>
@@ -520,7 +520,7 @@ function CrewPanel() {
                 <View style={[cp$.memberAvatar, { backgroundColor: m.avatar_color || theme.accent }]}>
                   <Text style={cp$.memberLetter}>{(m.username || '?')[0]}</Text>
                 </View>
-                <Text style={[cp$.memberName, INTER(), { color: theme.text }]} numberOfLines={1}>{m.username}</Text>
+                <Text style={[cp$.memberName(), { color: theme.text }]} numberOfLines={1}>{m.username}</Text>
                 <View style={[cp$.rolePill, {
                   backgroundColor: m.role === 'COACH' ? theme.accent + '15' : m.role === 'OWNER' ? theme.accentGold + '15' : theme.surface2,
                   borderColor: m.role === 'COACH' ? theme.accent + '40' : m.role === 'OWNER' ? theme.accentGold + '40' : theme.border,
@@ -535,7 +535,7 @@ function CrewPanel() {
               </View>
             ))}
             {crew.members.length > 6 && (
-              <Text style={[cp$.moreMem, INTER('300'), { color: theme.textTer }]}>+{crew.members.length - 6} altri...</Text>
+              <Text style={[cp$.moreMem('300'), { color: theme.textTer }]}>+{crew.members.length - 6} altri...</Text>
             )}
           </View>
 
@@ -585,7 +585,7 @@ function CrewPanel() {
             <View key={inv.id} style={cp$.pendingRow}>
               <View style={{ flex: 1 }}>
                 <Text style={[cp$.pendingCrew, MONT('700'), { color: theme.text }]}>{inv.crew_name}</Text>
-                <Text style={[INTER('300'), { color: theme.textTer, fontSize: 11 }]}>
+                <Text style={[MONT('300'), { color: theme.textTer, fontSize: 11 }]}>
                   Da {inv.invited_by} · Ruolo: {inv.role}
                 </Text>
               </View>
@@ -601,7 +601,7 @@ function CrewPanel() {
                 onPress={() => handleRespond(inv.id, 'decline')}
                 disabled={respondingId === inv.id}
               >
-                <Text style={[cp$.declineTxt, INTER(), { color: theme.textTer }]}>Rifiuta</Text>
+                <Text style={[cp$.declineTxt(), { color: theme.textTer }]}>Rifiuta</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -614,8 +614,8 @@ function CrewPanel() {
           <Text style={[cp$.sectionTitle, MONT('900'), { color: theme.textTer }]}>INVITI INVIATI</Text>
           {data.sent_invitations.slice(0, 5).map((inv: any) => (
             <View key={inv.id} style={cp$.sentRow}>
-              <Text style={[INTER(), { flex: 1, color: theme.textSec, fontSize: 12 }]}>{inv.invitee}</Text>
-              <Text style={[INTER('300'), { color: theme.textTer, fontSize: 11 }]}>{inv.crew_name}</Text>
+              <Text style={[MONT('400'), { flex: 1, color: theme.textSec, fontSize: 12 }]}>{inv.invitee}</Text>
+              <Text style={[MONT('300'), { color: theme.textTer, fontSize: 11 }]}>{inv.crew_name}</Text>
               <View style={[cp$.statusPill, {
                 backgroundColor: inv.status === 'accepted' ? '#00FF8715' : inv.status === 'declined' ? '#FF3B3015' : theme.surface2,
                 borderColor: inv.status === 'accepted' ? '#00FF8740' : inv.status === 'declined' ? '#FF3B3040' : theme.border,
@@ -738,7 +738,7 @@ export default function AthletesModule() {
             <View style={[am$.searchBox, { backgroundColor: theme.inputBg, borderColor: theme.border }]}>
               <Ionicons name="search" size={13} color={theme.textTer} />
               <TextInput
-                style={[am$.searchInput, { color: theme.text }, INTER('300')]}
+                style={[am$.searchInput, { color: theme.text }('300')]}
                 placeholder="Cerca atleta..."
                 placeholderTextColor={theme.textTer}
                 value={search}
@@ -804,7 +804,7 @@ export default function AthletesModule() {
                         </View>
                         <View style={{ flex: 1 }}>
                           <Text style={[am$.td, MONT('700'), { color: theme.text }]} numberOfLines={1}>{a.username}</Text>
-                          <Text style={[am$.tdSub, INTER('300'), { color: theme.textTer }]}>{a.sport} · LVL {a.level}</Text>
+                          <Text style={[am$.tdSub('300'), { color: theme.textTer }]}>{a.sport} · LVL {a.level}</Text>
                         </View>
                       </View>
                       {/* KORE SCORE (replaces plain DNA avg) */}
@@ -829,7 +829,7 @@ export default function AthletesModule() {
                           : <Text style={[am$.tdSub, { color: theme.textTer }]}>—</Text>}
                       </View>
                       {/* Crew */}
-                      <Text style={[am$.tdSub, INTER('300'), { color: theme.textSec, width: 80 }]} numberOfLines={1}>
+                      <Text style={[am$.tdSub('300'), { color: theme.textSec, width: 80 }]} numberOfLines={1}>
                         {a.crews?.[0] || '—'}
                       </Text>
                       {/* Global rank */}

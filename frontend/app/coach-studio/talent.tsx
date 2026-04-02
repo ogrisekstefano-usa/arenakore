@@ -12,7 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme, MONT, INTER } from '../../contexts/ThemeContext';
+import { useTheme, MONT } from '../../contexts/ThemeContext';
 import { api } from '../../utils/api';
 import { MiniRadar, SectionHeader } from '../../components/studio/StudioComponents';
 import { CertBadge } from '../../components/CertBadge';

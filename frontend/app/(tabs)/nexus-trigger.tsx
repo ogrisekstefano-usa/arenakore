@@ -1069,7 +1069,7 @@ const gs$ = StyleSheet.create({
   gapText: { fontSize: 16, fontWeight: '900', letterSpacing: 2 },
 });
 
-// ========== AK DROPS RAIN ==========
+// ========== FLUX RAIN ==========
 function AKDropsRain({ drops, visible }: { drops: number; visible: boolean }) {
   const count = Math.min(Math.max(drops, 3), 25);
   const anims = useRef(
@@ -1111,11 +1111,11 @@ function AKDropsRain({ drops, visible }: { drops: number; visible: boolean }) {
           transform: [{ translateY: a.y }, { translateX: a.x }, { rotate: a.rotate.interpolate({ inputRange: [-4, 4], outputRange: ['-720deg', '720deg'] }) }],
           opacity: a.opacity,
         }]}>
-          💧
+         
         </RNAnimated.Text>
       ))}
       <View style={dr$.badge}>
-        <Text style={dr$.badgeText}>+{drops} 💧</Text>
+        <Text style={dr$.badgeText}>+{drops}</Text>
       </View>
     </View>
   );
@@ -1146,7 +1146,7 @@ function VictoryOverlay({ visible, xpChange }: { visible: boolean; xpChange?: nu
       <Ionicons name="trophy" size={48} color="#FFD700" />
       <Text style={vo$.victory}>VICTORY</Text>
       {xpChange && xpChange > 0 && (
-        <Text style={vo$.xp}>+{xpChange} XP · +50💧</Text>
+        <Text style={vo$.xp}>+{xpChange} XP · +50</Text>
       )}
     </Animated.View>
   );
@@ -1223,7 +1223,7 @@ export default function NexusTriggerScreen() {
   const trainingTargetReps = parseInt(params.trainingTargetReps || '20', 10);
   const trainingTargetTime = parseInt(params.trainingTargetTime || '60', 10);
   const dnaPotential = parseFloat(params.dnaPotential || '70');
-  // Dopamine layer: AK Drops Rain + Victory
+  // Dopamine layer: FLUX Rain + Victory
   const [showDropsRain, setShowDropsRain] = useState(false);
   const [dropsEarned, setDropsEarned] = useState(0);
   const [isVictory, setIsVictory] = useState(false);
@@ -1393,7 +1393,7 @@ export default function NexusTriggerScreen() {
         }, token);
         setScanResult({ ...r, training_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, ai_feedback_score: aiFeedbackScore, training_name: params.trainingName });
         if (r.user) updateUser(r.user);
-        // AK Drops Rain — connected to real server value
+        // FLUX Rain — connected to real server value
         const realDrops = r.ak_drops_earned || r.ak_credits_earned || Math.max(Math.round(reps * 0.8), 5);
         setDropsEarned(realDrops); setShowDropsRain(true);
         setIsVictory(true);
@@ -1414,7 +1414,7 @@ export default function NexusTriggerScreen() {
           reps, quality_score: qual, duration_seconds: dur, peak_acceleration: peak,
         }, token);
         setScanResult({ ...pvpResult, pvp_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: pvpResult.xp_change || 0 });
-        // AK Drops Rain + Victory for PvP
+        // FLUX Rain + Victory for PvP
         const pvpDrops = pvpResult.ak_drops_earned || pvpResult.ak_credits_earned || Math.max(Math.round(reps * 0.6), 3);
         setDropsEarned(pvpDrops); setShowDropsRain(true);
         setIsVictory((pvpResult.xp_change || 0) > 0);
@@ -1431,7 +1431,7 @@ export default function NexusTriggerScreen() {
       if (token && sessionId) {
         const r = await api.completeNexusSession(sessionId, { exercise_type: exercise, reps_completed: reps, quality_score: qual, duration_seconds: dur, peak_acceleration: peak, avg_amplitude: avg }, token);
         setScanResult(r); if (r.user) updateUser(r.user); if (r.records_broken?.length > 0) playRecordBroken(); else playAcceptPing();
-        // AK Drops Rain + Victory for regular Nexus
+        // FLUX Rain + Victory for regular Nexus
         const nexusDrops = r.ak_drops_earned || r.ak_credits_earned || Math.max(Math.round(reps * 0.5), 3);
         setDropsEarned(nexusDrops); setShowDropsRain(true);
         setIsVictory((r.xp_earned || 0) > 0);
@@ -1625,7 +1625,7 @@ export default function NexusTriggerScreen() {
         </SafeAreaView>
       )}
 
-      {/* ── DOPAMINE LAYER: AK Drops Rain + Victory ── */}
+      {/* ── DOPAMINE LAYER: FLUX Rain + Victory ── */}
       <AKDropsRain drops={dropsEarned} visible={showDropsRain} />
       <VictoryOverlay
         visible={phase === 'results' && isVictory}

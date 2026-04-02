@@ -1,74 +1,32 @@
 /**
- * ARENAKORE — FONT UTILITY
- * Provides Inter font styles for BODY TEXT ONLY.
- * Titles, buttons, icons, badge numbers — NOT affected.
- *
- * Usage:
- *   import { F } from '../utils/fonts';
- *   <Text style={[s.myStyle, F.body]}>Testo leggibile</Text>
- *
- * To disable: set INTER_ENABLED = false → all F.* return {}
+ * ARENAKORE — Font System (Montserrat Only)
+ * ═══════════════════════════════════════════════════════════════
+ * Montserrat 300/400/500/700/800 — geometric, clean, Nike-grade
+ * All other fonts have been purged.
  */
-import { Platform } from 'react-native';
+import { Platform, TextStyle } from 'react-native';
 
-// ── Toggle
-const INTER_ENABLED = true;
-
-// ── Font names (loaded in _layout.tsx via useFonts)
-const INTER_400 = 'Inter_400Regular';
-const INTER_500 = 'Inter_500Medium';
-const INTER_600 = 'Inter_600SemiBold';
-const INTER_700 = 'Inter_700Bold';
-
-// On native, use loaded Inter.  On web, use CSS stack (font is system).
-const bodyStack = Platform.select({
-  ios:     INTER_500,
-  android: INTER_500,
-  default: undefined,   // web: inherits from CSS font-stack
-});
-
-const descStack = Platform.select({
-  ios:     INTER_400,
-  android: INTER_400,
+const FAMILY = Platform.select({
+  web: "'Montserrat', -apple-system, sans-serif",
   default: undefined,
 });
 
-// ── Exported style objects
-// Apply with: [existingStyle, F.body]
-// They OVERRIDE only fontFamily + letterSpacing. Everything else (size, color, weight) is preserved.
-export const F = INTER_ENABLED ? {
-  /** Body / description text: Inter Regular, light spacing */
-  body: {
-    fontFamily:    bodyStack,
-    letterSpacing: 0.15,
-  },
+/** Body text — Montserrat 400, 14px */
+export const F: Record<string, TextStyle> = {
+  body:      { fontFamily: FAMILY, fontWeight: '400', fontSize: 14 },
+  bodyMed:   { fontFamily: FAMILY, fontWeight: '500', fontSize: 14 },
+  bodyBold:  { fontFamily: FAMILY, fontWeight: '700', fontSize: 14 },
+  title:     { fontFamily: FAMILY, fontWeight: '800', fontSize: 20, letterSpacing: -0.2 },
+  hero:      { fontFamily: FAMILY, fontWeight: '800', fontSize: 32, letterSpacing: -0.3 },
+  caption:   { fontFamily: FAMILY, fontWeight: '500', fontSize: 12, letterSpacing: 0.5 },
+  label:     { fontFamily: FAMILY, fontWeight: '800', fontSize: 11, letterSpacing: 2 },
+  cta:       { fontFamily: FAMILY, fontWeight: '800', fontSize: 14, letterSpacing: 3 },
+  data:      { fontFamily: FAMILY, fontWeight: '700', fontSize: 16 },
+  number:    { fontFamily: FAMILY, fontWeight: '800', fontSize: 24, letterSpacing: -0.5 },
+  overline:  { fontFamily: FAMILY, fontWeight: '800', fontSize: 10, letterSpacing: 3, textTransform: 'uppercase' as const },
 
-  /** Medium weight body text */
-  bodyMed: {
-    fontFamily:    INTER_500,
-    letterSpacing: 0.15,
-  },
-
-  /** Caption / label text: small spacing */
-  caption: {
-    fontFamily:    descStack,
-    letterSpacing: 0.3,
-  },
-
-  /** Uppercase instruction text: spacing that "stacca" letters */
-  instruction: {
-    fontFamily:    INTER_700,
-    letterSpacing: 1.5,
-  },
-
-  /** Form descriptions: readable weight, slight spacing */
-  formDesc: {
-    fontFamily:    bodyStack,
-    fontWeight:    '500' as const,
-    letterSpacing: 0.2,
-    lineHeight:    22,
-  },
-} : {
-  // ── DISABLED: no-op (returns empty objects — no visual change)
-  body: {}, bodyMed: {}, caption: {}, instruction: {}, formDesc: {},
+  // Backwards compat
+  bodyRegular: { fontFamily: FAMILY, fontWeight: '400' },
+  input: { fontFamily: FAMILY, fontWeight: '400', fontSize: 16 },
+  validated: {}, caption2: {}, instruction: {}, formDesc: {},
 };

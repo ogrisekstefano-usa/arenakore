@@ -1,7 +1,7 @@
 /**
  * CERTIFIED BY PROS — TalosFit Master Template Section
  * Mostra template certificati da coach professionisti.
- * Lock: richiede AK Drops + livello minimo.
+ * Lock: richiede FLUX + livello minimo.
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
@@ -53,7 +53,7 @@ export function CertifiedByPros() {
       return;
     }
     if (!t.can_afford) {
-      Alert.alert('💧 INSUFFICIENTI', `Servono ${t.required_drops} 💧 AK Drops. Ne hai ${ak}.\nFai Scan Nexus per guadagnarli.`);
+      Alert.alert('INSUFFICIENTI', `Servono ${t.required_drops} FLUX. Ne hai ${ak}.\nFai Scan Nexus per guadagnarli.`);
       return;
     }
     setUnlocking(t.id);
@@ -63,7 +63,7 @@ export function CertifiedByPros() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       Alert.alert(
         '🏆 PROGRAMMA SBLOCCATO',
-        `${result.template_name}\nCertificato da ${result.certified_by}\n\n💧 ${result.ak_drops} drops rimanenti`,
+        `${result.template_name}\nCertificato da ${result.certified_by}\n\n${result.ak_drops} drops rimanenti`,
         [{ text: 'INIZIA ORA', onPress: () => router.push({ pathname: '/(tabs)/nexus-trigger', params: { trainingPushId: t.id } }) }]
       );
       load();
@@ -156,7 +156,7 @@ export function CertifiedByPros() {
                 <View style={cp$.lockReqs}>
                   <View style={[cp$.req, !t.can_afford && cp$.reqFail]}>
                     <Text style={[cp$.reqText, { color: t.can_afford ? '#00FF87' : '#FF3B30' }]}>
-                      💧 {t.required_drops} {t.can_afford ? '✓' : `(hai ${ak})`}
+                      {t.required_drops} {t.can_afford ? '✓' : `(hai ${ak})`}
                     </Text>
                   </View>
                   <View style={[cp$.req, !t.meets_level && cp$.reqFail]}>
@@ -177,7 +177,7 @@ export function CertifiedByPros() {
                     <>
                       <Ionicons name="lock-open" size={14} color={t.can_unlock ? '#000' : 'rgba(255,255,255,0.3)'} />
                       <Text style={[cp$.unlockBtnText, !t.can_unlock && { color: 'rgba(255,255,255,0.3)' }]}>
-                        SBLOCCA · 💧 {t.required_drops}
+                        SBLOCCA · {t.required_drops}
                       </Text>
                     </>
                   )}

@@ -1,100 +1,62 @@
 /**
- * ARENAKORE — THEME TEST CHICAGO
- * React Native (native) typography override.
- * Completely reversible: set THEME_TEST_ACTIVE = false to restore defaults.
- *
- * Usage in any component:
- *   import { T, THEME_TEST_ACTIVE } from '../utils/themeOverride';
- *   <Text style={[s.someStyle, T.body]}>...</Text>
+ * ARENAKORE — THEME OVERRIDE (Montserrat System)
+ * Single font system: Montserrat 300/400/500/700/800
  */
 import { StyleSheet, Platform } from 'react-native';
 
-// ── TOGGLE: set to false to instantly revert all overrides
 export const THEME_TEST_ACTIVE = true;
 
-// ── FONT STACK (platform-appropriate Inter/Roboto)
-const FONT_BODY   = Platform.select({ ios: 'System', android: 'Roboto',    default: 'Inter, Roboto, sans-serif' });
-const FONT_TITLE  = Platform.select({ ios: 'System', android: 'Roboto',    default: 'Inter, Roboto, sans-serif' });
+// ── FONT STACK: Montserrat Only ──
+const FONT_BODY  = Platform.select({ ios: 'System', android: 'System', default: "'Montserrat', -apple-system, sans-serif" });
+const FONT_TITLE = Platform.select({ ios: 'System', android: 'System', default: "'Montserrat', -apple-system, sans-serif" });
 
-// ── THEME OVERRIDE STYLES
-// These supplement (not replace) existing styles.
-// Apply with: [existingStyle, T.body] — the T.body overrides only what it declares.
 export const T = THEME_TEST_ACTIVE ? StyleSheet.create({
-  /** Body text — Inter/Roboto 16px, lineHeight 1.7, weight 400 */
+  /** Body text — Montserrat 400/500, 16px */
   body: {
     fontFamily:    FONT_BODY,
     fontSize:      16,
-    lineHeight:    27,          // 16 × 1.7 ≈ 27
-    fontWeight:    '400',
-    letterSpacing: 0.3,
-  },
-
-  /** Medium body — 16px weight 500 */
-  bodyMed: {
-    fontFamily:    FONT_BODY,
-    fontSize:      16,
     lineHeight:    26,
-    fontWeight:    '500',
-    letterSpacing: 0.3,
-  },
-
-  /** Description / caption — 14px weight 400 */
-  desc: {
-    fontFamily:    FONT_BODY,
-    fontSize:      14,
-    lineHeight:    24,
     fontWeight:    '400',
-    letterSpacing: 0.25,
+    letterSpacing: 0.2,
   },
-
-  /** Uppercase label (ALL-CAPS, tight spaced) */
-  label: {
+  /** Title — Montserrat 800, letter-spacing: -0.01em */
+  title: {
     fontFamily:    FONT_TITLE,
-    fontSize:      10,
+    fontSize:      28,
+    lineHeight:    34,
+    fontWeight:    '800',
+    letterSpacing: -0.3,
+  },
+  /** Heading — Montserrat 700 */
+  heading: {
+    fontFamily:    FONT_TITLE,
+    fontSize:      20,
+    lineHeight:    26,
     fontWeight:    '700',
-    letterSpacing: 1.5,
+    letterSpacing: -0.2,
   },
-
-  /** Uppercase instruction text (beat exercises, scanner) */
-  instruction: {
-    fontFamily:    FONT_TITLE,
-    fontSize:      18,
-    fontWeight:    '700',
-    letterSpacing: 1.5,
-    lineHeight:    28,
-  },
-
-  /** Button text */
-  button: {
-    fontFamily:    FONT_TITLE,
-    fontSize:      14,
-    fontWeight:    '900',
-    letterSpacing: 2.0,
-  },
-
-  /** Title large */
-  titleLg: {
-    fontFamily:    FONT_TITLE,
-    fontSize:      40,
-    fontWeight:    '900',
+  /** Caption — Montserrat 500 */
+  caption: {
+    fontFamily:    FONT_BODY,
+    fontSize:      12,
+    lineHeight:    16,
+    fontWeight:    '500',
     letterSpacing: 0.5,
-    lineHeight:    46,
   },
-
-  /** +2px size bump for readability at distance */
-  scaleUp: {
-    fontSize:      18,          // instead of 16
-    lineHeight:    28,
+  /** Label/Overline — Montserrat 800, small caps feel */
+  label: {
+    fontFamily:    FONT_BODY,
+    fontSize:      11,
+    fontWeight:    '800',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
   },
+}) : {
+  body: {}, title: {}, heading: {}, caption: {}, label: {},
+};
 
-}) : StyleSheet.create({
-  // ── INACTIVE: empty overrides — no visual change
-  body: {}, bodyMed: {}, desc: {}, label: {},
-  instruction: {}, button: {}, titleLg: {}, scaleUp: {},
+/** MONT helper — returns Montserrat fontFamily for web */
+export const MONT_WEB: any = Platform.select({
+  web: { fontFamily: "'Montserrat', -apple-system, sans-serif" },
+  default: {},
 });
-
-// ── CONVENIENCE: apply override only when active
-export function applyTheme<T extends object>(base: T, override: Partial<T>): T {
-  if (!THEME_TEST_ACTIVE) return base;
-  return { ...base, ...override };
-}

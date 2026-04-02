@@ -1,10 +1,12 @@
 /**
- * NÈXUS CERTIFIED Badge + AK DROPS Wallet (mobile)
+ * NÈXUS CERTIFIED Badge + FLUX Wallet (mobile)
  * Riutilizzabile in tutta l'app.
  */
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { FluxIcon, FluxPulse } from './FluxIcon';
 
 // ── CertBadge ─────────────────────────────────────────────────────────────────
 export function CertBadge({ certified, size = 'sm' }: {
@@ -42,9 +44,7 @@ const cb$ = StyleSheet.create({
   uncertText: { color: 'rgba(255,255,255,0.30)', fontWeight: '700', letterSpacing: 1.5 },
 });
 
-// ── AK DROPS Wallet Widget ────────────────────────────────────────────────────
-import { TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+// ── FLUX Wallet Widget ────────────────────────────────────────────────────
 
 export function AKDropsWallet({ user }: { user: any }) {
   const router = useRouter();
@@ -58,9 +58,9 @@ export function AKDropsWallet({ user }: { user: any }) {
           <Ionicons name="lock-closed" size={22} color="#FFD700" />
         </View>
         <View style={dw$.lockedInfo}>
-          <Text style={dw$.lockedTitle}>💧 AK DROPS BLOCCATI</Text>
+          <Text style={dw$.lockedTitle}>FLUX BLOCCATI</Text>
           <Text style={dw$.lockedSub}>
-            Completa la certificazione NÈXUS per guadagnare gocce di sudore.
+            Completa la certificazione NÈXUS per guadagnare flux di sudore.
           </Text>
         </View>
         <TouchableOpacity
@@ -78,19 +78,24 @@ export function AKDropsWallet({ user }: { user: any }) {
   return (
     <View style={dw$.card}>
       <View style={dw$.header}>
-        <Text style={dw$.headerTitle}>💧 AK DROPS</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <FluxPulse active={drops > 0} color="#00E5FF">
+            <FluxIcon size={18} color="#00E5FF" />
+          </FluxPulse>
+          <Text style={dw$.headerTitle}>FLUX</Text>
+        </View>
         <CertBadge certified size="xs" />
       </View>
       <View style={dw$.balanceRow}>
         <Text style={dw$.balance}>{drops.toLocaleString()}</Text>
-        <Text style={dw$.balanceUnit}>DROPS</Text>
+        <Text style={dw$.balanceUnit}>FLUX</Text>
       </View>
-      <Text style={dw$.earnHint}>+10💧 per ogni scan che supera la tua media storica</Text>
+      <Text style={dw$.earnHint}>Genera FLUX superando la tua media storica</Text>
       <View style={dw$.ruleRow}>
         {[
-          { label: 'Scan migliorato', val: '+10💧' },
-          { label: 'Vittoria PvP', val: '+50💧' },
-          { label: 'Crew Battle', val: '+100💧' },
+          { label: 'Scan migliorato', val: '+10 FLUX' },
+          { label: 'Vittoria PvP', val: '+50 FLUX' },
+          { label: 'Crew Battle', val: '+100 FLUX' },
         ].map(r => (
           <View key={r.label} style={dw$.ruleItem}>
             <Text style={dw$.ruleLabel}>{r.label}</Text>
