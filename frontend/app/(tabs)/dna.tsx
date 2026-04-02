@@ -211,23 +211,7 @@ export default function DNATab() {
   return (
     <View style={styles.container} testID="dna-tab">
       <StatusBar barStyle="light-content" />
-      <Header
-        title="DNA"
-        rightAction={
-          <TouchableOpacity
-            onPress={() => setShowNotifDrawer(true)}
-            style={styles.notifBell}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Ionicons name="notifications" size={19} color={unreadCount > 0 ? '#00E5FF' : 'rgba(255,255,255,0.4)'} />
-            {unreadCount > 0 && (
-              <View style={styles.notifBellBadge}>
-                <Text style={styles.notifBellBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        }
-      />
+      <Header title="DNA" />
       <GlitchOverlay active={showGlitch} />
 
       <ScrollView showsVerticalScrollIndicator={false}>

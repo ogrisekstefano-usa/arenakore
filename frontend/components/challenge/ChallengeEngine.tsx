@@ -27,8 +27,8 @@ type ValidationMode = 'AUTO_COUNT' | 'MANUAL_ENTRY' | 'SENSOR_IMPORT';
 
 const TAG_CONFIG: Record<ChallengeTag, { color: string; icon: string; label: string; desc: string }> = {
   POWER: { color: '#FF3B30', icon: 'flame', label: 'POWER', desc: 'Forza · Potenza · Esplosività' },
-  FLOW:  { color: '#00FF87', icon: 'leaf',  label: 'FLOW',  desc: 'Agilità · Tecnica · Fluidità' },
-  PULSE: { color: '#00E5FF', icon: 'pulse', label: 'PULSE', desc: 'Velocità · Resistenza · Cardio' },
+  FLOW:  { color: '#34C759', icon: 'leaf',  label: 'FLOW',  desc: 'Agilità · Tecnica · Fluidità' },
+  PULSE: { color: '#007AFF', icon: 'pulse', label: 'PULSE', desc: 'Velocità · Resistenza · Cardio' },
 };
 
 const MODE_CONFIG: Record<ValidationMode, { icon: string; title: string; sub: string; badge: string }> = {
@@ -724,8 +724,8 @@ const s = StyleSheet.create({
   tagsGrid: { gap: 12, marginBottom: 24 },
   tagCard: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
-    padding: 16, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.02)',
+    padding: 16, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#121212',
   },
   tagIconWrap: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   tagLabel: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 3, flex: 0 },
@@ -741,8 +741,8 @@ const s = StyleSheet.create({
   modesCol: { gap: 12, marginBottom: 24 },
   modeCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.02)', position: 'relative',
+    padding: 16, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#121212', position: 'relative',
   },
   modeIconWrap: { width: 48, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   modeContent: { flex: 1, gap: 2 },
@@ -757,13 +757,14 @@ const s = StyleSheet.create({
   inputGroup: { gap: 16, marginBottom: 20 },
   inputRow: { flexDirection: 'row', gap: 12 },
   inputWrap: { flex: 1, gap: 6 },
-  inputLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  inputLabel: { color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 0.3 },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderRadius: 12,
-    color: '#FFFFFF', fontSize: 28, fontWeight: '900', textAlign: 'center',
-    paddingVertical: 14, letterSpacing: 2,
+    backgroundColor: '#121212', borderWidth: 1, borderRadius: 12,
+    color: '#FFFFFF', fontSize: 28, fontWeight: '800', textAlign: 'center',
+    paddingVertical: 14, letterSpacing: 1,
+    fontFamily: Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined }),
   },
-  inputUnit: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '800', letterSpacing: 2, textAlign: 'center' },
+  inputUnit: { color: '#8E8E93', fontSize: 11, fontWeight: '500', letterSpacing: 1, textAlign: 'center' },
 
   // Proof button
   proofBtn: {
@@ -829,12 +830,12 @@ const v = StyleSheet.create({
 
   // Hero
   heroWrap: { alignItems: 'center', marginBottom: 28, gap: 4 },
-  heroValue: { fontSize: 72, fontWeight: '900', letterSpacing: 4 },
-  heroUnit: { color: 'rgba(255,255,255,0.4)', fontSize: 16, fontWeight: '900', letterSpacing: 4, marginTop: -8 },
-  heroLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '800', letterSpacing: 3 },
+  heroValue: { fontFamily: Platform.select({ web: "'Plus Jakarta Sans', Montserrat, sans-serif", default: undefined }), fontSize: 72, fontWeight: '800', letterSpacing: 2 },
+  heroUnit: { color: '#8E8E93', fontSize: 14, fontWeight: '500', letterSpacing: 3, marginTop: -8 },
+  heroLabel: { color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 2 },
 
   // FLUX card
-  fluxCard: { borderWidth: 1, borderRadius: 16, padding: 18, marginBottom: 16, gap: 10 },
+  fluxCard: { borderWidth: 1, borderRadius: 16, padding: 18, marginBottom: 16, gap: 10, backgroundColor: '#121212' },
   fluxHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   fluxTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   fluxCalcBlock: { gap: 6 },
@@ -849,15 +850,15 @@ const v = StyleSheet.create({
   rankBadgeText: { color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
 
   // DNA card
-  dnaCard: { borderWidth: 1, borderRadius: 16, padding: 18, marginBottom: 20, alignItems: 'center', gap: 12 },
-  dnaTitle: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 3, alignSelf: 'flex-start' },
+  dnaCard: { borderWidth: 1, borderRadius: 16, padding: 18, marginBottom: 20, alignItems: 'center', gap: 12, backgroundColor: '#121212' },
+  dnaTitle: { color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 2, alignSelf: 'flex-start' },
   radarWrap: { marginVertical: 8 },
   dnaStats: { width: '100%', gap: 6 },
   dnaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dnaStatName: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '900', letterSpacing: 2, width: 90 },
-  dnaStatCurrent: { color: '#555', fontSize: 14, fontWeight: '900', width: 35, textAlign: 'right' },
-  dnaStatPredicted: { fontSize: 14, fontWeight: '900', width: 35, textAlign: 'right' },
-  dnaStatIncrement: { fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  dnaStatName: { color: '#8E8E93', fontSize: 11, fontWeight: '500', letterSpacing: 1, width: 90 },
+  dnaStatCurrent: { fontFamily: Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined }), color: '#555', fontSize: 14, fontWeight: '800', width: 35, textAlign: 'right' },
+  dnaStatPredicted: { fontFamily: Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined }), fontSize: 14, fontWeight: '800', width: 35, textAlign: 'right' },
+  dnaStatIncrement: { fontFamily: Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined }), fontSize: 12, fontWeight: '800', letterSpacing: 1 },
 
   // Close
   closeBtn: { borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 8 },

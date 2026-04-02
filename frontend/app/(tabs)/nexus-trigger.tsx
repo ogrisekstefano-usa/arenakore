@@ -435,11 +435,11 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: founderShimmer.value }));
 
   const CONSOLE_ICONS: Record<string, { ionName: keyof typeof Ionicons.glyphMap; color: string }> = {
-    scan:     { ionName: 'scan',        color: '#00E5FF' },
-    practice: { ionName: 'barbell',     color: '#00FF87' },
-    ranked:   { ionName: 'trophy',      color: '#FFD700' },
+    scan:     { ionName: 'scan',        color: '#007AFF' },
+    practice: { ionName: 'barbell',     color: '#34C759' },
+    ranked:   { ionName: 'trophy',      color: '#FF9500' },
     duel:     { ionName: 'flash',       color: '#FF3B30' },
-    live:     { ionName: 'radio',       color: '#FF6B00' },
+    live:     { ionName: 'radio',       color: '#007AFF' },
     forge:    { ionName: 'construct',   color: '#FFD700' },
   };
   const buttons = [
@@ -466,18 +466,21 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
 
   return (
     <View style={cn$.container} testID="nexus-console">
-      <CyberGrid intensity={0.3} />
       <SafeAreaView style={cn$.safe}>
         <View style={cn$.header}>
-          <Text style={cn$.brandLabel}>ARENAKORE</Text>
-          <Text style={cn$.title}>NEXUS</Text>
-          <Text style={cn$.subtitle}>COMMAND CENTER</Text>
-          {isFounder && (
-            <Animated.View style={[cn$.founderBadge, shimmerStyle]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Ionicons name="star" size={10} color="#FFD700" /><Text style={cn$.founderText}>FOUNDER</Text></View>
-            </Animated.View>
-          )}
-          <View style={cn$.tierRow}><View style={cn$.tierDot} /><Text style={cn$.tierText}>{getTierLabel(deviceTier)} ACTIVE</Text></View>
+          {/* Left: Title Stack */}
+          <View style={{ gap: 2 }}>
+            <Text style={cn$.title}>Nexus</Text>
+            <View style={cn$.tierRow}><View style={cn$.tierDot} /><Text style={cn$.tierText}>{getTierLabel(deviceTier)}</Text></View>
+          </View>
+          {/* Right: Badges */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            {isFounder && (
+              <Animated.View style={[cn$.founderBadge, shimmerStyle]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}><Ionicons name="star" size={9} color="#FFD700" /><Text style={cn$.founderText}>FOUNDER</Text></View>
+              </Animated.View>
+            )}
+          </View>
         </View>
         <ScrollView style={cn$.scroll} contentContainerStyle={cn$.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Bio-Scan Eligibility Status */}
@@ -549,15 +552,15 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
 const cn$ = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
   safe: { flex: 1 },
-  header: { alignItems: 'center', paddingTop: 16, paddingBottom: 8, gap: 2 },
-  brandLabel: { color: '#AAAAAA', fontSize: 14, fontWeight: '800', letterSpacing: 4 },
-  title: { color: '#FFD700', fontSize: 32, fontWeight: '900', letterSpacing: 8 },
-  subtitle: { color: '#00E5FF', fontSize: 16, fontWeight: '400', letterSpacing: 4, opacity: 0.85 },
-  founderBadge: { marginTop: 6, paddingHorizontal: 24, paddingVertical: 4, borderRadius: 12, borderWidth: 1, borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.08)' },
-  founderText: { color: '#FFD700', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
-  tierRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
-  tierDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF' },
-  tierText: { color: '#00E5FF', fontSize: 13, fontWeight: '800', letterSpacing: 2, opacity: 0.6 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16, paddingBottom: 8, paddingHorizontal: 20 },
+  brandLabel: { color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 2 },
+  title: { color: '#FFFFFF', fontSize: 28, fontWeight: '800', letterSpacing: 0.5 },
+  subtitle: { color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 2, opacity: 0.85 },
+  founderBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.08)' },
+  founderText: { color: '#FFD700', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+  tierRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  tierDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#007AFF' },
+  tierText: { color: '#8E8E93', fontSize: 11, fontWeight: '500', letterSpacing: 1 },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 24, paddingBottom: 100 },
 
@@ -574,7 +577,7 @@ const cn$ = StyleSheet.create({
   },
   cardInner: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: '#121212',
     borderRadius: 16,
     borderWidth: 1,
     padding: 14,

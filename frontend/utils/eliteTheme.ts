@@ -1,147 +1,170 @@
 /**
- * ARENAKORE — ELITE STYLE GUIDE v1.0
+ * ARENAKORE — ELITE STYLE GUIDE v2.0 (Apple Fitness Minimalism)
  * ═══════════════════════════════════════════════════════════════
- * "Blocco di granito nero con dati laser Cyan e Gold"
- *
- * TYPOGRAPHY: Montserrat 900 Dominance
- * PALETTE: OLED Black Pure
- * ACCENTS: Regola dei 22/44
- * LAYOUT: Brutalist
+ * TYPOGRAPHY: Montserrat 500 (labels) + Plus Jakarta Sans 800 (values)
+ * PALETTE: OLED Black + #121212 Cards
+ * ACCENTS: Apple Semantic Colors
+ * LAYOUT: Functional Minimalism
  */
 import { Platform, TextStyle, ViewStyle } from 'react-native';
 
 // ══════════════════════════════════════════════════════════════
-// 1. PALETTE OLED & SUPERFICI
+// 1. PALETTE — Apple Fitness Inspired
 // ══════════════════════════════════════════════════════════════
 export const EL = {
   // Backgrounds
-  BG:            '#000000',   // OLED Black puro
-  CARD_BG:       '#0a0a0a',   // Profondità minima
-  SURFACE_2:     '#111111',
-  SURFACE_3:     '#161616',
+  BG:            '#000000',    // OLED Black
+  CARD_BG:       '#121212',    // Functional Card surface
+  SURFACE_2:     '#1C1C1E',    // iOS system gray 6
+  SURFACE_3:     '#2C2C2E',    // iOS system gray 5
 
   // Borders
-  BORDER:        'rgba(255,255,255,0.07)',  // Sottilissimi, 1px
-  BORDER_FOCUS:  '#00E5FF',                  // Cyan solido 2px
+  BORDER:        'rgba(255,255,255,0.06)',
+  BORDER_FOCUS:  '#007AFF',
 
-  // Accenti principali
-  CYAN:          '#00E5FF',
-  GOLD:          '#FFD700',
-  GREEN:         '#00FF87',
-  RED:           '#FF3B30',
-  ORANGE:        '#FF6B00',
+  // Semantic Tag Colors (Apple Palette)
+  POWER:         '#FF3B30',    // Apple Red
+  PULSE:         '#007AFF',    // Apple Blue
+  FLOW:          '#34C759',    // Apple Green
 
-  // Accenti fill (13% — suffisso '22')
-  CYAN_22:       '#00E5FF22',
-  GOLD_22:       '#FFD70022',
-  GREEN_22:      '#00FF8722',
-  RED_22:        '#FF3B3022',
-  ORANGE_22:     '#FF6B0022',
+  // Utility Accents
+  CYAN:          '#00E5FF',    // FLUX brand accent
+  GOLD:          '#FFD700',    // Achievement / Premium
+  ORANGE:        '#FF9500',    // Warning / Live
+  RED:           '#FF3B30',    // Error / Danger
 
-  // Accenti bordi soft (27% — suffisso '44')
-  CYAN_44:       '#00E5FF44',
-  GOLD_44:       '#FFD70044',
-  GREEN_44:      '#00FF8744',
-  RED_44:        '#FF3B3044',
-  ORANGE_44:     '#FF6B0044',
+  // Fills (12% opacity)
+  POWER_12:      'rgba(255,59,48,0.12)',
+  PULSE_12:      'rgba(0,122,255,0.12)',
+  FLOW_12:       'rgba(52,199,89,0.12)',
+  CYAN_12:       'rgba(0,229,255,0.12)',
 
-  // Testo
-  TEXT:          '#FFFFFF',
-  TEXT_SEC:      '#AAAAAA',       // 67% opacità
-  TEXT_TER:      'rgba(255,255,255,0.30)',
-  BODY_COLOR:    '#AAAAAA',       // Body text
+  // Text
+  TEXT:           '#FFFFFF',
+  TEXT_SEC:       '#8E8E93',     // Apple system gray
+  TEXT_TER:       'rgba(255,255,255,0.30)',
+  LABEL_COLOR:   '#8E8E93',     // Parameter labels
+  BODY_COLOR:    '#AEAEB2',     // Body text
 
-  // Layout Brutalist
-  SCREEN_MARGIN: 24,
-  RADIUS_MAIN:   20,    // card principali
-  RADIUS_STD:    16,    // card standard
-  RADIUS_BTN:    12,    // bottoni
+  // Layout
+  SCREEN_MARGIN: 20,
+  RADIUS_CARD:   16,
+  RADIUS_BTN:    12,
+  RADIUS_PILL:   20,
 } as const;
 
 // ══════════════════════════════════════════════════════════════
-// 2. SISTEMA TIPOGRAFICO (Montserrat 900 Dominance)
+// 2. FONT FAMILIES
 // ══════════════════════════════════════════════════════════════
 
-const MONT_FAMILY = Platform.select({
+/** Montserrat — Structure, Labels, Navigation */
+export const FONT_MONT = Platform.select({
   web: `'Montserrat', -apple-system, sans-serif`,
   default: undefined,
-});
+}) as string | undefined;
 
-/** Titoli Hero/Brand: 900 Black, 42px, LS 4 */
-export const T_HERO: TextStyle = {
-  fontFamily: MONT_FAMILY,
-  fontWeight: '900',
-  fontSize: 42,
-  letterSpacing: 4,
+/** Plus Jakarta Sans — Data Values, Numbers, Hero Metrics */
+export const FONT_JAKARTA = Platform.select({
+  web: `'Plus Jakarta Sans', 'Montserrat', -apple-system, sans-serif`,
+  default: undefined,
+}) as string | undefined;
+
+// ══════════════════════════════════════════════════════════════
+// 3. TYPOGRAPHY SYSTEM
+// ══════════════════════════════════════════════════════════════
+
+/** Screen Title: Montserrat 800, 28px, left-aligned */
+export const T_SCREEN_TITLE: TextStyle = {
+  fontFamily: FONT_MONT,
+  fontWeight: '800',
+  fontSize: 28,
+  letterSpacing: 0.5,
   color: EL.TEXT,
 };
 
-/** Titoli Schermata: 900 Black, 32px, LS 8 (Monumentale) */
-export const T_SCREEN: TextStyle = {
-  fontFamily: MONT_FAMILY,
-  fontWeight: '900',
-  fontSize: 32,
-  letterSpacing: 8,
-  color: EL.TEXT,
-};
-
-/** Titoli Sezione/Card: 900 Black, 18-20px, LS 2-4 */
+/** Section Title: Montserrat 700, 18px */
 export const T_SECTION: TextStyle = {
-  fontFamily: MONT_FAMILY,
-  fontWeight: '900',
+  fontFamily: FONT_MONT,
+  fontWeight: '700',
   fontSize: 18,
-  letterSpacing: 3,
+  letterSpacing: 0.3,
   color: EL.TEXT,
 };
 
-/** Numeri Atletici (HUD): 800 ExtraBold, 96px, LH 100 */
-export const T_HUD: TextStyle = {
-  fontFamily: MONT_FAMILY,
+/** Parameter Label: Montserrat 500, 12px, Grey */
+export const T_PARAM_LABEL: TextStyle = {
+  fontFamily: FONT_MONT,
+  fontWeight: '500',
+  fontSize: 12,
+  color: EL.LABEL_COLOR,
+  letterSpacing: 0.3,
+};
+
+/** Data Value (Hero): Plus Jakarta Sans 800, 32px, White */
+export const T_DATA_HERO: TextStyle = {
+  fontFamily: FONT_JAKARTA,
   fontWeight: '800',
-  fontSize: 96,
-  lineHeight: 100,
+  fontSize: 32,
   color: EL.TEXT,
 };
 
-/** Bottoni CTA: 800 ExtraBold, 14-18px, LS 3 */
-export const T_CTA: TextStyle = {
-  fontFamily: MONT_FAMILY,
+/** Data Value (Standard): Plus Jakarta Sans 800, 24px, White */
+export const T_DATA_STD: TextStyle = {
+  fontFamily: FONT_JAKARTA,
   fontWeight: '800',
-  fontSize: 14,
-  letterSpacing: 3,
-  color: '#050505',
+  fontSize: 24,
+  color: EL.TEXT,
 };
 
-/** Body Testo: 400 Regular, 13-15px, Colore #AAAAAA */
+/** Data Value (Small): Plus Jakarta Sans 700, 16px, White */
+export const T_DATA_SM: TextStyle = {
+  fontFamily: FONT_JAKARTA,
+  fontWeight: '700',
+  fontSize: 16,
+  color: EL.TEXT,
+};
+
+/** Body Text: Montserrat 400, 14px */
 export const T_BODY: TextStyle = {
-  fontFamily: MONT_FAMILY,
+  fontFamily: FONT_MONT,
   fontWeight: '400',
   fontSize: 14,
   color: EL.BODY_COLOR,
 };
 
-/** Label/Caption: 900, 10-11px, LS 2-3 */
+/** Button CTA: Montserrat 700, 15px */
+export const T_CTA: TextStyle = {
+  fontFamily: FONT_MONT,
+  fontWeight: '700',
+  fontSize: 15,
+  letterSpacing: 0.5,
+  color: '#000000',
+};
+
+/** Label/Caption: Montserrat 600, 11px */
 export const T_LABEL: TextStyle = {
-  fontFamily: MONT_FAMILY,
-  fontWeight: '900',
-  fontSize: 10,
-  letterSpacing: 2,
+  fontFamily: FONT_MONT,
+  fontWeight: '600',
+  fontSize: 11,
+  letterSpacing: 0.5,
   color: EL.TEXT_SEC,
 };
 
+// Legacy exports for backwards compat
+export const T_HERO = T_DATA_HERO;
+export const T_HUD: TextStyle = { ...T_DATA_HERO, fontSize: 72 };
+
 // ══════════════════════════════════════════════════════════════
-// 3. CARD BASE STYLE
+// 4. CARD STYLES — Functional Cards (#121212)
 // ══════════════════════════════════════════════════════════════
 export const CARD_BASE: ViewStyle = {
   backgroundColor: EL.CARD_BG,
-  borderRadius: EL.RADIUS_MAIN,
-  borderWidth: 1,
-  borderColor: EL.BORDER,
+  borderRadius: EL.RADIUS_CARD,
+  padding: 16,
 };
 
 export const CARD_STD: ViewStyle = {
   backgroundColor: EL.CARD_BG,
-  borderRadius: EL.RADIUS_STD,
-  borderWidth: 1,
-  borderColor: EL.BORDER,
+  borderRadius: EL.RADIUS_CARD,
+  padding: 14,
 };

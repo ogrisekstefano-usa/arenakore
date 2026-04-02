@@ -1,15 +1,16 @@
+/**
+ * ARENAKORE — Global Header (Apple Fitness Style)
+ * Left: Bold Section Title
+ * Right: FLUX Pill + Notifications bell + Menu
+ */
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { ControlCenter } from './ControlCenter';
-import { FluxIcon, FluxPulse } from './FluxIcon';
-
-const FONT_ACCENT: any = Platform.select({
-  web: { fontFamily: "'Plus Jakarta Sans', 'Montserrat', sans-serif" },
-  default: {},
-});
+import { FluxIcon } from './FluxIcon';
+import { EL, FONT_JAKARTA, FONT_MONT } from '../utils/eliteTheme';
 
 export function Header({ title, rightAction }: { title: string; rightAction?: React.ReactNode }) {
   const insets = useSafeAreaInsets();
@@ -19,24 +20,29 @@ export function Header({ title, rightAction }: { title: string; rightAction?: Re
 
   return (
     <>
-      <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
-        <View style={styles.row}>
-          <View style={styles.brand}>
-            <Text style={styles.brandArena}>ARENA</Text>
-            <Text style={styles.brandKore}>KORE</Text>
-          </View>
+      <View style={[h.container, { paddingTop: insets.top + 6 }]}>
+        <View style={h.row}>
+          {/* Left: Bold Title */}
+          <Text style={h.title}>{title}</Text>
 
-          <View style={styles.rightRow}>
-            {/* FLUX PILL — Always Visible Motivation Wallet */}
-            <View style={styles.fluxPill}>
-              <FluxIcon size={14} color="#00E5FF" />
-              <Text style={[styles.fluxNum, FONT_ACCENT]}>{flux.toLocaleString()}</Text>
-              <Text style={styles.fluxLabel}>FLUX</Text>
+          {/* Right: FLUX + Bell + Menu */}
+          <View style={h.rightGroup}>
+            {/* FLUX Pill */}
+            <View style={h.fluxPill}>
+              <FluxIcon size={13} color={EL.CYAN} />
+              <Text style={h.fluxNum}>{flux.toLocaleString()}</Text>
             </View>
 
+            {/* Notifications */}
+            <TouchableOpacity style={h.iconBtn} hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}>
+              <Ionicons name="notifications-outline" size={20} color={EL.TEXT_SEC} />
+            </TouchableOpacity>
+
             {rightAction}
-            <TouchableOpacity onPress={() => setMenuOpen(true)} style={styles.menuBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Ionicons name="menu" size={24} color="#00E5FF" />
+
+            {/* Menu */}
+            <TouchableOpacity onPress={() => setMenuOpen(true)} style={h.iconBtn} hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}>
+              <Ionicons name="ellipsis-horizontal" size={20} color={EL.TEXT_SEC} />
             </TouchableOpacity>
           </View>
         </View>
@@ -46,38 +52,47 @@ export function Header({ title, rightAction }: { title: string; rightAction?: Re
   );
 }
 
-const styles = StyleSheet.create({
-  container: { backgroundColor: '#000000', paddingHorizontal: 24, paddingBottom: 10 },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  brand: { flexDirection: 'row', gap: 3 },
-  brandArena: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
-  brandKore: { color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
-  rightRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  menuBtn: { padding: 6 },
-
-  // FLUX PILL
+const h = StyleSheet.create({
+  container: {
+    backgroundColor: EL.BG,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  title: {
+    fontFamily: FONT_MONT,
+    fontWeight: '800',
+    fontSize: 28,
+    color: EL.TEXT,
+    letterSpacing: 0.3,
+  },
+  rightGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  iconBtn: {
+    padding: 6,
+  },
+  // FLUX Pill — minimal
   fluxPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: '#00F2FF12',
-    borderWidth: 1,
-    borderColor: '#00F2FF33',
-    borderRadius: 20,
+    backgroundColor: EL.CYAN_12,
+    borderRadius: EL.RADIUS_PILL,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
   fluxNum: {
-    color: '#00F2FF',
-    fontSize: 14,
+    fontFamily: FONT_JAKARTA,
     fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  fluxLabel: {
-    color: '#00F2FF',
-    fontSize: 9,
-    fontWeight: '500',
-    letterSpacing: 1.5,
-    opacity: 0.6,
+    fontSize: 14,
+    color: EL.CYAN,
+    letterSpacing: 0.3,
   },
 });

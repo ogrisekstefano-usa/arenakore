@@ -352,11 +352,11 @@ TAG_DNA_MAP = {
     "PULSE": ["velocita", "resistenza"],
 }
 
-# Tag colors
+# Tag colors (Apple Semantic)
 TAG_COLORS = {
     "POWER": "#FF3B30",
-    "FLOW": "#00FF87",
-    "PULSE": "#00E5FF",
+    "FLOW": "#34C759",
+    "PULSE": "#007AFF",
 }
 
 

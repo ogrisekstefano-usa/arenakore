@@ -1,20 +1,25 @@
-import React, { useEffect } from 'react';
-import { View } from 'react-native';
-import Svg, { Polygon, Line, Text as SvgText, Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
-import Animated, {
-  useSharedValue, withRepeat, withSequence, withTiming,
-  useAnimatedStyle, interpolate,
-} from 'react-native-reanimated';
+/**
+ * ARENAKORE — DNA Radar Chart (Apple Fitness Minimalism)
+ * Clean spider web with thin lines, Plus Jakarta Sans 800 labels
+ */
+import React from 'react';
+import { View, Platform } from 'react-native';
+import Svg, { Polygon, Line, Text as SvgText, Circle } from 'react-native-svg';
 import { DNAStats } from '../contexts/AuthContext';
 
 const ATTRS = [
-  { key: 'velocita', label: 'Velocità' },
-  { key: 'forza', label: 'Forza' },
-  { key: 'resistenza', label: 'Resistenza' },
-  { key: 'agilita', label: 'Agilità' },
-  { key: 'tecnica', label: 'Tecnica' },
-  { key: 'potenza', label: 'Potenza' },
+  { key: 'velocita', label: 'VELOCITÀ' },
+  { key: 'forza', label: 'FORZA' },
+  { key: 'resistenza', label: 'RESISTENZA' },
+  { key: 'agilita', label: 'AGILITÀ' },
+  { key: 'tecnica', label: 'TECNICA' },
+  { key: 'potenza', label: 'POTENZA' },
 ];
+
+const FONT_LABEL = Platform.select({
+  web: "Plus Jakarta Sans, Montserrat, -apple-system, sans-serif",
+  default: undefined,
+});
 
 function polarToXY(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = (angleDeg - 90) * (Math.PI / 180);
@@ -26,47 +31,16 @@ interface RadarChartProps {
   size?: number;
   glowing?: boolean;
   recordsBroken?: string[];
+  accentColor?: string;
 }
 
-export function RadarChart({ stats, size = 280, glowing = false, recordsBroken = [] }: RadarChartProps) {
+export function RadarChart({ stats, size = 280, glowing = false, recordsBroken = [], accentColor = '#007AFF' }: RadarChartProps) {
   const cx = size / 2;
   const cy = size / 2;
   const maxR = size * 0.34;
-  const labelR = maxR + 26;
+  const labelR = maxR + 28;
   const n = ATTRS.length;
   const gridLevels = [0.25, 0.5, 0.75, 1.0];
-
-  // Glow animation
-  const glowPulse = useSharedValue(0);
-
-  useEffect(() => {
-    if (glowing) {
-      glowPulse.value = withRepeat(
-        withSequence(
-          withTiming(1, { duration: 800 }),
-          withTiming(0.2, { duration: 800 })
-        ),
-        6, // pulse 6 times then stop
-        false
-      );
-    } else {
-      glowPulse.value = 0;
-    }
-  }, [glowing]);
-
-  const glowStyle = useAnimatedStyle(() => ({
-    shadowColor: '#00E5FF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: interpolate(glowPulse.value, [0, 1], [0, 0.9]),
-    shadowRadius: interpolate(glowPulse.value, [0, 1], [0, 30]),
-    elevation: glowing ? 15 : 0,
-  }));
-
-  const borderGlowStyle = useAnimatedStyle(() => ({
-    borderWidth: glowing ? 1.5 : 0,
-    borderColor: `rgba(0, 242, 255, ${interpolate(glowPulse.value, [0, 1], [0, 0.6])})`,
-    borderRadius: size / 2,
-  }));
 
   const axisEndpoints = ATTRS.map((_, i) => polarToXY(cx, cy, maxR, (i * 360) / n));
 
@@ -86,70 +60,86 @@ export function RadarChart({ stats, size = 280, glowing = false, recordsBroken =
   const isRecordBroken = (key: string) => recordsBroken.includes(key);
 
   return (
-    <Animated.View style={[glowStyle, borderGlowStyle]}>
-      <View>
-        <Svg width={size} height={size}>
-          <Defs>
-            <RadialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
-              <Stop offset="0%" stopColor="#00E5FF" stopOpacity={glowing ? 0.15 : 0} />
-              <Stop offset="100%" stopColor="#00E5FF" stopOpacity={0} />
-            </RadialGradient>
-          </Defs>
-
-          {/* Glow background */}
-          {glowing && (
-            <Circle cx={cx} cy={cy} r={maxR + 10} fill="url(#glowGrad)" />
-          )}
-
-          {gridPolygons.map((pts, i) => (
-            <Polygon key={`grid-${i}`} points={pts} fill="none" stroke="#1E1E1E" strokeWidth={1} />
-          ))}
-          {axisEndpoints.map((p, i) => (
-            <Line key={`ax-${i}`} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="#2A2A2A" strokeWidth={1} />
-          ))}
+    <View>
+      <Svg width={size} height={size}>
+        {/* Grid — ultra-thin, semi-transparent */}
+        {gridPolygons.map((pts, i) => (
           <Polygon
-            points={dataPolygon}
-            fill={glowing ? "rgba(0,229,255,0.65)" : "rgba(0,229,255,0.12)"}
-            stroke={glowing ? "#00E5FF" : "#00E5FF"}
-            strokeWidth={glowing ? 2.5 : 2}
+            key={`grid-${i}`}
+            points={pts}
+            fill="none"
+            stroke="rgba(255,255,255,0.08)"
+            strokeWidth={0.5}
           />
-          {dataPoints.map((p, i) => {
-            const broken = isRecordBroken(ATTRS[i].key);
-            return (
-              <React.Fragment key={`dot-${i}`}>
-                {broken && (
-                  <Circle cx={p.x} cy={p.y} r={10} fill="rgba(255,215,0,0.2)" />
-                )}
-                <Circle
-                  cx={p.x} cy={p.y}
-                  r={broken ? 6 : 4}
-                  fill={broken ? '#FFD700' : '#00E5FF'}
-                />
-              </React.Fragment>
-            );
-          })}
-          {ATTRS.map((a, i) => {
-            const lp = polarToXY(cx, cy, labelR, (i * 360) / n);
-            const broken = isRecordBroken(a.key);
-            return (
+        ))}
+
+        {/* Axes — thin */}
+        {axisEndpoints.map((p, i) => (
+          <Line
+            key={`ax-${i}`}
+            x1={cx} y1={cy} x2={p.x} y2={p.y}
+            stroke="rgba(255,255,255,0.06)"
+            strokeWidth={0.5}
+          />
+        ))}
+
+        {/* Data polygon — clean fill */}
+        <Polygon
+          points={dataPolygon}
+          fill={glowing ? `${accentColor}40` : `${accentColor}18`}
+          stroke={accentColor}
+          strokeWidth={glowing ? 2 : 1.5}
+        />
+
+        {/* Data dots — minimal */}
+        {dataPoints.map((p, i) => {
+          const broken = isRecordBroken(ATTRS[i].key);
+          return (
+            <React.Fragment key={`dot-${i}`}>
+              <Circle
+                cx={p.x} cy={p.y}
+                r={broken ? 5 : 3}
+                fill={broken ? '#FFD700' : accentColor}
+              />
+            </React.Fragment>
+          );
+        })}
+
+        {/* Labels — Plus Jakarta Sans 800, clean white */}
+        {ATTRS.map((a, i) => {
+          const lp = polarToXY(cx, cy, labelR, (i * 360) / n);
+          const broken = isRecordBroken(a.key);
+          const val = stats[a.key as keyof DNAStats] || 0;
+          return (
+            <React.Fragment key={`lbl-${i}`}>
               <SvgText
-                key={`lbl-${i}`}
                 x={lp.x}
-                y={lp.y}
-                fill={broken ? '#FFD700' : '#999999'}
-                fontSize={broken ? 13 : 12}
+                y={lp.y - 6}
+                fill={broken ? '#FFD700' : '#FFFFFF'}
+                fontSize={11}
                 fontWeight="800"
-                fontFamily="Syne, Montserrat, sans-serif"
+                fontFamily={FONT_LABEL || undefined}
                 textAnchor="middle"
                 alignmentBaseline="middle"
-                letterSpacing={0.5}
               >
-                {broken ? `★ ${a.label.toUpperCase()}` : a.label.toUpperCase()}
+                {a.label}
               </SvgText>
-            );
-          })}
-        </Svg>
-      </View>
-    </Animated.View>
+              <SvgText
+                x={lp.x}
+                y={lp.y + 8}
+                fill={broken ? '#FFD700' : '#8E8E93'}
+                fontSize={13}
+                fontWeight="800"
+                fontFamily={FONT_LABEL || undefined}
+                textAnchor="middle"
+                alignmentBaseline="middle"
+              >
+                {val}
+              </SvgText>
+            </React.Fragment>
+          );
+        })}
+      </Svg>
+    </View>
   );
 }
