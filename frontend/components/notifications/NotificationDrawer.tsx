@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   unreadBadgeText: { color: '#000', fontSize: 12, fontWeight: '900' },
   panelActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   markAllBtn: {
-    backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 8,
+    backgroundColor: '#00E5FF22', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },

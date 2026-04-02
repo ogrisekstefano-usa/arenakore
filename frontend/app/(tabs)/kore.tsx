@@ -981,7 +981,7 @@ const cr$ = StyleSheet.create({
     textShadowColor: 'rgba(255,215,0,0.7)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10,
   },
   emptyDominate: {
-    color: 'rgba(0,229,255,0.6)', fontSize: 10, fontWeight: '900', letterSpacing: 5,
+    color: '#00E5FF22', fontSize: 10, fontWeight: '900', letterSpacing: 5,
   },
   // Meta
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginBottom: 10 },
@@ -1011,8 +1011,8 @@ const cr$ = StyleSheet.create({
   scoreVal: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
   scoreLabel: { color: '#AAAAAA', fontSize: 8, fontWeight: '400', letterSpacing: 2 },
   // My rank outside top10
-  myRankRow: { paddingHorizontal: 24, paddingVertical: 10, borderTopWidth: 1, borderTopColor: 'rgba(0,229,255,0.65)', alignItems: 'center' },
-  myRankText: { color: 'rgba(0,229,255,0.6)', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
+  myRankRow: { paddingHorizontal: 24, paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#00E5FF22', alignItems: 'center' },
+  myRankText: { color: '#00E5FF22', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
 });
 
 // ========== XP PROGRESS ==========
@@ -1401,7 +1401,7 @@ const hud$ = StyleSheet.create({
   city: { color: '#00E5FF', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
   label: { color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
   rank: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 1 },
-  rankSub: { color: 'rgba(0,229,255,0.6)', fontSize: 12, fontWeight: '700' },
+  rankSub: { color: '#00E5FF22', fontSize: 12, fontWeight: '700' },
   score: { color: '#FFD700', fontSize: 16, fontWeight: '900' },
   hint: { color: 'rgba(255,215,0,0.5)', fontSize: 8, fontWeight: '800', letterSpacing: 1, textAlign: 'center' },
 });

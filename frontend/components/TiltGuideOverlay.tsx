@@ -35,23 +35,29 @@ const TOLERANCE    = 6;    // ± degrees accepted
 const MIN_ANGLE    = TARGET_ANGLE - TOLERANCE;   //  9°
 const MAX_ANGLE    = TARGET_ANGLE + TOLERANCE;   // 21°
 
+// PHONE A TERRA: threshold for flat detection
+const FLAT_THRESHOLD = 8;  // degrees — phone is essentially flat on ground
+
 function analyzeTilt(rotationBeta: number): {
   angleDeg: number;
   isCorrect: boolean;
-  status: 'too_flat' | 'ok' | 'too_steep';
+  isFlat: boolean;
+  status: 'flat' | 'too_flat' | 'ok' | 'too_steep';
   quality: number; // 0-1 (1 = perfect center)
 } {
   // rotation.beta in radians (front-back) → convert to degrees
   const angleDeg = Math.abs(rotationBeta * (180 / Math.PI));
-  const isCorrect = angleDeg >= MIN_ANGLE && angleDeg <= MAX_ANGLE;
-  let status: 'too_flat' | 'ok' | 'too_steep';
-  if (angleDeg < MIN_ANGLE) status = 'too_flat';
+  const isFlat = angleDeg < FLAT_THRESHOLD;
+  const isCorrect = (angleDeg >= MIN_ANGLE && angleDeg <= MAX_ANGLE) || isFlat;
+  let status: 'flat' | 'too_flat' | 'ok' | 'too_steep';
+  if (isFlat) status = 'flat';
+  else if (angleDeg < MIN_ANGLE) status = 'too_flat';
   else if (angleDeg > MAX_ANGLE) status = 'too_steep';
   else status = 'ok';
-  // Quality: 1 at TARGET_ANGLE, fades toward edges
-  const dist = Math.abs(angleDeg - TARGET_ANGLE);
+  // Quality: 1 at TARGET_ANGLE or flat, fades toward edges
+  const dist = isFlat ? 0 : Math.abs(angleDeg - TARGET_ANGLE);
   const quality = isCorrect ? Math.max(0, 1 - dist / TOLERANCE) : 0;
-  return { angleDeg: Math.round(angleDeg), isCorrect, status, quality };
+  return { angleDeg: Math.round(angleDeg), isCorrect, isFlat, status, quality };
 }
 
 // ── BubbleLevel component ────────────────────────────────────────────────────
@@ -172,6 +178,8 @@ export function TiltGuideOverlay({ onReady, onSkip, lang = 'it' }: Props) {
   // refs to avoid stale closures
   const phaseRef = useRef<TiltPhase>('tilt_check');
   const tiltOkRef = useRef(false);
+  const flatRef = useRef(false);
+  const flatStableMs = useRef(0);
   const stabilizeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTiltStatus = useRef<string>('');
 
@@ -196,16 +204,40 @@ export function TiltGuideOverlay({ onReady, onSkip, lang = 'it' }: Props) {
         DeviceMotion.setUpdateInterval(80);
         sub = DeviceMotion.addListener((data: DeviceMotionMeasurement) => {
           if (!data.rotation) return;
-          const { isCorrect, angleDeg, status, quality } = analyzeTilt(data.rotation.beta || 0);
+          const { isCorrect, angleDeg, status, quality, isFlat } = analyzeTilt(data.rotation.beta || 0);
           setTiltAngle(angleDeg);
           setTiltQuality(quality);
           setTiltOk(isCorrect);
           tiltOkRef.current = isCorrect;
+          flatRef.current = isFlat;
 
-          // Voice feedback on status change
+          // ── PHONE A TERRA: Auto-detect flat phone ──
+          if (isFlat && phaseRef.current === 'tilt_check') {
+            flatStableMs.current += 80;
+            if (flatStableMs.current >= 1500) {
+              // Phone confirmed flat for 1.5s → AUTO TRIGGER
+              phaseRef.current = 'tilt_ok';
+              setPhase('tilt_ok');
+              RemoteUXEngine.speakRaw(
+                lang === 'it' ? 'NEXUS ATTIVATO. POSIZIONATI A 3 METRI.'
+                : lang === 'es' ? 'NEXUS ACTIVADO. POSICIÓNATE A 3 METROS.'
+                : 'NEXUS ACTIVATED. POSITION YOURSELF 3 METERS AWAY.'
+              );
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+              RemoteUXEngine.ping.startSequence(0.1);
+              return;
+            }
+          } else if (!isFlat) {
+            flatStableMs.current = 0;
+          }
+
+          // Voice feedback on status change (original tilt mode)
           if (status !== lastTiltStatus.current) {
             lastTiltStatus.current = status;
-            if (status === 'too_flat') RemoteUXEngine.speak('tilt_too_flat');
+            if (status === 'flat') {
+              // Phone going flat — give feedback
+              RemoteUXEngine.speak('tilt_ok', 0);
+            } else if (status === 'too_flat') RemoteUXEngine.speak('tilt_too_flat');
             else if (status === 'too_steep') RemoteUXEngine.speak('tilt_too_steep');
             else if (status === 'ok') {
               RemoteUXEngine.speak('tilt_ok', 0);
@@ -318,7 +350,9 @@ export function TiltGuideOverlay({ onReady, onSkip, lang = 'it' }: Props) {
           <Animated.View entering={FadeIn.duration(400)} style={styles.phase}>
             <Text style={styles.instruction}>
               {gyroAvailable
-                ? 'Posiziona il telefono su una superficie e inclinalo verso di te'
+                ? tiltOk
+                  ? 'TELEFONO RILEVATO · POSIZIONAMENTO IN CORSO...'
+                  : 'Appoggia il telefono a terra o inclinalo verso di te'
                 : 'Posiziona il telefono sul supporto, poi allontanati'}
             </Text>
 
@@ -330,11 +364,16 @@ export function TiltGuideOverlay({ onReady, onSkip, lang = 'it' }: Props) {
                     style={{ transform: [{ rotate: `${-(tiltAngle)}deg` }] }} />
                   <View style={styles.groundLine} />
                 </View>
+                {tiltAngle < FLAT_THRESHOLD && (
+                  <Text style={[styles.feedback, { color: GREEN }]}>
+                    📱 TELEFONO A TERRA RILEVATO
+                  </Text>
+                )}
               </>
             )}
 
             <Text style={styles.tipText}>
-              💡 Appoggia il telefono su un libro o un gradino · ~15° dall'orizzontale
+              📱 A TERRA: Appoggialo piatto → auto-start{'\n'}📐 SU SUPPORTO: ~15° dall'orizzontale
             </Text>
           </Animated.View>
         )}
@@ -404,15 +443,16 @@ const styles = StyleSheet.create({
   // Tilt diagram
   tiltDiagram: { alignItems: 'center', position: 'relative', height: 60 },
   groundLine: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
-  tipText: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '300', textAlign: 'center', letterSpacing: 0.3 },
+  tipText: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '300', textAlign: 'center', letterSpacing: 0.3, lineHeight: 20 },
+  feedback: { fontSize: 13, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
 
   // Countdown
   countdownWrap: { alignItems: 'center', gap: 8 },
-  countdownNum: { color: CYAN, fontSize: 96, fontWeight: '900', letterSpacing: 4, lineHeight: 100, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 20 },
-  countdownLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  countdownNum: { color: CYAN, fontSize: 140, fontWeight: '800', letterSpacing: -2, lineHeight: 148 },
+  countdownLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '900', letterSpacing: 4 },
   distanceGuide: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   distanceLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.15)', maxWidth: 120, borderStyle: 'dashed' },
-  distanceLabel: { color: 'rgba(0,229,255,0.6)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  distanceLabel: { color: '#00E5FF22', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
 
   // Flash beacon
   bigInstruction: { color: '#FFFFFF', fontSize: 40, fontWeight: '900', letterSpacing: 6, textAlign: 'center' },

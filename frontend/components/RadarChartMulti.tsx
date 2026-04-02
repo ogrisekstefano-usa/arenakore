@@ -11,7 +11,7 @@ const DNA_KEYS = ['velocita', 'forza', 'resistenza', 'agilita', 'tecnica', 'pote
 const DNA_LABELS = ['VEL', 'FOR', 'RES', 'AGI', 'TEC', 'POT'];
 
 const SCAN_COLORS = [
-  { stroke: '#00E5FF', fill: 'rgba(0,229,255,0.65)', label: 'ATTUALE' },
+  { stroke: '#00E5FF', fill: '#00E5FF22', label: 'ATTUALE' },
   { stroke: '#FFD700', fill: 'rgba(255,215,0,0.10)', label: 'PRECEDENTE' },
   { stroke: 'rgba(255,255,255,0.55)', fill: 'rgba(255,255,255,0.04)', label: 'BASELINE' },
 ];

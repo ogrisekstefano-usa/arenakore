@@ -132,7 +132,7 @@ export default function JoinEventScreen() {
       {(state === 'enrolled' || state === 'already') && (
         <View style={styles.center}>
           <Animated.View entering={FadeInDown.duration(500)} style={styles.successCard}>
-            <LinearGradient colors={['rgba(0,229,255,0.65)', 'rgba(0,229,255,0.65)']} style={styles.successGrad}>
+            <LinearGradient colors={['#00E5FF22', '#00E5FF22']} style={styles.successGrad}>
               <View style={styles.successIconWrap}>
                 <Ionicons name={state === 'enrolled' ? 'checkmark-circle' : 'information-circle'} size={48} color={state === 'enrolled' ? '#00E5FF' : '#FFD700'} />
               </View>
@@ -171,7 +171,7 @@ export default function JoinEventScreen() {
       {state === 'preview' && event && (
         <View style={styles.previewContainer}>
           <Animated.View entering={FadeInDown.duration(400)} style={styles.previewCard}>
-            <LinearGradient colors={['rgba(0,229,255,0.65)', '#0A0A0A']} style={styles.previewGrad}>
+            <LinearGradient colors={['#00E5FF22', '#0A0A0A']} style={styles.previewGrad}>
               {/* Header */}
               <View style={styles.previewHeader}>
                 <Ionicons name="qr-code" size={20} color="#00E5FF" />
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   loadingText: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '800', letterSpacing: 2, marginTop: 16 },
   enrollingCircle: {
     width: 80, height: 80, borderRadius: 40,
-    backgroundColor: 'rgba(0,229,255,0.65)', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#00E5FF22', alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)',
   },
   enrollingText: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 2, marginTop: 20 },

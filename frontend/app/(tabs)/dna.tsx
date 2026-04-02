@@ -82,7 +82,7 @@ const gStyles = StyleSheet.create({
     elevation: 10, zIndex: 51,
   },
   stripes: { ...StyleSheet.absoluteFillObject, zIndex: 50 },
-  stripe: { position: 'absolute', left: 0, right: 0, backgroundColor: 'rgba(0,229,255,0.35)' },
+  stripe: { position: 'absolute', left: 0, right: 0, backgroundColor: '#00E5FF22' },
 });
 
 function getRoleColor(role?: string) {

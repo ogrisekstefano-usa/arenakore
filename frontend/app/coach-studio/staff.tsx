@@ -233,5 +233,5 @@ const s$ = StyleSheet.create({
   addBtnOff: { opacity: 0.4 },
   addBtnText: { color: '#000', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
   infoBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: 'rgba(0,229,255,0.05)', borderRadius: 8, padding: 10 },
-  infoText: { flex: 1, color: 'rgba(0,229,255,0.4)', fontSize: 11, fontWeight: '300', lineHeight: 16 },
+  infoText: { flex: 1, color: '#00E5FF22', fontSize: 11, fontWeight: '300', lineHeight: 16 },
 });

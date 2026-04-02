@@ -347,7 +347,7 @@ const s = StyleSheet.create({
 
   // Bars section
   barsWrap: { padding: 14, paddingBottom: 8 },
-  barsSectionLabel: { color: 'rgba(0,229,255,0.4)', fontSize: 8, fontWeight: '900', letterSpacing: 4, marginBottom: 10 },
+  barsSectionLabel: { color: '#00E5FF22', fontSize: 8, fontWeight: '900', letterSpacing: 4, marginBottom: 10 },
 
   // Location badge
   locBadge: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
@@ -357,7 +357,7 @@ const s = StyleSheet.create({
 
   // Scan pattern bottom
   scanLine: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 24, paddingBottom: 10, gap: 3, marginTop: 4 },
-  scanTick: { width: 2, height: 4, backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 1 },
+  scanTick: { width: 2, height: 4, backgroundColor: '#00E5FF22', borderRadius: 1 },
   scanTickTall: { height: 10, backgroundColor: 'rgba(255,255,255,0.3)' },
 
   // CTAs

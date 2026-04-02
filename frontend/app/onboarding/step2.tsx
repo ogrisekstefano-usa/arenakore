@@ -1676,7 +1676,7 @@ export default function NexusBioScan() {
               /* ── BIOMETRIC WALL: Camera not confirmed — waiting for human presence ── */
               <>
                 <Animated.View style={[s.positioningRow, positionPulseStyle]}>
-                  <View style={[s.positioningDot, { backgroundColor: 'rgba(0,229,255,0.6)' }]} />
+                  <View style={[s.positioningDot, { backgroundColor: '#00E5FF22' }]} />
                   <Text style={s.positioningTxt}>NEXUS IS SEARCHING FOR ATHLETE...</Text>
                 </Animated.View>
                 <Text style={s.statusLabel}>POSIZIONATI DAVANTI ALLA CAMERA</Text>
@@ -1855,7 +1855,7 @@ const s = StyleSheet.create({
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   brand: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
-    backgroundColor: 'rgba(0,229,255,0.65)',
+    backgroundColor: '#00E5FF22',
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
@@ -1870,7 +1870,7 @@ const s = StyleSheet.create({
   gridOverlay: {
     ...StyleSheet.absoluteFillObject,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
-    backgroundColor: 'rgba(0,229,255,0.65)',
+    backgroundColor: '#00E5FF22',
   },
   darkOverlay: { backgroundColor: 'rgba(0,0,0,0.35)' },
 

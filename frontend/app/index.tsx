@@ -253,7 +253,7 @@ export default function HeroIndex() {
           <View style={s.partnerCard}>
             <LinearGradient
               colors={['rgba(0,0,0,0.0)', 'rgba(0,0,0,0.0)']}
-              style={[s.partnerGrad, { backgroundColor: 'rgba(8,8,8,0.97)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(0,229,255,0.35)' }]}
+              style={[s.partnerGrad, { backgroundColor: 'rgba(8,8,8,0.97)', borderRadius: 16, borderWidth: 1, borderColor: '#00E5FF22' }]}
             >
               <View style={s.partnerTopGlow} />
 
@@ -438,7 +438,7 @@ const s = StyleSheet.create({
   partnerTopGlow: { height: 2, backgroundColor: CYAN, opacity: 0.5, marginHorizontal: -20, marginTop: -20, marginBottom: 6 },
   partnerHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   partnerLabel: { color: '#FFFFFF', fontSize: 16, fontWeight: '400', letterSpacing: 2 },
-  partnerSub: { color: 'rgba(0,229,255,0.5)', fontSize: 11, fontWeight: '400', letterSpacing: 3 },
+  partnerSub: { color: '#00E5FF22', fontSize: 11, fontWeight: '400', letterSpacing: 3 },
   partnerCopy: {
     color: '#E0E0E0',
     fontSize: 15,

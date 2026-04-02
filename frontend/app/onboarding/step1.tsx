@@ -480,7 +480,7 @@ const s = StyleSheet.create({
     color: '#00E5FF',              // NEXUS = CYAN (not gold)
     fontSize: 58, fontWeight: '900',
     letterSpacing: 0.5, lineHeight: 60,
-    textShadowColor: 'rgba(0,229,255,0.65)',
+    textShadowColor: '#00E5FF22',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 16,
   },
@@ -524,7 +524,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(0,229,255,0.07)',
     borderRadius: 10, paddingHorizontal: 24, paddingVertical: 12,
-    borderWidth: 1, borderColor: 'rgba(0,229,255,0.35)',
+    borderWidth: 1, borderColor: '#00E5FF22',
   },
   voiceStatusGold: {
     backgroundColor: 'rgba(255,215,0,0.06)',
@@ -567,7 +567,7 @@ const s = StyleSheet.create({
   micBtn: {
     width: 58, height: 58, borderRadius: 10,
     backgroundColor: 'transparent',
-    borderWidth: 1, borderColor: 'rgba(0,229,255,0.35)',
+    borderWidth: 1, borderColor: '#00E5FF22',
     alignItems: 'center', justifyContent: 'center',
   },
   micBtnGold: {

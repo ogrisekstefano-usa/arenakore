@@ -210,7 +210,7 @@ const s = StyleSheet.create({
   backTxt: { color: CYAN, fontSize: 13, fontWeight: '400', letterSpacing: 2 },
 
   header: { marginBottom: 28, gap: 4, alignItems: 'flex-start' },
-  shieldIcon: { width: 60, height: 60, borderRadius: 20, backgroundColor: 'rgba(0,229,255,0.65)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  shieldIcon: { width: 60, height: 60, borderRadius: 20, backgroundColor: '#00E5FF22', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   title: { color: CYAN, fontSize: 13, fontWeight: '400', letterSpacing: 6 },
   titleBig: { color: '#FFFFFF', fontSize: 44, fontWeight: '400', letterSpacing: 0.5, lineHeight: 48 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6 },

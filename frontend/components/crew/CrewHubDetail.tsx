@@ -69,7 +69,7 @@ export function CrewHubDetail({ crew, onClose, token }: { crew: any; onClose: ()
           </View>
         </View>
 
-        <LinearGradient colors={[catCfg?.color ? `${catCfg.color}15` : 'rgba(0,229,255,0.65)', '#000000']} style={hub$.heroGrad}>
+        <LinearGradient colors={[catCfg?.color ? `${catCfg.color}15` : '#00E5FF22', '#000000']} style={hub$.heroGrad}>
           <View style={hub$.crewInfo}>
             {catCfg && (
               <View style={[hub$.catBadge, { backgroundColor: `${catCfg.color}20`, borderColor: `${catCfg.color}40` }]}>

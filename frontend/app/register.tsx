@@ -811,7 +811,7 @@ const styles = StyleSheet.create({
   },
   calibText: {
     flex: 1,
-    color: 'rgba(0,229,255,0.6)',
+    color: '#00E5FF22',
     fontSize: 11,
     fontWeight: '300',
     lineHeight: 16,
@@ -874,7 +874,7 @@ const styles = StyleSheet.create({
   },
   chameleonNexus: {
     backgroundColor: 'rgba(0,229,255,0.07)',
-    borderColor: 'rgba(0,229,255,0.35)',
+    borderColor: '#00E5FF22',
   },
   chameleonCardLeft: {
     flexDirection: 'row',

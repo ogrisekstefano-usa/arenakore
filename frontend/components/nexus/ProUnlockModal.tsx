@@ -198,11 +198,11 @@ const styles = StyleSheet.create({
   },
   gridLine: {
     position: 'absolute', left: 0, right: 0, height: 1,
-    backgroundColor: 'rgba(0,229,255,0.65)',
+    backgroundColor: '#00E5FF22',
   },
   gridLineV: {
     position: 'absolute', top: 0, bottom: 0, width: 1,
-    backgroundColor: 'rgba(0,229,255,0.65)',
+    backgroundColor: '#00E5FF22',
   },
   card: {
     width: '100%',

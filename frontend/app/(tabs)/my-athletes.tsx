@@ -85,7 +85,7 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000000' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   sectionTitle: {
-    color: 'rgba(0,229,255,0.5)', fontSize: 11, fontWeight: '900',
+    color: '#00E5FF22', fontSize: 11, fontWeight: '900',
     letterSpacing: 4, marginBottom: 14,
   },
   card: {

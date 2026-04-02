@@ -129,7 +129,7 @@ const dw$ = StyleSheet.create({
   headerTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   balanceRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   balance: { color: '#00E5FF', fontSize: 36, fontWeight: '900', letterSpacing: 1 },
-  balanceUnit: { color: 'rgba(0,229,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 2, marginBottom: 6 },
+  balanceUnit: { color: '#00E5FF22', fontSize: 12, fontWeight: '900', letterSpacing: 2, marginBottom: 6 },
   earnHint: { color: 'rgba(255,255,255,0.30)', fontSize: 11, fontWeight: '300' },
   ruleRow: { flexDirection: 'row', gap: 8 },
   ruleItem: { flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 8, gap: 3, alignItems: 'center' },

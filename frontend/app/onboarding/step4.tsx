@@ -250,7 +250,7 @@ const s = StyleSheet.create({
   },
   brand: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
-    backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 20,
+    backgroundColor: '#00E5FF22', borderRadius: 20,
     paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
@@ -286,12 +286,12 @@ const s = StyleSheet.create({
   mismatch: { color: '#FF3B30', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
   secNote: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 6,
+    backgroundColor: '#00E5FF22', borderRadius: 6,
     paddingHorizontal: 12, paddingVertical: 8,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
     marginBottom: 20,
   },
-  secTxt: { color: 'rgba(0,229,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  secTxt: { color: '#00E5FF22', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
   error: {
     color: '#FF3B30', fontSize: 12, fontWeight: '800', letterSpacing: 1,
     textAlign: 'center', marginBottom: 12,

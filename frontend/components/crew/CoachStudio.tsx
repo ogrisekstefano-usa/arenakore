@@ -330,7 +330,7 @@ const ct$ = StyleSheet.create({
     flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', gap: 4,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)',
   },
-  exBtnActive: { borderColor: '#00E5FF', backgroundColor: 'rgba(0,229,255,0.65)' },
+  exBtnActive: { borderColor: '#00E5FF', backgroundColor: '#00E5FF22' },
   exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   diffRow: { flexDirection: 'row', gap: 6 },
   diffBtn: {

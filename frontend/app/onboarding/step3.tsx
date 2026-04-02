@@ -21,7 +21,7 @@ const CYAN   = '#00E5FF';
 const GOLD   = '#FFD700';
 const BG     = '#000000';
 const CARD   = 'rgba(0,229,255,0.025)';
-const BORDER = 'rgba(0,229,255,0.65)';
+const BORDER = '#00E5FF22';
 const BORDER_ACTIVE = CYAN;
 
 const LEVELS = [
@@ -308,7 +308,7 @@ const s = StyleSheet.create({
   // Header
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   brand: { color: GOLD, fontSize: 11, fontWeight: '900', letterSpacing: 6 },
-  stepPill: { backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  stepPill: { backgroundColor: '#00E5FF22', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   stepTxt: { color: CYAN, fontSize: 12, fontWeight: '400', letterSpacing: 2 },
 
   // Progress
@@ -389,7 +389,7 @@ const s = StyleSheet.create({
   },
   inputFocused: {
     borderColor: CYAN,
-    backgroundColor: 'rgba(0,229,255,0.65)',
+    backgroundColor: '#00E5FF22',
     shadowColor: CYAN,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
@@ -410,7 +410,7 @@ const s = StyleSheet.create({
   },
   levelCardActive: {
     borderColor: CYAN,
-    backgroundColor: 'rgba(0,229,255,0.65)',
+    backgroundColor: '#00E5FF22',
     shadowColor: CYAN,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.25,
@@ -425,7 +425,7 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   levelIconBoxActive: {
-    backgroundColor: 'rgba(0,229,255,0.65)',
+    backgroundColor: '#00E5FF22',
     borderColor: 'rgba(255,255,255,0.07)',
   },
   levelTextGroup: { gap: 3 },

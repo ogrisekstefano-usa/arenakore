@@ -34,6 +34,7 @@ import { ProUnlockModal } from '../../components/nexus/ProUnlockModal';
 import { PvPPendingCard } from '../../components/pvp/PvPPendingCard';
 import { TrainingTemplateCard } from '../../components/training/TrainingTemplateCard';
 import { BioFeedbackHUD, BioFeedbackState } from '../../components/training/BioFeedbackHUD';
+import { EfficiencyGhostHUD } from '../../components/training/EfficiencyGhostHUD';
 import { AKBadge } from '../../components/KoreVault';
 import { CertifiedByPros } from '../../components/training/CertifiedByPros';
 import { TiltGuideOverlay } from '../../components/TiltGuideOverlay';
@@ -148,7 +149,7 @@ const bio$ = StyleSheet.create({
   overlay: { ...StyleSheet.absoluteFillObject, zIndex: 50, backgroundColor: 'rgba(5,5,5,0.94)', justifyContent: 'center', alignItems: 'center' },
   laserWrap: { position: 'absolute', left: 0, right: 0, height: 6, alignItems: 'center' },
   laserLine: { height: 2, width: '100%', backgroundColor: '#0a0a0a' },
-  laserGlow: { height: 16, width: '85%', backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 8 },
+  laserGlow: { height: 16, width: '85%', backgroundColor: '#00E5FF22', borderRadius: 8 },
   center: { alignItems: 'center', gap: 14, paddingHorizontal: 32 },
   title: { color: '#00E5FF', fontSize: 17, fontWeight: '900', letterSpacing: 4 },
   phase: { color: '#FFD700', fontSize: 13, fontWeight: '700', letterSpacing: 2 },
@@ -405,7 +406,7 @@ const ghost$ = StyleSheet.create({
     borderWidth: 1, borderColor: '#00E5FF22', gap: 6, minWidth: 120,
   },
   ghostRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  ghostLabel: { color: 'rgba(0,229,255,0.6)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  ghostLabel: { color: '#00E5FF22', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
   compRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statCol: { alignItems: 'center', gap: 1, flex: 1 },
   statLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
@@ -868,7 +869,7 @@ const smv$ = StyleSheet.create({
     shadowOpacity: 0.9, shadowRadius: 28,
   },
   mainMsg: { fontSize: 34, fontWeight: '900', letterSpacing: 4, textAlign: 'center' },
-  hint: { color: 'rgba(0,229,255,0.65)', fontSize: 16, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center', marginTop: -8 },
+  hint: { color: '#00E5FF22', fontSize: 16, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center', marginTop: -8 },
   section: { width: '100%', gap: 8 },
   barRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   barLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
@@ -1027,7 +1028,7 @@ const bi$ = StyleSheet.create({
   avatarBadge: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   avatarBadgeTxt: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   center: { alignItems: 'center', gap: 8 },
-  countNum: { fontSize: 110, fontWeight: '900', letterSpacing: -4, lineHeight: 110, textShadowColor: 'rgba(0,229,255,0.5)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 30 },
+  countNum: { fontSize: 110, fontWeight: '900', letterSpacing: -4, lineHeight: 110, textShadowColor: '#00E5FF22', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 30 },
   vsText: { color: 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: '900', letterSpacing: 6, marginTop: 4 },
   bottomLabel: { position: 'absolute', bottom: 80, color: 'rgba(255,255,255,0.30)', fontSize: 13, fontWeight: '900', letterSpacing: 4 },
 });
@@ -1207,6 +1208,8 @@ export default function NexusTriggerScreen() {
   const [bioscanResult, setBioscanResult] = useState<any>(null);
   const [myRank, setMyRank] = useState<any>(null);
   const [myCrews, setMyCrews] = useState<any[]>([]);
+  // SPRINT NEXUS: DNA Baseline for Live Ghost Efficiency Ratio
+  const [dnaBaseline, setDnaBaseline] = useState<number>(50); // pre-fetched DNA average
   // PvP Ghost Session
   const { pvpChallengeId } = useLocalSearchParams<{ pvpChallengeId?: string }>();
   const [pvpChallenge, setPvpChallenge] = useState<any>(null);
@@ -1320,7 +1323,17 @@ export default function NexusTriggerScreen() {
 
   const handleStabilizingComplete = async () => {
     setPhase('scanning');
-    try { if (token) { const s = await api.startNexusSession({ exercise_type: exercise }, token); setSessionId(s.session_id); } } catch (_) {}
+    try {
+      if (token) {
+        const s = await api.startNexusSession({ exercise_type: exercise }, token);
+        setSessionId(s.session_id);
+        // ── SPRINT NEXUS: Pre-fetch DNA baseline for Live Ghost ──
+        const dna = user?.dna || {};
+        const vals = Object.values(dna).filter((v: any) => typeof v === 'number' && v > 0);
+        const avg = vals.length > 0 ? (vals as number[]).reduce((a, b) => a + b, 0) / vals.length : 50;
+        setDnaBaseline(Math.round(avg));
+      }
+    } catch (_) {}
     analyzerRef.current = new MotionAnalyzer(exercise);
     startTimeRef.current = Date.now();
     timerRef.current = setInterval(() => setTimer(Math.floor((Date.now() - startTimeRef.current) / 1000)), 1000);
@@ -1380,8 +1393,10 @@ export default function NexusTriggerScreen() {
         }, token);
         setScanResult({ ...r, training_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, ai_feedback_score: aiFeedbackScore, training_name: params.trainingName });
         if (r.user) updateUser(r.user);
-        // AK Drops Rain
-        setDropsEarned(10); setShowDropsRain(true);
+        // AK Drops Rain — connected to real server value
+        const realDrops = r.ak_drops_earned || r.ak_credits_earned || Math.max(Math.round(reps * 0.8), 5);
+        setDropsEarned(realDrops); setShowDropsRain(true);
+        setIsVictory(true);
         setTimeout(() => setShowDropsRain(false), 3000);
         if (r.coach_notified) playBioMatchPing(); else playAcceptPing();
       } catch (_) {
@@ -1399,6 +1414,11 @@ export default function NexusTriggerScreen() {
           reps, quality_score: qual, duration_seconds: dur, peak_acceleration: peak,
         }, token);
         setScanResult({ ...pvpResult, pvp_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: pvpResult.xp_change || 0 });
+        // AK Drops Rain + Victory for PvP
+        const pvpDrops = pvpResult.ak_drops_earned || pvpResult.ak_credits_earned || Math.max(Math.round(reps * 0.6), 3);
+        setDropsEarned(pvpDrops); setShowDropsRain(true);
+        setIsVictory((pvpResult.xp_change || 0) > 0);
+        setTimeout(() => setShowDropsRain(false), 3000);
         playAcceptPing();
       } catch (_) {
         setScanResult({ pvp_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: 0 });
@@ -1411,6 +1431,11 @@ export default function NexusTriggerScreen() {
       if (token && sessionId) {
         const r = await api.completeNexusSession(sessionId, { exercise_type: exercise, reps_completed: reps, quality_score: qual, duration_seconds: dur, peak_acceleration: peak, avg_amplitude: avg }, token);
         setScanResult(r); if (r.user) updateUser(r.user); if (r.records_broken?.length > 0) playRecordBroken(); else playAcceptPing();
+        // AK Drops Rain + Victory for regular Nexus
+        const nexusDrops = r.ak_drops_earned || r.ak_credits_earned || Math.max(Math.round(reps * 0.5), 3);
+        setDropsEarned(nexusDrops); setShowDropsRain(true);
+        setIsVictory((r.xp_earned || 0) > 0);
+        setTimeout(() => setShowDropsRain(false), 3000);
       } else {
         setScanResult({ exercise_type: exercise, reps_completed: reps, quality_score: qual, base_xp: reps * 5, quality_multiplier: 1 + (qual / 100) * 2, gold_bonus: qual >= 80 ? reps * 2 : 0, time_bonus: Math.min(Math.floor(dur / 10), 20), xp_earned: reps * 8 + 10, records_broken: [], level_up: false, new_level: user?.level || 1, dna: user?.dna });
         playAcceptPing();
@@ -1421,7 +1446,7 @@ export default function NexusTriggerScreen() {
     setPhase('results');
   };
 
-  const handleResultClose = () => { setPhase('console'); setScanResult(null); setSessionId(null); setMotionState(null); setTimer(0); setMotionActive(false); };
+  const handleResultClose = () => { setPhase('console'); setScanResult(null); setSessionId(null); setMotionState(null); setTimer(0); setMotionActive(false); setIsVictory(false); setDropsEarned(0); };
   useEffect(() => () => { stopSensors(); }, []);
   const fmt = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
@@ -1491,6 +1516,15 @@ export default function NexusTriggerScreen() {
           dnaPotential,
           isActive: true,
         }} />
+      )}
+
+      {/* SPRINT NEXUS: EFFICIENCY GHOST HUD — DNA-Relative Live Ratio */}
+      {phase === 'scanning' && (
+        <EfficiencyGhostHUD
+          currentQuality={motionState?.quality || 0}
+          dnaBaseline={dnaBaseline}
+          isActive={true}
+        />
       )}
 
       {/* PUPPET-MOTION-DECK: SMOOTH VALIDATION */}
@@ -1632,7 +1666,7 @@ const hud$ = StyleSheet.create({
     gap: 3,
   },
   cornerLabel: {
-    color: 'rgba(0,229,255,0.5)', fontSize: 11, fontWeight: '900',
+    color: '#00E5FF22', fontSize: 11, fontWeight: '900',
     letterSpacing: 3,
   },
   timerVal: {
@@ -1705,7 +1739,7 @@ const hud$ = StyleSheet.create({
     lineHeight: 50,
   },
   repsUnit: {
-    color: 'rgba(0,229,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 2,
+    color: '#00E5FF22', fontSize: 10, fontWeight: '900', letterSpacing: 2,
   },
   // BOTTOM-RIGHT: Quality
   bottomRight: {
@@ -1718,7 +1752,7 @@ const hud$ = StyleSheet.create({
     lineHeight: 50,
   },
   qualityUnit: {
-    color: 'rgba(0,229,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 2,
+    color: '#00E5FF22', fontSize: 10, fontWeight: '900', letterSpacing: 2,
   },
   // BOTTOM: Stop Button
   stopWrap: {

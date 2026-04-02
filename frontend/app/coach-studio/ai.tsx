@@ -203,5 +203,5 @@ const ai$ = StyleSheet.create({
   forecastXpVal: { color: '#FFD700', fontSize: 14, fontWeight: '900' },
   forecastXpLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 9, marginTop: 2 },
   aiNote: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#0A0A0A', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#1E1E1E' },
-  aiNoteText: { flex: 1, color: 'rgba(0,229,255,0.4)', fontSize: 11, fontWeight: '300' },
+  aiNoteText: { flex: 1, color: '#00E5FF22', fontSize: 11, fontWeight: '300' },
 });

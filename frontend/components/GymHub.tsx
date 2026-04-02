@@ -44,7 +44,7 @@ function CoachCard({ coach, onRemove }: { coach: any; onRemove: (id: string) => 
     <Animated.View entering={FadeInDown.delay(50)}>
       <View style={cc$.cardOuter}>
         <LinearGradient
-          colors={['rgba(0,229,255,0.65)', 'rgba(5,5,5,0.95)', 'rgba(5,5,5,0.99)']}
+          colors={['#00E5FF22', 'rgba(5,5,5,0.95)', 'rgba(5,5,5,0.99)']}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
           style={cc$.card}
         >
@@ -114,7 +114,7 @@ function EventCard({
         <LinearGradient
           colors={event.status === 'live'
             ? ['rgba(255,59,48,0.08)', 'rgba(10,10,10,0.98)', '#000000']
-            : ['rgba(0,229,255,0.65)', 'rgba(10,10,10,0.96)', '#000000']}
+            : ['#00E5FF22', 'rgba(10,10,10,0.96)', '#000000']}
           start={{ x: 0, y: 0 }} end={{ x: 0.3, y: 1 }}
           style={ev$.card}
         >
@@ -321,7 +321,7 @@ const qr$ = StyleSheet.create({
   metaText: { color: '#AAAAAA', fontSize: 15, fontWeight: '600' },
   qrContainer: {
     width: 220, height: 220, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 16, padding: 8,
+    backgroundColor: '#00E5FF22', borderRadius: 16, padding: 8,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginVertical: 8,
   },
   qrImage: { width: 200, height: 200, borderRadius: 8 },
@@ -490,7 +490,7 @@ const ce$ = StyleSheet.create({
     flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', gap: 4,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)',
   },
-  exBtnActive: { borderColor: '#00E5FF', backgroundColor: 'rgba(0,229,255,0.65)' },
+  exBtnActive: { borderColor: '#00E5FF', backgroundColor: '#00E5FF22' },
   exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   diffRow: { flexDirection: 'row', gap: 6 },
   diffBtn: {
@@ -748,7 +748,7 @@ export function GymHub() {
         {activeSection === 'coaches' && (
           <View style={hub$.section}>
             <TouchableOpacity style={hub$.addCoachBtn} onPress={() => setShowAddCoach(true)} activeOpacity={0.85}>
-              <LinearGradient colors={['rgba(0,229,255,0.65)', 'rgba(0,229,255,0.65)']} style={hub$.addCoachGrad}>
+              <LinearGradient colors={['#00E5FF22', '#00E5FF22']} style={hub$.addCoachGrad}>
                 <Ionicons name="person-add" size={18} color="#00E5FF" />
                 <Text style={hub$.addCoachText}>ASSOCIA NUOVO COACH</Text>
               </LinearGradient>

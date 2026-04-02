@@ -213,7 +213,7 @@ const m$ = StyleSheet.create({
   vs: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
   vsLine: { width: 1, height: 30, backgroundColor: 'rgba(255,215,0,0.3)' },
   dnaSection: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 12, marginBottom: 12 },
-  dnaSectionTitle: { color: 'rgba(0,229,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 3, marginBottom: 10 },
+  dnaSectionTitle: { color: '#00E5FF22', fontSize: 9, fontWeight: '900', letterSpacing: 3, marginBottom: 10 },
   verdict: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 8, marginBottom: 14 },
   verdictWin: { backgroundColor: 'rgba(255,255,255,0.06)' },
   verdictLoss: { backgroundColor: 'rgba(255,149,0,0.06)' },
