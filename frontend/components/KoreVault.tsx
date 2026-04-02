@@ -1,7 +1,7 @@
 /**
  * ARENAKORE — KORE VAULT
  * Premium Tool Shop nel tab KORE.
- * Mostra AK balance, tools disponibili, animazione unlock.
+ * Mostra FLUX balance, tools disponibili, animazione unlock.
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -118,7 +118,7 @@ function ToolCard({ tool, ak, onUnlock, unlocking }: { tool: any; ak: number; on
       ) : (
         <TouchableOpacity
           style={[tc$.unlockBtn, !canAfford && tc$.unlockBtnOff]}
-          onPress={() => canAfford ? onUnlock(tool.id) : Alert.alert('AK INSUFFICIENTI', `Servono ${tool.cost_ak} AK. Hai ${ak} AK.\nFai più Scan Nexus per guadagnare AK.`)}
+          onPress={() => canAfford ? onUnlock(tool.id) : Alert.alert('FLUX INSUFFICIENTI', `Servono ${tool.cost_ak} FLUX. Hai ${ak} FLUX.\nFai più Scan Nexus per guadagnare FLUX.`)}
           disabled={isUnlocking}
           activeOpacity={0.85}
         >
@@ -164,7 +164,7 @@ function EarnGuide() {
   ];
   return (
     <View style={eg$.wrap}>
-      <Text style={eg$.title}>COME GUADAGNARE AK</Text>
+      <Text style={eg$.title}>COME GUADAGNARE FLUX</Text>
       <View style={eg$.grid}>
         {RULES.map(r => (
           <View key={r.label} style={eg$.item}>
@@ -217,7 +217,7 @@ export function KoreVault() {
         const tool = tools.find(t => t.id === toolId);
         Alert.alert(
           '🔓 SBLOCCATO',
-          `${tool?.name} è ora attivo nel tuo profilo.\n\nAK rimanenti: ${result.ak_credits}`
+          `${tool?.name} è ora attivo nel tuo profilo.\n\nFLUX rimanenti: ${result.ak_credits}`
         );
         // Update user's ak_credits and unlocked_tools in context
         updateUser?.({ ...user, ak_credits: result.ak_credits, unlocked_tools: result.unlocked_tools });
@@ -293,7 +293,7 @@ export function ToolLock({ toolId, toolName, costAk, requiresPro = false, onNavi
       {requiresPro ? (
         <View style={tl$.proPill}><Text style={tl$.proText}>RISERVATO A PRO / ENTERPRISE</Text></View>
       ) : (
-        <Text style={tl$.cost}>Sblocca con <Text style={{ color: '#FFD700', fontWeight: '900' }}>{costAk} AK</Text></Text>
+        <Text style={tl$.cost}>Sblocca con <Text style={{ color: '#FFD700', fontWeight: '900' }}>{costAk} FLUX</Text></Text>
       )}
       {onNavigate && (
         <TouchableOpacity style={tl$.cta} onPress={onNavigate} activeOpacity={0.85}>
