@@ -105,7 +105,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             <Ionicons
               name={(focused ? cfg.iconBold : cfg.icon) as any}
               size={focused ? 24 : 21}
-              color={focused ? '#00F2FF' : '#3A3A3A'}
+              color={focused ? '#00E5FF' : '#3A3A3A'}
             />
             <Text style={[$.label, focused && $.labelActive]}>{cfg.label}</Text>
           </TouchableOpacity>
@@ -138,11 +138,9 @@ export default function TabsLayout() {
 
 const $ = StyleSheet.create({
   bar: {
-    flexDirection: 'row', backgroundColor: '#070707',
-    borderTopWidth: 1.5, borderTopColor: 'rgba(0,242,255,0.1)',
+    flexDirection: 'row', backgroundColor: '#000000',
+    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.07)',
     height: 76, alignItems: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.6, shadowRadius: 16, elevation: 20,
   },
   tabItem: {
     flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4, position: 'relative',
@@ -150,37 +148,28 @@ const $ = StyleSheet.create({
   },
   glowDot: {
     position: 'absolute', top: -2, width: 5, height: 5, borderRadius: 2.5,
-    backgroundColor: '#00F2FF',
-    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1, shadowRadius: 8, elevation: 8,
+    backgroundColor: '#00E5FF',
   },
   label: {
-    color: 'rgba(255,255,255,0.60)', fontSize: 9, fontWeight: '900',
-    letterSpacing: 1.5, textTransform: 'uppercase',
+    color: '#AAAAAA', fontSize: 9, fontWeight: '900',
+    letterSpacing: 2, textTransform: 'uppercase',
   },
   labelActive: {
-    color: '#00F2FF',
-    textShadowColor: 'rgba(0,242,255,0.5)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8,
+    color: '#00E5FF',
   },
   centerWrap: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
   },
   centerLabel: {
-    color: 'rgba(255,255,255,0.60)', fontSize: 9, fontWeight: '900',
-    letterSpacing: 1.5, marginTop: 38,
+    color: '#AAAAAA', fontSize: 9, fontWeight: '900',
+    letterSpacing: 2, marginTop: 38,
   },
   nexusWrap: {
     position: 'absolute', top: -28, alignSelf: 'center',
-    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 20, elevation: 16,
   },
   goldBtn: {
     width: 64, height: 64, borderRadius: 32,
-    backgroundColor: '#D4AF37', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 3, borderColor: '#070707',
-    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7, shadowRadius: 16, elevation: 12,
+    backgroundColor: '#FFD700', alignItems: 'center', justifyContent: 'center',
+    borderWidth: 3, borderColor: '#000000',
   },
 });

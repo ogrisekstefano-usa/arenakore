@@ -10,7 +10,7 @@ import { useTheme, PJS, MONT, INTER, fz } from '../../contexts/ThemeContext';
 
 const DNA_KEYS = ['velocita','forza','resistenza','agilita','tecnica','potenza'];
 const DNA_SHORT = ['VEL','FOR','RES','AGI','TEC','POT'];
-const LINE_COLORS = ['#00F2FF','#FF453A','#D4AF37','#34C759','#AF52DE','#FF9500'];
+const LINE_COLORS = ['#00E5FF','#FF3B30','#FFD700','#00FF87','#AF52DE','#FF9500'];
 
 // ── Activity Heatmap (GitHub-style 30-day grid) ──────────────────────────
 export function ActivityHeatmap({ grid, totalScans, activeDays }: { grid: any[]; totalScans: number; activeDays: number }) {
@@ -18,10 +18,10 @@ export function ActivityHeatmap({ grid, totalScans, activeDays }: { grid: any[];
   const w = COLS * (CELL + GAP), h = ROWS * (CELL + GAP);
   const getColor = (intensity: number) => {
     if (intensity === 0) return '#111111';
-    if (intensity < 0.25) return 'rgba(0,242,255,0.2)';
-    if (intensity < 0.5) return 'rgba(0,242,255,0.45)';
-    if (intensity < 0.75) return 'rgba(0,242,255,0.7)';
-    return '#00F2FF';
+    if (intensity < 0.25) return 'rgba(0,229,255,0.2)';
+    if (intensity < 0.5) return 'rgba(0,229,255,0.45)';
+    if (intensity < 0.75) return 'rgba(0,229,255,0.7)';
+    return '#00E5FF';
   };
 
   return (
@@ -126,7 +126,7 @@ export function LineChart({ months, keys, labels, height = 160, width = 440 }: {
 }
 
 // ── Small Radar (for athlete rows) ─────────────────────────────────────────
-export function MiniRadar({ dna, color = '#00F2FF', size = 60 }: { dna: any; color?: string; size?: number }) {
+export function MiniRadar({ dna, color = '#00E5FF', size = 60 }: { dna: any; color?: string; size?: number }) {
   const cx = size / 2, cy = size / 2, r = size / 2 - 6;
   const n = DNA_KEYS.length;
   const pts = DNA_KEYS.map((k, i) => {
@@ -147,7 +147,7 @@ export function MiniRadar({ dna, color = '#00F2FF', size = 60 }: { dna: any; col
 }
 
 // ── KPI Card ───────────────────────────────────────────────────────────────
-export function KPICard({ label, value, sub, color = '#00F2FF', icon, trend }: any) {
+export function KPICard({ label, value, sub, color = '#00E5FF', icon, trend }: any) {
   const { theme, mode } = useTheme();
   return (
     <View
@@ -205,7 +205,7 @@ const al$ = StyleSheet.create({
   left: { gap: 4, minWidth: 100 },
   badge: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, alignSelf: 'flex-start' },
   athlete: { color: '#FFFFFF', fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
-  message: { flex: 1, color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: '300', lineHeight: 17 },
+  message: { flex: 1, color: '#AAAAAA', fontSize: 12, fontWeight: '300', lineHeight: 17 },
 });
 
 // ── Section Header ─────────────────────────────────────────────────────────

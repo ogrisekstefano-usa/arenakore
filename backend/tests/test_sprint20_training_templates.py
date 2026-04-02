@@ -11,7 +11,7 @@ import requests
 import os
 import time
 
-BASE_URL = (os.environ.get('EXPO_PUBLIC_BACKEND_URL') or 'https://voice-coach-40.preview.emergentagent.com').rstrip('/') + '/api'
+BASE_URL = (os.environ.get('EXPO_PUBLIC_BACKEND_URL') or 'https://arena-scan-lab.preview.emergentagent.com').rstrip('/') + '/api'
 
 # Test credentials from /app/memory/test_credentials.md
 TEST_EMAIL = "ogrisek.stefano@gmail.com"

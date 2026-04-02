@@ -1,13 +1,16 @@
 /**
- * ARENAKORE — BIO-FEEDBACK HUD v2.0
- * AI Coach: messaggi grandi, centrati, 1.5s poi spariscono.
- * "Senti la tensione — non leggere i dati."
+ * ARENAKORE — BIO-FEEDBACK HUD v3.0
+ * "BRUCIA!" experience: messaggi 48px, colori DNA-dinamici, zero rumore visivo.
+ * Verde = sopra media DNA · Arancione = sotto · Rosso = affaticamento
  */
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Animated, {
-  FadeIn, FadeOut, useSharedValue, withTiming, withSequence, useAnimatedStyle,
+  FadeIn, FadeOut, useSharedValue, withTiming, withSequence,
+  useAnimatedStyle, Easing,
 } from 'react-native-reanimated';
+
+const { width: SW } = Dimensions.get('window');
 
 export interface BioFeedbackState {
   currentReps: number;
@@ -19,85 +22,149 @@ export interface BioFeedbackState {
   isActive: boolean;
 }
 
-type AIStatus = 'idle' | 'optimal' | 'increase' | 'decrease' | 'fatigue' | 'posture' | 'almost' | 'last';
+type AIStatus = 'idle' | 'optimal' | 'increase' | 'fatigue' | 'posture' | 'almost' | 'last' | 'go';
 
-const AI_MESSAGES: Record<AIStatus, { msg: string; color: string }> = {
-  idle:     { msg: '',              color: '#FFFFFF' },
-  optimal:  { msg: 'TIENICI.',      color: '#00F2FF' },
-  increase: { msg: 'PIÙ FORTE.',    color: '#FF9500' },
-  decrease: { msg: 'RESPIRA.',      color: '#34C759' },
-  fatigue:  { msg: 'NON MOLLARE.', color: '#FF453A' },
-  posture:  { msg: 'SCHIENA.',      color: '#D4AF37' },
-  almost:   { msg: 'CI SIAMO.',     color: '#00F2FF' },
-  last:     { msg: 'ULTIMA!',       color: '#FF453A' },
+// ── Dynamic color: verde se sopra DNA potential, arancione se sotto ────────────
+function getDynamicColor(quality: number, dnaPotential: number): string {
+  const ratio = quality / Math.max(dnaPotential, 1);
+  if (ratio >= 1.0) return '#00FF87';   // green: at or above potential
+  if (ratio >= 0.7) return '#FF9500';   // orange: below potential
+  return '#FF3B30';                      // red: significantly below
+}
+
+// ── Energetic messages (no period = more urgent) ──────────────────────────────
+const AI_MESSAGES: Record<AIStatus, string[]> = {
+  idle:     [''],
+  optimal:  ['TIENICI.', 'PERFETTO.', 'RITMO.'],
+  increase: ['BRUCIA!', 'PIÙ FORTE!', 'SPINGI!', 'ADESSO!', 'CARICA!'],
+  fatigue:  ['NON MOLLARE.', 'RESPIRA.', 'RESISTI.'],
+  posture:  ['SCHIENA!', 'POSTURA!', 'DRITTA!'],
+  almost:   ['QUASI FATTA!', 'CI SIAMO!', 'ANCORA UN PO!'],
+  last:     ['ULTIMA!', 'VAI!', 'FALLA!'],
+  go:       ['VIA!', 'GO!', 'INIZIA!'],
 };
 
+function pickRandom(arr: string[]): string {
+  return arr[Math.floor(Math.random() * arr.length)] || '';
+}
+
 function getAIStatus(state: BioFeedbackState): AIStatus {
-  if (!state.isActive || state.elapsedSeconds < 4) return 'idle';
+  if (!state.isActive || state.elapsedSeconds < 3) return 'idle';
   const { currentQuality, dnaPotential, currentReps, targetReps, elapsedSeconds, targetTime } = state;
   const repsLeft = targetReps - currentReps;
-  const timeLeft = targetTime - elapsedSeconds;
   const expectedRate = targetReps / Math.max(targetTime, 1);
   const actualRate = currentReps / Math.max(elapsedSeconds, 1);
+  const qualityRatio = currentQuality / Math.max(dnaPotential, 1);
 
   if (repsLeft === 1) return 'last';
   if (repsLeft <= 3 && repsLeft > 0) return 'almost';
-  if (currentQuality < 30 && elapsedSeconds > 8) return 'posture';
-  if (actualRate < expectedRate * 0.5 && elapsedSeconds > 12) return 'fatigue';
-  if (currentQuality / Math.max(dnaPotential, 1) < 0.6) return 'increase';
-  if (currentQuality / Math.max(dnaPotential, 1) > 1.1) return 'decrease';
+  if (currentQuality < 25 && elapsedSeconds > 8) return 'posture';
+  if (actualRate < expectedRate * 0.45 && elapsedSeconds > 10) return 'fatigue';
+  if (qualityRatio < 0.65) return 'increase';
   return 'optimal';
 }
 
+// ── REP Counter (enormous, bottom-left) ──────────────────────────────────────
+function RepCounter({ reps, targetReps, dnaPotential, quality }: {
+  reps: number; targetReps: number; dnaPotential: number; quality: number;
+}) {
+  const color = getDynamicColor(quality, dnaPotential);
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    scale.value = withSequence(
+      withTiming(1.18, { duration: 80, easing: Easing.out(Easing.ease) }),
+      withTiming(1, { duration: 120 })
+    );
+  }, [reps]);
+
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+  return (
+    <Animated.View style={[rc$.wrap, style]}>
+      <Text style={[rc$.reps, { color }]}>{reps}</Text>
+      <Text style={rc$.target}>/ {targetReps}</Text>
+    </Animated.View>
+  );
+}
+
+const rc$ = StyleSheet.create({
+  wrap: { alignItems: 'flex-end' },
+  reps: { fontSize: 72, fontWeight: '900', letterSpacing: -2, lineHeight: 72, textShadowColor: 'rgba(0,0,0,0.9)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 16 },
+  target: { color: 'rgba(255,255,255,0.2)', fontSize: 16, fontWeight: '300', letterSpacing: 1 },
+});
+
+// ── Time Arc (top, minimal) ───────────────────────────────────────────────────
+function TimeDisplay({ remaining, targetTime }: { remaining: number; targetTime: number }) {
+  const isUrgent = remaining <= 10 && remaining > 0;
+  return (
+    <View style={td$.wrap}>
+      <Text style={[td$.time, { color: isUrgent ? '#FF3B30' : 'rgba(255,255,255,0.5)' }]}>
+        {remaining}
+        <Text style={td$.unit}>s</Text>
+      </Text>
+    </View>
+  );
+}
+const td$ = StyleSheet.create({
+  wrap: {},
+  time: { fontSize: 32, fontWeight: '900', letterSpacing: 1 },
+  unit: { fontSize: 14, fontWeight: '300', color: 'rgba(255,255,255,0.3)' },
+});
+
+// ── Main HUD ──────────────────────────────────────────────────────────────────
 export function BioFeedbackHUD({ state }: { state: BioFeedbackState }) {
   const [shownMsg, setShownMsg] = useState<{ msg: string; color: string; key: number } | null>(null);
   const lastStatus = useRef<AIStatus>('idle');
   const msgTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // AI score 0-100
-  const repEff = Math.min(1, state.currentReps / Math.max(state.targetReps, 1));
-  const aiFeedbackScore = Math.round(state.currentQuality * 0.6 + repEff * 100 * 0.4);
   const remaining = Math.max(0, state.targetTime - state.elapsedSeconds);
+  const dynColor = getDynamicColor(state.currentQuality, state.dnaPotential);
 
   useEffect(() => {
     const status = getAIStatus(state);
     if (status === lastStatus.current || status === 'idle') return;
     lastStatus.current = status;
-    const cfg = AI_MESSAGES[status];
-    if (!cfg.msg) return;
+    const msgs = AI_MESSAGES[status];
+    const msg = pickRandom(msgs);
+    if (!msg) return;
+    // Color: green above potential, orange below, red for fatigue
+    const color = status === 'fatigue' || status === 'posture' ? '#FF3B30'
+      : status === 'almost' || status === 'last' ? '#00E5FF'
+      : dynColor;
     const key = Date.now();
-    setShownMsg({ msg: cfg.msg, color: cfg.color, key });
+    setShownMsg({ msg, color, key });
     if (msgTimeout.current) clearTimeout(msgTimeout.current);
-    msgTimeout.current = setTimeout(() => setShownMsg(null), 1500);
+    msgTimeout.current = setTimeout(() => setShownMsg(null), 1000);
   }, [state.elapsedSeconds]);
 
   return (
     <View style={bf$.container} pointerEvents="none">
-      {/* Minimal corner data */}
-      <View style={bf$.corners}>
-        <Text style={bf$.corner}>{state.currentReps}<Text style={bf$.cornerUnit}> REP</Text></Text>
-        <Text style={bf$.corner}>{remaining}<Text style={bf$.cornerUnit}>s</Text></Text>
+      {/* Top row: TIME (left) */}
+      <View style={bf$.topRow}>
+        <TimeDisplay remaining={remaining} targetTime={state.targetTime} />
       </View>
 
-      {/* Big centered AI message */}
+      {/* Giant centered AI message — FULL SCREEN IMPACT */}
       {shownMsg && (
         <Animated.View
           key={shownMsg.key}
-          entering={FadeIn.duration(150)}
-          exiting={FadeOut.duration(400)}
-          style={bf$.msgWrap}
+          entering={FadeIn.duration(80)}
+          exiting={FadeOut.duration(350)}
+          style={bf$.msgOverlay}
         >
           <Text style={[bf$.msg, { color: shownMsg.color }]}>{shownMsg.msg}</Text>
         </Animated.View>
       )}
 
-      {/* AI Score bar (bottom) */}
-      <View style={bf$.scoreRow}>
-        <Text style={bf$.scoreLabel}>AI</Text>
-        <View style={bf$.scoreBar}>
-          <View style={[bf$.scoreFill, { width: `${aiFeedbackScore}%` as any, backgroundColor: aiFeedbackScore >= 80 ? '#D4AF37' : '#00F2FF' }]} />
-        </View>
-        <Text style={[bf$.scoreVal, { color: aiFeedbackScore >= 80 ? '#D4AF37' : '#00F2FF' }]}>{aiFeedbackScore}</Text>
+      {/* Bottom-right: REP COUNTER (huge) */}
+      <View style={bf$.bottomRow}>
+        <RepCounter
+          reps={state.currentReps}
+          targetReps={state.targetReps}
+          dnaPotential={state.dnaPotential}
+          quality={state.currentQuality}
+        />
       </View>
     </View>
   );
@@ -105,18 +172,26 @@ export function BioFeedbackHUD({ state }: { state: BioFeedbackState }) {
 
 const bf$ = StyleSheet.create({
   container: {
-    position: 'absolute', bottom: 170, left: 0, right: 0, zIndex: 35,
-    alignItems: 'center', paddingHorizontal: 16,
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 35,
   },
-  corners: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 16 },
-  corner: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: 1, textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 8 },
-  cornerUnit: { fontSize: 12, fontWeight: '300', letterSpacing: 2, color: 'rgba(255,255,255,0.4)' },
-  msgWrap: { alignItems: 'center', marginBottom: 16 },
-  msg: { fontSize: 42, fontWeight: '900', letterSpacing: 6, textShadowColor: 'rgba(0,0,0,0.9)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 20 },
-  scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8, padding: 8 },
-  scoreLabel: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 2, width: 16 },
-  scoreBar: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' },
-  scoreFill: { height: '100%', borderRadius: 2 },
-  scoreVal: { fontSize: 13, fontWeight: '900', width: 28, textAlign: 'right' },
+  topRow: {
+    position: 'absolute', top: 80, left: 20, right: 20,
+    flexDirection: 'row', justifyContent: 'flex-end',
+  },
+  msgOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  msg: {
+    fontSize: 52, fontWeight: '900', letterSpacing: 8,
+    textShadowColor: 'rgba(0,0,0,0.95)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 24,
+    textAlign: 'center',
+  },
+  bottomRow: {
+    position: 'absolute', bottom: 220, right: 24,
+    alignItems: 'flex-end',
+  },
 });
-

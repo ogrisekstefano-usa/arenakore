@@ -27,10 +27,10 @@ const ToastContext = createContext<ToastCtx>({ addToast: () => {} });
 export function useToast() { return useContext(ToastContext); }
 
 const TOAST_CFG: Record<ToastType, { color: string; bg: string; icon: keyof typeof Ionicons.glyphMap }> = {
-  success: { color: '#34C759', bg: 'rgba(52,199,89,0.12)',  icon: 'checkmark-circle' },
+  success: { color: '#00FF87', bg: 'rgba(0,255,135,0.12)',  icon: 'checkmark-circle' },
   warning: { color: '#FF9500', bg: 'rgba(255,149,0,0.12)',  icon: 'warning' },
-  error:   { color: '#FF453A', bg: 'rgba(255,69,58,0.12)',  icon: 'alert-circle' },
-  info:    { color: '#00F2FF', bg: 'rgba(0,242,255,0.10)',  icon: 'information-circle' },
+  error:   { color: '#FF3B30', bg: 'rgba(255,59,48,0.12)',  icon: 'alert-circle' },
+  info:    { color: '#00E5FF', bg: 'rgba(0,229,255,0.10)',  icon: 'information-circle' },
 };
 
 function ToastItem({ toast, onDone }: { toast: Toast; onDone: () => void }) {

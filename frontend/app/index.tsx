@@ -24,9 +24,9 @@ import { useAuth } from '../contexts/AuthContext';
 const VIDEO_URL   = 'https://videos.pexels.com/video-files/4669895/4669895-hd_1280_720_25fps.mp4';
 const FALLBACK_BG = 'https://images.unsplash.com/photo-1634042341821-05c4e074cedc?crop=entropy&cs=srgb&fm=jpg&q=85&w=1080';
 
-const GOLD = '#D4AF37';
-const CYAN = '#00F2FF';
-const BG   = '#050505';
+const GOLD = '#FFD700';
+const CYAN = '#00E5FF';
+const BG   = '#000000';
 
 // =====================================================================
 // ATHLETE BACKGROUND — blurred photo with deep vignette
@@ -56,8 +56,8 @@ function ScanLine() {
 }
 const scan$ = StyleSheet.create({
   wrap: { position: 'absolute', left: 0, right: 0, zIndex: 5 },
-  line: { height: 1, backgroundColor: 'rgba(212,175,55,0.4)' },
-  glow: { height: 24, backgroundColor: 'rgba(212,175,55,0.06)', marginTop: -12 },
+  line: { height: 1, backgroundColor: 'rgba(255,215,0,0.4)' },
+  glow: { height: 24, backgroundColor: 'rgba(255,215,0,0.06)', marginTop: -12 },
 });
 
 // =====================================================================
@@ -76,12 +76,12 @@ const mb$ = StyleSheet.create({
     flex: 1,                          // equal distribution — forces 3 on same row
     alignItems: 'center',
     paddingHorizontal: 8, paddingVertical: 10,
-    backgroundColor: 'rgba(212,175,55,0.07)',
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)', borderRadius: 10,
+    backgroundColor: 'rgba(255,215,0,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)', borderRadius: 10,
     minWidth: 0,                      // allow shrinking below natural width
   },
   value: { color: GOLD, fontSize: 18, fontWeight: '900', letterSpacing: 0 },
-  label: { color: 'rgba(255,255,255,0.35)', fontSize: 7, fontWeight: '900', letterSpacing: 1.5, marginTop: 2, textAlign: 'center' },
+  label: { color: 'rgba(255,255,255,0.30)', fontSize: 7, fontWeight: '900', letterSpacing: 1.5, marginTop: 2, textAlign: 'center' },
 });
 
 // =====================================================================
@@ -117,7 +117,7 @@ export default function HeroIndex() {
     );
   }, []);
   const glowStyle = useAnimatedStyle(() => ({
-    textShadowColor: `rgba(212,175,55,${glow.value * 0.7})`,
+    textShadowColor: `rgba(255,215,0,${glow.value * 0.7})`,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 24 * glow.value,
   }));
@@ -128,7 +128,7 @@ export default function HeroIndex() {
 
   // ── Brand animated style — MUST be declared before any conditional return
   const brandArenaStyle = useAnimatedStyle(() => ({
-    textShadowColor: `rgba(212,175,55,${glow.value * 0.4})`,
+    textShadowColor: `rgba(255,215,0,${glow.value * 0.4})`,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 16 * glow.value,
   }));
@@ -253,7 +253,7 @@ export default function HeroIndex() {
           <View style={s.partnerCard}>
             <LinearGradient
               colors={['rgba(0,0,0,0.0)', 'rgba(0,0,0,0.0)']}
-              style={[s.partnerGrad, { backgroundColor: 'rgba(8,8,8,0.97)', borderRadius: 16, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.35)' }]}
+              style={[s.partnerGrad, { backgroundColor: 'rgba(8,8,8,0.97)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(0,229,255,0.35)' }]}
             >
               <View style={s.partnerTopGlow} />
 
@@ -319,7 +319,7 @@ const s = StyleSheet.create({
   loadRow: { flexDirection: 'row', gap: 6 },
   loadArena: { fontWeight: '900', color: '#FFFFFF', letterSpacing: 0.5 },
   loadKore: { fontWeight: '900', color: '#00B4D8', letterSpacing: 0.5 },
-  loadSub: { color: 'rgba(212,175,55,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 5 },
+  loadSub: { color: 'rgba(255,215,0,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 5 },
 
   // Scroll
   scroll: { flex: 1 },
@@ -330,8 +330,8 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     alignSelf: 'flex-start',
     backgroundColor: 'transparent',
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.5)',
-    borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7,
+    borderWidth: 1, borderColor: '#00E5FF44',
+    borderRadius: 20, paddingHorizontal: 24, paddingVertical: 7,
     marginBottom: 12,
   },
   liveDot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: CYAN },
@@ -348,12 +348,12 @@ const s = StyleSheet.create({
   cornerTL: {
     position: 'absolute', top: 0, left: 0,
     width: 24, height: 24,
-    borderTopWidth: 1.5, borderLeftWidth: 1.5, borderColor: 'rgba(212,175,55,0.3)',
+    borderTopWidth: 1.5, borderLeftWidth: 1.5, borderColor: 'rgba(255,215,0,0.3)',
   },
   cornerTR: {
     position: 'absolute', top: 0, right: 0,
     width: 24, height: 24,
-    borderTopWidth: 1.5, borderRightWidth: 1.5, borderColor: 'rgba(212,175,55,0.3)',
+    borderTopWidth: 1.5, borderRightWidth: 1.5, borderColor: 'rgba(255,215,0,0.3)',
   },
 
   // Brand — ARENA (white) + KORE (blue)
@@ -366,12 +366,12 @@ const s = StyleSheet.create({
     lineHeight: 60,
   },
   brandKore: {
-    color: '#00F2FF',                      // KORE = pure CYAN
+    color: '#00E5FF',                      // KORE = pure CYAN
     fontSize: 58,
     fontWeight: '900',
     letterSpacing: -3,
     lineHeight: 60,
-    textShadowColor: 'rgba(0,242,255,0.75)',
+    textShadowColor: 'rgba(0,229,255,0.75)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
   },
@@ -390,7 +390,7 @@ const s = StyleSheet.create({
     textShadowRadius: 8,
   },
   sub2: {
-    color: 'rgba(255,255,255,0.55)',
+    color: '#AAAAAA',
     fontSize: 14,
     fontWeight: '400',
     letterSpacing: 2,
@@ -422,23 +422,23 @@ const s = StyleSheet.create({
   outlineBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: 'rgba(0,0,0,0.75)',
-    borderWidth: 1.5, borderColor: '#00F2FF',
+    borderWidth: 1, borderColor: '#00E5FF',
     borderRadius: 10, paddingVertical: 14,
-    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 12,
+    shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 12,
   },
-  outlineBtnTxt: { color: '#00F2FF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  outlineBtnTxt: { color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
 
   // Partner section
   partnerSection: { marginTop: 8, gap: 16 },
   partnerDivider: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   divLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.06)' },
-  divTxt: { color: 'rgba(255,255,255,0.65)', fontSize: 11, fontWeight: '400', letterSpacing: 4 },
-  partnerCard: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
+  divTxt: { color: '#AAAAAA', fontSize: 11, fontWeight: '400', letterSpacing: 4 },
+  partnerCard: { borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   partnerGrad: { padding: 20, gap: 14 },
   partnerTopGlow: { height: 2, backgroundColor: CYAN, opacity: 0.5, marginHorizontal: -20, marginTop: -20, marginBottom: 6 },
   partnerHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   partnerLabel: { color: '#FFFFFF', fontSize: 16, fontWeight: '400', letterSpacing: 2 },
-  partnerSub: { color: 'rgba(0,242,255,0.5)', fontSize: 11, fontWeight: '400', letterSpacing: 3 },
+  partnerSub: { color: 'rgba(0,229,255,0.5)', fontSize: 11, fontWeight: '400', letterSpacing: 3 },
   partnerCopy: {
     color: '#E0E0E0',
     fontSize: 15,
@@ -447,13 +447,13 @@ const s = StyleSheet.create({
     letterSpacing: 0.5,
   },
   featRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  featTxt: { color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '400', letterSpacing: 1, flex: 1 },
+  featTxt: { color: '#AAAAAA', fontSize: 13, fontWeight: '400', letterSpacing: 1, flex: 1 },
   gymBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: 'transparent',
     borderRadius: 10, paddingVertical: 16,
     marginTop: 4,
-    borderWidth: 1.5, borderColor: '#00F2FF',
+    borderWidth: 1, borderColor: '#00E5FF',
     shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 10,
     elevation: 8,
   },
@@ -461,5 +461,5 @@ const s = StyleSheet.create({
 
   // Footer
   footer: { alignItems: 'center', gap: 4, marginTop: 28, paddingBottom: 8 },
-  footerTxt: { color: 'rgba(255,255,255,0.50)', fontSize: 8, fontWeight: '400', letterSpacing: 2 },
+  footerTxt: { color: '#AAAAAA', fontSize: 8, fontWeight: '400', letterSpacing: 2 },
 });

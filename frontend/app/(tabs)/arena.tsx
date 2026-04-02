@@ -50,7 +50,7 @@ function HeroBanner() {
 
   return (
     <Animated.View entering={FadeIn.duration(500)} style={hero$.wrap}>
-      <LinearGradient colors={['#0A0A0A', '#060606']} style={hero$.grad}>
+      <LinearGradient colors={['#0A0A0A', '#000000']} style={hero$.grad}>
         {/* Corner brackets */}
         <View style={hero$.tlBracket} />
         <View style={hero$.trBracket} />
@@ -71,7 +71,7 @@ function HeroBanner() {
             { label: 'RECORD BATTUTI', val: '23', icon: 'trophy' as const },
           ].map((s, i) => (
             <View key={i} style={hero$.statItem}>
-              <Ionicons name={s.icon} size={14} color="#00F2FF" />
+              <Ionicons name={s.icon} size={14} color="#00E5FF" />
               <Text style={hero$.statVal}>{s.val}</Text>
               <Text style={hero$.statLabel}>{s.label}</Text>
             </View>
@@ -83,20 +83,20 @@ function HeroBanner() {
 }
 
 const hero$ = StyleSheet.create({
-  wrap: { marginHorizontal: 16, marginTop: 8, marginBottom: 16 },
+  wrap: { marginHorizontal: 24, marginTop: 8, marginBottom: 16 },
   grad: {
     borderRadius: 20, overflow: 'hidden',
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
-  tlBracket: { position: 'absolute', top: 12, left: 12, width: 20, height: 20, borderTopWidth: 2, borderLeftWidth: 2, borderColor: '#00F2FF', opacity: 0.5 },
-  trBracket: { position: 'absolute', top: 12, right: 12, width: 20, height: 20, borderTopWidth: 2, borderRightWidth: 2, borderColor: '#00F2FF', opacity: 0.5 },
-  blBracket: { position: 'absolute', bottom: 44, left: 12, width: 20, height: 20, borderBottomWidth: 2, borderLeftWidth: 2, borderColor: '#00F2FF', opacity: 0.25 },
-  brBracket: { position: 'absolute', bottom: 44, right: 12, width: 20, height: 20, borderBottomWidth: 2, borderRightWidth: 2, borderColor: '#00F2FF', opacity: 0.25 },
+  tlBracket: { position: 'absolute', top: 12, left: 12, width: 20, height: 20, borderTopWidth: 2, borderLeftWidth: 2, borderColor: '#00E5FF', opacity: 0.5 },
+  trBracket: { position: 'absolute', top: 12, right: 12, width: 20, height: 20, borderTopWidth: 2, borderRightWidth: 2, borderColor: '#00E5FF', opacity: 0.5 },
+  blBracket: { position: 'absolute', bottom: 44, left: 12, width: 20, height: 20, borderBottomWidth: 2, borderLeftWidth: 2, borderColor: '#00E5FF', opacity: 0.25 },
+  brBracket: { position: 'absolute', bottom: 44, right: 12, width: 20, height: 20, borderBottomWidth: 2, borderRightWidth: 2, borderColor: '#00E5FF', opacity: 0.25 },
   inner: { paddingHorizontal: 24, paddingTop: 28, paddingBottom: 20, alignItems: 'center', gap: 8 },
-  brandLine: { color: 'rgba(255,255,255,0.60)', fontSize: 13, fontWeight: '900', letterSpacing: 5 },
-  titleLine: { color: '#FFFFFF', fontSize: 38, fontWeight: '900', letterSpacing: 4, textAlign: 'center', lineHeight: 44 },
-  cyanLine: { width: 60, height: 2, backgroundColor: '#00F2FF', borderRadius: 1, shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8 },
-  tagLine: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '700', letterSpacing: 3, textAlign: 'center' },
+  brandLine: { color: '#AAAAAA', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
+  titleLine: { color: '#FFFFFF', fontSize: 42, fontWeight: '900', letterSpacing: 4, textAlign: 'center', lineHeight: 48 },
+  cyanLine: { width: 60, height: 2, backgroundColor: '#00E5FF', borderRadius: 1, shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8 },
+  tagLine: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '700', letterSpacing: 3, textAlign: 'center' },
   statsRow: {
     flexDirection: 'row', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)',
   },
@@ -105,7 +105,7 @@ const hero$ = StyleSheet.create({
     borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.04)',
   },
   statVal: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
-  statLabel: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '700', letterSpacing: 1.5, textAlign: 'center' },
+  statLabel: { color: 'rgba(255,255,255,0.30)', fontSize: 10, fontWeight: '700', letterSpacing: 1.5, textAlign: 'center' },
 });
 
 // ========== KORE OF THE DAY ==========
@@ -145,12 +145,12 @@ function KoreOfTheDay() {
 }
 
 const kotd$ = StyleSheet.create({
-  container: { marginHorizontal: 16, marginBottom: 8 },
+  container: { marginHorizontal: 24, marginBottom: 8 },
   card: { height: 180, borderRadius: 20, overflow: 'hidden' },
   cardImage: { borderRadius: 20 },
   grad: { flex: 1, justifyContent: 'space-between', padding: 16 },
   livePill: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
-  liveDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FF453A' },
+  liveDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FF3B30' },
   liveText: { color: 'rgba(255,255,255,0.8)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
   bottom: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
   avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center' },
@@ -173,11 +173,11 @@ const FEED_IMAGES = [
 ];
 
 const ACTION_COLORS: Record<string, string> = {
-  'BATTLE VINTA': '#D4AF37',
-  'NUOVO RECORD': '#00F2FF',
+  'BATTLE VINTA': '#FFD700',
+  'NUOVO RECORD': '#00E5FF',
   'LVL 12 RAGGIUNTO': '#AF52DE',
-  'CREW BATTLE': '#FF453A',
-  'DNA AGGIORNATO': '#34C759',
+  'CREW BATTLE': '#FF3B30',
+  'DNA AGGIORNATO': '#00FF87',
 };
 
 function EliteActivityFeed() {
@@ -239,24 +239,24 @@ function EliteActivityFeed() {
 }
 
 const ef$ = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingBottom: 12, paddingTop: 4 },
-  title: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 4 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 24, paddingBottom: 12, paddingTop: 4 },
+  title: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
   liveLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.06)' },
-  card: { marginHorizontal: 16, marginBottom: 10, height: 130, borderRadius: 16, overflow: 'hidden' },
+  card: { marginHorizontal: 24, marginBottom: 10, height: 130, borderRadius: 16, overflow: 'hidden' },
   cardImage: { borderRadius: 16, opacity: 0.55 },
   cardGrad: { flex: 1, justifyContent: 'space-between', padding: 14 },
   actionBadge: { alignSelf: 'flex-start', borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, backgroundColor: 'rgba(0,0,0,0.3)' },
   actionText: { fontSize: 10, fontWeight: '900', letterSpacing: 2.5 },
   cardBottom: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
-  avatarWrap: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center' },
+  avatarWrap: { width: 36, height: 36, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center' },
   avatarLetter: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
   cardInfo: { flex: 1, gap: 2 },
   athleteName: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 0.5 },
-  athleteSub: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '300', letterSpacing: 1 },
+  athleteSub: { color: '#AAAAAA', fontSize: 11, fontWeight: '300', letterSpacing: 1 },
   cardRight: { alignItems: 'flex-end', gap: 6 },
-  xpText: { color: '#D4AF37', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
-  challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#D4AF37', borderRadius: 7, paddingHorizontal: 10, paddingVertical: 6 },
-  challengeText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  xpText: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+  challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FFD700', borderRadius: 7, paddingHorizontal: 10, paddingVertical: 6 },
+  challengeText: { color: '#000000', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
 });
 
 // ========== WAR ROOM — ARENA BATTLE ENGINE ==========
@@ -288,10 +288,10 @@ function WarBar({ pctA, isMyCrewA, isMyCrewB }: { pctA: number; isMyCrewA: boole
   return (
     <View style={wb$.container}>
       <View style={wb$.track}>
-        <Animated.View style={[wb$.fillMine, styleA, isMyCrewA && { backgroundColor: '#00F2FF' }, isMyCrewB && { backgroundColor: '#333' }]} />
+        <Animated.View style={[wb$.fillMine, styleA, isMyCrewA && { backgroundColor: '#00E5FF' }, isMyCrewB && { backgroundColor: '#333' }]} />
       </View>
       <View style={wb$.pctRow}>
-        <Text style={[wb$.pct, isMyCrewA && { color: '#00F2FF' }]}>{pctA.toFixed(0)}%</Text>
+        <Text style={[wb$.pct, isMyCrewA && { color: '#00E5FF' }]}>{pctA.toFixed(0)}%</Text>
         <Text style={wb$.pct}>{(100 - pctA).toFixed(0)}%</Text>
       </View>
     </View>
@@ -300,7 +300,7 @@ function WarBar({ pctA, isMyCrewA, isMyCrewB }: { pctA: number; isMyCrewA: boole
 const wb$ = StyleSheet.create({
   container: { gap: 6 },
   track: { height: 20, backgroundColor: '#222', borderRadius: 10, overflow: 'hidden' },
-  fillMine: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 10 },
+  fillMine: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 10 },
   pctRow: { flexDirection: 'row', justifyContent: 'space-between' },
   pct: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
 });
@@ -326,7 +326,7 @@ function LiveBattleCard({ battle }: { battle: any }) {
     }
   }, [isLosing]);
   const borderStyle = useAnimatedStyle(() => ({
-    borderColor: isLosing ? `rgba(255,69,58,${borderGlow.value})` : 'rgba(255,255,255,0.06)',
+    borderColor: isLosing ? `rgba(255,59,48,${borderGlow.value})` : 'rgba(255,255,255,0.06)',
     shadowOpacity: isLosing ? borderGlow.value * 0.5 : 0,
   }));
 
@@ -347,9 +347,9 @@ function LiveBattleCard({ battle }: { battle: any }) {
 
       {/* Scores */}
       <View style={wrc$.scores}>
-        <Text style={[wrc$.score, isMyCrewA && { color: '#00F2FF' }]}>{crew_a.score}</Text>
+        <Text style={[wrc$.score, isMyCrewA && { color: '#00E5FF' }]}>{crew_a.score}</Text>
         <Text style={wrc$.scoreDivider}>·</Text>
-        <Text style={[wrc$.score, isMyCrewB && { color: '#00F2FF' }]}>{crew_b.score}</Text>
+        <Text style={[wrc$.score, isMyCrewB && { color: '#00E5FF' }]}>{crew_b.score}</Text>
       </View>
 
       {/* Last Push CTA */}
@@ -367,7 +367,7 @@ function LiveBattleCard({ battle }: { battle: any }) {
           onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); router.push('/(tabs)/nexus-trigger'); }}
           activeOpacity={0.85}
         >
-          <Ionicons name="flash-sharp" size={13} color={isLosing ? '#FFFFFF' : '#050505'} />
+          <Ionicons name="flash-sharp" size={13} color={isLosing ? '#FFFFFF' : '#000000'} />
           <Text style={[wrc$.ctaText, isLosing && { color: '#FFFFFF' }]}>
             {isLosing ? 'RECUPERA — FALLO ORA' : 'CONTRIBUISCI ORA'}
           </Text>
@@ -378,21 +378,21 @@ function LiveBattleCard({ battle }: { battle: any }) {
 }
 
 const wrc$ = StyleSheet.create({
-  card: { marginHorizontal: 16, marginBottom: 10, borderRadius: 14, padding: 14, gap: 10, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: '#000000', shadowColor: '#FF453A', shadowOffset: { width: 0, height: 0 }, shadowRadius: 16 },
+  card: { marginHorizontal: 24, marginBottom: 10, borderRadius: 14, padding: 14, gap: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: '#000000', shadowColor: '#FF3B30', shadowOffset: { width: 0, height: 0 }, shadowRadius: 16 },
   teams: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   teamA: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   teamB: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5, textAlign: 'right' },
   teamMine: { color: '#FFFFFF' },
-  timePill: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(255,69,58,0.1)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
-  liveDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FF453A' },
-  timer: { color: '#FF453A', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  timePill: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(255,59,48,0.1)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+  liveDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FF3B30' },
+  timer: { color: '#FF3B30', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   scores: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 },
   score: { color: 'rgba(255,255,255,0.4)', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
   scoreDivider: { color: 'rgba(255,255,255,0.1)', fontSize: 16 },
-  cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#00F2FF', borderRadius: 10, paddingVertical: 12 },
-  ctaLosing: { backgroundColor: '#FF453A' },
-  ctaText: { color: '#050505', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  lastPush: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FF453A', borderRadius: 10, paddingVertical: 14, shadowColor: '#FF453A', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 16 },
+  cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#00E5FF', borderRadius: 10, paddingVertical: 12 },
+  ctaLosing: { backgroundColor: '#FF3B30' },
+  ctaText: { color: '#000000', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  lastPush: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FF3B30', borderRadius: 10, paddingVertical: 14, shadowColor: '#FF3B30', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 16 },
   lastPushText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
 });
 
@@ -418,14 +418,14 @@ function LiveBattleDashboard() {
 
   if (loading) return (
     <View style={lbd$.loadWrap}>
-      <ActivityIndicator color="#FF453A" size="small" />
+      <ActivityIndicator color="#FF3B30" size="small" />
     </View>
   );
 
   return (
     <View style={lbd$.section}>
       <View style={lbd$.sectionHeader}>
-        <Ionicons name="flash" size={12} color="#FF453A" />
+        <Ionicons name="flash" size={12} color="#FF3B30" />
         <Text style={lbd$.sectionTitle}>BATTLE LIVE</Text>
         <View style={lbd$.countBadge}><Text style={lbd$.countText}>{battles.length} ATTIVE</Text></View>
       </View>
@@ -443,12 +443,12 @@ function LiveBattleDashboard() {
 
 const lbd$ = StyleSheet.create({
   section: { marginBottom: 4 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingBottom: 10, paddingTop: 4 },
-  sectionTitle: { flex: 1, color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
-  countBadge: { backgroundColor: 'rgba(255,69,58,0.15)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,69,58,0.3)' },
-  countText: { color: '#FF453A', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, paddingBottom: 10, paddingTop: 4 },
+  sectionTitle: { flex: 1, color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
+  countBadge: { backgroundColor: 'rgba(255,59,48,0.15)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)' },
+  countText: { color: '#FF3B30', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   loadWrap: { height: 60, alignItems: 'center', justifyContent: 'center' },
-  emptyCard: { marginHorizontal: 16, backgroundColor: 'rgba(255,69,58,0.04)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,69,58,0.1)', gap: 4 },
+  emptyCard: { marginHorizontal: 24, backgroundColor: 'rgba(255,59,48,0.04)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,59,48,0.1)', gap: 4 },
   emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   emptySub: { color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '400' },
 });
@@ -503,7 +503,7 @@ function MatchmakingPanel() {
       {/* Header */}
       <View style={mp$.header}>
         <View style={mp$.headerLeft}>
-          <Ionicons name="analytics" size={12} color="#D4AF37" />
+          <Ionicons name="analytics" size={12} color="#FFD700" />
           <Text style={mp$.title}>MATCHMAKING AI</Text>
         </View>
         {data.has_crew && (
@@ -516,7 +516,7 @@ function MatchmakingPanel() {
 
       {!data.has_crew && (
         <View style={mp$.noCrew}>
-          <Ionicons name="people" size={16} color="rgba(212,175,55,0.5)" />
+          <Ionicons name="people" size={16} color="rgba(255,215,0,0.5)" />
           <Text style={mp$.noCrewText}>Unisciti a una Crew per sfidare avversari compatibili</Text>
         </View>
       )}
@@ -525,7 +525,7 @@ function MatchmakingPanel() {
       {data.suggestions.map((opp: any, idx: number) => {
         const diff = opp.score_diff;
         const matchLabel = diff <= 2 ? 'MATCH PERFETTO' : diff <= 8 ? 'MATCH BUONO' : 'MATCH ACCETTABILE';
-        const matchColor = diff <= 2 ? '#00F2FF' : diff <= 8 ? '#D4AF37' : '#FF9500';
+        const matchColor = diff <= 2 ? '#00E5FF' : diff <= 8 ? '#FFD700' : '#FF9500';
         return (
           <Animated.View key={opp.id} entering={FadeInDown.delay(idx * 80).duration(300)} style={mp$.card}>
             <View style={mp$.cardLeft}>
@@ -541,12 +541,12 @@ function MatchmakingPanel() {
                 <Text style={mp$.meta}>·</Text>
                 <Text style={mp$.meta}>KORE {opp.kore_battle_score}</Text>
                 {opp.is_stronger && <Text style={[mp$.meta, { color: '#FF9500' }]}>· +{diff} più forti</Text>}
-                {!opp.is_stronger && diff > 0 && <Text style={[mp$.meta, { color: '#00F2FF' }]}>· -{diff} più deboli</Text>}
+                {!opp.is_stronger && diff > 0 && <Text style={[mp$.meta, { color: '#00E5FF' }]}>· -{diff} più deboli</Text>}
               </View>
             </View>
             {opp.already_challenged ? (
               <View style={mp$.challenged}>
-                <Ionicons name="checkmark-circle" size={14} color="#34C759" />
+                <Ionicons name="checkmark-circle" size={14} color="#00FF87" />
                 <Text style={mp$.challengedText}>IN CORSO</Text>
               </View>
             ) : (
@@ -571,22 +571,22 @@ function MatchmakingPanel() {
       })}
 
       <Text style={mp$.footNote}>
-        <Ionicons name="shield-checkmark" size={10} color="rgba(0,242,255,0.4)" /> Matchmaking AI — differenza max 35% KORE Score
+        <Ionicons name="shield-checkmark" size={10} color="rgba(0,229,255,0.4)" /> Matchmaking AI — differenza max 35% KORE Score
       </Text>
     </Animated.View>
   );
 }
 
 const mp$ = StyleSheet.create({
-  section: { marginHorizontal: 16, marginBottom: 12, backgroundColor: 'rgba(212,175,55,0.04)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(212,175,55,0.14)' },
+  section: { marginHorizontal: 24, marginBottom: 12, backgroundColor: 'rgba(255,215,0,0.04)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(255,215,0,0.14)' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
   myScorePill: { alignItems: 'flex-end', gap: 1 },
   myScoreLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  myScoreVal: { color: '#D4AF37', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
+  myScoreVal: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
   noCrew: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
-  noCrewText: { flex: 1, color: 'rgba(212,175,55,0.5)', fontSize: 12, fontWeight: '400', lineHeight: 17 },
+  noCrewText: { flex: 1, color: 'rgba(255,215,0,0.5)', fontSize: 12, fontWeight: '400', lineHeight: 17 },
   card: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   cardLeft: { flex: 1, gap: 4 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
@@ -595,12 +595,12 @@ const mp$ = StyleSheet.create({
   matchText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   meta: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '400' },
-  challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#D4AF37', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, minWidth: 68 },
-  challengeBtnDisabled: { backgroundColor: 'rgba(212,175,55,0.3)' },
-  challengeBtnText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#FFD700', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, minWidth: 68 },
+  challengeBtnDisabled: { backgroundColor: 'rgba(255,215,0,0.3)' },
+  challengeBtnText: { color: '#000000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   challenged: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  challengedText: { color: '#34C759', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
-  footNote: { color: 'rgba(0,242,255,0.3)', fontSize: 10, fontWeight: '400', letterSpacing: 0.5, marginTop: 10, textAlign: 'center' },
+  challengedText: { color: '#00FF87', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  footNote: { color: 'rgba(0,229,255,0.3)', fontSize: 10, fontWeight: '400', letterSpacing: 0.5, marginTop: 10, textAlign: 'center' },
 });
 
 
@@ -628,7 +628,7 @@ export default function ArenaTab() {
       {!isCertified && (
         <Animated.View entering={FadeInDown.duration(300)} style={s.urgencyBanner}>
           <View style={s.urgencyLeft}>
-            <Ionicons name="warning" size={14} color="#D4AF37" />
+            <Ionicons name="warning" size={14} color="#FFD700" />
             <Text style={s.urgencyText}>
               Il tuo talento non è certificato. Completa il NÈXUS Scan per entrare nel Radar degli Scout.
             </Text>
@@ -661,16 +661,16 @@ export default function ArenaTab() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
-  dividerSection: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 10 },
+  dividerSection: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 24, paddingVertical: 10 },
   divLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.05)' },
   urgencyBanner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: 'rgba(212,175,55,0.1)', paddingHorizontal: 14, paddingVertical: 10,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(212,175,55,0.25)', gap: 10,
+    backgroundColor: 'rgba(255,215,0,0.1)', paddingHorizontal: 24, paddingVertical: 10,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,215,0,0.25)', gap: 10,
   },
   urgencyLeft: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
   urgencyText: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '300', flex: 1, lineHeight: 15 },
-  urgencyCta: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#D4AF37', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
+  urgencyCta: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#FFD700', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
   urgencyCtaText: { color: '#000', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
 });
 

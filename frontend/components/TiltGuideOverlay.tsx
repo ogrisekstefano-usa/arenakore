@@ -24,10 +24,10 @@ import { DeviceMotion, DeviceMotionMeasurement } from 'expo-sensors';
 import { RemoteUXEngine } from '../utils/RemoteUXEngine';
 
 const { width: SW, height: SH } = Dimensions.get('window');
-const CYAN = '#00F2FF';
-const GREEN = '#34C759';
+const CYAN = '#00E5FF';
+const GREEN = '#00FF87';
 const ORANGE = '#FF9500';
-const RED = '#FF453A';
+const RED = '#FF3B30';
 
 // ── Tilt analysis ────────────────────────────────────────────────────────────
 const TARGET_ANGLE = 15;   // degrees from horizontal
@@ -112,8 +112,8 @@ function BubbleLevel({ tiltAngle, isCorrect }: { tiltAngle: number; isCorrect: b
 const bl$ = StyleSheet.create({
   container: { alignItems: 'center', gap: 8 },
   label: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
-  track: { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 30, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', position: 'relative' },
-  targetZone: { position: 'absolute', top: 0, bottom: 0, backgroundColor: 'rgba(0,242,255,0.1)', borderRadius: 20 },
+  track: { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 30, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', overflow: 'hidden', position: 'relative' },
+  targetZone: { position: 'absolute', top: 0, bottom: 0, backgroundColor: 'rgba(0,229,255,0.1)', borderRadius: 20 },
   targetLine: { position: 'absolute', top: 8, bottom: 8, width: 2, backgroundColor: CYAN, opacity: 0.6 },
   bubble: { position: 'absolute', elevation: 4 },
   labels: { flexDirection: 'row', justifyContent: 'space-between', width: 220, paddingHorizontal: 4 },
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   headerDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: CYAN, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
   headerTitle: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
-  skipBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  skipBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   skipText: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5 },
 
   phase: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 28 },
@@ -412,11 +412,11 @@ const styles = StyleSheet.create({
   countdownLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
   distanceGuide: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   distanceLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.15)', maxWidth: 120, borderStyle: 'dashed' },
-  distanceLabel: { color: 'rgba(0,242,255,0.6)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  distanceLabel: { color: 'rgba(0,229,255,0.6)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
 
   // Flash beacon
   bigInstruction: { color: '#FFFFFF', fontSize: 40, fontWeight: '900', letterSpacing: 6, textAlign: 'center' },
-  bigSub: { color: 'rgba(255,255,255,0.45)', fontSize: 15, fontWeight: '300', textAlign: 'center', lineHeight: 22, letterSpacing: 0.5 },
+  bigSub: { color: '#AAAAAA', fontSize: 15, fontWeight: '300', textAlign: 'center', lineHeight: 22, letterSpacing: 0.5 },
   beaconInfo: { gap: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   beaconRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   beaconText: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '300', flex: 1 },

@@ -95,7 +95,7 @@ export function CertifiedByPros() {
       {/* Header */}
       <View style={cp$.header}>
         <View style={cp$.certBadge}>
-          <Ionicons name="shield-checkmark" size={12} color="#D4AF37" />
+          <Ionicons name="shield-checkmark" size={12} color="#FFD700" />
           <Text style={cp$.certText}>CERTIFIED BY PROS</Text>
         </View>
         <Text style={cp$.orgText}>powered by TalosFit™</Text>
@@ -110,7 +110,7 @@ export function CertifiedByPros() {
           <Animated.View key={t.id} entering={FadeInDown.delay(idx * 80).duration(300)} style={[cp$.card, t.is_unlocked && cp$.cardUnlocked]}>
             {/* Certified ribbon */}
             <View style={cp$.ribbon}>
-              <Ionicons name="shield-checkmark" size={10} color="#D4AF37" />
+              <Ionicons name="shield-checkmark" size={10} color="#FFD700" />
               <Text style={cp$.ribbonText}>{t.certified_by} · TalosFit</Text>
             </View>
 
@@ -136,11 +136,11 @@ export function CertifiedByPros() {
                 <Text style={cp$.statLabel}>DURATA</Text>
               </View>
               <View style={cp$.stat}>
-                <Text style={[cp$.statVal, { color: '#D4AF37' }]}>+{t.xp_reward}</Text>
+                <Text style={[cp$.statVal, { color: '#FFD700' }]}>+{t.xp_reward}</Text>
                 <Text style={cp$.statLabel}>XP</Text>
               </View>
               <View style={cp$.stat}>
-                <Text style={[cp$.statVal, { color: '#00F2FF' }]}>{DISC_LABELS[t.discipline] || t.discipline}</Text>
+                <Text style={[cp$.statVal, { color: '#00E5FF' }]}>{DISC_LABELS[t.discipline] || t.discipline}</Text>
                 <Text style={cp$.statLabel}>FOCUS</Text>
               </View>
             </View>
@@ -155,12 +155,12 @@ export function CertifiedByPros() {
               <View style={cp$.lockSection}>
                 <View style={cp$.lockReqs}>
                   <View style={[cp$.req, !t.can_afford && cp$.reqFail]}>
-                    <Text style={[cp$.reqText, { color: t.can_afford ? '#34C759' : '#FF453A' }]}>
+                    <Text style={[cp$.reqText, { color: t.can_afford ? '#00FF87' : '#FF3B30' }]}>
                       💧 {t.required_drops} {t.can_afford ? '✓' : `(hai ${ak})`}
                     </Text>
                   </View>
                   <View style={[cp$.req, !t.meets_level && cp$.reqFail]}>
-                    <Text style={[cp$.reqText, { color: t.meets_level ? '#34C759' : '#FF453A' }]}>
+                    <Text style={[cp$.reqText, { color: t.meets_level ? '#00FF87' : '#FF3B30' }]}>
                       LVL {t.required_level} {t.meets_level ? '✓' : `(sei LVL ${level})`}
                     </Text>
                   </View>
@@ -193,15 +193,15 @@ export function CertifiedByPros() {
 
 const cp$ = StyleSheet.create({
   section: { marginTop: 16, marginBottom: 4 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginBottom: 4 },
-  certBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)' },
-  certText: { color: '#D4AF37', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, marginBottom: 4 },
+  certBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)' },
+  certText: { color: '#FFD700', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   orgText: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '300', fontStyle: 'italic' },
-  subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '300', paddingHorizontal: 16, marginBottom: 10 },
-  card: { marginHorizontal: 16, marginBottom: 10, backgroundColor: 'rgba(212,175,55,0.04)', borderRadius: 16, padding: 14, gap: 10, borderWidth: 1, borderColor: 'rgba(212,175,55,0.15)' },
-  cardUnlocked: { borderColor: 'rgba(52,199,89,0.25)', backgroundColor: 'rgba(52,199,89,0.03)' },
+  subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '300', paddingHorizontal: 24, marginBottom: 10 },
+  card: { marginHorizontal: 24, marginBottom: 10, backgroundColor: 'rgba(255,215,0,0.04)', borderRadius: 16, padding: 14, gap: 10, borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)' },
+  cardUnlocked: { borderColor: 'rgba(0,255,135,0.25)', backgroundColor: 'rgba(0,255,135,0.03)' },
   ribbon: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  ribbonText: { color: 'rgba(212,175,55,0.7)', fontSize: 9, fontWeight: '700', letterSpacing: 1.5 },
+  ribbonText: { color: 'rgba(255,215,0,0.7)', fontSize: 9, fontWeight: '700', letterSpacing: 1.5 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   templateName: { flex: 1, color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
   diffBadge: { borderWidth: 1, borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2 },
@@ -213,12 +213,12 @@ const cp$ = StyleSheet.create({
   statLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
   lockSection: { gap: 8 },
   lockReqs: { flexDirection: 'row', gap: 10 },
-  req: { flex: 1, backgroundColor: 'rgba(52,199,89,0.06)', borderRadius: 6, paddingVertical: 5, paddingHorizontal: 8, borderWidth: 1, borderColor: 'rgba(52,199,89,0.15)', alignItems: 'center' },
-  reqFail: { backgroundColor: 'rgba(255,69,58,0.06)', borderColor: 'rgba(255,69,58,0.2)' },
+  req: { flex: 1, backgroundColor: 'rgba(0,255,135,0.06)', borderRadius: 6, paddingVertical: 5, paddingHorizontal: 8, borderWidth: 1, borderColor: 'rgba(0,255,135,0.15)', alignItems: 'center' },
+  reqFail: { backgroundColor: 'rgba(255,59,48,0.06)', borderColor: 'rgba(255,59,48,0.2)' },
   reqText: { fontSize: 11, fontWeight: '700' },
-  unlockBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#D4AF37', borderRadius: 12, paddingVertical: 13 },
+  unlockBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#FFD700', borderRadius: 12, paddingVertical: 13 },
   unlockBtnOff: { backgroundColor: 'rgba(255,255,255,0.06)' },
   unlockBtnText: { color: '#000', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
-  startBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#34C759', borderRadius: 12, paddingVertical: 13 },
+  startBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#00FF87', borderRadius: 12, paddingVertical: 13 },
   startBtnText: { color: '#000', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
 });

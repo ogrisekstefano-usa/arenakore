@@ -80,20 +80,20 @@ export default function CrewsTab() {
       <Header title={activeRole === 'COACH' ? 'MY STUDIO' : activeRole === 'GYM_OWNER' ? 'GYM HUB' : 'LA TRIBU'} />
 
       {activeRole === 'COACH' ? (
-        <ScrollView showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} tintColor="#D4AF37" />} contentContainerStyle={{ paddingBottom: 100 }}>
+        <ScrollView showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} tintColor="#FFD700" />} contentContainerStyle={{ paddingBottom: 100 }}>
           <CoachStudio token={token!} myCrews={myCrews} />
         </ScrollView>
       ) : activeRole === 'GYM_OWNER' ? (
         <GymHub />
       ) : loading ? (
-        <View style={s.center}><ActivityIndicator color="#00F2FF" size="large" /></View>
+        <View style={s.center}><ActivityIndicator color="#00E5FF" size="large" /></View>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} tintColor="#00F2FF" />}>
+        <ScrollView showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} tintColor="#00E5FF" />}>
           {/* PENDING INVITES */}
           {invites.length > 0 && (
             <>
               <View style={s.sectionRow}>
-                <Ionicons name="mail" size={14} color="#D4AF37" />
+                <Ionicons name="mail" size={14} color="#FFD700" />
                 <Text style={s.sectionTitle}>INVITI RICEVUTI</Text>
               </View>
               {invites.map((inv, i) => {
@@ -112,7 +112,7 @@ export default function CrewsTab() {
                         </View>
                         <View style={s.inviteActions}>
                           <TouchableOpacity style={s.acceptBtn} onPress={() => handleAccept(inv.id)}>
-                            <Ionicons name="checkmark" size={14} color="#D4AF37" />
+                            <Ionicons name="checkmark" size={14} color="#FFD700" />
                             <Text style={s.acceptText}>ACCETTA</Text>
                           </TouchableOpacity>
                           <TouchableOpacity style={s.declineBtn} onPress={() => handleDecline(inv.id)}>
@@ -129,7 +129,7 @@ export default function CrewsTab() {
 
           {/* MY CREWS */}
           <View style={s.sectionRow}>
-            <Ionicons name="shield" size={14} color="#00F2FF" />
+            <Ionicons name="shield" size={14} color="#00E5FF" />
             <Text style={s.sectionTitle}>LE MIE CREW</Text>
           </View>
           {myCrews.length === 0 ? (
@@ -155,7 +155,7 @@ export default function CrewsTab() {
                           )}
                           {crew.is_owner && (
                             <View style={s.ownerBadge}>
-                              <Ionicons name="star" size={10} color="#D4AF37" />
+                              <Ionicons name="star" size={10} color="#FFD700" />
                               <Text style={s.ownerText}>FOUNDER</Text>
                             </View>
                           )}
@@ -169,8 +169,8 @@ export default function CrewsTab() {
                               <Text style={s.crewStatText}>{crew.members_count} MEMBRI</Text>
                             </View>
                             <View style={s.crewStatItem}>
-                              <Ionicons name="flash" size={12} color="#D4AF37" />
-                              <Text style={[s.crewStatText, { color: '#D4AF37' }]}>{crew.xp_total} XP</Text>
+                              <Ionicons name="flash" size={12} color="#FFD700" />
+                              <Text style={[s.crewStatText, { color: '#FFD700' }]}>{crew.xp_total} XP</Text>
                             </View>
                           </View>
                         </View>
@@ -212,26 +212,26 @@ export default function CrewsTab() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505' },
+  container: { flex: 1, backgroundColor: '#000000' },
   challengeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     marginHorizontal: 4, marginTop: 6, marginBottom: 4,
-    backgroundColor: '#D4AF37', borderRadius: 8, paddingVertical: 8,
+    backgroundColor: '#FFD700', borderRadius: 8, paddingVertical: 8,
   },
-  challengeBtnText: { color: '#050505', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  challengeBtnText: { color: '#000000', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingTop: 20, paddingBottom: 10,
+    paddingHorizontal: 24, paddingTop: 20, paddingBottom: 10,
   },
   sectionTitle: {
     color: '#FFFFFF', fontSize: 16, fontWeight: '900',
     letterSpacing: 2, textTransform: 'uppercase',
   },
   inviteCard: {
-    marginHorizontal: 16, marginBottom: 10,
+    marginHorizontal: 24, marginBottom: 10,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14,
-    padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
+    padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   inviteHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
   inviteInfo: { flex: 1, gap: 1 },
@@ -240,45 +240,45 @@ const s = StyleSheet.create({
   inviteActions: { flexDirection: 'row', gap: 8 },
   acceptBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    backgroundColor: 'rgba(212,175,55,0.15)', borderRadius: 10, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.35)',
+    backgroundColor: 'rgba(255,215,0,0.15)', borderRadius: 10, paddingVertical: 10,
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.35)',
   },
-  acceptText: { color: '#D4AF37', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  acceptText: { color: '#FFD700', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
   declineBtn: {
     width: 44, backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 10, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   emptyState: { alignItems: 'center', padding: 40, gap: 8 },
   emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 16, fontWeight: '800' },
   emptySub: { color: 'rgba(255,255,255,0.3)', fontSize: 16, textAlign: 'center' },
   crewCard: {
-    marginHorizontal: 16, marginBottom: 14, borderRadius: 18, overflow: 'hidden',
-    height: 180, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    marginHorizontal: 24, marginBottom: 14, borderRadius: 20, overflow: 'hidden',
+    height: 180, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   crewCardBg: { flex: 1 },
-  crewCardImage: { borderRadius: 18 },
+  crewCardImage: { borderRadius: 20 },
   crewGrad: { flex: 1, padding: 16, justifyContent: 'space-between' },
   crewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  crewCatBadge: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5 },
+  crewCatBadge: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   crewBottom: { gap: 4 },
   crewName: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
   crewTagline: { color: 'rgba(255,255,255,0.6)', fontSize: 15, fontStyle: 'italic' },
   ownerBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: 'rgba(212,175,55,0.2)', borderRadius: 8,
-    paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1.5, borderColor: '#D4AF37',
+    backgroundColor: 'rgba(255,215,0,0.2)', borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: '#FFD700',
   },
-  ownerText: { color: '#D4AF37', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  ownerText: { color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   crewStats: { flexDirection: 'row', gap: 16, marginTop: 4 },
   crewStatItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   crewStatText: { color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
   fab: {
     position: 'absolute', bottom: 90, left: 16, right: 16,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#D4AF37', borderRadius: 14, paddingVertical: 16,
-    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 4 },
+    backgroundColor: '#FFD700', borderRadius: 14, paddingVertical: 16,
+    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4, shadowRadius: 12, elevation: 10,
   },
-  fabText: { color: '#050505', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
+  fabText: { color: '#000000', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
 });

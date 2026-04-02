@@ -293,7 +293,7 @@ export default function LegacyStep1() {
   // Voice state color — mic gold = TTS firing, CTA also activates to cyan
   const isGold = displayVoiceState === 'heard' || displayVoiceState === 'speaking' || displayVoiceState === 'navigating';
   const isActivated = isGold;  // CTA becomes cyan when voice engine fires
-  const micColor = isGold ? '#D4AF37' : '#00F2FF';
+  const micColor = isGold ? '#FFD700' : '#00E5FF';
   const isWaveActive = displayVoiceState === 'heard' || displayVoiceState === 'speaking';
 
   return (
@@ -304,7 +304,7 @@ export default function LegacyStep1() {
       <View style={s.topBar}>
         <View style={{ flexDirection: 'row' }}>
           <Text style={[s.brand, { color: '#FFFFFF' }]}>ARENA</Text>
-          <Text style={[s.brand, { color: '#00F2FF' }]}>KORE</Text>
+          <Text style={[s.brand, { color: '#00E5FF' }]}>KORE</Text>
         </View>
         <View style={s.stepPill}>
           <Text style={s.stepTxt}>01 / 04</Text>
@@ -348,7 +348,7 @@ export default function LegacyStep1() {
           ['flash', 'GOLD FLASH: KORE IDENTIFICATO'],
         ].map(([icon, txt], i) => (
           <View key={i} style={s.specRow}>
-            <Ionicons name={icon as any} size={12} color="#D4AF37" />
+            <Ionicons name={icon as any} size={12} color="#FFD700" />
             <Text style={s.specTxt}>{txt}</Text>
           </View>
         ))}
@@ -375,21 +375,21 @@ export default function LegacyStep1() {
             </Animated.View>
           )}
           {displayVoiceState === 'heard' && (
-            <Text style={[s.voiceLabel, { color: '#D4AF37' }]}>KEYWORD RILEVATA</Text>
+            <Text style={[s.voiceLabel, { color: '#FFD700' }]}>KEYWORD RILEVATA</Text>
           )}
           {displayVoiceState === 'speaking' && (
-            <Text style={[s.voiceLabel, { color: '#D4AF37' }]}>NEXUS RESPONDING...</Text>
+            <Text style={[s.voiceLabel, { color: '#FFD700' }]}>NEXUS RESPONDING...</Text>
           )}
           {displayVoiceState === 'navigating' && (
-            <Text style={[s.voiceLabel, { color: '#D4AF37' }]}>INIZIALIZZAZIONE DNA PROTOCOL...</Text>
+            <Text style={[s.voiceLabel, { color: '#FFD700' }]}>INIZIALIZZAZIONE DNA PROTOCOL...</Text>
           )}
 
           {/* Waveform */}
           {(isWaveActive) && (
-            <Waveform active={true} color="#D4AF37" />
+            <Waveform active={true} color="#FFD700" />
           )}
           {displayVoiceState === 'listening' && (
-            <Waveform active={true} color="rgba(0,242,255,0.4)" />
+            <Waveform active={true} color="rgba(0,229,255,0.4)" />
           )}
         </View>
 
@@ -436,7 +436,7 @@ export default function LegacyStep1() {
               <Ionicons
                 name={isGold ? 'mic' : 'mic-outline'}
                 size={20}
-                color={isGold ? '#D4AF37' : '#00F2FF'}
+                color={isGold ? '#FFD700' : '#00E5FF'}
               />
             </Animated.View>
           </TouchableOpacity>
@@ -458,46 +458,46 @@ const s = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 12,
   },
-  brand: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
+  brand: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
     backgroundColor: 'transparent',
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.4)',
+    borderWidth: 1, borderColor: '#00E5FF44',
   },
-  stepTxt: { color: '#00F2FF', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
+  stepTxt: { color: '#00E5FF', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
   progBar: {
     height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 28, overflow: 'hidden',
   },
-  progFill: { height: '100%', backgroundColor: '#D4AF37', borderRadius: 2 },
+  progFill: { height: '100%', backgroundColor: '#FFD700', borderRadius: 2 },
 
   // ── HERO — NEXUS CALIBRATION with Gold Outer-Glow
   heroWrap: { gap: 2, marginBottom: 16 },
   heroTagline: {
-    color: 'rgba(212,175,55,0.4)', fontSize: 9, fontWeight: '900',
+    color: 'rgba(255,215,0,0.4)', fontSize: 9, fontWeight: '900',
     letterSpacing: 6, marginBottom: 4,
   },
   heroLine1: {
-    color: '#00F2FF',              // NEXUS = CYAN (not gold)
+    color: '#00E5FF',              // NEXUS = CYAN (not gold)
     fontSize: 58, fontWeight: '900',
     letterSpacing: 0.5, lineHeight: 60,
-    textShadowColor: 'rgba(0,242,255,0.65)',
+    textShadowColor: 'rgba(0,229,255,0.65)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 16,
   },
   heroLine2: {
     color: '#FFFFFF', fontSize: 42, fontWeight: '900',
     letterSpacing: 0.5, lineHeight: 46,
-    textShadowColor: 'rgba(212,175,55,0.35)',
+    textShadowColor: 'rgba(255,215,0,0.35)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 12,
   },
   goldLine: {
-    height: 2, width: 56, backgroundColor: '#D4AF37', marginTop: 12,
-    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6,
+    height: 2, width: 56, backgroundColor: '#FFD700', marginTop: 12,
+    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6,
   },
   // Legacy compatibility (unused but kept to avoid ref errors)
   heroLine3: { color: '#FFFFFF', fontSize: 58, fontWeight: '900', letterSpacing: 0.5 },
-  cyanLine: { height: 2, width: 56, backgroundColor: '#00F2FF', marginBottom: 28 },
+  cyanLine: { height: 2, width: 56, backgroundColor: '#00E5FF', marginBottom: 28 },
 
   // ── BODY TEXT — Off-White #E0E0E0
   bodyWrap: { marginBottom: 20 },
@@ -511,9 +511,9 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12,
   },
   warningDot: {
-    width: 8, height: 8, borderRadius: 4, backgroundColor: '#D4AF37',
+    width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFD700',
   },
-  warningTxt: { color: '#D4AF37', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
+  warningTxt: { color: '#FFD700', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
   specList: { gap: 7, marginBottom: 12 },
   specRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   specTxt: { color: '#888', fontSize: 12, fontWeight: '400', letterSpacing: 1.5 },
@@ -522,25 +522,25 @@ const s = StyleSheet.create({
   voiceSection: { gap: 6, marginBottom: 'auto' as any },
   voiceStatusRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(0,242,255,0.07)',
-    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
-    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.35)',
+    backgroundColor: 'rgba(0,229,255,0.07)',
+    borderRadius: 10, paddingHorizontal: 24, paddingVertical: 12,
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.35)',
   },
   voiceStatusGold: {
-    backgroundColor: 'rgba(212,175,55,0.06)',
-    borderColor: 'rgba(212,175,55,0.3)',
-    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 10,
+    backgroundColor: 'rgba(255,215,0,0.06)',
+    borderColor: 'rgba(255,215,0,0.3)',
+    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 10,
   },
   voiceLabelRow: { flexDirection: 'row', alignItems: 'center' },
   voiceLabel: {
-    flex: 1, color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 2,
+    flex: 1, color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 2,
   },
   keywordHint: {
-    color: 'rgba(212,175,55,0.4)', fontSize: 9, fontWeight: '900',
+    color: 'rgba(255,215,0,0.4)', fontSize: 9, fontWeight: '900',
     letterSpacing: 3, textAlign: 'center',
   },
   transcript: {
-    color: 'rgba(255,255,255,0.50)', fontSize: 8, fontWeight: '700',
+    color: '#AAAAAA', fontSize: 8, fontWeight: '700',
     letterSpacing: 1, textAlign: 'center',
   },
 
@@ -548,35 +548,35 @@ const s = StyleSheet.create({
   ctaWrap: { marginTop: 12, gap: 8 },
   ctaRow: { flexDirection: 'row', gap: 10 },
   cta: {
-    flex: 1, backgroundColor: '#D4AF37', borderRadius: 10,
+    flex: 1, backgroundColor: '#FFD700', borderRadius: 10,
     paddingVertical: 18, flexDirection: 'row',
     alignItems: 'center', justifyContent: 'center', gap: 12,
-    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 12,
+    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 12,
     elevation: 8,
   },
   ctaActivated: {
-    backgroundColor: '#00F2FF',         // Cyan when NEXUS activated
-    shadowColor: '#00F2FF',
+    backgroundColor: '#00E5FF',         // Cyan when NEXUS activated
+    shadowColor: '#00E5FF',
     shadowOpacity: 0.55,
     shadowRadius: 14,
   },
-  ctaGold: { backgroundColor: '#D4AF37', opacity: 0.7 },
+  ctaGold: { backgroundColor: '#FFD700', opacity: 0.7 },
   ctaTxt: {
-    color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 2,
+    color: '#000000', fontSize: 14, fontWeight: '900', letterSpacing: 2,
   },
   micBtn: {
     width: 58, height: 58, borderRadius: 10,
     backgroundColor: 'transparent',
-    borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.35)',
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.35)',
     alignItems: 'center', justifyContent: 'center',
   },
   micBtnGold: {
-    backgroundColor: 'rgba(212,175,55,0.1)',
-    borderColor: 'rgba(212,175,55,0.4)',
-    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 10,
+    backgroundColor: 'rgba(255,215,0,0.1)',
+    borderColor: 'rgba(255,215,0,0.4)',
+    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 10,
   },
   orLabel: {
-    color: 'rgba(255,255,255,0.50)', fontSize: 11, fontWeight: '400',
+    color: '#AAAAAA', fontSize: 11, fontWeight: '400',
     letterSpacing: 2, textAlign: 'center',
   },
 });

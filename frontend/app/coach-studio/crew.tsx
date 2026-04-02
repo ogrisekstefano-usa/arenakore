@@ -11,9 +11,9 @@ import { api } from '../../utils/api';
 import { SectionHeader } from '../../components/studio/StudioComponents';
 
 const RESULT_CFG: Record<string, { color: string; bg: string; label: string }> = {
-  win:    { color: '#34C759', bg: '#34C75920', label: 'VITTORIA' },
-  loss:   { color: '#FF453A', bg: '#FF453A20', label: 'SCONFITTA' },
-  active: { color: '#00F2FF', bg: '#00F2FF20', label: 'LIVE' },
+  win:    { color: '#00FF87', bg: '#00FF8720', label: 'VITTORIA' },
+  loss:   { color: '#FF3B30', bg: '#FF3B3020', label: 'SCONFITTA' },
+  active: { color: '#00E5FF', bg: '#00E5FF20', label: 'LIVE' },
   tie:    { color: '#888888', bg: '#88888820', label: 'PAREGGIO' },
 };
 
@@ -48,9 +48,9 @@ export default function CrewStrategist() {
     } finally { setSimulating(false); }
   };
 
-  if (loading) return <View style={c$.center}><ActivityIndicator color="#00F2FF" /></View>;
+  if (loading) return <View style={c$.center}><ActivityIndicator color="#00E5FF" /></View>;
 
-  const winRateColor = (stats?.win_rate || 0) >= 50 ? '#34C759' : (stats?.win_rate || 0) >= 30 ? '#FF9500' : '#FF453A';
+  const winRateColor = (stats?.win_rate || 0) >= 50 ? '#00FF87' : (stats?.win_rate || 0) >= 30 ? '#FF9500' : '#FF3B30';
 
   return (
     <ScrollView style={c$.root} contentContainerStyle={c$.content}>
@@ -62,11 +62,11 @@ export default function CrewStrategist() {
           <SectionHeader title="BATTLE HISTORY" sub="Risultati crew battles" />
           <View style={c$.statsRow}>
             <View style={c$.statBox}>
-              <Text style={[c$.statVal, { color: '#34C759' }]}>{stats?.wins || 0}</Text>
+              <Text style={[c$.statVal, { color: '#00FF87' }]}>{stats?.wins || 0}</Text>
               <Text style={c$.statLabel}>VITTORIE</Text>
             </View>
             <View style={c$.statBox}>
-              <Text style={[c$.statVal, { color: '#FF453A' }]}>{stats?.losses || 0}</Text>
+              <Text style={[c$.statVal, { color: '#FF3B30' }]}>{stats?.losses || 0}</Text>
               <Text style={c$.statLabel}>SCONFITTE</Text>
             </View>
             <View style={c$.statBox}>
@@ -117,14 +117,14 @@ export default function CrewStrategist() {
                     )}
                     activeOpacity={0.8}
                   >
-                    <View style={[c$.athAvatar, { backgroundColor: ath.avatar_color || '#00F2FF' }]}>
+                    <View style={[c$.athAvatar, { backgroundColor: ath.avatar_color || '#00E5FF' }]}>
                       <Text style={c$.athLetter}>{ath.username[0]}</Text>
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={[c$.athName, isSelected && { color: '#00F2FF' }]}>{ath.username}</Text>
+                      <Text style={[c$.athName, isSelected && { color: '#00E5FF' }]}>{ath.username}</Text>
                       <Text style={c$.athMeta}>KORE {ath.dna_avg} · {ath.xp?.toLocaleString()} XP</Text>
                     </View>
-                    {isSelected && <Ionicons name="checkmark-circle" size={16} color="#00F2FF" />}
+                    {isSelected && <Ionicons name="checkmark-circle" size={16} color="#00E5FF" />}
                   </TouchableOpacity>
                 );
               })}
@@ -145,7 +145,7 @@ export default function CrewStrategist() {
               <View style={c$.simResult}>
                 <Text style={c$.simResultLabel}>KORE BATTLE SCORE SIMULATO</Text>
                 <Text style={c$.simScore}>{simResult.score}</Text>
-                <Text style={[c$.simIntensity, { color: simResult.intensity === 'high' ? '#34C759' : simResult.intensity === 'medium' ? '#FF9500' : '#FF453A' }]}>
+                <Text style={[c$.simIntensity, { color: simResult.intensity === 'high' ? '#00FF87' : simResult.intensity === 'medium' ? '#FF9500' : '#FF3B30' }]}>
                   {(simResult.intensity || '').toUpperCase()} INTENSITY
                 </Text>
                 <Text style={c$.simNote}>{simResult.note}</Text>
@@ -189,24 +189,24 @@ const c$ = StyleSheet.create({
   empty: { alignItems: 'center', padding: 30, gap: 12 },
   emptyText: { color: 'rgba(255,255,255,0.25)', fontSize: 12, textAlign: 'center', lineHeight: 18 },
   simCard: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 16, gap: 12, borderWidth: 1, borderColor: '#1E1E1E' },
-  simDesc: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '300', lineHeight: 17 },
+  simDesc: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '300', lineHeight: 17 },
   athRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#111' },
-  athRowSel: { backgroundColor: '#00F2FF0A', borderRadius: 8 },
+  athRowSel: { backgroundColor: '#00E5FF0A', borderRadius: 8 },
   athAvatar: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   athLetter: { color: '#000', fontSize: 12, fontWeight: '900' },
   athName: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: '700' },
   athMeta: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '300' },
-  simBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#D4AF37', borderRadius: 8, paddingVertical: 11 },
+  simBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#FFD700', borderRadius: 8, paddingVertical: 11 },
   simBtnOff: { opacity: 0.4 },
   simBtnText: { color: '#000', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
   simResult: { backgroundColor: '#111', borderRadius: 10, padding: 14, gap: 6 },
   simResultLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
-  simScore: { color: '#00F2FF', fontSize: 40, fontWeight: '900', letterSpacing: 2 },
+  simScore: { color: '#00E5FF', fontSize: 40, fontWeight: '900', letterSpacing: 2 },
   simIntensity: { fontSize: 11, fontWeight: '900', letterSpacing: 2 },
-  simNote: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '300', lineHeight: 16 },
+  simNote: { color: 'rgba(255,255,255,0.30)', fontSize: 11, fontWeight: '300', lineHeight: 16 },
   breakdownList: { gap: 4 },
   breakdownRow: { flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 4 },
   breakdownName: { flex: 1, color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '700' },
-  breakdownScore: { color: '#D4AF37', fontSize: 11, fontWeight: '700' },
+  breakdownScore: { color: '#FFD700', fontSize: 11, fontWeight: '700' },
   breakdownXp: { color: 'rgba(255,255,255,0.25)', fontSize: 10 },
 });

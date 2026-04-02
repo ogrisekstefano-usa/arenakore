@@ -17,11 +17,11 @@ import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── Design tokens
-const CYAN   = '#00F2FF';
-const GOLD   = '#D4AF37';
-const BG     = '#050505';
-const CARD   = 'rgba(0,242,255,0.025)';
-const BORDER = 'rgba(0,242,255,0.65)';
+const CYAN   = '#00E5FF';
+const GOLD   = '#FFD700';
+const BG     = '#000000';
+const CARD   = 'rgba(0,229,255,0.025)';
+const BORDER = 'rgba(0,229,255,0.65)';
 const BORDER_ACTIVE = CYAN;
 
 const LEVELS = [
@@ -172,7 +172,7 @@ export default function LegacyStep3() {
                 onFocus={() => onFocus('height')}
                 onBlur={onBlur}
                 placeholder="180"
-                placeholderTextColor="rgba(0,242,255,0.65)"
+                placeholderTextColor="rgba(0,229,255,0.65)"
                 keyboardType="decimal-pad"
                 maxLength={5}
                 selectionColor={CYAN}
@@ -188,7 +188,7 @@ export default function LegacyStep3() {
                 onFocus={() => onFocus('weight')}
                 onBlur={onBlur}
                 placeholder="75"
-                placeholderTextColor="rgba(0,242,255,0.65)"
+                placeholderTextColor="rgba(0,229,255,0.65)"
                 keyboardType="decimal-pad"
                 maxLength={5}
                 selectionColor={CYAN}
@@ -207,7 +207,7 @@ export default function LegacyStep3() {
               onFocus={() => onFocus('age')}
               onBlur={onBlur}
               placeholder="25"
-              placeholderTextColor="rgba(0,242,255,0.65)"
+              placeholderTextColor="rgba(0,229,255,0.65)"
               keyboardType="number-pad"
               maxLength={3}
               selectionColor={CYAN}
@@ -277,8 +277,8 @@ export default function LegacyStep3() {
             <Switch
               value={ghostMode}
               onValueChange={setGhostMode}
-              trackColor={{ false: '#1A1A1A', true: 'rgba(0,242,255,0.3)' }}
-              thumbColor={ghostMode ? '#00F2FF' : '#555'}
+              trackColor={{ false: '#1A1A1A', true: 'rgba(0,229,255,0.3)' }}
+              thumbColor={ghostMode ? '#00E5FF' : '#555'}
               ios_backgroundColor="#1A1A1A"
             />
           </View>
@@ -308,7 +308,7 @@ const s = StyleSheet.create({
   // Header
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   brand: { color: GOLD, fontSize: 11, fontWeight: '900', letterSpacing: 6 },
-  stepPill: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  stepPill: { backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   stepTxt: { color: CYAN, fontSize: 12, fontWeight: '400', letterSpacing: 2 },
 
   // Progress
@@ -323,7 +323,7 @@ const s = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 8,
     // Gold outer-glow
-    textShadowColor: 'rgba(212,175,55,0.9)',
+    textShadowColor: 'rgba(255,215,0,0.9)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 14,
   },
@@ -334,7 +334,7 @@ const s = StyleSheet.create({
     letterSpacing: 0.5,
     lineHeight: 52,
     // Subtle gold shadow for depth
-    textShadowColor: 'rgba(212,175,55,0.35)',
+    textShadowColor: 'rgba(255,215,0,0.35)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
     marginTop: 2,
@@ -351,7 +351,7 @@ const s = StyleSheet.create({
     shadowRadius: 8,
   },
   subtitle: {
-    color: 'rgba(255,255,255,0.35)',
+    color: 'rgba(255,255,255,0.30)',
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1.5,
@@ -377,7 +377,7 @@ const s = StyleSheet.create({
   // Input — Cyan neon container
   input: {
     backgroundColor: CARD,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: BORDER,
     borderRadius: 10,
     padding: 16,
@@ -389,7 +389,7 @@ const s = StyleSheet.create({
   },
   inputFocused: {
     borderColor: CYAN,
-    backgroundColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(0,229,255,0.65)',
     shadowColor: CYAN,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
@@ -403,14 +403,14 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: CARD,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: BORDER,
     borderRadius: 12,
     padding: 16,
   },
   levelCardActive: {
     borderColor: CYAN,
-    backgroundColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(0,229,255,0.65)',
     shadowColor: CYAN,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.25,
@@ -421,16 +421,16 @@ const s = StyleSheet.create({
   levelIconBox: {
     width: 32, height: 32, borderRadius: 8,
     backgroundColor: 'rgba(255,255,255,0.03)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
     alignItems: 'center', justifyContent: 'center',
   },
   levelIconBoxActive: {
-    backgroundColor: 'rgba(0,242,255,0.65)',
-    borderColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(0,229,255,0.65)',
+    borderColor: 'rgba(255,255,255,0.07)',
   },
   levelTextGroup: { gap: 3 },
   levelLabel: {
-    color: 'rgba(255,255,255,0.45)',  // off-white (inactive)
+    color: '#AAAAAA',  // off-white (inactive)
     fontSize: 14,
     fontWeight: '900',
     letterSpacing: 2,
@@ -442,7 +442,7 @@ const s = StyleSheet.create({
     fontWeight: '400',
     letterSpacing: 0.2,
   },
-  levelDescActive: { color: 'rgba(0,242,255,0.8)', fontSize: 13, fontWeight: '400' },
+  levelDescActive: { color: 'rgba(0,229,255,0.8)', fontSize: 13, fontWeight: '400' },
   levelGlow: {
     width: 6, height: 6, borderRadius: 3, backgroundColor: CYAN,
     shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4,
@@ -458,11 +458,11 @@ const s = StyleSheet.create({
   errorText: { color: '#FF3B30', fontSize: 11, fontWeight: '800', letterSpacing: 1, flex: 1 },
 
   // Ghost mode styles
-  ghostWrap: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12 },
+  ghostWrap: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginBottom: 12 },
   ghostLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   ghostText: { flex: 1, gap: 2 },
   ghostTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  ghostDesc: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '400', letterSpacing: 1 },
+  ghostDesc: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '400', letterSpacing: 1 },
   cta: {
     backgroundColor: CYAN,
     borderRadius: 10,
@@ -479,7 +479,7 @@ const s = StyleSheet.create({
   },
   ctaTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   ctaNote: {
-    color: 'rgba(255,255,255,0.50)',
+    color: '#AAAAAA',
     fontSize: 9,
     fontWeight: '800',
     letterSpacing: 2,

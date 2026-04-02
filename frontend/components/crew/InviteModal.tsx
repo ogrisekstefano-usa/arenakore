@@ -48,7 +48,7 @@ export function InviteModal({ visible, onClose, crewId, token }: any) {
           <View style={inv$.searchBox}>
             <Ionicons name="search" size={16} color="rgba(255,255,255,0.4)" />
             <TextInput testID="invite-search-input" style={inv$.searchInput} value={query} onChangeText={handleSearch} placeholder="Cerca per username..." placeholderTextColor="#444" autoCapitalize="none" />
-            {searching && <ActivityIndicator color="#00F2FF" size="small" />}
+            {searching && <ActivityIndicator color="#00E5FF" size="small" />}
           </View>
           <ScrollView style={inv$.results}>
             {results.map(u => (
@@ -84,7 +84,7 @@ const inv$ = StyleSheet.create({
   title: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1, marginBottom: 12 },
   searchBox: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: '#1A1A1A', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
+    backgroundColor: '#1A1A1A', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)',
   },
   searchInput: { flex: 1, color: '#FFF', fontSize: 17, padding: 0 },
@@ -93,13 +93,13 @@ const inv$ = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.45)',
   },
-  avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#050505', fontSize: 17, fontWeight: '900' },
+  avatar: { width: 36, height: 36, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { color: '#000000', fontSize: 17, fontWeight: '900' },
   userInfo: { flex: 1, gap: 2 },
   userName: { color: '#FFF', fontSize: 17, fontWeight: '800' },
   userXP: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '600' },
-  inviteBtn: { backgroundColor: '#00F2FF', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
-  inviteBtnText: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
+  inviteBtn: { backgroundColor: '#00E5FF', borderRadius: 8, paddingHorizontal: 24, paddingVertical: 8 },
+  inviteBtnText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   noResults: { color: 'rgba(255,255,255,0.4)', fontSize: 16, textAlign: 'center', padding: 20 },
   closeBtn: { marginTop: 12, alignItems: 'center', paddingVertical: 10 },
   closeText: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '600' },

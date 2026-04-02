@@ -96,11 +96,11 @@ export function NotificationDrawer({
       <Animated.View style={[StyleSheet.absoluteFill, styles.overlay, overlayStyle]}>
         <TouchableOpacity style={StyleSheet.absoluteFill} onPress={onClose} activeOpacity={1} />
         <Animated.View style={[styles.panel, panelStyle]}>
-          <LinearGradient colors={['#0d0d0d', '#080808']} style={styles.panelGradient}>
+          <LinearGradient colors={['#0d0d0d', '#0a0a0a']} style={styles.panelGradient}>
             {/* Header */}
             <View style={styles.panelHeader}>
               <View style={styles.panelTitleRow}>
-                <Ionicons name="notifications" size={14} color="#00F2FF" />
+                <Ionicons name="notifications" size={14} color="#00E5FF" />
                 <Text style={styles.panelTitle}>NOTIFICHE</Text>
                 {unreadCount > 0 && (
                   <View style={styles.unreadBadge}>
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     maxHeight: '75%',
     borderTopWidth: 1,
-    borderColor: 'rgba(0,242,255,0.65)',
+    borderColor: 'rgba(255,255,255,0.07)',
   },
   panelGradient: { paddingBottom: 40 },
   panelHeader: {
@@ -169,18 +169,18 @@ const styles = StyleSheet.create({
   panelTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   panelTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
   unreadBadge: {
-    backgroundColor: '#00F2FF', borderRadius: 8,
+    backgroundColor: '#00E5FF', borderRadius: 8,
     paddingHorizontal: 7, paddingVertical: 2,
     minWidth: 20, alignItems: 'center',
   },
   unreadBadgeText: { color: '#000', fontSize: 12, fontWeight: '900' },
   panelActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   markAllBtn: {
-    backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 8,
+    backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 5,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
-  markAllText: { color: '#00F2FF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  markAllText: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   closeBtn: { padding: 4 },
   divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)' },
   list: { flexGrow: 0 },
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'flex-start',
     paddingHorizontal: 20, paddingVertical: 14, gap: 14,
   },
-  notifRowUnread: { backgroundColor: 'rgba(0,242,255,0.025)' },
+  notifRowUnread: { backgroundColor: 'rgba(0,229,255,0.025)' },
   iconWrap: {
     width: 38, height: 38, borderRadius: 12,
     alignItems: 'center', justifyContent: 'center',
@@ -196,13 +196,13 @@ const styles = StyleSheet.create({
   },
   notifContent: { flex: 1, gap: 3 },
   notifTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  notifTitle: { flex: 1, color: 'rgba(255,255,255,0.55)', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
+  notifTitle: { flex: 1, color: '#AAAAAA', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
   notifTitleUnread: { color: '#FFFFFF' },
-  unreadDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#00F2FF' },
+  unreadDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#00E5FF' },
   notifBody: { color: 'rgba(255,255,255,0.4)', fontSize: 15, lineHeight: 17, fontWeight: '500' },
   notifTime: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '700', letterSpacing: 1, marginTop: 2 },
   separator: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginLeft: 72 },
   emptyState: { alignItems: 'center', paddingVertical: 48, gap: 10 },
   emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
-  emptySubText: { color: 'rgba(255,255,255,0.50)', fontSize: 14, textAlign: 'center', lineHeight: 18 },
+  emptySubText: { color: '#AAAAAA', fontSize: 14, textAlign: 'center', lineHeight: 18 },
 });

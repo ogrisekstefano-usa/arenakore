@@ -22,7 +22,7 @@ import { CertBadge } from '../../components/CertBadge';
 const DNA_KEYS = ['velocita', 'forza', 'resistenza', 'agilita', 'tecnica', 'potenza'];
 const DNA_LABELS = ['VEL', 'FOR', 'RES', 'AGI', 'TEC', 'POT'];
 const DNA_FULL = ['Velocità', 'Forza', 'Resistenza', 'Agilità', 'Tecnica', 'Potenza'];
-const AXIS_COLORS = ['#00F2FF', '#FF453A', '#D4AF37', '#34C759', '#AF52DE', '#FF9500'];
+const AXIS_COLORS = ['#00E5FF', '#FF3B30', '#FFD700', '#00FF87', '#AF52DE', '#FF9500'];
 
 // ── DNA Radar with World Avg Overlay ─────────────────────────────────────────
 function ReportRadar({ dna, worldAvg, size = 220 }: { dna: any; worldAvg: any; size?: number }) {
@@ -51,11 +51,11 @@ function ReportRadar({ dna, worldAvg, size = 220 }: { dna: any; worldAvg: any; s
       ))}
       {/* World average — gold dashed */}
       <Polygon points={worldPts.map(p => p.join(',')).join(' ')}
-        fill="rgba(212,175,55,0.1)" stroke="#D4AF37" strokeWidth={1.5}
+        fill="rgba(255,215,0,0.1)" stroke="#FFD700" strokeWidth={1.5}
         strokeDasharray="4,3" opacity={0.7} />
       {/* Athlete — cyan solid */}
       <Polygon points={athletePts.map(p => p.join(',')).join(' ')}
-        fill="rgba(0,242,255,0.14)" stroke="#00F2FF" strokeWidth={2.5} />
+        fill="rgba(0,229,255,0.14)" stroke="#00E5FF" strokeWidth={2.5} />
       {/* Dots on athlete */}
       {athletePts.map(([x, y], i) => (
         <Circle key={i} cx={x} cy={y} r={4} fill={AXIS_COLORS[i % AXIS_COLORS.length]} />
@@ -145,7 +145,7 @@ export default function TalentReportPage() {
   if (loading || !report) {
     return (
       <View style={[rp$.loading, { backgroundColor: theme.bg }]}>
-        <ActivityIndicator color="#00F2FF" size="large" />
+        <ActivityIndicator color="#00E5FF" size="large" />
         <Text style={[rp$.loadingText, INTER('300'), { color: theme.textTer }]}>Generando il Talent Report...</Text>
       </View>
     );
@@ -174,7 +174,7 @@ export default function TalentReportPage() {
       {/* ── TRADING CARD ── */}
       <Animated.View
         entering={FadeIn.duration(400)}
-        style={[rp$.card, { borderColor: '#1F2937' }]}
+        style={[rp$.card, { borderColor: 'rgba(255,255,255,0.07)' }]}
         nativeID="nexus-report-card"
         {...(Platform.OS === 'web' ? { id: 'nexus-report-card', 'data-nexus-card': '1' } as any : {})}
       >
@@ -182,7 +182,7 @@ export default function TalentReportPage() {
         {/* Card header strip */}
         <View style={rp$.cardStrip}>
           <View style={rp$.stripLeft}>
-            <View style={[rp$.stripDot, { backgroundColor: '#00F2FF' }]} />
+            <View style={[rp$.stripDot, { backgroundColor: '#00E5FF' }]} />
             <Text style={[rp$.stripTitle, MONT('800')]}>NÈXUS TALENT REPORT</Text>
           </View>
           <Text style={[rp$.stripDate, INTER('300')]}>{new Date(report.generated_at).toLocaleDateString('it-IT')}</Text>
@@ -191,8 +191,8 @@ export default function TalentReportPage() {
         {/* ── ATHLETE IDENTITY ── */}
         <View style={rp$.identity}>
           {/* Avatar */}
-          <View style={[rp$.avatarRing, { borderColor: ks.color || '#00F2FF' }]}>
-            <View style={[rp$.avatar, { backgroundColor: athlete.avatar_color || '#00F2FF' }]}>
+          <View style={[rp$.avatarRing, { borderColor: ks.color || '#00E5FF' }]}>
+            <View style={[rp$.avatar, { backgroundColor: athlete.avatar_color || '#00E5FF' }]}>
               <Text style={rp$.avatarLetter}>{(athlete.username || '?')[0].toUpperCase()}</Text>
             </View>
           </View>
@@ -210,16 +210,16 @@ export default function TalentReportPage() {
             </Text>
             <View style={rp$.statusRow}>
               {athlete.is_free_agent ? (
-                <View style={[rp$.statusPill, { backgroundColor: 'rgba(52,199,89,0.1)', borderColor: '#34C75940' }]}>
-                  <Text style={[rp$.statusText, { color: '#34C759' }]}>⚡ FREE AGENT</Text>
+                <View style={[rp$.statusPill, { backgroundColor: 'rgba(0,255,135,0.1)', borderColor: '#00FF8740' }]}>
+                  <Text style={[rp$.statusText, { color: '#00FF87' }]}>⚡ FREE AGENT</Text>
                 </View>
               ) : (
-                <View style={[rp$.statusPill, { backgroundColor: 'rgba(0,242,255,0.06)', borderColor: '#00F2FF30' }]}>
-                  <Text style={[rp$.statusText, { color: '#00F2FF' }]}>🛡 IN CREW</Text>
+                <View style={[rp$.statusPill, { backgroundColor: 'rgba(0,229,255,0.06)', borderColor: '#00E5FF30' }]}>
+                  <Text style={[rp$.statusText, { color: '#00E5FF' }]}>🛡 IN CREW</Text>
                 </View>
               )}
-              <View style={[rp$.statusPill, { backgroundColor: 'rgba(212,175,55,0.08)', borderColor: '#D4AF3740' }]}>
-                <Text style={[rp$.statusText, { color: '#D4AF37' }]}>⚡ EFF {efficiency_ratio}</Text>
+              <View style={[rp$.statusPill, { backgroundColor: 'rgba(255,215,0,0.08)', borderColor: '#FFD70040' }]}>
+                <Text style={[rp$.statusText, { color: '#FFD700' }]}>⚡ EFF {efficiency_ratio}</Text>
               </View>
             </View>
           </View>
@@ -227,10 +227,10 @@ export default function TalentReportPage() {
           {/* KORE Score */}
           <View style={rp$.koreWrap}>
             <Text style={[rp$.koreLabel, MONT('900'), { color: 'rgba(255,255,255,0.3)' }]}>KORE SCORE</Text>
-            <ReportKoreArc score={ks.score || 0} grade={ks.grade || 'B'} color={ks.color || '#00F2FF'} size={110} />
+            <ReportKoreArc score={ks.score || 0} grade={ks.grade || 'B'} color={ks.color || '#00E5FF'} size={110} />
             {ks.penalty_active && (
               <View style={rp$.penalty}>
-                <Ionicons name="warning" size={9} color="#FF453A" />
+                <Ionicons name="warning" size={9} color="#FF3B30" />
                 <Text style={[rp$.penaltyText, MONT('900')]}>PENALITÀ -{ks.posture_penalty}</Text>
               </View>
             )}
@@ -240,17 +240,17 @@ export default function TalentReportPage() {
         {/* ── DNA SECTION ── */}
         <View style={rp$.dnaSection}>
           <View style={rp$.dnaSectionLeft}>
-            <Text style={[rp$.sectionTitle, MONT('700'), { color: 'rgba(255,255,255,0.35)' }]}>DNA SIGNATURE</Text>
+            <Text style={[rp$.sectionTitle, MONT('700'), { color: 'rgba(255,255,255,0.30)' }]}>DNA SIGNATURE</Text>
             <ReportRadar dna={dna} worldAvg={world_avg_dna} size={200} />
             <View style={rp$.legend}>
-              <View style={rp$.legendItem}><View style={[rp$.legendDot, { backgroundColor: '#00F2FF' }]} /><Text style={[rp$.legendText, INTER('300')]}>Atleta</Text></View>
-              <View style={rp$.legendItem}><View style={[rp$.legendDot, { backgroundColor: '#D4AF37' }]} /><Text style={[rp$.legendText, INTER('300')]}>Media Mondiale</Text></View>
+              <View style={rp$.legendItem}><View style={[rp$.legendDot, { backgroundColor: '#00E5FF' }]} /><Text style={[rp$.legendText, INTER('300')]}>Atleta</Text></View>
+              <View style={rp$.legendItem}><View style={[rp$.legendDot, { backgroundColor: '#FFD700' }]} /><Text style={[rp$.legendText, INTER('300')]}>Media Mondiale</Text></View>
             </View>
           </View>
 
           {/* 6-axis breakdown */}
           <View style={rp$.dnaBreakdown}>
-            <Text style={[rp$.sectionTitle, MONT('700'), { color: 'rgba(255,255,255,0.35)' }]}>BREAKDOWN 6 ASSI</Text>
+            <Text style={[rp$.sectionTitle, MONT('700'), { color: 'rgba(255,255,255,0.30)' }]}>BREAKDOWN 6 ASSI</Text>
             {DNA_KEYS.map((k, i) => {
               const val = dna?.[k] ?? 50;
               const worldVal = world_avg_dna?.[k] ?? 60;
@@ -265,7 +265,7 @@ export default function TalentReportPage() {
                     <View style={[rp$.axisBarFill, { width: `${val}%` as any, backgroundColor: AXIS_COLORS[i % AXIS_COLORS.length] }]} />
                   </View>
                   <Text style={[rp$.axisVal, MONT('700'), { color: AXIS_COLORS[i % AXIS_COLORS.length] }]}>{val}</Text>
-                  <Text style={[rp$.axisDiff, INTER('300'), { color: diff >= 0 ? '#34C759' : '#FF453A' }]}>
+                  <Text style={[rp$.axisDiff, INTER('300'), { color: diff >= 0 ? '#00FF87' : '#FF3B30' }]}>
                     {diff >= 0 ? '+' : ''}{diff.toFixed(0)}
                   </Text>
                 </View>
@@ -279,15 +279,15 @@ export default function TalentReportPage() {
           {/* AI Forecast */}
           <View style={rp$.forecastCard}>
             <View style={rp$.forecastHeader}>
-              <Ionicons name="hardware-chip" size={13} color="#00F2FF" />
-              <Text style={[rp$.sectionTitle, MONT('700'), { color: '#00F2FF' }]}>AI FORECAST 30G</Text>
+              <Ionicons name="hardware-chip" size={13} color="#00E5FF" />
+              <Text style={[rp$.sectionTitle, MONT('700'), { color: '#00E5FF' }]}>AI FORECAST 30G</Text>
               <Text style={[MONT('800'), { color: f30.trend_color || '#888', fontSize: 12 }]}>{f30.trend_label}</Text>
             </View>
             <View style={rp$.forecastMetrics}>
               {[
-                { label: 'DNA PREV', val: f30.projected_dna, unit: '/100', color: '#00F2FF' },
-                { label: 'KORE PREV', val: f30.projected_kore, unit: '/100', color: '#D4AF37' },
-                { label: 'SCAN/SETT', val: f30.scans_per_week, unit: 'x', color: '#34C759' },
+                { label: 'DNA PREV', val: f30.projected_dna, unit: '/100', color: '#00E5FF' },
+                { label: 'KORE PREV', val: f30.projected_kore, unit: '/100', color: '#FFD700' },
+                { label: 'SCAN/SETT', val: f30.scans_per_week, unit: 'x', color: '#00FF87' },
               ].map(m => (
                 <View key={m.label} style={rp$.forecastMetric}>
                   <Text style={[rp$.forecastVal, MONT('800'), { color: m.color }]}>{m.val}{m.unit}</Text>
@@ -315,21 +315,21 @@ export default function TalentReportPage() {
         <View style={rp$.noteSection}>
           <View style={rp$.noteHeader}>
             <Ionicons name="create-outline" size={13} color="rgba(255,255,255,0.35)" />
-            <Text style={[rp$.sectionTitle, MONT('700'), { color: 'rgba(255,255,255,0.35)' }]}>NOTE SCOUT</Text>
+            <Text style={[rp$.sectionTitle, MONT('700'), { color: 'rgba(255,255,255,0.30)' }]}>NOTE SCOUT</Text>
             <TouchableOpacity onPress={() => setNoteEditMode(e => !e)} style={{ marginLeft: 'auto' as any }}>
-              <Ionicons name={noteEditMode ? 'checkmark' : 'pencil'} size={14} color="#D4AF37" />
+              <Ionicons name={noteEditMode ? 'checkmark' : 'pencil'} size={14} color="#FFD700" />
             </TouchableOpacity>
           </View>
           {noteEditMode ? (
             <TextInput
-              style={[rp$.noteInput, { backgroundColor: '#0A0A0A', color: '#FFFFFF', borderColor: '#1F2937' }]}
+              style={[rp$.noteInput, { backgroundColor: '#0A0A0A', color: '#FFFFFF', borderColor: 'rgba(255,255,255,0.07)' }]}
               value={coachNote}
               onChangeText={setCoachNote}
               placeholder="Inserisci note private su questo atleta..."
               placeholderTextColor="rgba(255,255,255,0.25)"
               multiline
               numberOfLines={3}
-              {...(Platform.OS === 'web' ? { style: [rp$.noteInput, { backgroundColor: '#0A0A0A', color: '#FFFFFF', borderColor: '#1F2937', outlineStyle: 'none' } as any] } : {})}
+              {...(Platform.OS === 'web' ? { style: [rp$.noteInput, { backgroundColor: '#0A0A0A', color: '#FFFFFF', borderColor: 'rgba(255,255,255,0.07)', outlineStyle: 'none' } as any] } : {})}
             />
           ) : (
             <Text style={[rp$.noteText, INTER('300'), { color: coachNote ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)' }]}>
@@ -358,17 +358,17 @@ const rp$ = StyleSheet.create({
   topActions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   back: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   backText: { fontSize: 13, letterSpacing: 1 },
-  exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#D4AF37', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9, shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.35, shadowRadius: 10 },
+  exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#FFD700', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 9, shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.35, shadowRadius: 10 },
   exportBtnText: { color: '#000', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   // Trading card
-  card: { backgroundColor: '#050505', borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
-  cardStrip: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#0A0A0A', paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#1F2937' },
+  card: { backgroundColor: '#000000', borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
+  cardStrip: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#0A0A0A', paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)' },
   stripLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   stripDot: { width: 6, height: 6, borderRadius: 3 },
   stripTitle: { color: '#FFFFFF', fontSize: 11, letterSpacing: 4 },
   stripDate: { color: 'rgba(255,255,255,0.25)', fontSize: 11 },
   // Identity
-  identity: { flexDirection: 'row', alignItems: 'center', padding: 20, gap: 16, borderBottomWidth: 1, borderBottomColor: '#1F2937' },
+  identity: { flexDirection: 'row', alignItems: 'center', padding: 20, gap: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)' },
   avatarRing: { width: 72, height: 72, borderRadius: 36, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center' },
   avatar: { width: 62, height: 62, borderRadius: 31, alignItems: 'center', justifyContent: 'center' },
   avatarLetter: { color: '#000', fontSize: 26, fontWeight: '900' },
@@ -381,10 +381,10 @@ const rp$ = StyleSheet.create({
   statusText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   koreWrap: { alignItems: 'center', gap: 4 },
   koreLabel: { fontSize: 9, letterSpacing: 3 },
-  penalty: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,69,58,0.08)', borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2 },
-  penaltyText: { color: '#FF453A', fontSize: 8, letterSpacing: 1 },
+  penalty: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,59,48,0.08)', borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2 },
+  penaltyText: { color: '#FF3B30', fontSize: 8, letterSpacing: 1 },
   // DNA section
-  dnaSection: { flexDirection: 'row', padding: 20, gap: 20, borderBottomWidth: 1, borderBottomColor: '#1F2937' },
+  dnaSection: { flexDirection: 'row', padding: 20, gap: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)' },
   dnaSectionLeft: { alignItems: 'center', gap: 10 },
   sectionTitle: { fontSize: 9, letterSpacing: 3, marginBottom: 8 },
   legend: { flexDirection: 'row', gap: 12 },
@@ -395,26 +395,26 @@ const rp$ = StyleSheet.create({
   axisRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   axisLabel: { width: 30, fontSize: 10, letterSpacing: 1.5 },
   axisBarBg: { flex: 1, height: 5, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden', position: 'relative' },
-  axisWorldLine: { position: 'absolute', top: 0, bottom: 0, width: 1.5, backgroundColor: '#D4AF37', opacity: 0.6 },
+  axisWorldLine: { position: 'absolute', top: 0, bottom: 0, width: 1.5, backgroundColor: '#FFD700', opacity: 0.6 },
   axisBarFill: { height: '100%', borderRadius: 3 },
   axisVal: { fontSize: 13, width: 26, textAlign: 'right' },
   axisDiff: { fontSize: 10, width: 28, textAlign: 'right' },
   // Bottom row
-  bottomRow: { flexDirection: 'row', padding: 16, gap: 14, borderBottomWidth: 1, borderBottomColor: '#1F2937' },
-  forecastCard: { flex: 1, backgroundColor: '#0A0A0A', borderRadius: 12, padding: 14, gap: 10, borderWidth: 1, borderColor: 'rgba(0,242,255,0.12)' },
+  bottomRow: { flexDirection: 'row', padding: 16, gap: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)' },
+  forecastCard: { flex: 1, backgroundColor: '#0A0A0A', borderRadius: 12, padding: 14, gap: 10, borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)' },
   forecastHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   forecastMetrics: { flexDirection: 'row', justifyContent: 'space-around' },
   forecastMetric: { alignItems: 'center', gap: 3 },
   forecastVal: { fontSize: 18 },
   forecastLabel: { fontSize: 8, letterSpacing: 2 },
   injuryCard: { flex: 1, backgroundColor: '#0A0A0A', borderRadius: 12, padding: 14, gap: 6, borderWidth: 1 },
-  injuryRec: { color: 'rgba(255,255,255,0.35)', fontSize: 10, lineHeight: 14 },
+  injuryRec: { color: 'rgba(255,255,255,0.30)', fontSize: 10, lineHeight: 14 },
   // Coach note
   noteSection: { padding: 16, gap: 10 },
   noteHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   noteInput: { borderWidth: 1, borderRadius: 10, padding: 12, fontSize: 13, minHeight: 80 } as any,
   noteText: { fontSize: 12, lineHeight: 18 },
   // Footer
-  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', padding: 14, borderTopWidth: 1, borderTopColor: '#1F2937', backgroundColor: '#0A0A0A' },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', padding: 14, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.07)', backgroundColor: '#0A0A0A' },
   footerText: { color: 'rgba(255,255,255,0.2)', fontSize: 10, letterSpacing: 0.5 },
 });

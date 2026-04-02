@@ -15,7 +15,7 @@ import { api } from '../../utils/api';
 import { playAcceptPing } from '../../utils/sounds';
 
 const DIFFICULTY_LEVELS: { key: string; label: string; color: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: 'easy', label: 'EASY', color: '#34C759', icon: 'star-outline' },
+  { key: 'easy', label: 'EASY', color: '#00FF87', icon: 'star-outline' },
   { key: 'medium', label: 'MEDIUM', color: '#FF9500', icon: 'star-half' },
   { key: 'hard', label: 'HARD', color: '#FF3B30', icon: 'star' },
   { key: 'extreme', label: 'EXTREME', color: '#AF52DE', icon: 'flame' },
@@ -100,7 +100,7 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
     <View style={cs$.container}>
       {/* Header */}
       <View style={cs$.header}>
-        <Ionicons name="construct" size={28} color="#D4AF37" />
+        <Ionicons name="construct" size={28} color="#FFD700" />
         <View>
           <Text style={cs$.headerTitle}>MY STUDIO</Text>
           <Text style={cs$.headerSub}>Template Engine {'\u00b7'} {templates.length} template</Text>
@@ -109,7 +109,7 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
 
       {/* Create Template Button */}
       <TouchableOpacity style={cs$.createBtn} onPress={() => setShowCreator(true)} activeOpacity={0.8}>
-        <LinearGradient colors={['#D4AF37', '#B8962E']} style={cs$.createGrad}>
+        <LinearGradient colors={['#FFD700', '#B8962E']} style={cs$.createGrad}>
           <Ionicons name="add-circle" size={20} color="#050505" />
           <Text style={cs$.createText}>CREA NUOVO TEMPLATE SFIDA</Text>
         </LinearGradient>
@@ -117,7 +117,7 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
 
       {/* Template Library */}
       {loading ? (
-        <ActivityIndicator color="#00F2FF" style={{ marginTop: 40 }} />
+        <ActivityIndicator color="#00E5FF" style={{ marginTop: 40 }} />
       ) : templates.length === 0 ? (
         <View style={cs$.emptyState}>
           <Ionicons name="document-text-outline" size={48} color="rgba(255,255,255,0.2)" />
@@ -144,7 +144,7 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
                 </View>
                 <View style={cs$.cardStats}>
                   <View style={cs$.statItem}>
-                    <Ionicons name={exCfg.icon} size={12} color="#00F2FF" />
+                    <Ionicons name={exCfg.icon} size={12} color="#00E5FF" />
                     <Text style={cs$.stat}>{t.exercise === 'squat' ? 'SQUAT' : 'PUNCH'}</Text>
                   </View>
                   <View style={cs$.statItem}>
@@ -156,15 +156,15 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
                     <Text style={cs$.stat}>{t.target_reps} reps</Text>
                   </View>
                   <View style={cs$.statItem}>
-                    <Ionicons name="flash" size={12} color="#D4AF37" />
-                    <Text style={[cs$.stat, { color: '#D4AF37' }]}>{t.xp_reward} XP</Text>
+                    <Ionicons name="flash" size={12} color="#FFD700" />
+                    <Text style={[cs$.stat, { color: '#FFD700' }]}>{t.xp_reward} XP</Text>
                   </View>
                 </View>
                 {t.description ? <Text style={cs$.cardDesc}>{t.description}</Text> : null}
                 <View style={cs$.cardFooter}>
                   <Text style={cs$.usesText}>{t.uses_count} invii</Text>
                   <TouchableOpacity style={cs$.pushBtn} onPress={() => { setPushTargetTemplate(t); setShowPushModal(true); }} activeOpacity={0.8}>
-                    <Ionicons name="paper-plane" size={14} color="#D4AF37" />
+                    <Ionicons name="paper-plane" size={14} color="#FFD700" />
                     <Text style={cs$.pushText}>LANCIA SFIDA</Text>
                   </TouchableOpacity>
                 </View>
@@ -180,7 +180,7 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
           <ScrollView contentContainerStyle={ct$.scroll}>
             <View style={ct$.card}>
               <View style={ct$.titleRow}>
-                <Ionicons name="construct" size={20} color="#D4AF37" />
+                <Ionicons name="construct" size={20} color="#FFD700" />
                 <Text style={ct$.title}>CREA TEMPLATE</Text>
               </View>
               <Text style={ct$.subtitle}>Definisci la tua sfida custom</Text>
@@ -192,8 +192,8 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
               <View style={ct$.exRow}>
                 {EXERCISES.map(ex => (
                   <TouchableOpacity key={ex.key} style={[ct$.exBtn, exercise === ex.key && ct$.exBtnActive]} onPress={() => setExercise(ex.key)}>
-                    <Ionicons name={ex.icon} size={24} color={exercise === ex.key ? '#00F2FF' : 'rgba(255,255,255,0.3)'} />
-                    <Text style={[ct$.exLabel, exercise === ex.key && { color: '#00F2FF' }]}>{ex.label}</Text>
+                    <Ionicons name={ex.icon} size={24} color={exercise === ex.key ? '#00E5FF' : 'rgba(255,255,255,0.3)'} />
+                    <Text style={[ct$.exLabel, exercise === ex.key && { color: '#00E5FF' }]}>{ex.label}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -218,7 +218,7 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
               <TextInput style={[ct$.input, { height: 60, textAlignVertical: 'top' }]} value={description} onChangeText={setDescription} placeholder="Istruzioni per gli atleti..." placeholderTextColor="#555" multiline />
 
               <TouchableOpacity style={ct$.saveBtn} onPress={handleCreate} disabled={saving} activeOpacity={0.8}>
-                <LinearGradient colors={['#D4AF37', '#B8962E']} style={ct$.saveGrad}>
+                <LinearGradient colors={['#FFD700', '#B8962E']} style={ct$.saveGrad}>
                   {saving ? <ActivityIndicator color="#050505" /> : <Text style={ct$.saveText}>SALVA TEMPLATE</Text>}
                 </LinearGradient>
               </TouchableOpacity>
@@ -235,7 +235,7 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
         <View style={ct$.backdrop}>
           <View style={[ct$.card, { maxHeight: '70%' }]}>
             <View style={ct$.titleRow}>
-              <Ionicons name="paper-plane" size={20} color="#D4AF37" />
+              <Ionicons name="paper-plane" size={20} color="#FFD700" />
               <Text style={ct$.title}>LANCIA SFIDA</Text>
             </View>
             <Text style={ct$.subtitle}>Invia "{pushTargetTemplate?.name}" a una Crew</Text>
@@ -250,11 +250,11 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
                       <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '600' }}>{crew.members_count} membri {'\u00b7'} {crew.xp_total} XP</Text>
                     </View>
                     {pushing === crew.id ? (
-                      <ActivityIndicator color="#D4AF37" size="small" />
+                      <ActivityIndicator color="#FFD700" size="small" />
                     ) : (
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Text style={{ color: '#D4AF37', fontSize: 15, fontWeight: '900' }}>INVIA</Text>
-                        <Ionicons name="arrow-forward" size={14} color="#D4AF37" />
+                        <Text style={{ color: '#FFD700', fontSize: 15, fontWeight: '900' }}>INVIA</Text>
+                        <Ionicons name="arrow-forward" size={14} color="#FFD700" />
                       </View>
                     )}
                   </TouchableOpacity>
@@ -272,19 +272,19 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
 }
 
 const cs$ = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 16, gap: 12 },
+  container: { flex: 1, paddingHorizontal: 24, gap: 12 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
-  headerTitle: { color: '#D4AF37', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
-  headerSub: { color: 'rgba(255,255,255,0.45)', fontSize: 13, fontWeight: '400', letterSpacing: 1 },
+  headerTitle: { color: '#FFD700', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
+  headerSub: { color: '#AAAAAA', fontSize: 13, fontWeight: '400', letterSpacing: 1 },
   createBtn: { borderRadius: 14, overflow: 'hidden' },
   createGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 16 },
-  createText: { color: '#050505', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
+  createText: { color: '#000000', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   emptyState: { alignItems: 'center', paddingTop: 60, gap: 8 },
   emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
-  emptySub: { color: 'rgba(255,255,255,0.60)', fontSize: 15, fontWeight: '400' },
+  emptySub: { color: '#AAAAAA', fontSize: 15, fontWeight: '400' },
   card: {
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, gap: 10,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   cardTitleRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
@@ -294,16 +294,16 @@ const cs$ = StyleSheet.create({
   deleteBtn: { padding: 4 },
   cardStats: { flexDirection: 'row', gap: 14, flexWrap: 'wrap' },
   statItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  stat: { color: 'rgba(255,255,255,0.55)', fontSize: 14, fontWeight: '800' },
+  stat: { color: '#AAAAAA', fontSize: 14, fontWeight: '800' },
   cardDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontStyle: 'italic' },
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  usesText: { color: 'rgba(255,255,255,0.60)', fontSize: 13, fontWeight: '400' },
+  usesText: { color: '#AAAAAA', fontSize: 13, fontWeight: '400' },
   pushBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: 'rgba(212,175,55,0.12)', paddingHorizontal: 14, paddingVertical: 8,
-    borderRadius: 8, borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)',
+    backgroundColor: 'rgba(255,215,0,0.12)', paddingHorizontal: 24, paddingVertical: 8,
+    borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
   },
-  pushText: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  pushText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
   pushCrewItem: {
     flexDirection: 'row', alignItems: 'center', paddingVertical: 14,
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.45)',
@@ -315,34 +315,34 @@ const ct$ = StyleSheet.create({
   scroll: { justifyContent: 'flex-end' },
   card: {
     backgroundColor: '#0A0A0A', borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    padding: 24, paddingBottom: 40, gap: 8, borderWidth: 1, borderColor: 'rgba(212,175,55,0.1)',
+    padding: 24, paddingBottom: 40, gap: 8, borderWidth: 1, borderColor: 'rgba(255,215,0,0.1)',
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  title: { color: '#D4AF37', fontSize: 18, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 3 },
   subtitle: { color: 'rgba(255,255,255,0.4)', fontSize: 15, textAlign: 'center', marginBottom: 8 },
-  label: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
+  label: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
-    color: '#FFF', fontSize: 17, fontWeight: '400', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 12,
+    color: '#FFF', fontSize: 17, fontWeight: '400', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   exRow: { flexDirection: 'row', gap: 10 },
   exBtn: {
     flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', gap: 4,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.05)', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)',
   },
-  exBtnActive: { borderColor: '#00F2FF', backgroundColor: 'rgba(0,242,255,0.65)' },
+  exBtnActive: { borderColor: '#00E5FF', backgroundColor: 'rgba(0,229,255,0.65)' },
   exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   diffRow: { flexDirection: 'row', gap: 6 },
   diffBtn: {
     flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', gap: 2,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.05)', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)',
   },
   diffLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
   numRow: { flexDirection: 'row', gap: 10 },
   numCol: { flex: 1 },
   saveBtn: { borderRadius: 12, overflow: 'hidden', marginTop: 8 },
   saveGrad: { paddingVertical: 16, alignItems: 'center' },
-  saveText: { color: '#050505', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
+  saveText: { color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   cancelBtn: { paddingVertical: 10, alignItems: 'center' },
   cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: '700' },
 });

@@ -17,13 +17,13 @@ import { api } from '../../utils/api';
 
 // ── Discipline metadata (mirrors backend) ─────────────────────────────────────
 const DISC_META: Record<string, { label: string; icon: string; color: string; exercise: string }> = {
-  endurance: { label: 'Endurance',  icon: 'navigate',    color: '#00F2FF', exercise: 'GPS Run' },
-  power:     { label: 'Power',      icon: 'barbell',     color: '#FF453A', exercise: 'Squat/Press' },
-  mobility:  { label: 'Mobility',   icon: 'body',        color: '#34C759', exercise: 'Lunge/Stretch' },
-  technique: { label: 'Technique',  icon: 'ribbon',      color: '#D4AF37', exercise: 'Form Drill' },
+  endurance: { label: 'Endurance',  icon: 'navigate',    color: '#00E5FF', exercise: 'GPS Run' },
+  power:     { label: 'Power',      icon: 'barbell',     color: '#FF3B30', exercise: 'Squat/Press' },
+  mobility:  { label: 'Mobility',   icon: 'body',        color: '#00FF87', exercise: 'Lunge/Stretch' },
+  technique: { label: 'Technique',  icon: 'ribbon',      color: '#FFD700', exercise: 'Form Drill' },
   recovery:  { label: 'Recovery',   icon: 'moon',        color: '#AF52DE', exercise: 'Plank/Breath' },
   agility:   { label: 'Agility',    icon: 'flash',       color: '#FF9500', exercise: 'Punch/Sprint' },
-  nexus:     { label: 'NÈXUS Bio',  icon: 'scan',        color: '#00F2FF', exercise: 'Bio-Scan' },
+  nexus:     { label: 'NÈXUS Bio',  icon: 'scan',        color: '#00E5FF', exercise: 'Bio-Scan' },
 };
 
 const TRIGGER_META: Record<string, { label: string; icon: string; unit: string }> = {
@@ -37,10 +37,10 @@ const TRIGGER_META: Record<string, { label: string; icon: string; unit: string }
 
 const ACTION_META = [
   { key: 'assign_recovery',  label: 'Assegna Recovery Flow',  icon: 'moon',             color: '#AF52DE' },
-  { key: 'assign_power',     label: 'Assegna Power Protocol', icon: 'barbell',           color: '#FF453A' },
+  { key: 'assign_power',     label: 'Assegna Power Protocol', icon: 'barbell',           color: '#FF3B30' },
   { key: 'reduce_intensity', label: 'Riduci Intensità 20%',   icon: 'trending-down',    color: '#FF9500' },
-  { key: 'notify_coach',     label: 'Notifica Coach',         icon: 'notifications',    color: '#00F2FF' },
-  { key: 'send_alert',       label: 'Alert all\'Atleta',      icon: 'warning',          color: '#D4AF37' },
+  { key: 'notify_coach',     label: 'Notifica Coach',         icon: 'notifications',    color: '#00E5FF' },
+  { key: 'send_alert',       label: 'Alert all\'Atleta',      icon: 'warning',          color: '#FFD700' },
 ];
 
 // ── Visual Timeline ───────────────────────────────────────────────────────────
@@ -154,12 +154,12 @@ function DayEventEditor({ day, onSave, onClose, theme }: {
 }
 
 const de$ = StyleSheet.create({
-  panel: { borderRadius: 14, borderWidth: 1.5, padding: 16, gap: 10, marginBottom: 8 },
+  panel: { borderRadius: 14, borderWidth: 1, padding: 16, gap: 10, marginBottom: 8 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { fontSize: 13, letterSpacing: 3 },
   label: { fontSize: 9, letterSpacing: 3 },
   discGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  discBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 8, paddingHorizontal: 9, paddingVertical: 6, borderColor: 'rgba(255,255,255,0.1)' },
+  discBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 8, paddingHorizontal: 9, paddingVertical: 6, borderColor: 'rgba(255,255,255,0.07)' },
   discLabel: { fontSize: 10, letterSpacing: 1 },
   targetsRow: { flexDirection: 'row', gap: 10 },
   targetField: { flex: 1, gap: 4 },
@@ -199,7 +199,7 @@ function GlobalLeaderboardChart({ token }: { token: string }) {
   const maxScore = Math.max(...leaderboard.map((e: any) => e.score), 100);
   const BAR_H = 40, GAP = 8, PAD_LEFT = 120, CHART_W = 500;
 
-  const getColor = (score: number) => score >= 75 ? '#34C759' : score >= 45 ? '#FF9500' : '#FF453A';
+  const getColor = (score: number) => score >= 75 ? '#00FF87' : score >= 45 ? '#FF9500' : '#FF3B30';
 
   return (
     <ScrollView style={lb$.scroll} contentContainerStyle={lb$.content}>
@@ -253,7 +253,7 @@ function GlobalLeaderboardChart({ token }: { token: string }) {
 
       {/* Legend */}
       <View style={[lb$.legend, { backgroundColor: theme.surface2 }]}>
-        {[{ c: '#34C759', l: 'Eccellente (75+)' }, { c: '#FF9500', l: 'In progressione (45-74)' }, { c: '#FF453A', l: 'Da migliorare (<45)' }].map(({ c, l }) => (
+        {[{ c: '#00FF87', l: 'Eccellente (75+)' }, { c: '#FF9500', l: 'In progressione (45-74)' }, { c: '#FF3B30', l: 'Da migliorare (<45)' }].map(({ c, l }) => (
           <View key={l} style={lb$.legendItem}>
             <View style={[lb$.legendDot, { backgroundColor: c }]} />
             <Text style={[lb$.legendText, INTER('300'), { color: theme.textSec }]}>{l}</Text>
@@ -424,7 +424,7 @@ const ae$ = StyleSheet.create({
   pageHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   title: { fontSize: 18, letterSpacing: 4 },
   sub: { fontSize: 11, letterSpacing: 0.5, marginTop: 3 },
-  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 9 },
+  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 8, paddingHorizontal: 24, paddingVertical: 9 },
   addBtnText: { color: '#000', fontSize: 11, letterSpacing: 1.5 },
   empty: { borderRadius: 14, padding: 32, alignItems: 'center', gap: 12 },
   emptyTitle: { fontSize: 15, letterSpacing: 1 },
@@ -440,7 +440,7 @@ const ae$ = StyleSheet.create({
   condContent: { flex: 1, gap: 6 },
   condLabel: { fontSize: 10, letterSpacing: 1.5 },
   selectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
-  selectOpt: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 4, borderColor: 'rgba(255,255,255,0.1)' },
+  selectOpt: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 4, borderColor: 'rgba(255,255,255,0.07)' },
   selectOptTxt: { fontSize: 9, letterSpacing: 1 },
   threshRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   threshLabel: { fontSize: 10, letterSpacing: 1.5 },
@@ -620,8 +620,8 @@ export default function TemplateBuilder() {
                   style={[mb$.challengeItem, selectedChallenge?.id === c.id && { backgroundColor: theme.accent + '10', borderRightWidth: 3, borderRightColor: theme.accent }]}
                   onPress={() => handleSelectChallenge(c)}
                 >
-                  <View style={[mb$.challengeStatus, { backgroundColor: c.status === 'active' ? '#34C75940' : theme.surface2 }]}>
-                    <Text style={[mb$.challengeStatusText, MONT('900'), { color: c.status === 'active' ? '#34C759' : theme.textTer }]}>
+                  <View style={[mb$.challengeStatus, { backgroundColor: c.status === 'active' ? '#00FF8740' : theme.surface2 }]}>
+                    <Text style={[mb$.challengeStatusText, MONT('900'), { color: c.status === 'active' ? '#00FF87' : theme.textTer }]}>
                       {(c.status || 'DRAFT').toUpperCase()}
                     </Text>
                   </View>
@@ -717,14 +717,14 @@ export default function TemplateBuilder() {
 
 const mb$ = StyleSheet.create({
   root: { flex: 1 },
-  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: 1 },
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 8, borderBottomWidth: 1 },
   tabs: { flexDirection: 'row', gap: 4 },
-  tabBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 10 },
+  tabBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 24, paddingVertical: 10 },
   tabLabel: { fontSize: 11, letterSpacing: 2 },
   actions: { flexDirection: 'row', gap: 8 },
   saveBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
   saveBtnTxt: { fontSize: 11, letterSpacing: 1.5 },
-  pushBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
+  pushBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 8, paddingHorizontal: 24, paddingVertical: 8 },
   pushBtnTxt: { color: '#000', fontSize: 11, letterSpacing: 1.5 },
   body: { flex: 1, flexDirection: 'row' },
   sidePanel: { width: 200, borderRightWidth: 1 },
@@ -754,7 +754,7 @@ const mb$ = StyleSheet.create({
   challengeSubtitle: { fontSize: 11, letterSpacing: 0.5, marginTop: 3 },
   crewSelector: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   crewSelectorLabel: { fontSize: 9, letterSpacing: 2 },
-  crewOpt: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 7, paddingHorizontal: 9, paddingVertical: 5, borderColor: 'rgba(255,255,255,0.1)' },
+  crewOpt: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 7, paddingHorizontal: 9, paddingVertical: 5, borderColor: 'rgba(255,255,255,0.07)' },
   crewOptText: { fontSize: 9, letterSpacing: 1.5 },
   timelineSection: { gap: 8 },
   timelineLabel: { fontSize: 9, letterSpacing: 3 },

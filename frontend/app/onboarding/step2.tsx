@@ -186,7 +186,7 @@ function HudLabels({ items, scanW, scanH, visible }: { items: BeatDef['hudData']
             {/* Connection line to body area */}
             <Line
               x1={lineX1} y1={y} x2={lineX2} y2={y}
-              stroke="#00F2FF" strokeWidth={0.5} strokeDasharray="3,3" opacity={0.3}
+              stroke="#00E5FF" strokeWidth={0.5} strokeDasharray="3,3" opacity={0.3}
             />
             {/* Label background */}
             <Rect
@@ -195,13 +195,13 @@ function HudLabels({ items, scanW, scanH, visible }: { items: BeatDef['hudData']
               width={84} height={32}
               rx={4}
               fill="rgba(0,0,0,0.6)"
-              stroke="rgba(0,242,255,0.2)"
+              stroke="rgba(0,229,255,0.2)"
               strokeWidth={0.5}
             />
             {/* Label text */}
             <SvgText
               x={x} y={y - 5}
-              fill="rgba(0,242,255,0.6)"
+              fill="rgba(0,229,255,0.6)"
               fontSize={7} fontWeight="900"
               textAnchor={anchor}
               letterSpacing={1}
@@ -256,10 +256,10 @@ function ScanLineOverlay({ active, scanH }: { active: boolean; scanH: number }) 
 }
 const scanLine$ = StyleSheet.create({
   container: { position: 'absolute', left: 0, right: 0, height: 3, zIndex: 10 },
-  line: { height: 2, backgroundColor: '#D4AF37' },
+  line: { height: 2, backgroundColor: '#FFD700' },
   glow: {
     height: 20, marginTop: -10,
-    backgroundColor: 'rgba(212,175,55,0.15)',
+    backgroundColor: 'rgba(255,215,0,0.15)',
   },
 });
 
@@ -284,8 +284,8 @@ function BeatIndicator({ currentBeat, totalBeats }: { currentBeat: number; total
 const bi$ = StyleSheet.create({
   row: { flexDirection: 'row', gap: 8, justifyContent: 'center', marginTop: 4 },
   dot: { width: 8, height: 8, borderRadius: 4 },
-  dotDone: { backgroundColor: '#D4AF37' },
-  dotActive: { backgroundColor: '#00F2FF', shadowColor: '#00F2FF', shadowOpacity: 1, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } },
+  dotDone: { backgroundColor: '#FFD700' },
+  dotActive: { backgroundColor: '#00E5FF', shadowColor: '#00E5FF', shadowOpacity: 1, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } },
   dotPending: { backgroundColor: 'rgba(255,255,255,0.1)' },
 });
 
@@ -1291,12 +1291,12 @@ export default function NexusBioScan() {
   // ===================================================================
   // DERIVED RENDER STATE
   // ===================================================================
-  const skelColor = phase === 'approved' ? '#D4AF37'
-    : phase === 'beats' && currentBeat === 4 ? '#D4AF37'
-    : phase === 'countdown' ? '#D4AF37'
-    : phase === 'pose_check' && poseValid ? '#00F2FF'
-    : phase === 'pose_check' && !poseValid ? '#FF453A'
-    : '#00F2FF';
+  const skelColor = phase === 'approved' ? '#FFD700'
+    : phase === 'beats' && currentBeat === 4 ? '#FFD700'
+    : phase === 'countdown' ? '#FFD700'
+    : phase === 'pose_check' && poseValid ? '#00E5FF'
+    : phase === 'pose_check' && !poseValid ? '#FF3B30'
+    : '#00E5FF';
 
   const skelOpacity = phase === 'loading' ? 0.15
     : phase === 'positioning' ? 0.65
@@ -1331,7 +1331,7 @@ export default function NexusBioScan() {
           <Animated.View entering={FadeInDown.duration(300)} style={prv$.card}>
             <View style={prv$.topBar} />
             <View style={prv$.iconRow}>
-              <Ionicons name="lock-closed" size={22} color="#00F2FF" />
+              <Ionicons name="lock-closed" size={22} color="#00E5FF" />
               <Text style={prv$.label}>BIO-SECURE PROTOCOL</Text>
             </View>
             <Text style={prv$.msg}>
@@ -1343,7 +1343,7 @@ export default function NexusBioScan() {
 
             {/* AUTO-ACCEPT COUNTDOWN */}
             <View style={prv$.countdownRow}>
-              <Ionicons name="timer-outline" size={14} color="#D4AF37" />
+              <Ionicons name="timer-outline" size={14} color="#FFD700" />
               <Text style={prv$.countdownTxt}>
                 AVVIO AUTOMATICO IN{' '}
                 <Text style={prv$.countdownNum}>{autoAcceptSecs}</Text>
@@ -1390,7 +1390,7 @@ export default function NexusBioScan() {
         <View style={s.headerTop}>
           <View style={{ flexDirection: 'row' }}>
             <Text style={s.brand}>ARENA</Text>
-            <Text style={[s.brand, { color: '#00F2FF' }]}>KORE</Text>
+            <Text style={[s.brand, { color: '#00E5FF' }]}>KORE</Text>
           </View>
           <View style={s.stepPill}><Text style={s.stepTxt}>02 / 04</Text></View>
         </View>
@@ -1403,22 +1403,22 @@ export default function NexusBioScan() {
         )}
         {phase === 'verifying' && (
           <View style={s.detectRow}>
-            <View style={[s.detectDot, { backgroundColor: '#D4AF37' }]} />
-            <Text style={[s.detectTxt, { color: '#D4AF37' }]}>VERIFICA SEGNALE: {Math.round(confidenceTime * 100)}%</Text>
+            <View style={[s.detectDot, { backgroundColor: '#FFD700' }]} />
+            <Text style={[s.detectTxt, { color: '#FFD700' }]}>VERIFICA SEGNALE: {Math.round(confidenceTime * 100)}%</Text>
           </View>
         )}
         {phase === 'pose_check' && (
           <View style={s.detectRow}>
-            <View style={[s.detectDot, { backgroundColor: poseValid ? '#00F2FF' : '#FF453A' }]} />
-            <Text style={[s.detectTxt, { color: poseValid ? '#00F2FF' : '#FF453A' }]}>
+            <View style={[s.detectDot, { backgroundColor: poseValid ? '#00E5FF' : '#FF3B30' }]} />
+            <Text style={[s.detectTxt, { color: poseValid ? '#00E5FF' : '#FF3B30' }]}>
               {poseValid ? `HOLD: ${poseHoldTime.toFixed(1)}s / 2.0s` : 'MOVIMENTO RILEVATO'}
             </Text>
           </View>
         )}
         {phase === 'countdown' && (
           <View style={s.detectRow}>
-            <View style={[s.detectDot, { backgroundColor: '#D4AF37' }]} />
-            <Text style={[s.detectTxt, { color: '#D4AF37' }]}>LOCK: {countdownSec}s</Text>
+            <View style={[s.detectDot, { backgroundColor: '#FFD700' }]} />
+            <Text style={[s.detectTxt, { color: '#FFD700' }]}>LOCK: {countdownSec}s</Text>
           </View>
         )}
       </View>
@@ -1444,7 +1444,7 @@ export default function NexusBioScan() {
         {/* ── CENTRATI NELL'ARENA warning (gold, TTS triggered) ── */}
         {centeringWarning && (
           <Animated.View entering={FadeIn} style={cw$.container} pointerEvents="none">
-            <Ionicons name="scan-circle-outline" size={22} color="#D4AF37" />
+            <Ionicons name="scan-circle-outline" size={22} color="#FFD700" />
             <Text style={cw$.txt}>CENTRATI NELL'ARENA</Text>
           </Animated.View>
         )}
@@ -1479,11 +1479,11 @@ export default function NexusBioScan() {
           {/* Grid lines */}
           {[0.25, 0.5, 0.75].map(pct => (
             <Line key={`h-${pct}`} x1={0} y1={SCAN_H * pct} x2={SCAN_W} y2={SCAN_H * pct}
-              stroke="rgba(0,242,255,0.65)" strokeWidth={0.5} />
+              stroke="rgba(0,229,255,0.65)" strokeWidth={0.5} />
           ))}
           {[0.25, 0.5, 0.75].map(pct => (
             <Line key={`v-${pct}`} x1={SCAN_W * pct} y1={0} x2={SCAN_W * pct} y2={SCAN_H}
-              stroke="rgba(0,242,255,0.65)" strokeWidth={0.5} />
+              stroke="rgba(0,229,255,0.65)" strokeWidth={0.5} />
           ))}
 
           {/* ── SKELETON — Canvas WebView is sole renderer when poseEngineReady ── */}
@@ -1562,17 +1562,17 @@ export default function NexusBioScan() {
             <G>
               <Rect x={SCAN_W / 2 - 60} y={16} width={120} height={28} rx={8}
                 fill="rgba(0,0,0,0.6)" stroke={
-                  phase === 'countdown' ? 'rgba(212,175,55,0.4)'
-                  : phase === 'pose_check' && poseValid ? 'rgba(0,242,255,0.3)'
-                  : phase === 'pose_check' && !poseValid ? 'rgba(255,69,58,0.3)'
-                  : 'rgba(212,175,55,0.2)'
+                  phase === 'countdown' ? 'rgba(255,215,0,0.4)'
+                  : phase === 'pose_check' && poseValid ? 'rgba(0,229,255,0.3)'
+                  : phase === 'pose_check' && !poseValid ? 'rgba(255,59,48,0.3)'
+                  : 'rgba(255,215,0,0.2)'
                 } strokeWidth={1} />
               <SvgText x={SCAN_W / 2} y={35}
                 fill={
-                  phase === 'countdown' ? '#D4AF37'
-                  : phase === 'pose_check' && poseValid ? '#00F2FF'
-                  : phase === 'pose_check' && !poseValid ? '#FF453A'
-                  : '#D4AF37'
+                  phase === 'countdown' ? '#FFD700'
+                  : phase === 'pose_check' && poseValid ? '#00E5FF'
+                  : phase === 'pose_check' && !poseValid ? '#FF3B30'
+                  : '#FFD700'
                 } fontSize={12} fontWeight="900"
                 textAnchor="middle" letterSpacing={2}>
                 {phase === 'countdown' ? `LOCK ${countdownSec}`
@@ -1586,9 +1586,9 @@ export default function NexusBioScan() {
           {phase === 'positioning' && detectedPoints >= 15 && (
             <G>
               <Rect x={SCAN_W / 2 - 70} y={SCAN_H - 36} width={140} height={24} rx={6}
-                fill="rgba(0,242,255,0.65)" stroke="rgba(0,242,255,0.65)" strokeWidth={1} />
+                fill="rgba(0,229,255,0.65)" stroke="rgba(0,229,255,0.65)" strokeWidth={1} />
               <SvgText x={SCAN_W / 2} y={SCAN_H - 20}
-                fill="#00F2FF" fontSize={10} fontWeight="900" textAnchor="middle" letterSpacing={2}>
+                fill="#00E5FF" fontSize={10} fontWeight="900" textAnchor="middle" letterSpacing={2}>
                 {detectedPoints}/17 RILEVATI
               </SvgText>
             </G>
@@ -1598,11 +1598,11 @@ export default function NexusBioScan() {
           {phase === 'beats' && currentBeat === 4 && (
             <G>
               <Circle cx={SCAN_W / 2} cy={SCAN_H * 0.35} r={40}
-                fill="rgba(212,175,55,0.06)" stroke="rgba(212,175,55,0.3)" strokeWidth={1} />
+                fill="rgba(255,215,0,0.06)" stroke="rgba(255,215,0,0.3)" strokeWidth={1} />
               <Circle cx={SCAN_W / 2} cy={SCAN_H * 0.35} r={25}
-                fill="rgba(212,175,55,0.1)" stroke="rgba(212,175,55,0.5)" strokeWidth={0.5} />
+                fill="rgba(255,215,0,0.1)" stroke="rgba(255,215,0,0.5)" strokeWidth={0.5} />
               <SvgText x={SCAN_W / 2} y={SCAN_H * 0.35 + 4}
-                fill="#D4AF37" fontSize={10} fontWeight="900" textAnchor="middle" letterSpacing={2}>
+                fill="#FFD700" fontSize={10} fontWeight="900" textAnchor="middle" letterSpacing={2}>
                 DNA
               </SvgText>
             </G>
@@ -1612,7 +1612,7 @@ export default function NexusBioScan() {
           {phase === 'beats' && currentBeat >= 2 && (
             <G opacity={0.6}>
               <SvgText x={SCAN_W - 14} y={SCAN_H * 0.12}
-                fill="#D4AF37" fontSize={8} fontWeight="900" textAnchor="end" letterSpacing={1}>
+                fill="#FFD700" fontSize={8} fontWeight="900" textAnchor="end" letterSpacing={1}>
                 XP EST: +47
               </SvgText>
             </G>
@@ -1622,13 +1622,13 @@ export default function NexusBioScan() {
           {poseEngineReady && koScore > 0 && phase !== 'approved' && (
             <G>
               <Rect x={SCAN_W - 86} y={8} width={78} height={40} rx={8}
-                fill="rgba(0,0,0,0.7)" stroke="rgba(212,175,55,0.3)" strokeWidth={1} />
+                fill="rgba(0,0,0,0.7)" stroke="rgba(255,215,0,0.3)" strokeWidth={1} />
               <SvgText x={SCAN_W - 47} y={24}
-                fill="rgba(212,175,55,0.6)" fontSize={8} fontWeight="900" textAnchor="middle" letterSpacing={2}>
+                fill="rgba(255,215,0,0.6)" fontSize={8} fontWeight="900" textAnchor="middle" letterSpacing={2}>
                 KORE SCORE
               </SvgText>
               <SvgText x={SCAN_W - 47} y={40}
-                fill={koScore >= 80 ? '#D4AF37' : koScore >= 50 ? '#FFFFFF' : 'rgba(255,255,255,0.5)'}
+                fill={koScore >= 80 ? '#FFD700' : koScore >= 50 ? '#FFFFFF' : 'rgba(255,255,255,0.5)'}
                 fontSize={14} fontWeight="900" textAnchor="middle" letterSpacing={1}>
                 {koScore}
               </SvgText>
@@ -1639,11 +1639,11 @@ export default function NexusBioScan() {
           {holdProgress > 0 && holdProgress < 1 && (
             <G>
               <Rect x={SCAN_W / 2 - 80} y={SCAN_H - 44} width={160} height={28} rx={8}
-                fill="rgba(0,0,0,0.7)" stroke="rgba(212,175,55,0.4)" strokeWidth={1} />
+                fill="rgba(0,0,0,0.7)" stroke="rgba(255,215,0,0.4)" strokeWidth={1} />
               <Rect x={SCAN_W / 2 - 76} y={SCAN_H - 36} width={152 * holdProgress} height={12} rx={4}
-                fill="#D4AF37" />
+                fill="#FFD700" />
               <SvgText x={SCAN_W / 2} y={SCAN_H - 26}
-                fill="#D4AF37" fontSize={8} fontWeight="900" textAnchor="middle" letterSpacing={3}>
+                fill="#FFD700" fontSize={8} fontWeight="900" textAnchor="middle" letterSpacing={3}>
                 GOLD FLASH IN {Math.ceil(3 * (1 - holdProgress))}s
               </SvgText>
             </G>
@@ -1664,7 +1664,7 @@ export default function NexusBioScan() {
         {/* LOADING */}
         {phase === 'loading' && (
           <View style={s.footerCenter}>
-            <ActivityIndicator color="#00F2FF" size="small" />
+            <ActivityIndicator color="#00E5FF" size="small" />
             <Text style={s.loadingTxt}>INIZIALIZZAZIONE NEXUS...</Text>
           </View>
         )}
@@ -1676,7 +1676,7 @@ export default function NexusBioScan() {
               /* ── BIOMETRIC WALL: Camera not confirmed — waiting for human presence ── */
               <>
                 <Animated.View style={[s.positioningRow, positionPulseStyle]}>
-                  <View style={[s.positioningDot, { backgroundColor: 'rgba(0,242,255,0.6)' }]} />
+                  <View style={[s.positioningDot, { backgroundColor: 'rgba(0,229,255,0.6)' }]} />
                   <Text style={s.positioningTxt}>NEXUS IS SEARCHING FOR ATHLETE...</Text>
                 </Animated.View>
                 <Text style={s.statusLabel}>POSIZIONATI DAVANTI ALLA CAMERA</Text>
@@ -1689,7 +1689,7 @@ export default function NexusBioScan() {
                     onPress={() => { setPoseTimeout(false); setIsScanning(true); }}
                     activeOpacity={0.85}
                   >
-                    <Ionicons name="refresh-circle-outline" size={14} color="#D4AF37" />
+                    <Ionicons name="refresh-circle-outline" size={14} color="#FFD700" />
                     <Text style={fallback$.txt}>USA SCAN MANUALE</Text>
                   </TouchableOpacity>
                 )}
@@ -1701,7 +1701,7 @@ export default function NexusBioScan() {
                     onPress={() => { setCameraReady(true); setIsScanning(true); }}
                     activeOpacity={0.7}
                   >
-                    <Ionicons name="flash" size={11} color="#FF453A" />
+                    <Ionicons name="flash" size={11} color="#FF3B30" />
                     <Text style={dbg$.txt}>DEBUG: FORCE SCAN</Text>
                   </TouchableOpacity>
                 )}
@@ -1720,13 +1720,13 @@ export default function NexusBioScan() {
                     {
                       width: `${(detectedPoints / 17) * 100}%` as any,
                       // Gold bar when entry gate is in progress (real MediaPipe)
-                      backgroundColor: poseEngineReady && detectedPoints > 0 ? '#D4AF37' : '#00F2FF',
+                      backgroundColor: poseEngineReady && detectedPoints > 0 ? '#FFD700' : '#00E5FF',
                     }
                   ]} />
                 </View>
                 {detectedPoints < 17 ? (
                   <Animated.View style={[s.positioningRow, positionPulseStyle]}>
-                    <View style={[s.positioningDot, poseEngineReady && detectedPoints > 0 && { backgroundColor: '#D4AF37' }]} />
+                    <View style={[s.positioningDot, poseEngineReady && detectedPoints > 0 && { backgroundColor: '#FFD700' }]} />
                 <Text style={s.positioningTxt}>
                   {poseEngineReady && detectedPoints > 0
                     ? 'NEXUS TI STA RILEVANDO...'
@@ -1736,7 +1736,7 @@ export default function NexusBioScan() {
                 </Text>
                   </Animated.View>
                 ) : (
-                  <Text style={[s.detectNote, { color: '#D4AF37' }]}>17/17 RILEVATI — INGRESSO ARENA</Text>
+                  <Text style={[s.detectNote, { color: '#FFD700' }]}>17/17 RILEVATI — INGRESSO ARENA</Text>
                 )}
                 <Text style={s.detectCount}>{detectedPoints} / 17</Text>
               </>
@@ -1747,16 +1747,16 @@ export default function NexusBioScan() {
         {/* VERIFYING — confidence check: 17/17 for 1 full second */}
         {phase === 'verifying' && (
           <Animated.View entering={FadeIn} style={s.footerCenter}>
-            <Text style={[s.statusLabel, { color: '#D4AF37' }]}>VERIFICA FORMA UMANA</Text>
+            <Text style={[s.statusLabel, { color: '#FFD700' }]}>VERIFICA FORMA UMANA</Text>
             <View style={s.stabilityRow}>
-              <Text style={[s.stabPct, { color: '#D4AF37' }]}>{Math.round(confidenceTime * 100)}%</Text>
+              <Text style={[s.stabPct, { color: '#FFD700' }]}>{Math.round(confidenceTime * 100)}%</Text>
               <View style={s.stabBar}>
-                <View style={[s.stabFill, { width: `${confidenceTime * 100}%` as any, backgroundColor: '#D4AF37' }]} />
+                <View style={[s.stabFill, { width: `${confidenceTime * 100}%` as any, backgroundColor: '#FFD700' }]} />
               </View>
             </View>
             <Animated.View style={[s.positioningRow, positionPulseStyle]}>
-              <View style={[s.positioningDot, { backgroundColor: '#D4AF37' }]} />
-              <Text style={[s.positioningTxt, { color: '#D4AF37' }]}>ANALISI CONFIDENZA SEGNALE...</Text>
+              <View style={[s.positioningDot, { backgroundColor: '#FFD700' }]} />
+              <Text style={[s.positioningTxt, { color: '#FFD700' }]}>ANALISI CONFIDENZA SEGNALE...</Text>
             </Animated.View>
           </Animated.View>
         )}
@@ -1772,22 +1772,22 @@ export default function NexusBioScan() {
                 <View style={[
                   s.poseTimerFill,
                   { width: `${(poseHoldTime / 2) * 100}%` as any },
-                  poseValid ? {} : { backgroundColor: '#FF453A' },
+                  poseValid ? {} : { backgroundColor: '#FF3B30' },
                 ]} />
               </View>
-              <Text style={[s.poseTimerText, !poseValid && { color: '#FF453A' }]}>
+              <Text style={[s.poseTimerText, !poseValid && { color: '#FF3B30' }]}>
                 {poseHoldTime.toFixed(1)}s / 2.0s
               </Text>
             </View>
             {!poseValid && (
               <Animated.View style={[s.positioningRow, positionPulseStyle]}>
-                <Ionicons name="alert-circle" size={12} color="#FF453A" />
+                <Ionicons name="alert-circle" size={12} color="#FF3B30" />
                 <Text style={s.poseWarning}>MOVIMENTO RILEVATO — TIMER RESETTATO</Text>
               </Animated.View>
             )}
             {poseValid && poseHoldTime > 0.3 && (
               <View style={s.positioningRow}>
-                <Ionicons name="checkmark-circle" size={12} color="#00F2FF" />
+                <Ionicons name="checkmark-circle" size={12} color="#00E5FF" />
                 <Text style={s.poseOk}>IMMOBILITA IN CORSO...</Text>
               </View>
             )}
@@ -1800,9 +1800,9 @@ export default function NexusBioScan() {
             <Text style={s.countdownLabel}>IMMOBILITA CONFERMATA</Text>
             <Text style={s.countdownBig}>{countdownSec}</Text>
             <View style={s.stabilityRow}>
-              <Text style={[s.stabPct, { color: '#D4AF37' }]}>{stability}%</Text>
+              <Text style={[s.stabPct, { color: '#FFD700' }]}>{stability}%</Text>
               <View style={s.stabBar}>
-                <View style={[s.stabFill, { width: `${stability}%` as any, backgroundColor: '#D4AF37' }]} />
+                <View style={[s.stabFill, { width: `${stability}%` as any, backgroundColor: '#FFD700' }]} />
               </View>
             </View>
             <Text style={s.countdownNote}>NON MUOVERTI — LOCK IN CORSO</Text>
@@ -1813,7 +1813,7 @@ export default function NexusBioScan() {
         {phase === 'beats' && currentBeatDef && (
           <Animated.View entering={FadeIn} key={`beat-${currentBeat}`} style={s.footerCenter}>
             <View style={s.beatLabelRow}>
-              <View style={[s.beatDot, currentBeat === 4 && { backgroundColor: '#D4AF37' }]} />
+              <View style={[s.beatDot, currentBeat === 4 && { backgroundColor: '#FFD700' }]} />
               <Text style={s.beatLabel}>BEAT {currentBeatDef.id} — {currentBeatDef.label}</Text>
             </View>
             <Text style={s.beatInstruction}>{currentBeatDef.instruction}</Text>
@@ -1821,7 +1821,7 @@ export default function NexusBioScan() {
               <View style={[
                 s.beatFill,
                 { width: `${beatProgress}%` as any },
-                currentBeat === 4 && { backgroundColor: '#D4AF37' },
+                currentBeat === 4 && { backgroundColor: '#FFD700' },
               ]} />
             </View>
             <Text style={s.beatPct}>{beatProgress}%</Text>
@@ -1831,7 +1831,7 @@ export default function NexusBioScan() {
         {/* APPROVED */}
         {phase === 'approved' && (
           <Animated.View style={[s.approvedWrap, approvedStyle]}>
-            <Ionicons name="checkmark-circle" size={28} color="#D4AF37" />
+            <Ionicons name="checkmark-circle" size={28} color="#FFD700" />
             <Text style={s.approvedBig}>KORE DNA GENERATO</Text>
             <Text style={s.approvedSub}>APPROVATO</Text>
           </Animated.View>
@@ -1845,7 +1845,7 @@ export default function NexusBioScan() {
 // STYLES
 // ===================================================================
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#050505' },
+  root: { flex: 1, backgroundColor: '#000000' },
 
   // Header
   header: {
@@ -1853,29 +1853,29 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(5,5,5,0.95)', zIndex: 20,
   },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  brand: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
+  brand: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
-    backgroundColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(0,229,255,0.65)',
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
-  stepTxt: { color: '#00F2FF', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
+  stepTxt: { color: '#00E5FF', fontSize: 12, fontWeight: '400', letterSpacing: 2 },
   detectRow: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },
-  detectDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
-  detectTxt: { color: '#00F2FF', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
+  detectDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF' },
+  detectTxt: { color: '#00E5FF', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
 
   // Scan area
   scanArea: { position: 'relative', overflow: 'hidden' },
   webCamFallback: { backgroundColor: '#0A0A0A' },
   gridOverlay: {
     ...StyleSheet.absoluteFillObject,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
-    backgroundColor: 'rgba(0,242,255,0.65)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: 'rgba(0,229,255,0.65)',
   },
   darkOverlay: { backgroundColor: 'rgba(0,0,0,0.35)' },
 
   // HUD corners
-  corner: { position: 'absolute', width: 30, height: 30, borderColor: '#00F2FF', zIndex: 5 },
+  corner: { position: 'absolute', width: 30, height: 30, borderColor: '#00E5FF', zIndex: 5 },
   cornerTL: { top: 8, left: 8, borderTopWidth: 2, borderLeftWidth: 2 },
   cornerTR: { top: 8, right: 8, borderTopWidth: 2, borderRightWidth: 2 },
   cornerBL: { bottom: 8, left: 8, borderBottomWidth: 2, borderLeftWidth: 2 },
@@ -1883,10 +1883,10 @@ const s = StyleSheet.create({
 
   // EMA label
   emaLabel: { position: 'absolute', bottom: 6, left: 0, right: 0, alignItems: 'center', zIndex: 5 },
-  emaTxt: { color: 'rgba(0,242,255,0.2)', fontSize: 7, fontWeight: '900', letterSpacing: 2 },
+  emaTxt: { color: 'rgba(0,229,255,0.2)', fontSize: 7, fontWeight: '900', letterSpacing: 2 },
 
   // Flash
-  flash: { backgroundColor: '#D4AF37', zIndex: 200, pointerEvents: 'none' as any },
+  flash: { backgroundColor: '#FFD700', zIndex: 200, pointerEvents: 'none' as any },
 
   // Footer
   footer: {
@@ -1900,43 +1900,43 @@ const s = StyleSheet.create({
   loadingTxt: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
 
   // Detecting / Positioning
-  statusLabel: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
+  statusLabel: { color: '#00E5FF', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
   detectBar: { width: '100%', height: 4, backgroundColor: '#111', borderRadius: 2, overflow: 'hidden' },
-  detectFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
-  detectNote: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '400', letterSpacing: 1.5 },
-  detectCount: { color: '#00F2FF', fontSize: 26, fontWeight: '400', letterSpacing: 2 },
+  detectFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 2 },
+  detectNote: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '400', letterSpacing: 1.5 },
+  detectCount: { color: '#00E5FF', fontSize: 26, fontWeight: '400', letterSpacing: 2 },
   positioningRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   positioningDot: {
-    width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF',
+    width: 8, height: 8, borderRadius: 4, backgroundColor: '#00E5FF',
   },
-  positioningTxt: { color: '#00F2FF', fontSize: 14, fontWeight: '400', letterSpacing: 3 },
+  positioningTxt: { color: '#00E5FF', fontSize: 14, fontWeight: '400', letterSpacing: 3 },
 
   // Stabilizing
   stabilityRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' },
-  stabPct: { color: '#00F2FF', fontSize: 28, fontWeight: '400', width: 60, textAlign: 'center' as const },
+  stabPct: { color: '#00E5FF', fontSize: 28, fontWeight: '400', width: 60, textAlign: 'center' as const },
   stabBar: { flex: 1, height: 5, backgroundColor: '#111', borderRadius: 3, overflow: 'hidden' },
-  stabFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 3 },
+  stabFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 3 },
   tieneTxt: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
 
   // Countdown
-  countdownLabel: { color: '#D4AF37', fontSize: 9, fontWeight: '900', letterSpacing: 4 },
-  countdownBig: { color: '#D4AF37', fontSize: 64, fontWeight: '900', letterSpacing: 2, lineHeight: 68 },
-  countdownNote: { color: 'rgba(212,175,55,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  countdownLabel: { color: '#FFD700', fontSize: 9, fontWeight: '900', letterSpacing: 4 },
+  countdownBig: { color: '#FFD700', fontSize: 64, fontWeight: '900', letterSpacing: 2, lineHeight: 68 },
+  countdownNote: { color: 'rgba(255,215,0,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
 
   // Pose Check
   poseCommand: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1, textAlign: 'center' as const },
-  poseSubCommand: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 3, textAlign: 'center' as const },
+  poseSubCommand: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 3, textAlign: 'center' as const },
   poseTimerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, width: '100%' },
   poseTimerBg: { flex: 1, height: 6, backgroundColor: '#111', borderRadius: 3, overflow: 'hidden' },
-  poseTimerFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 3 },
-  poseTimerText: { color: '#00F2FF', fontSize: 14, fontWeight: '900', width: 80, textAlign: 'right' as const },
-  poseWarning: { color: '#FF453A', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-  poseOk: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  poseTimerFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 3 },
+  poseTimerText: { color: '#00E5FF', fontSize: 14, fontWeight: '900', width: 80, textAlign: 'right' as const },
+  poseWarning: { color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  poseOk: { color: '#00E5FF', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
 
   // Beats
   beatLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  beatDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF' },
-  beatLabel: { color: '#00F2FF', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
+  beatDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00E5FF' },
+  beatLabel: { color: '#00E5FF', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
   beatInstruction: {
     color: '#FFFFFF', fontSize: 32, fontWeight: '900',
     letterSpacing: 1.5,
@@ -1946,13 +1946,13 @@ const s = StyleSheet.create({
     textShadowRadius: 10,
   },
   beatBar: { width: '100%', height: 4, backgroundColor: '#111', borderRadius: 2, overflow: 'hidden' },
-  beatFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
-  beatPct: { color: 'rgba(255,255,255,0.60)', fontSize: 12, fontWeight: '900' },
+  beatFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 2 },
+  beatPct: { color: '#AAAAAA', fontSize: 12, fontWeight: '900' },
 
   // Approved
   approvedWrap: { alignItems: 'center', gap: 8 },
   approvedBig: {
-    color: '#D4AF37', fontSize: 32, fontWeight: '900',
+    color: '#FFD700', fontSize: 32, fontWeight: '900',
     letterSpacing: 0.5, textAlign: 'center',
   },
   approvedSub: {
@@ -1965,13 +1965,13 @@ const s = StyleSheet.create({
 const dbg$ = StyleSheet.create({
   btn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderWidth: 1, borderColor: 'rgba(255,69,58,0.35)',
-    borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8,
-    backgroundColor: 'rgba(255,69,58,0.06)',
+    borderWidth: 1, borderColor: 'rgba(255,59,48,0.35)',
+    borderRadius: 8, paddingHorizontal: 24, paddingVertical: 8,
+    backgroundColor: 'rgba(255,59,48,0.06)',
     marginTop: 8,
   },
   txt: {
-    color: '#FF453A', fontSize: 10, fontWeight: '900', letterSpacing: 3,
+    color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 3,
   },
 });
 
@@ -1983,8 +1983,8 @@ const cw$ = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'center',
   },
   txt: {
-    color: '#D4AF37', fontSize: 18, fontWeight: '900', letterSpacing: 2,
-    textShadowColor: 'rgba(212,175,55,0.8)',
+    color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 2,
+    textShadowColor: 'rgba(255,215,0,0.8)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 10,
   },
@@ -1996,23 +1996,23 @@ const fps$ = StyleSheet.create({
     position: 'absolute', top: 8, left: 8, zIndex: 25,
     backgroundColor: 'rgba(0,0,0,0.6)',
     borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
-  txt: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-  low: { color: '#FF453A' }, // red when below 20fps
+  txt: { color: '#00E5FF', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  low: { color: '#FF3B30' }, // red when below 20fps
 });
 
 // ── CDN FALLBACK — "USA SCAN MANUALE" button
 const fallback$ = StyleSheet.create({
   btn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderWidth: 1.5, borderColor: 'rgba(212,175,55,0.4)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.4)',
     borderRadius: 10, paddingHorizontal: 18, paddingVertical: 12,
-    backgroundColor: 'rgba(212,175,55,0.06)',
+    backgroundColor: 'rgba(255,215,0,0.06)',
     marginTop: 10,
   },
   txt: {
-    color: '#D4AF37', fontSize: 12, fontWeight: '900', letterSpacing: 2,
+    color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 2,
   },
 });
 
@@ -2044,28 +2044,28 @@ const prv$ = StyleSheet.create({
     backgroundColor: '#0A0A0A',
     borderTopLeftRadius: 20, borderTopRightRadius: 20,
     padding: 24, gap: 14,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
-  topBar: { height: 2, backgroundColor: '#00F2FF', opacity: 0.6, marginHorizontal: -24, marginTop: -24, marginBottom: 8 },
+  topBar: { height: 2, backgroundColor: '#00E5FF', opacity: 0.6, marginHorizontal: -24, marginTop: -24, marginBottom: 8 },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  label: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  label: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   msg: { color: '#E0E0E0', fontSize: 13, fontWeight: '600', lineHeight: 22 },
-  highlight: { color: '#00F2FF', fontWeight: '900' },
+  highlight: { color: '#00E5FF', fontWeight: '900' },
   row: { gap: 10 },
   acceptBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#00F2FF', borderRadius: 10, paddingVertical: 14,
+    backgroundColor: '#00E5FF', borderRadius: 10, paddingVertical: 14,
   },
-  acceptTxt: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  acceptTxt: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   cancelBtn: {
     alignItems: 'center', paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', borderRadius: 10,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', borderRadius: 10,
   },
   cancelTxt: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
   // Auto-accept countdown
-  countdownRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14, backgroundColor: 'rgba(212,175,55,0.06)', borderRadius: 8, padding: 10 },
-  countdownTxt: { color: 'rgba(212,175,55,0.7)', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
-  countdownNum: { color: '#D4AF37', fontSize: 14, fontWeight: '900' },
+  countdownRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14, backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 8, padding: 10 },
+  countdownTxt: { color: 'rgba(255,215,0,0.7)', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
+  countdownNum: { color: '#FFD700', fontSize: 14, fontWeight: '900' },
 });
 
 // ── CAMERA ERROR styles

@@ -18,8 +18,8 @@ import { useAuth, UserRole, ROLE_CONFIG } from '../contexts/AuthContext';
 import { profileDevice, getTierLabel, getTrackingMode } from '../utils/DeviceIntelligence';
 
 const { width: SW } = Dimensions.get('window');
-const CYAN = '#00F2FF';
-const GOLD = '#D4AF37';
+const CYAN = '#00E5FF';
+const GOLD = '#FFD700';
 const WHITE = '#FFFFFF';
 const DIM = 'rgba(255,255,255,0.55)';
 const DIM2 = 'rgba(255,255,255,0.3)';
@@ -82,7 +82,7 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
       <TouchableOpacity style={st.backdrop} activeOpacity={1} onPress={onClose}>
         <View style={st.blurLayer} />
         <Animated.View entering={SlideInRight.duration(250)} exiting={SlideOutRight.duration(200)} style={st.panel}>
-          <LinearGradient colors={['#0A0A0A', '#060606']} style={st.panelInner}>
+          <LinearGradient colors={['#0A0A0A', '#000000']} style={st.panelInner}>
 
             {/* ── HEADER ── */}
             <View style={st.header}>
@@ -197,8 +197,8 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
               {/* ── LOGOUT ── */}
               <View style={st.divider} />
               <TouchableOpacity style={st.logoutItem} activeOpacity={0.75} onPress={handleLogout}>
-                <View style={[st.iconWrap, { backgroundColor: 'rgba(255,69,58,0.05)', borderColor: 'rgba(255,69,58,0.15)' }]}>
-                  <Ionicons name="log-out-outline" size={18} color="rgba(255,69,58,0.7)" />
+                <View style={[st.iconWrap, { backgroundColor: 'rgba(255,59,48,0.05)', borderColor: 'rgba(255,59,48,0.15)' }]}>
+                  <Ionicons name="log-out-outline" size={18} color="rgba(255,59,48,0.7)" />
                 </View>
                 <View style={st.itemText}>
                   <Text style={st.logoutLabel}>LOGOUT</Text>
@@ -224,21 +224,21 @@ const st = StyleSheet.create({
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px) saturate(130%)', WebkitBackdropFilter: 'blur(20px) saturate(130%)' } as any : {}),
   },
   panel: { width: SW * 0.78, height: '100%' },
-  panelInner: { flex: 1, paddingTop: 60, borderLeftWidth: 1.5, borderLeftColor: 'rgba(0,242,255,0.65)' },
+  panelInner: { flex: 1, paddingTop: 60, borderLeftWidth: 1.5, borderLeftColor: 'rgba(0,229,255,0.65)' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 22, marginBottom: 16 },
   headerLeft: { flex: 1, gap: 2 },
   headerTitle: { color: WHITE, fontSize: 16, fontWeight: '800', letterSpacing: 4 },
   headerSub: { color: DIM2, fontSize: 12, fontWeight: '400', letterSpacing: 2, marginTop: 1 },
   tierBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 22, marginBottom: 20,
-    paddingVertical: 10, paddingHorizontal: 14, backgroundColor: 'rgba(0,242,255,0.65)',
-    borderRadius: 10, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    paddingVertical: 10, paddingHorizontal: 24, backgroundColor: 'rgba(0,229,255,0.65)',
+    borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   tierLabel: { color: CYAN, fontSize: 14, fontWeight: '800', letterSpacing: 2 },
   tierSub: { color: DIM, fontSize: 10, fontWeight: '400', letterSpacing: 1 },
   tierLiveDot: {
-    width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF',
-    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4,
+    width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF',
+    shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4,
   },
   item: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 15, paddingHorizontal: 22 },
   iconWrap: { width: 34, height: 34, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' },
@@ -256,17 +256,17 @@ const st = StyleSheet.create({
   founderQuote: { flex: 1, color: GOLD, fontSize: 13, fontWeight: '700', letterSpacing: 0.5, lineHeight: 16, opacity: 0.85 },
   adminSection: { marginTop: 4, paddingHorizontal: 22 },
   adminHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
-  adminTitle: { color: '#FF453A', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
+  adminTitle: { color: '#FF3B30', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
   adminSub: { color: DIM, fontSize: 11, fontWeight: '400', letterSpacing: 1.5, marginBottom: 12 },
   segGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12, width: '100%' },
   segBtn: {
     width: '46%', alignItems: 'center', gap: 4, paddingVertical: 14, borderRadius: 12,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.50)', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.50)', backgroundColor: 'rgba(255,255,255,0.05)',
   },
   segBtnActive: {
-    borderColor: GOLD, backgroundColor: 'rgba(212,175,55,0.08)',
+    borderColor: GOLD, backgroundColor: 'rgba(255,215,0,0.08)',
   },
-  segLabel: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5, color: 'rgba(255,255,255,0.45)' },
+  segLabel: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5, color: '#AAAAAA' },
   segLabelActive: { color: GOLD },
   segActiveDot: {
     width: 4, height: 4, borderRadius: 2, backgroundColor: GOLD,
@@ -274,14 +274,14 @@ const st = StyleSheet.create({
   },
   activeBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: 8, borderRadius: 8, backgroundColor: 'rgba(212,175,55,0.04)',
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.1)', marginBottom: 8,
+    paddingVertical: 8, borderRadius: 8, backgroundColor: 'rgba(255,215,0,0.04)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.1)', marginBottom: 8,
   },
   activeText: { fontSize: 12, fontWeight: '900', letterSpacing: 2, color: GOLD },
   logoutItem: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 15, paddingHorizontal: 22, marginTop: 4 },
-  logoutLabel: { color: 'rgba(255,69,58,0.6)', fontSize: 16, fontWeight: '800', letterSpacing: 1.5 },
-  logoutSub: { color: 'rgba(255,69,58,0.3)', fontSize: 13 },
-  ticker: { height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,242,255,0.65)', justifyContent: 'center' },
+  logoutLabel: { color: 'rgba(255,59,48,0.6)', fontSize: 16, fontWeight: '800', letterSpacing: 1.5 },
+  logoutSub: { color: 'rgba(255,59,48,0.3)', fontSize: 13 },
+  ticker: { height: 22, overflow: 'hidden', borderTopWidth: 1, borderTopColor: 'rgba(0,229,255,0.65)', justifyContent: 'center' },
   tickerText: { color: CYAN, fontSize: 11, fontWeight: '400', letterSpacing: 0.5, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.5 },
-  footer: { color: 'rgba(255,255,255,0.50)', fontSize: 12, fontWeight: '400', letterSpacing: 2, paddingHorizontal: 22, paddingBottom: 30 },
+  footer: { color: '#AAAAAA', fontSize: 12, fontWeight: '400', letterSpacing: 2, paddingHorizontal: 22, paddingBottom: 30 },
 });

@@ -13,9 +13,9 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { api } from '../../utils/api';
 
-const CYAN = '#00F2FF';
-const GOLD = '#D4AF37';
-const BG   = '#050505';
+const CYAN = '#00E5FF';
+const GOLD = '#FFD700';
+const BG   = '#000000';
 
 const CITIES = [
   'CHICAGO', 'MILANO', 'ROMA', 'TORINO', 'NAPOLI',
@@ -146,7 +146,7 @@ export default function KoreHubRegistration() {
               value={gymName}
               onChangeText={setGymName}
               placeholder="KORE GYM CHICAGO"
-              placeholderTextColor="rgba(0,242,255,0.65)"
+              placeholderTextColor="rgba(0,229,255,0.65)"
               autoCapitalize="characters"
               selectionColor={CYAN}
             />
@@ -175,7 +175,7 @@ export default function KoreHubRegistration() {
               value={email}
               onChangeText={setEmail}
               placeholder="coach@palestra.com"
-              placeholderTextColor="rgba(0,242,255,0.65)"
+              placeholderTextColor="rgba(0,229,255,0.65)"
               keyboardType="email-address"
               autoCapitalize="none"
               selectionColor={CYAN}
@@ -243,7 +243,7 @@ const s = StyleSheet.create({
 
   // Header
   header: { marginBottom: 24, gap: 6 },
-  iconBox: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  iconBox: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(0,229,255,0.65)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   title: { color: CYAN, fontSize: 14, fontWeight: '400', letterSpacing: 6 },
   titleBig: { color: '#FFFFFF', fontSize: 44, fontWeight: '900', letterSpacing: 0.5, lineHeight: 48 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.7, shadowRadius: 6 },
@@ -251,7 +251,7 @@ const s = StyleSheet.create({
 
   // Pillars
   pillarsRow: { flexDirection: 'row', gap: 8, marginBottom: 28 },
-  pillar: { flex: 1, alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  pillar: { flex: 1, alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   pillarTxt: { color: 'rgba(255,255,255,0.6)', fontSize: 9, fontWeight: '700', letterSpacing: 1, textAlign: 'center' },
 
   // Form
@@ -259,36 +259,36 @@ const s = StyleSheet.create({
   sectionLabel: { color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 4 },
   field: { gap: 8 },
   fieldLabel: { color: '#E0E0E0', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
-  input: { backgroundColor: 'rgba(0,242,255,0.025)', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)', borderRadius: 10, padding: 16, color: CYAN, fontSize: 16, fontWeight: '800', letterSpacing: 1 },
+  input: { backgroundColor: 'rgba(0,229,255,0.025)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', borderRadius: 10, padding: 16, color: CYAN, fontSize: 16, fontWeight: '800', letterSpacing: 1 },
   picker: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   pickerSelected: { borderColor: CYAN },
   pickerValTxt: { color: CYAN, fontSize: 16, fontWeight: '800', letterSpacing: 1 },
-  pickerPlaceholder: { color: 'rgba(0,242,255,0.65)', fontSize: 16, fontWeight: '800' },
+  pickerPlaceholder: { color: 'rgba(0,229,255,0.65)', fontSize: 16, fontWeight: '800' },
   errorBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,59,48,0.06)', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)' },
   errorTxt: { color: '#FF3B30', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
   submitBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: CYAN, borderRadius: 10, paddingVertical: 18, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 10 },
-  submitBtnLoading: { backgroundColor: 'rgba(0,242,255,0.5)' },
+  submitBtnLoading: { backgroundColor: 'rgba(0,229,255,0.5)' },
   submitTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   disclaimerTxt: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 18 },
 
   // Success
   successWrap: { justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
-  successCard: { width: '100%', alignItems: 'center', gap: 12, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 20, padding: 32, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
-  successIcon: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(0,242,255,0.65)', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: CYAN },
+  successCard: { width: '100%', alignItems: 'center', gap: 12, backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 20, padding: 32, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
+  successIcon: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(0,229,255,0.65)', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: CYAN },
   successTitle: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
   successSub: { color: GOLD, fontSize: 16, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
   successDivider: { height: 1, width: '100%', backgroundColor: 'rgba(255,255,255,0.06)' },
   successNote: { color: '#E0E0E0', fontSize: 14, fontWeight: '400', textAlign: 'center', lineHeight: 20, letterSpacing: 1 },
-  doneBtn: { marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 1.5, borderColor: CYAN, borderRadius: 10, paddingVertical: 14, paddingHorizontal: 32 },
+  doneBtn: { marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: 'rgba(0,229,255,0.65)', borderWidth: 1, borderColor: CYAN, borderRadius: 10, paddingVertical: 14, paddingHorizontal: 32 },
   doneBtnTxt: { color: CYAN, fontSize: 14, fontWeight: '400', letterSpacing: 4 },
 
   // Modal
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'flex-end' },
-  modalSheet: { backgroundColor: '#0A0A0A', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, maxHeight: '55%', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  modalSheet: { backgroundColor: '#0A0A0A', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, maxHeight: '55%', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   modalTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 4, marginBottom: 12 },
   modalDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', marginBottom: 8 },
   cityOption: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
-  cityOptionActive: { backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 8, paddingHorizontal: 8 },
-  cityTxt: { flex: 1, color: 'rgba(255,255,255,0.45)', fontSize: 14, fontWeight: '400', letterSpacing: 1 },
+  cityOptionActive: { backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 8, paddingHorizontal: 8 },
+  cityTxt: { flex: 1, color: '#AAAAAA', fontSize: 14, fontWeight: '400', letterSpacing: 1 },
   cityTxtActive: { color: CYAN },
 });

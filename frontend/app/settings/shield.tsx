@@ -15,9 +15,9 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 
-const CYAN = '#00F2FF';
-const GOLD = '#D4AF37';
-const BG   = '#050505';
+const CYAN = '#00E5FF';
+const GOLD = '#FFD700';
+const BG   = '#000000';
 
 const PILLARS = [
   {
@@ -157,7 +157,7 @@ export default function PrivacyShield() {
               <Switch
                 value={ghostMode}
                 onValueChange={handleGhostToggle}
-                trackColor={{ false: '#1A1A1A', true: 'rgba(0,242,255,0.3)' }}
+                trackColor={{ false: '#1A1A1A', true: 'rgba(0,229,255,0.3)' }}
                 thumbColor={ghostMode ? CYAN : '#555'}
                 ios_backgroundColor="#1A1A1A"
               />
@@ -194,7 +194,7 @@ export default function PrivacyShield() {
 
         {/* Footer */}
         <View style={s.footer}>
-          <Ionicons name="shield" size={12} color="rgba(0,242,255,0.2)" />
+          <Ionicons name="shield" size={12} color="rgba(0,229,255,0.2)" />
           <Text style={s.footerTxt}>ARENAKORE PRIVACY SHIELD v2.0 · GDPR COMPLIANT</Text>
         </View>
       </ScrollView>
@@ -210,7 +210,7 @@ const s = StyleSheet.create({
   backTxt: { color: CYAN, fontSize: 13, fontWeight: '400', letterSpacing: 2 },
 
   header: { marginBottom: 28, gap: 4, alignItems: 'flex-start' },
-  shieldIcon: { width: 60, height: 60, borderRadius: 18, backgroundColor: 'rgba(0,242,255,0.65)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  shieldIcon: { width: 60, height: 60, borderRadius: 20, backgroundColor: 'rgba(0,229,255,0.65)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   title: { color: CYAN, fontSize: 13, fontWeight: '400', letterSpacing: 6 },
   titleBig: { color: '#FFFFFF', fontSize: 44, fontWeight: '400', letterSpacing: 0.5, lineHeight: 48 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6 },
@@ -222,22 +222,22 @@ const s = StyleSheet.create({
   pillarTitle: { fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   pillarDesc: { color: '#E0E0E0', fontSize: 11, fontWeight: '700', lineHeight: 18 },
 
-  ghostCard: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 24, gap: 10 },
+  ghostCard: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginBottom: 24, gap: 10 },
   ghostHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   ghostIconBox: { width: 40, height: 40, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center' },
   ghostInfo: { flex: 1, gap: 2 },
   ghostTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  ghostDesc: { color: 'rgba(255,255,255,0.55)', fontSize: 14, fontWeight: '400', lineHeight: 18 },
+  ghostDesc: { color: '#AAAAAA', fontSize: 14, fontWeight: '400', lineHeight: 18 },
   ghostActive: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(136,136,136,0.1)', borderRadius: 8, padding: 10 },
   ghostActiveTxt: { color: '#888', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
 
   wipeSection: { gap: 10, marginBottom: 28 },
   wipeLabel: { color: '#FF3B30', fontSize: 11, fontWeight: '400', letterSpacing: 4 },
-  wipeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: 'rgba(255,59,48,0.06)', borderWidth: 1.5, borderColor: 'rgba(255,59,48,0.3)', borderRadius: 10, paddingVertical: 16 },
+  wipeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: 'rgba(255,59,48,0.06)', borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)', borderRadius: 10, paddingVertical: 16 },
   wipeBtnLoading: { opacity: 0.5 },
   wipeBtnTxt: { color: '#FF3B30', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
-  wipeNote: { color: 'rgba(255,255,255,0.45)', fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 18 },
+  wipeNote: { color: '#AAAAAA', fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 18 },
 
   footer: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center', paddingTop: 8 },
-  footerTxt: { color: 'rgba(0,242,255,0.2)', fontSize: 8, fontWeight: '400', letterSpacing: 2 },
+  footerTxt: { color: 'rgba(0,229,255,0.2)', fontSize: 8, fontWeight: '400', letterSpacing: 2 },
 });

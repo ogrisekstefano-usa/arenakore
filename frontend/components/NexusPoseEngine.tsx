@@ -7,7 +7,7 @@
  *   → context HTTPS → navigator.mediaDevices disponibile su iOS/Android
  *
  * Il backend serve la pagina scanner su:
- *   GET https://voice-coach-40.preview.emergentagent.com/scanner
+ *   GET https://arena-scan-lab.preview.emergentagent.com/scanner
  *   (NON prefissato /api — è una pagina HTML, non un endpoint JSON)
  */
 import React, { useCallback, useRef, useState, useEffect } from 'react';
@@ -43,7 +43,7 @@ const SCANNER_URL = (() => {
   const base = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
   return base
     ? `${base}/api/nexus/scanner`
-    : 'https://voice-coach-40.preview.emergentagent.com/api/nexus/scanner';
+    : 'https://arena-scan-lab.preview.emergentagent.com/api/nexus/scanner';
 })();
 
 export function NexusPoseEngine({ onPoseData, enabled = true }: Props) {

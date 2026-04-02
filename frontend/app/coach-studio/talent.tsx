@@ -19,18 +19,18 @@ import { CertBadge } from '../../components/CertBadge';
 import { useRouter } from 'expo-router';
 
 const TIER_CFG: Record<string, { color: string; bg: string; icon: string }> = {
-  ELITE:  { color: '#D4AF37', bg: 'rgba(212,175,55,0.12)', icon: '👑' },
-  PRO:    { color: '#00F2FF', bg: 'rgba(0,242,255,0.08)',  icon: '⭐' },
-  RISING: { color: '#34C759', bg: 'rgba(52,199,89,0.08)',  icon: '🔥' },
+  ELITE:  { color: '#FFD700', bg: 'rgba(255,215,0,0.12)', icon: '👑' },
+  PRO:    { color: '#00E5FF', bg: 'rgba(0,229,255,0.08)',  icon: '⭐' },
+  RISING: { color: '#00FF87', bg: 'rgba(0,255,135,0.08)',  icon: '🔥' },
   SCOUT:  { color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.04)', icon: '🔍' },
 };
 
 const DISC_OPTIONS = [
   { key: '', label: 'ALL' },
-  { key: 'endurance', label: 'ENDURANCE', color: '#00F2FF' },
-  { key: 'power',     label: 'POWER',     color: '#FF453A' },
+  { key: 'endurance', label: 'ENDURANCE', color: '#00E5FF' },
+  { key: 'power',     label: 'POWER',     color: '#FF3B30' },
   { key: 'agility',   label: 'AGILITY',   color: '#FF9500' },
-  { key: 'mobility',  label: 'MOBILITY',  color: '#34C759' },
+  { key: 'mobility',  label: 'MOBILITY',  color: '#00FF87' },
 ];
 
 const CREW_STATUS_OPTIONS = [
@@ -129,7 +129,7 @@ export default function TalentScout() {
         {CONTINENT_OPTIONS.map(c => (
           <TouchableOpacity key={c.key} style={[t$.pill, filters.continent === c.key && t$.pillActive]}
             onPress={() => setFilters(p => ({ ...p, continent: c.key }))}>
-            <Text style={[t$.pillText, filters.continent === c.key && { color: '#D4AF37' }]}>{c.label}</Text>
+            <Text style={[t$.pillText, filters.continent === c.key && { color: '#FFD700' }]}>{c.label}</Text>
           </TouchableOpacity>
         ))}
         <View style={t$.pillDivider} />
@@ -137,7 +137,7 @@ export default function TalentScout() {
         {DISC_OPTIONS.map(d => (
           <TouchableOpacity key={d.key} style={[t$.pill, filters.discipline === d.key && t$.pillActive, d.color ? { borderColor: d.color + '40' } : {}]}
             onPress={() => setFilters(p => ({ ...p, discipline: d.key }))}>
-            <Text style={[t$.pillText, filters.discipline === d.key && { color: d.color || '#D4AF37' }]}>{d.label}</Text>
+            <Text style={[t$.pillText, filters.discipline === d.key && { color: d.color || '#FFD700' }]}>{d.label}</Text>
           </TouchableOpacity>
         ))}
         <View style={t$.pillDivider} />
@@ -145,7 +145,7 @@ export default function TalentScout() {
         {CREW_STATUS_OPTIONS.map(cs => (
           <TouchableOpacity key={cs.key} style={[t$.pill, filters.crewStatus === cs.key && t$.pillActive]}
             onPress={() => setFilters(p => ({ ...p, crewStatus: cs.key }))}>
-            <Text style={[t$.pillText, filters.crewStatus === cs.key && { color: '#00F2FF' }]}>{cs.label}</Text>
+            <Text style={[t$.pillText, filters.crewStatus === cs.key && { color: '#00E5FF' }]}>{cs.label}</Text>
           </TouchableOpacity>
         ))}
         <View style={t$.pillDivider} />
@@ -153,7 +153,7 @@ export default function TalentScout() {
         {[{ val: 'efficiency_ratio', label: '⚡ EFFICIENCY' }, { val: 'dna_avg', label: '🧬 DNA' }].map(s => (
           <TouchableOpacity key={s.val} style={[t$.pill, filters.sortBy === s.val && t$.pillActive]}
             onPress={() => setFilters(p => ({ ...p, sortBy: s.val }))}>
-            <Text style={[t$.pillText, filters.sortBy === s.val && { color: '#D4AF37' }]}>{s.label}</Text>
+            <Text style={[t$.pillText, filters.sortBy === s.val && { color: '#FFD700' }]}>{s.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -178,14 +178,14 @@ export default function TalentScout() {
         <View style={t$.tableHeader}>
           <Text style={[t$.th, { flex: 1 }]}>ATLETA</Text>
           <Text style={t$.th}>DNA</Text>
-          <Text style={[t$.th, { color: '#D4AF37' }]}>⚡EFF</Text>
+          <Text style={[t$.th, { color: '#FFD700' }]}>⚡EFF</Text>
           <Text style={t$.th}>TIER</Text>
           <Text style={t$.th}>STATUS</Text>
           <View style={{ width: 100 }} />
         </View>
 
         {loading ? (
-          <View style={t$.loadRow}><ActivityIndicator color="#D4AF37" size="small" /></View>
+          <View style={t$.loadRow}><ActivityIndicator color="#FFD700" size="small" /></View>
         ) : athletes.length === 0 ? (
           <View style={t$.emptyRow}>
             <Ionicons name="search-outline" size={24} color="rgba(255,255,255,0.1)" />
@@ -199,7 +199,7 @@ export default function TalentScout() {
               <Text style={t$.rowRank}>#{idx + 1}</Text>
               {/* Avatar + name + cert badge */}
               <View style={[t$.rowAthlete, { flex: 1 }]}>
-                <View style={[t$.rowAvatar, { backgroundColor: ath.avatar_color || '#00F2FF' }]}>
+                <View style={[t$.rowAvatar, { backgroundColor: ath.avatar_color || '#00E5FF' }]}>
                   <Text style={t$.rowAvatarLetter}>{(ath.username || '?')[0].toUpperCase()}</Text>
                 </View>
                 <View style={t$.rowInfo}>
@@ -207,15 +207,15 @@ export default function TalentScout() {
                     <Text style={t$.rowName} numberOfLines={1}>{ath.username}</Text>
                     <CertBadge certified={ath.is_certified} size="xs" />
                   </View>
-                  <Text style={t$.rowMeta}>{ath.city} · <Text style={{ color: ath.dominant_discipline === 'POWER' ? '#FF453A' : ath.dominant_discipline === 'ENDURANCE' ? '#00F2FF' : '#FF9500' }}>{ath.dominant_discipline}</Text></Text>
+                  <Text style={t$.rowMeta}>{ath.city} · <Text style={{ color: ath.dominant_discipline === 'POWER' ? '#FF3B30' : ath.dominant_discipline === 'ENDURANCE' ? '#00E5FF' : '#FF9500' }}>{ath.dominant_discipline}</Text></Text>
                 </View>
                 <MiniRadar dna={ath.dna} color={tier.color} size={36} />
               </View>
               {/* DNA */}
-              <Text style={[t$.rowDna, { color: ath.dna_avg >= 80 ? '#D4AF37' : '#FFFFFF' }]}>{ath.dna_avg}</Text>
+              <Text style={[t$.rowDna, { color: ath.dna_avg >= 80 ? '#FFD700' : '#FFFFFF' }]}>{ath.dna_avg}</Text>
               {/* ⚡ Efficiency Ratio — primary metric */}
               <View style={{ width: 54, alignItems: 'center' }}>
-                <Text style={[t$.rowScore, { color: ath.efficiency_ratio >= 80 ? '#D4AF37' : tier.color, fontSize: 15 }]}>{ath.efficiency_ratio}</Text>
+                <Text style={[t$.rowScore, { color: ath.efficiency_ratio >= 80 ? '#FFD700' : tier.color, fontSize: 15 }]}>{ath.efficiency_ratio}</Text>
                 <Text style={{ fontSize: 8, color: 'rgba(255,255,255,0.25)', letterSpacing: 1 }}>⚡EFF</Text>
               </View>
               {/* Tier */}
@@ -226,12 +226,12 @@ export default function TalentScout() {
               {/* Free Agent / In Crew */}
               <View style={{ width: 60, alignItems: 'center' }}>
                 {ath.is_free_agent ? (
-                  <View style={[t$.statusPill, { backgroundColor: 'rgba(52,199,89,0.1)', borderColor: 'rgba(52,199,89,0.3)' }]}>
-                    <Text style={{ color: '#34C759', fontSize: 8, fontWeight: '900' }}>⚡ FREE</Text>
+                  <View style={[t$.statusPill, { backgroundColor: 'rgba(0,255,135,0.1)', borderColor: 'rgba(0,255,135,0.3)' }]}>
+                    <Text style={{ color: '#00FF87', fontSize: 8, fontWeight: '900' }}>⚡ FREE</Text>
                   </View>
                 ) : (
-                  <View style={[t$.statusPill, { backgroundColor: 'rgba(0,242,255,0.06)', borderColor: 'rgba(0,242,255,0.2)' }]}>
-                    <Text style={{ color: '#00F2FF', fontSize: 8, fontWeight: '700' }}>🛡 CREW</Text>
+                  <View style={[t$.statusPill, { backgroundColor: 'rgba(0,229,255,0.06)', borderColor: '#00E5FF22' }]}>
+                    <Text style={{ color: '#00E5FF', fontSize: 8, fontWeight: '700' }}>🛡 CREW</Text>
                   </View>
                 )}
               </View>
@@ -245,8 +245,8 @@ export default function TalentScout() {
                 >
                   {isDrafting ? <ActivityIndicator color="#000" size="small" /> : (
                     <>
-                      <Ionicons name={ath.already_drafted ? 'checkmark-circle' : 'people'} size={11} color={ath.already_drafted ? '#34C759' : '#000'} />
-                      <Text style={[t$.draftBtnText, ath.already_drafted && { color: '#34C759' }, { fontSize: 9, letterSpacing: 0.5 }]}>
+                      <Ionicons name={ath.already_drafted ? 'checkmark-circle' : 'people'} size={11} color={ath.already_drafted ? '#00FF87' : '#000'} />
+                      <Text style={[t$.draftBtnText, ath.already_drafted && { color: '#00FF87' }, { fontSize: 9, letterSpacing: 0.5 }]}>
                         {ath.already_drafted ? 'IN SQUAD' : 'INVITE'}
                       </Text>
                     </>
@@ -273,15 +273,15 @@ export default function TalentScout() {
           <SectionHeader title="IL MIO TEAM REMOTO" sub={`${drafts.length} atleti draftati`} />
           {drafts.map(d => (
             <View key={d.draft_id} style={t$.draftRow}>
-              <View style={[t$.draftAvatar, { backgroundColor: '#D4AF37' }]}>
+              <View style={[t$.draftAvatar, { backgroundColor: '#FFD700' }]}>
                 <Text style={t$.draftAvatarLetter}>{(d.username || '?')[0]}</Text>
               </View>
               <View style={t$.draftInfo}>
                 <Text style={t$.draftName}>{d.username}</Text>
                 <Text style={t$.draftMeta}>{d.city} · DNA {d.dna_avg} · Relative {d.relative_score}</Text>
               </View>
-              <View style={[t$.draftStatus, { borderColor: d.status === 'accepted' ? '#34C759' : 'rgba(255,149,0,0.4)' }]}>
-                <Text style={[t$.draftStatusText, { color: d.status === 'accepted' ? '#34C759' : '#FF9500' }]}>
+              <View style={[t$.draftStatus, { borderColor: d.status === 'accepted' ? '#00FF87' : 'rgba(255,149,0,0.4)' }]}>
+                <Text style={[t$.draftStatusText, { color: d.status === 'accepted' ? '#00FF87' : '#FF9500' }]}>
                   {d.status?.toUpperCase()}
                 </Text>
               </View>
@@ -298,16 +298,16 @@ const t$ = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   pageTitle: { color: '#FFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
   pageSub: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '300', marginTop: 3, maxWidth: 400 },
-  draftCount: { alignItems: 'center', backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)' },
-  draftCountVal: { color: '#D4AF37', fontSize: 24, fontWeight: '900' },
-  draftCountLabel: { color: 'rgba(212,175,55,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  draftCount: { alignItems: 'center', backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)' },
+  draftCountVal: { color: '#FFD700', fontSize: 24, fontWeight: '900' },
+  draftCountLabel: { color: 'rgba(255,215,0,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
   filters: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' },
   filterWrap: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#0A0A0A', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: '#1E1E1E' },
   filterInput: { color: '#FFF', fontSize: 12, width: 150, outlineStyle: 'none' } as any,
   sortRow: { flexDirection: 'row', gap: 6 },
   sortBtn: { borderWidth: 1, borderColor: '#1E1E1E', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
-  sortBtnActive: { borderColor: 'rgba(212,175,55,0.5)', backgroundColor: 'rgba(212,175,55,0.06)' },
-  sortText: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  sortBtnActive: { borderColor: 'rgba(255,215,0,0.5)', backgroundColor: 'rgba(255,215,0,0.06)' },
+  sortText: { color: 'rgba(255,255,255,0.30)', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   legend: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 14, gap: 8, borderWidth: 1, borderColor: '#1E1E1E' },
   legendTitle: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
   legendDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '300', lineHeight: 16 },
@@ -315,12 +315,12 @@ const t$ = StyleSheet.create({
   tierPill: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   tierLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   table: { backgroundColor: '#0A0A0A', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#1E1E1E' },
-  tableHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#111', paddingVertical: 10, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: '#1E1E1E' },
+  tableHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#111', paddingVertical: 10, paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: '#1E1E1E' },
   th: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '900', letterSpacing: 2, width: 60, textAlign: 'center' },
   loadRow: { alignItems: 'center', paddingVertical: 30 },
   emptyRow: { alignItems: 'center', paddingVertical: 30, gap: 10 },
   emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 12 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: '#111' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10, paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: '#111' },
   rowRank: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '900', width: 24, textAlign: 'center' },
   rowAthlete: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   rowAvatar: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
@@ -333,16 +333,16 @@ const t$ = StyleSheet.create({
   rowTier: { width: 70, flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, justifyContent: 'center' },
   rowTierText: { fontSize: 9, fontWeight: '900', letterSpacing: 1 },
   rowLevel: { width: 40, color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '400', textAlign: 'center' },
-  draftBtn: { width: 68, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: '#D4AF37', borderRadius: 8, paddingVertical: 7 },
-  draftBtnDone: { backgroundColor: 'rgba(52,199,89,0.08)', borderWidth: 1, borderColor: 'rgba(52,199,89,0.3)' },
+  draftBtn: { width: 68, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: '#FFD700', borderRadius: 8, paddingVertical: 7 },
+  draftBtnDone: { backgroundColor: 'rgba(0,255,135,0.08)', borderWidth: 1, borderColor: 'rgba(0,255,135,0.3)' },
   draftBtnText: { color: '#000', fontSize: 10, fontWeight: '900' },
   reportBtn: { width: 68, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: 'rgba(175,82,222,0.12)', borderRadius: 8, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(175,82,222,0.3)' },
   reportBtnText: { color: '#AF52DE', fontSize: 9, fontWeight: '900', letterSpacing: 0.5 },
   // NEW: pill filter row
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' },
   pill: { borderWidth: 1, borderColor: '#1E1E1E', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: '#0A0A0A' },
-  pillActive: { borderColor: 'rgba(212,175,55,0.5)', backgroundColor: 'rgba(212,175,55,0.08)' },
-  pillText: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  pillActive: { borderColor: 'rgba(255,215,0,0.5)', backgroundColor: 'rgba(255,215,0,0.08)' },
+  pillText: { color: 'rgba(255,255,255,0.30)', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
   pillDivider: { width: 1, height: 20, backgroundColor: '#1E1E1E' },
   statusPill: { borderWidth: 1, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 3, alignItems: 'center' },
   draftsSection: { gap: 10 },

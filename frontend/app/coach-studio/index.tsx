@@ -103,7 +103,7 @@ function QuickAction({ label, icon, color, onPress }: any) {
   );
 }
 const qa$ = StyleSheet.create({
-  btn: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, flex: 1 },
+  btn: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 24, paddingVertical: 10, flex: 1 },
   label: { fontSize: 11, letterSpacing: 1.5 },
 });
 

@@ -6,7 +6,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://voice-coach-40.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://arena-scan-lab.preview.emergentagent.com')
 FOUNDER_EMAIL = "ogrisek.stefano@gmail.com"
 FOUNDER_PASS = "Founder@KORE2026!"
 

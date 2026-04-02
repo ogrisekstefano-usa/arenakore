@@ -52,12 +52,12 @@ export function AKBadge({ compact = false }: { compact?: boolean }) {
 }
 
 const ak$ = StyleSheet.create({
-  badge: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(212,175,55,0.3)' },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(255,215,0,0.3)' },
   badgeIcon: { fontSize: 20 },
-  badgeVal: { color: '#D4AF37', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
-  badgeLabel: { color: 'rgba(212,175,55,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
-  badgeCompact: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)' },
-  badgeValCompact: { color: '#D4AF37', fontSize: 12, fontWeight: '900' },
+  badgeVal: { color: '#FFD700', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
+  badgeLabel: { color: 'rgba(255,215,0,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  badgeCompact: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)' },
+  badgeValCompact: { color: '#FFD700', fontSize: 12, fontWeight: '900' },
 });
 
 // ── Tool Card ─────────────────────────────────────────────────────────────────
@@ -138,7 +138,7 @@ function ToolCard({ tool, ak, onUnlock, unlocking }: { tool: any; ak: number; on
 
 const tc$ = StyleSheet.create({
   card: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  cardUnlocked: { borderColor: 'rgba(52,199,89,0.2)', backgroundColor: 'rgba(52,199,89,0.03)' },
+  cardUnlocked: { borderColor: 'rgba(0,255,135,0.2)', backgroundColor: 'rgba(0,255,135,0.03)' },
   iconWrap: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   info: { flex: 1, gap: 3 },
   name: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
@@ -148,7 +148,7 @@ const tc$ = StyleSheet.create({
   unlockedText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,149,0,0.08)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(255,149,0,0.25)' },
   proText: { color: '#FF9500', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
-  unlockBtn: { alignItems: 'center', backgroundColor: '#D4AF37', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, minWidth: 64 },
+  unlockBtn: { alignItems: 'center', backgroundColor: '#FFD700', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, minWidth: 64 },
   unlockBtnOff: { backgroundColor: 'rgba(255,255,255,0.06)' },
   unlockCost: { color: '#000', fontSize: 12, fontWeight: '900' },
   unlockLabel: { color: '#000', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
@@ -157,10 +157,10 @@ const tc$ = StyleSheet.create({
 // ── Earn Guide ────────────────────────────────────────────────────────────────
 function EarnGuide() {
   const RULES = [
-    { icon: 'scan', label: 'Scan Nexus', ak: '+10 💧', color: '#00F2FF' },
-    { icon: 'flash', label: 'Vittoria PvP', ak: '+50 💧', color: '#D4AF37' },
-    { icon: 'shield', label: 'Crew Battle Win', ak: '+100 💧', color: '#FF453A' },
-    { icon: 'calendar', label: 'Login Giornaliero', ak: '+5 💧', color: '#34C759' },
+    { icon: 'scan', label: 'Scan Nexus', ak: '+10 💧', color: '#00E5FF' },
+    { icon: 'flash', label: 'Vittoria PvP', ak: '+50 💧', color: '#FFD700' },
+    { icon: 'shield', label: 'Crew Battle Win', ak: '+100 💧', color: '#FF3B30' },
+    { icon: 'calendar', label: 'Login Giornaliero', ak: '+5 💧', color: '#00FF87' },
   ];
   return (
     <View style={eg$.wrap}>
@@ -178,7 +178,7 @@ function EarnGuide() {
   );
 }
 const eg$ = StyleSheet.create({
-  wrap: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  wrap: { backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   title: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 12 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   item: { flex: 1, minWidth: '44%', flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -243,7 +243,7 @@ export function KoreVault() {
       <Text style={kv$.subtitle}>Sblocca tool premium con i tuoi AK Drops</Text>
 
       {loading ? (
-        <ActivityIndicator color="#D4AF37" size="small" style={{ marginTop: 20 }} />
+        <ActivityIndicator color="#FFD700" size="small" style={{ marginTop: 20 }} />
       ) : (
         <View style={kv$.toolsList}>
           {tools.map(tool => (
@@ -265,11 +265,11 @@ export function KoreVault() {
 }
 
 const kv$ = StyleSheet.create({
-  container: { marginHorizontal: 16, marginBottom: 16, gap: 14 },
+  container: { marginHorizontal: 24, marginBottom: 16, gap: 14 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#D4AF37', shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
-  title: { color: '#D4AF37', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FFD700', shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
+  title: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '300', marginTop: -4 },
   toolsList: { gap: 8 },
 });
@@ -288,12 +288,12 @@ export function ToolLock({ toolId, toolName, costAk, requiresPro = false, onNavi
 
   return (
     <View style={tl$.overlay}>
-      <Ionicons name="lock-closed" size={24} color="#D4AF37" />
+      <Ionicons name="lock-closed" size={24} color="#FFD700" />
       <Text style={tl$.name}>{toolName}</Text>
       {requiresPro ? (
         <View style={tl$.proPill}><Text style={tl$.proText}>RISERVATO A PRO / ENTERPRISE</Text></View>
       ) : (
-        <Text style={tl$.cost}>Sblocca con <Text style={{ color: '#D4AF37', fontWeight: '900' }}>💧 {costAk} AK</Text></Text>
+        <Text style={tl$.cost}>Sblocca con <Text style={{ color: '#FFD700', fontWeight: '900' }}>💧 {costAk} AK</Text></Text>
       )}
       {onNavigate && (
         <TouchableOpacity style={tl$.cta} onPress={onNavigate} activeOpacity={0.85}>
@@ -310,6 +310,6 @@ const tl$ = StyleSheet.create({
   cost: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '300' },
   proPill: { backgroundColor: 'rgba(255,149,0,0.1)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,149,0,0.3)' },
   proText: { color: '#FF9500', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
-  cta: { marginTop: 6, backgroundColor: 'rgba(212,175,55,0.12)', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: '#D4AF37' },
-  ctaText: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  cta: { marginTop: 6, backgroundColor: 'rgba(255,215,0,0.12)', borderRadius: 8, paddingHorizontal: 24, paddingVertical: 8, borderWidth: 1, borderColor: '#FFD700' },
+  ctaText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
 });

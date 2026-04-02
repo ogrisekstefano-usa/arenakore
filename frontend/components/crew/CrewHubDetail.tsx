@@ -17,7 +17,7 @@ import { CATEGORIES_MAP } from './CreateCrewModal';
 function CoachBadge() {
   return (
     <View style={badge$.container}>
-      <Ionicons name="star" size={10} color="#D4AF37" />
+      <Ionicons name="star" size={10} color="#FFD700" />
       <Text style={badge$.text}>COACH</Text>
     </View>
   );
@@ -26,11 +26,11 @@ function CoachBadge() {
 const badge$ = StyleSheet.create({
   container: {
     flexDirection: 'row', alignItems: 'center', gap: 3,
-    backgroundColor: 'rgba(212,175,55,0.15)',
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.4)',
+    backgroundColor: 'rgba(255,215,0,0.15)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.4)',
     borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
   },
-  text: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  text: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
 });
 
 export function CrewHubDetail({ crew, onClose, token }: { crew: any; onClose: () => void; token: string }) {
@@ -56,20 +56,20 @@ export function CrewHubDetail({ crew, onClose, token }: { crew: any; onClose: ()
         <StatusBar barStyle="light-content" />
         <View style={hub$.header}>
           <TouchableOpacity onPress={onClose} style={hub$.backBtn}>
-            <Ionicons name="arrow-back" size={18} color="#00F2FF" />
+            <Ionicons name="arrow-back" size={18} color="#00E5FF" />
             <Text style={hub$.backText}>INDIETRO</Text>
           </TouchableOpacity>
           <View style={hub$.headerRight}>
             {crew.is_owner && (
               <TouchableOpacity onPress={() => setShowInvite(true)} style={hub$.inviteHdrBtn}>
-                <Ionicons name="person-add" size={14} color="#00F2FF" />
+                <Ionicons name="person-add" size={14} color="#00E5FF" />
                 <Text style={hub$.inviteHdrText}>INVITA</Text>
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        <LinearGradient colors={[catCfg?.color ? `${catCfg.color}15` : 'rgba(0,242,255,0.65)', '#050505']} style={hub$.heroGrad}>
+        <LinearGradient colors={[catCfg?.color ? `${catCfg.color}15` : 'rgba(0,229,255,0.65)', '#000000']} style={hub$.heroGrad}>
           <View style={hub$.crewInfo}>
             {catCfg && (
               <View style={[hub$.catBadge, { backgroundColor: `${catCfg.color}20`, borderColor: `${catCfg.color}40` }]}>
@@ -81,13 +81,13 @@ export function CrewHubDetail({ crew, onClose, token }: { crew: any; onClose: ()
             {crew.tagline ? <Text style={hub$.crewTagline}>{crew.tagline}</Text> : null}
             <View style={hub$.statsRow}>
               <View style={hub$.stat}><Text style={hub$.statVal}>{crew.members_count}</Text><Text style={hub$.statLabel}>MEMBRI</Text></View>
-              <View style={hub$.stat}><Text style={[hub$.statVal, { color: '#D4AF37' }]}>{crew.xp_total}</Text><Text style={hub$.statLabel}>XP TOTALI</Text></View>
+              <View style={hub$.stat}><Text style={[hub$.statVal, { color: '#FFD700' }]}>{crew.xp_total}</Text><Text style={hub$.statLabel}>XP TOTALI</Text></View>
             </View>
           </View>
         </LinearGradient>
 
         {loading ? (
-          <View style={hub$.center}><ActivityIndicator color="#00F2FF" size="large" /></View>
+          <View style={hub$.center}><ActivityIndicator color="#00E5FF" size="large" /></View>
         ) : (
           <ScrollView showsVerticalScrollIndicator={false}>
             {detail?.crew_dna_average && (
@@ -133,7 +133,7 @@ export function CrewHubDetail({ crew, onClose, token }: { crew: any; onClose: ()
             {feed.map((e: any, i: number) => (
               <Animated.View key={e.id} entering={FadeInRight.delay(i * 50)}>
                 <View style={hub$.feedItem}>
-                  <View style={[hub$.feedDot, e.type === 'member_joined' && { backgroundColor: '#34C759' }]} />
+                  <View style={[hub$.feedDot, e.type === 'member_joined' && { backgroundColor: '#00FF87' }]} />
                   <View style={hub$.feedContent}>
                     <Text style={hub$.feedMsg}>{e.message}</Text>
                     <Text style={hub$.feedTime}>{e.created_at ? new Date(e.created_at).toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }) : ''}</Text>
@@ -151,13 +151,13 @@ export function CrewHubDetail({ crew, onClose, token }: { crew: any; onClose: ()
 }
 
 const hub$ = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505', paddingTop: 50 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 8 },
+  container: { flex: 1, backgroundColor: '#000000', paddingTop: 50 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginBottom: 8 },
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, padding: 8 },
-  backText: { color: '#00F2FF', fontSize: 15, fontWeight: '800', letterSpacing: 1 },
+  backText: { color: '#00E5FF', fontSize: 15, fontWeight: '800', letterSpacing: 1 },
   headerRight: {},
-  inviteHdrBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
-  inviteHdrText: { color: '#00F2FF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
+  inviteHdrBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 8, paddingHorizontal: 24, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
+  inviteHdrText: { color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   heroGrad: { paddingHorizontal: 20, paddingVertical: 20 },
   crewInfo: { gap: 6 },
   catBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1 },
@@ -169,26 +169,26 @@ const hub$ = StyleSheet.create({
   statVal: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
   statLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  sectionTitle: { color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '900', letterSpacing: 3, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10 },
-  dnaRow: { flexDirection: 'row', justifyContent: 'space-around', paddingHorizontal: 16, paddingBottom: 8 },
+  sectionTitle: { color: '#AAAAAA', fontSize: 13, fontWeight: '900', letterSpacing: 3, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10 },
+  dnaRow: { flexDirection: 'row', justifyContent: 'space-around', paddingHorizontal: 24, paddingBottom: 8 },
   dnaItem: { alignItems: 'center', gap: 2 },
-  dnaVal: { color: '#00F2FF', fontSize: 18, fontWeight: '900' },
+  dnaVal: { color: '#00E5FF', fontSize: 18, fontWeight: '900' },
   dnaLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
   memberRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 20, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.45)' },
-  coachAvatarWrap: { borderRadius: 22, padding: 2, borderWidth: 1.5, borderColor: '#D4AF37' },
-  memberAvatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  coachAvatarWrap: { borderRadius: 22, padding: 2, borderWidth: 1, borderColor: '#FFD700' },
+  memberAvatar: { width: 36, height: 36, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   coachAvatarBorder: {},
-  memberAvatarText: { color: '#050505', fontSize: 17, fontWeight: '900' },
+  memberAvatarText: { color: '#000000', fontSize: 17, fontWeight: '900' },
   memberInfo: { flex: 1, gap: 3 },
   memberNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   memberName: { color: '#FFFFFF', fontSize: 17, fontWeight: '800' },
   memberSport: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '400' },
   memberXP: { alignItems: 'center' },
-  memberXPVal: { color: '#D4AF37', fontSize: 16, fontWeight: '900' },
+  memberXPVal: { color: '#FFD700', fontSize: 16, fontWeight: '900' },
   memberXPLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
   emptyFeed: { color: 'rgba(255,255,255,0.3)', fontSize: 16, textAlign: 'center', padding: 24 },
   feedItem: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingVertical: 8 },
-  feedDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00F2FF', marginTop: 4 },
+  feedDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00E5FF', marginTop: 4 },
   feedContent: { flex: 1, gap: 2 },
   feedMsg: { color: 'rgba(255,255,255,0.7)', fontSize: 16, fontWeight: '600' },
   feedTime: { color: 'rgba(255,255,255,0.3)', fontSize: 13 },

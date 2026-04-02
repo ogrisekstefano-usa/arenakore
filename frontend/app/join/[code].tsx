@@ -21,7 +21,7 @@ const { width: SW } = Dimensions.get('window');
 const PENDING_EVENT_KEY = '@arenakore_pending_event';
 
 const DIFF_MAP: Record<string, { label: string; color: string; icon: keyof typeof Ionicons.glyphMap }> = {
-  easy:    { label: 'EASY',    color: '#34C759', icon: 'star-outline' },
+  easy:    { label: 'EASY',    color: '#00FF87', icon: 'star-outline' },
   medium:  { label: 'MEDIUM',  color: '#FF9500', icon: 'star-half' },
   hard:    { label: 'HARD',    color: '#FF3B30', icon: 'star' },
   extreme: { label: 'EXTREME', color: '#AF52DE', icon: 'flame' },
@@ -99,18 +99,18 @@ export default function JoinEventScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" />
-      <LinearGradient colors={['#0A0A0A', '#050505']} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={['#0A0A0A', '#000000']} style={StyleSheet.absoluteFill} />
 
       {/* Back button */}
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={18} color="#00F2FF" />
+        <Ionicons name="arrow-back" size={18} color="#00E5FF" />
         <Text style={styles.backText}>INDIETRO</Text>
       </TouchableOpacity>
 
       {/* LOADING */}
       {state === 'loading' && (
         <View style={styles.center}>
-          <ActivityIndicator color="#00F2FF" size="large" />
+          <ActivityIndicator color="#00E5FF" size="large" />
           <Text style={styles.loadingText}>CARICAMENTO EVENTO...</Text>
         </View>
       )}
@@ -120,7 +120,7 @@ export default function JoinEventScreen() {
         <View style={styles.center}>
           <Animated.View entering={FadeIn.duration(400)}>
             <View style={styles.enrollingCircle}>
-              <ActivityIndicator color="#00F2FF" size="large" />
+              <ActivityIndicator color="#00E5FF" size="large" />
             </View>
           </Animated.View>
           <Text style={styles.enrollingText}>ISCRIZIONE IN CORSO...</Text>
@@ -132,9 +132,9 @@ export default function JoinEventScreen() {
       {(state === 'enrolled' || state === 'already') && (
         <View style={styles.center}>
           <Animated.View entering={FadeInDown.duration(500)} style={styles.successCard}>
-            <LinearGradient colors={['rgba(0,242,255,0.65)', 'rgba(0,242,255,0.65)']} style={styles.successGrad}>
+            <LinearGradient colors={['rgba(0,229,255,0.65)', 'rgba(0,229,255,0.65)']} style={styles.successGrad}>
               <View style={styles.successIconWrap}>
-                <Ionicons name={state === 'enrolled' ? 'checkmark-circle' : 'information-circle'} size={48} color={state === 'enrolled' ? '#00F2FF' : '#D4AF37'} />
+                <Ionicons name={state === 'enrolled' ? 'checkmark-circle' : 'information-circle'} size={48} color={state === 'enrolled' ? '#00E5FF' : '#FFD700'} />
               </View>
               <Text style={styles.successTitle}>
                 {state === 'enrolled' ? 'ISCRITTO!' : 'GIA\' ISCRITTO'}
@@ -146,18 +146,18 @@ export default function JoinEventScreen() {
               </Text>
               {enrollResult?.gym_name && (
                 <View style={styles.gymBadge}>
-                  <Ionicons name="business" size={14} color="#D4AF37" />
+                  <Ionicons name="business" size={14} color="#FFD700" />
                   <Text style={styles.gymBadgeText}>{enrollResult.gym_name}</Text>
                 </View>
               )}
               {state === 'enrolled' && enrollResult?.xp_reward && (
                 <View style={styles.xpBadge}>
-                  <Ionicons name="flash" size={14} color="#D4AF37" />
+                  <Ionicons name="flash" size={14} color="#FFD700" />
                   <Text style={styles.xpBadgeText}>+{enrollResult.xp_reward} XP IN PALIO</Text>
                 </View>
               )}
               <TouchableOpacity style={styles.nexusBtn} onPress={goToNexus} activeOpacity={0.85}>
-                <LinearGradient colors={['#00F2FF', '#009DB3']} style={styles.nexusBtnGrad}>
+                <LinearGradient colors={['#00E5FF', '#009DB3']} style={styles.nexusBtnGrad}>
                   <Ionicons name="flash" size={18} color="#050505" />
                   <Text style={styles.nexusBtnText}>VAI AL NEXUS</Text>
                 </LinearGradient>
@@ -171,10 +171,10 @@ export default function JoinEventScreen() {
       {state === 'preview' && event && (
         <View style={styles.previewContainer}>
           <Animated.View entering={FadeInDown.duration(400)} style={styles.previewCard}>
-            <LinearGradient colors={['rgba(0,242,255,0.65)', '#0A0A0A']} style={styles.previewGrad}>
+            <LinearGradient colors={['rgba(0,229,255,0.65)', '#0A0A0A']} style={styles.previewGrad}>
               {/* Header */}
               <View style={styles.previewHeader}>
-                <Ionicons name="qr-code" size={20} color="#00F2FF" />
+                <Ionicons name="qr-code" size={20} color="#00E5FF" />
                 <Text style={styles.previewHeaderText}>QR-CORE EVENT</Text>
               </View>
 
@@ -199,15 +199,15 @@ export default function JoinEventScreen() {
               {/* Info */}
               <View style={styles.previewInfoRow}>
                 <View style={styles.infoItem}>
-                  <Ionicons name="calendar" size={14} color="#00F2FF" />
+                  <Ionicons name="calendar" size={14} color="#00E5FF" />
                   <Text style={styles.infoText}>{event.event_date}</Text>
                 </View>
                 <View style={styles.infoItem}>
-                  <Ionicons name="time" size={14} color="#00F2FF" />
+                  <Ionicons name="time" size={14} color="#00E5FF" />
                   <Text style={styles.infoText}>{event.event_time}</Text>
                 </View>
                 <View style={styles.infoItem}>
-                  <Ionicons name={ex.icon} size={14} color="#00F2FF" />
+                  <Ionicons name={ex.icon} size={14} color="#00E5FF" />
                   <Text style={styles.infoText}>{ex.label}</Text>
                 </View>
               </View>
@@ -219,7 +219,7 @@ export default function JoinEventScreen() {
                   <Text style={styles.statLabel}>/{event.max_participants} ATLETI</Text>
                 </View>
                 <View style={styles.statBlock}>
-                  <Text style={[styles.statVal, { color: '#D4AF37' }]}>+{event.xp_reward}</Text>
+                  <Text style={[styles.statVal, { color: '#FFD700' }]}>+{event.xp_reward}</Text>
                   <Text style={styles.statLabel}>XP REWARD</Text>
                 </View>
               </View>
@@ -227,7 +227,7 @@ export default function JoinEventScreen() {
               {/* Gym */}
               {event.gym?.name && (
                 <View style={styles.gymInfo}>
-                  <Ionicons name="business" size={16} color="#D4AF37" />
+                  <Ionicons name="business" size={16} color="#FFD700" />
                   <Text style={styles.gymName}>{event.gym.name}</Text>
                 </View>
               )}
@@ -236,7 +236,7 @@ export default function JoinEventScreen() {
               <View style={styles.ctaSection}>
                 <Text style={styles.ctaLabel}>ACCEDI PER ISCRIVERTI</Text>
                 <TouchableOpacity style={styles.loginBtn} onPress={handleLoginRedirect} activeOpacity={0.85}>
-                  <LinearGradient colors={['#00F2FF', '#009DB3']} style={styles.loginBtnGrad}>
+                  <LinearGradient colors={['#00E5FF', '#009DB3']} style={styles.loginBtnGrad}>
                     <Ionicons name="log-in" size={18} color="#050505" />
                     <Text style={styles.loginBtnText}>ACCEDI / REGISTRATI</Text>
                   </LinearGradient>
@@ -268,57 +268,57 @@ export default function JoinEventScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050505' },
+  container: { flex: 1, backgroundColor: '#000000' },
   backBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 16, paddingVertical: 12,
+    paddingHorizontal: 24, paddingVertical: 12,
   },
-  backText: { color: '#00F2FF', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
+  backText: { color: '#00E5FF', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
   loadingText: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '800', letterSpacing: 2, marginTop: 16 },
   enrollingCircle: {
     width: 80, height: 80, borderRadius: 40,
-    backgroundColor: 'rgba(0,242,255,0.65)', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(0,229,255,0.65)', alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)',
   },
-  enrollingText: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 2, marginTop: 20 },
+  enrollingText: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 2, marginTop: 20 },
   enrollingSub: { color: 'rgba(255,255,255,0.4)', fontSize: 11, marginTop: 4 },
   // Success
-  successCard: { width: '100%', borderRadius: 20, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)' },
+  successCard: { width: '100%', borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   successGrad: { padding: 28, alignItems: 'center', gap: 12 },
   successIconWrap: { marginBottom: 4 },
-  successTitle: { color: '#00F2FF', fontSize: 24, fontWeight: '900', letterSpacing: 4 },
+  successTitle: { color: '#00E5FF', fontSize: 24, fontWeight: '900', letterSpacing: 4 },
   successSub: { color: 'rgba(255,255,255,0.6)', fontSize: 13, textAlign: 'center', fontWeight: '600' },
   gymBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8,
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)',
+    backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 8,
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
   },
-  gymBadgeText: { color: '#D4AF37', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
+  gymBadgeText: { color: '#FFD700', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   xpBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6,
+    backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6,
   },
-  xpBadgeText: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  xpBadgeText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   nexusBtn: { width: '100%', borderRadius: 12, overflow: 'hidden', marginTop: 8 },
   nexusBtnGrad: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     paddingVertical: 16,
   },
-  nexusBtnText: { color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  nexusBtnText: { color: '#000000', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   // Preview
-  previewContainer: { flex: 1, paddingHorizontal: 16, paddingBottom: 24, justifyContent: 'center' },
-  previewCard: { borderRadius: 20, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)' },
+  previewContainer: { flex: 1, paddingHorizontal: 24, paddingBottom: 24, justifyContent: 'center' },
+  previewCard: { borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   previewGrad: { padding: 24, gap: 14 },
   previewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },
-  previewHeaderText: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  previewHeaderText: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   previewBadgeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   statusBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: 'rgba(212,175,55,0.12)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4,
+    backgroundColor: 'rgba(255,215,0,0.12)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4,
   },
   liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FF3B30' },
-  statusText: { color: '#D4AF37', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  statusText: { color: '#FFD700', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
   diffBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 3,
     paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1,
@@ -332,13 +332,13 @@ const styles = StyleSheet.create({
   statsRow: { flexDirection: 'row', gap: 24 },
   statBlock: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
   statVal: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
-  statLabel: { color: 'rgba(255,255,255,0.35)', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
+  statLabel: { color: 'rgba(255,255,255,0.30)', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
   gymInfo: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.15)',
+    backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 10,
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)',
   },
-  gymName: { color: '#D4AF37', fontSize: 14, fontWeight: '800' },
+  gymName: { color: '#FFD700', fontSize: 14, fontWeight: '800' },
   ctaSection: { alignItems: 'center', gap: 10, marginTop: 4 },
   ctaLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '800', letterSpacing: 2 },
   loginBtn: { width: '100%', borderRadius: 12, overflow: 'hidden' },
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     paddingVertical: 16,
   },
-  loginBtnText: { color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  loginBtnText: { color: '#000000', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   ctaSub: { color: 'rgba(255,255,255,0.3)', fontSize: 10, textAlign: 'center', fontWeight: '600' },
   // Error
   errorCard: { alignItems: 'center', gap: 12, backgroundColor: 'rgba(255,59,48,0.06)', borderRadius: 20, padding: 32, borderWidth: 1, borderColor: 'rgba(255,59,48,0.15)' },

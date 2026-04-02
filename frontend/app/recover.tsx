@@ -122,7 +122,7 @@ export default function Recover() {
         {/* Back */}
         {step !== 'done' && (
           <TouchableOpacity onPress={() => step === 'email' ? router.replace('/login') : setStep(step === 'otp' ? 'email' : 'otp')} style={s.backBtn}>
-            <Ionicons name="arrow-back" size={14} color="#00F2FF" />
+            <Ionicons name="arrow-back" size={14} color="#00E5FF" />
             <Text style={s.backTxt}>
               {step === 'email' ? 'TORNA AL LOGIN' : 'STEP PRECEDENTE'}
             </Text>
@@ -154,7 +154,7 @@ export default function Recover() {
 
             {!!devOtp && (
               <View style={s.devBanner}>
-                <Ionicons name="terminal" size={12} color="#D4AF37" />
+                <Ionicons name="terminal" size={12} color="#FFD700" />
                 <Text style={s.devTxt}>DEV MODE — OTP: {devOtp}</Text>
               </View>
             )}
@@ -208,7 +208,7 @@ export default function Recover() {
 
             {!!devOtp && (
               <View style={s.devBanner}>
-                <Ionicons name="terminal" size={12} color="#D4AF37" />
+                <Ionicons name="terminal" size={12} color="#FFD700" />
                 <Text style={s.devTxt}>DEV — OTP: {devOtp}</Text>
               </View>
             )}
@@ -256,14 +256,14 @@ export default function Recover() {
                   autoCapitalize="none"
                 />
                 <TouchableOpacity onPress={() => setShowPwd(!showPwd)} style={s.eye}>
-                  <Ionicons name={showPwd ? 'eye-off' : 'eye'} size={18} color="#00F2FF" />
+                  <Ionicons name={showPwd ? 'eye-off' : 'eye'} size={18} color="#00E5FF" />
                 </TouchableOpacity>
               </View>
               {newPassword.length > 0 && (
                 <View style={s.strengthBar}>
                   <View style={[s.strengthFill, {
                     width: `${Math.min(100, (newPassword.length / 12) * 100)}%` as any,
-                    backgroundColor: newPassword.length >= 8 ? '#00F2FF' : '#FF3B30',
+                    backgroundColor: newPassword.length >= 8 ? '#00E5FF' : '#FF3B30',
                   }]} />
                 </View>
               )}
@@ -283,7 +283,7 @@ export default function Recover() {
                   autoCapitalize="none"
                 />
                 <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)} style={s.eye}>
-                  <Ionicons name={showConfirm ? 'eye-off' : 'eye'} size={18} color="#00F2FF" />
+                  <Ionicons name={showConfirm ? 'eye-off' : 'eye'} size={18} color="#00E5FF" />
                 </TouchableOpacity>
               </View>
               {confirmPassword.length > 0 && newPassword !== confirmPassword && (
@@ -315,12 +315,12 @@ export default function Recover() {
         {step === 'done' && (
           <View style={s.doneWrap}>
             <LinearGradient
-              colors={['#0D0D0D', '#080808']}
+              colors={['#0a0a0a', '#0a0a0a']}
               style={s.doneCard}
             >
               <View style={s.doneGlow} />
               <View style={s.doneIconWrap}>
-                <Ionicons name="shield-checkmark" size={52} color="#D4AF37" />
+                <Ionicons name="shield-checkmark" size={52} color="#FFD700" />
               </View>
               <Text style={s.doneTitle}>ACCESSO</Text>
               <Text style={s.doneTitleBig}>RIPRISTINATO</Text>
@@ -346,10 +346,10 @@ export default function Recover() {
 }
 
 // ── STYLES — ARENAKORE SPEC ──────────────────────────────────────────
-const CYAN = '#00F2FF';
-const GOLD = '#D4AF37';
-const BG   = '#050505';
-const CARD = '#0D0D0D';
+const CYAN = '#00E5FF';
+const GOLD = '#FFD700';
+const BG   = '#000000';
+const CARD = '#0a0a0a';
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: BG },
@@ -384,7 +384,7 @@ const s = StyleSheet.create({
   fieldWrap: { gap: 8 },
   fieldLabel: { color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 3 },
   input: {
-    backgroundColor: '#111111', borderWidth: 1.5, borderColor: '#222',
+    backgroundColor: '#111111', borderWidth: 1, borderColor: '#222',
     borderRadius: 8, padding: 16, color: '#FFFFFF', fontSize: 16, fontWeight: '700',
   },
 
@@ -392,20 +392,20 @@ const s = StyleSheet.create({
   otpRow: { flexDirection: 'row', justifyContent: 'space-between' },
   otpBox: {
     borderRadius: 8,
-    backgroundColor: '#00F2FF', borderWidth: 2, borderColor: '#1A1A1A',
-    color: '#00F2FF', fontSize: 26, fontWeight: '900', textAlign: 'center',
+    backgroundColor: '#00E5FF', borderWidth: 2, borderColor: '#1A1A1A',
+    color: '#00E5FF', fontSize: 26, fontWeight: '900', textAlign: 'center',
   },
   otpBoxFilled: {
-    borderColor: '#00F2FF',
-    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
+    borderColor: '#00E5FF',
+    shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6, shadowRadius: 8,
   },
 
   devBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(212,175,55,0.08)',
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)',
-    borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10,
+    backgroundColor: 'rgba(255,215,0,0.08)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
+    borderRadius: 8, paddingHorizontal: 24, paddingVertical: 10,
   },
   devTxt: { color: GOLD, fontSize: 12, fontWeight: '700', letterSpacing: 1 },
 
@@ -417,18 +417,18 @@ const s = StyleSheet.create({
     paddingVertical: 18, marginTop: 8,
   },
   ctaLoading: { opacity: 0.7 },
-  ctaTxt: { color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  ctaTxt: { color: '#000000', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
 
   resendBtn: { alignItems: 'center', paddingVertical: 12 },
   resendTxt: { color: '#333', fontSize: 12, fontWeight: '700', letterSpacing: 2 },
 
   pwdRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#111111', borderWidth: 1.5, borderColor: '#222',
+    backgroundColor: '#111111', borderWidth: 1, borderColor: '#222',
     borderRadius: 8,
   },
   pwdInput: { flex: 1, padding: 16, color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
-  eye: { paddingHorizontal: 16 },
+  eye: { paddingHorizontal: 24 },
   strengthBar: { height: 3, backgroundColor: '#1A1A1A', borderRadius: 2, overflow: 'hidden' },
   strengthFill: { height: '100%', borderRadius: 2 },
   mismatch: { color: '#FF3B30', fontSize: 12, fontWeight: '700' },
@@ -437,7 +437,7 @@ const s = StyleSheet.create({
   doneWrap: { flex: 1, justifyContent: 'center', paddingTop: 20 },
   doneCard: {
     borderRadius: 20, padding: 32, alignItems: 'center', gap: 12,
-    borderWidth: 1.5, borderColor: 'rgba(212,175,55,0.15)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)',
     overflow: 'hidden',
   },
   doneGlow: {
@@ -448,7 +448,7 @@ const s = StyleSheet.create({
   },
   doneIconWrap: {
     width: 96, height: 96, borderRadius: 48,
-    backgroundColor: 'rgba(212,175,55,0.06)',
+    backgroundColor: 'rgba(255,215,0,0.06)',
     borderWidth: 2, borderColor: GOLD,
     alignItems: 'center', justifyContent: 'center',
     shadowColor: GOLD, shadowOffset: { width: 0, height: 0 },
@@ -463,5 +463,5 @@ const s = StyleSheet.create({
     gap: 10, backgroundColor: CYAN, borderRadius: 8,
     paddingVertical: 16, width: '100%', marginTop: 8,
   },
-  doneBtnTxt: { color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  doneBtnTxt: { color: '#000000', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
 });

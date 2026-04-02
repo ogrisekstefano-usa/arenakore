@@ -1,7 +1,7 @@
 /**
  * ARENAKORE — MONOCHROMATIC ICON SYSTEM v1.0
  * Zero emoji. Zero colored icons.
- * White = General | Cyan #00F2FF = Bio/Performance | Gold #FFD700 = Status/Kore
+ * White = General | Cyan #00E5FF = Bio/Performance | Gold #FFD700 = Status/Kore
  */
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
@@ -10,10 +10,10 @@ import { Ionicons } from '@expo/vector-icons';
 // Core palette
 export const ICON_COLORS = {
   WHITE: '#FFFFFF',
-  CYAN: '#00F2FF',
+  CYAN: '#00E5FF',
   GOLD: '#FFD700',
   DIM: 'rgba(255,255,255,0.45)',
-  RED: '#FF453A',
+  RED: '#FF3B30',
 } as const;
 
 // =============================================
@@ -23,7 +23,7 @@ export const SPORT_ICON_MAP: Record<string, { icon: keyof typeof Ionicons.glyphM
   atletica:  { icon: 'walk',          color: '#FF6B00' },
   combat:    { icon: 'hand-left',     color: '#FF3B30' },
   acqua:     { icon: 'water',         color: '#007AFF' },
-  team:      { icon: 'football',      color: '#34C759' },
+  team:      { icon: 'football',      color: '#00FF87' },
   fitness:   { icon: 'barbell',       color: ICON_COLORS.GOLD },
   outdoor:   { icon: 'trail-sign',    color: '#30B0C7' },
   mind_body: { icon: 'leaf',          color: '#AF52DE' },
@@ -42,7 +42,7 @@ export const EXERCISE_ICON_MAP: Record<string, { icon: keyof typeof Ionicons.gly
 // MEDAL RANKING → Ionicons
 // =============================================
 export const MEDAL_ICON_MAP: Record<number, { icon: keyof typeof Ionicons.glyphMap; color: string; bg: string; border: string }> = {
-  1: { icon: 'medal', color: '#D4AF37', bg: 'rgba(212,175,55,0.2)', border: 'rgba(212,175,55,0.5)' },
+  1: { icon: 'medal', color: '#FFD700', bg: 'rgba(255,215,0,0.2)', border: 'rgba(255,215,0,0.5)' },
   2: { icon: 'medal', color: '#C0C0C0', bg: 'rgba(192,192,192,0.15)', border: 'rgba(192,192,192,0.4)' },
   3: { icon: 'medal', color: '#CD7F32', bg: 'rgba(205,127,50,0.15)', border: 'rgba(205,127,50,0.4)' },
 };
@@ -53,7 +53,7 @@ export const MEDAL_ICON_MAP: Record<number, { icon: keyof typeof Ionicons.glyphM
 export const DNA_ATTR_ICONS: Record<string, { icon: keyof typeof Ionicons.glyphMap; color: string }> = {
   velocita:   { icon: 'flash',          color: ICON_COLORS.CYAN },
   forza:      { icon: 'barbell',        color: ICON_COLORS.WHITE },
-  resistenza: { icon: 'heart',          color: '#FF453A' },
+  resistenza: { icon: 'heart',          color: '#FF3B30' },
   agilita:    { icon: 'walk',           color: ICON_COLORS.CYAN },
   tecnica:    { icon: 'navigate-circle', color: ICON_COLORS.WHITE },
   potenza:    { icon: 'flash-sharp',    color: ICON_COLORS.GOLD },
@@ -63,7 +63,7 @@ export const DNA_ATTR_ICONS: Record<string, { icon: keyof typeof Ionicons.glyphM
 // DIFFICULTY → Ionicons
 // =============================================
 export const DIFFICULTY_ICON_MAP: Record<string, { icon: keyof typeof Ionicons.glyphMap; color: string }> = {
-  easy:    { icon: 'star',       color: '#34C759' },
+  easy:    { icon: 'star',       color: '#00FF87' },
   medium:  { icon: 'star',       color: '#FF9500' },
   hard:    { icon: 'star',       color: '#FF3B30' },
   extreme: { icon: 'flame',      color: '#AF52DE' },
@@ -83,7 +83,7 @@ export const CONSOLE_ICON_MAP: Record<string, { icon: keyof typeof Ionicons.glyp
 // ROLE → Ionicons (mirrors ControlCenter)
 // =============================================
 export const ROLE_ICON_MAP: Record<string, { icon: keyof typeof Ionicons.glyphMap; color: string }> = {
-  ADMIN:     { icon: 'shield-checkmark', color: '#FF453A' },
+  ADMIN:     { icon: 'shield-checkmark', color: '#FF3B30' },
   GYM_OWNER: { icon: 'business',         color: ICON_COLORS.GOLD },
   COACH:     { icon: 'fitness',           color: ICON_COLORS.CYAN },
   ATHLETE:   { icon: 'person',            color: '#32D74B' },

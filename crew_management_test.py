@@ -2,7 +2,7 @@
 """
 ARENAKORE Crew Management Backend API Test Suite
 Tests all crew management endpoints comprehensively
-Base URL: https://voice-coach-40.preview.emergentagent.com/api
+Base URL: https://arena-scan-lab.preview.emergentagent.com/api
 
 FULL TEST FLOW:
 1. Register User1 (crew_test_user1_XXX) → get token1
@@ -32,7 +32,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://voice-coach-40.preview.emergentagent.com/api"
+BASE_URL = "https://arena-scan-lab.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class CrewManagementTester:

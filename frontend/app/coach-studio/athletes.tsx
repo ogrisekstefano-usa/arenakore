@@ -17,7 +17,7 @@ import { api } from '../../utils/api';
 // ── 6-Axis Radar ──────────────────────────────────────────────────────────────
 const SIX_AXES = ['endurance', 'power', 'mobility', 'technique', 'recovery', 'agility'];
 const SIX_LABELS = ['END', 'POW', 'MOB', 'TEC', 'REC', 'AGI'];
-const SIX_COLORS = ['#00F2FF', '#FF453A', '#34C759', '#D4AF37', '#AF52DE', '#FF9500'];
+const SIX_COLORS = ['#00E5FF', '#FF3B30', '#00FF87', '#FFD700', '#AF52DE', '#FF9500'];
 
 function SixAxisRadar({ data, size = 180, showLabels = true, compare }: {
   data: Record<string, number>; size?: number; showLabels?: boolean; compare?: Record<string, number>;
@@ -53,13 +53,13 @@ function SixAxisRadar({ data, size = 180, showLabels = true, compare }: {
       {compPts && (
         <Polygon
           points={compPts.map(p => p.join(',')).join(' ')}
-          fill="rgba(212,175,55,0.08)" stroke="#D4AF37" strokeWidth={1.5} opacity={0.7}
+          fill="rgba(255,215,0,0.08)" stroke="#FFD700" strokeWidth={1.5} opacity={0.7}
         />
       )}
       {/* Data polygon */}
       <Polygon
         points={dataPts.map(p => p.join(',')).join(' ')}
-        fill="rgba(0,242,255,0.12)" stroke="#00F2FF" strokeWidth={2}
+        fill="rgba(0,229,255,0.12)" stroke="#00E5FF" strokeWidth={2}
       />
       {/* Axis dots */}
       {dataPts.map(([x, y], i) => (
@@ -126,7 +126,7 @@ function KoreScoreGauge({ kore, size = 160 }: { kore: any; size?: number }) {
         </View>
         {penalty_active && (
           <View style={kg$.penaltyBadge}>
-            <Ionicons name="warning" size={9} color="#FF453A" />
+            <Ionicons name="warning" size={9} color="#FF3B30" />
             <Text style={kg$.penaltyText}>-{posture_penalty} postura</Text>
           </View>
         )}
@@ -161,12 +161,12 @@ const kg$ = StyleSheet.create({
   score: { fontSize: 38, fontWeight: '900', letterSpacing: 1 },
   gradeBadge: { borderRadius: 6, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 2 },
   grade: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
-  penaltyBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(255,69,58,0.1)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 },
-  penaltyText: { color: '#FF453A', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  penaltyBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(255,59,48,0.1)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 },
+  penaltyText: { color: '#FF3B30', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
   verdict: { fontSize: 10, textAlign: 'center', lineHeight: 14, paddingHorizontal: 8, fontWeight: '300' },
   bars: { width: '100%', gap: 6, paddingHorizontal: 8 },
   barRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  barLabel: { width: 56, fontSize: 8, letterSpacing: 1.5, color: 'rgba(255,255,255,0.35)' },
+  barLabel: { width: 56, fontSize: 8, letterSpacing: 1.5, color: 'rgba(255,255,255,0.30)' },
   barTrack: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 2 },
   barVal: { fontSize: 11, width: 32, textAlign: 'right' },
@@ -199,7 +199,7 @@ function TrendSparkline({ trend, direction }: { trend: any[]; direction: string 
     const y = h - (t.quality / max) * h;
     return `${x},${y}`;
   }).join(' ');
-  const color = direction === 'up' ? '#34C759' : direction === 'down' ? '#FF453A' : '#888888';
+  const color = direction === 'up' ? '#00FF87' : direction === 'down' ? '#FF3B30' : '#888888';
   return (
     <View style={{ width: w, height: h }}>
       <Svg width={w} height={h}>
@@ -261,10 +261,10 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
 
   const ir = profile.injury_risk || {};
   const MS_FIELDS = [
-    { key: 'endurance_gps',   label: 'GPS Endurance', icon: 'navigate', color: '#00F2FF' },
-    { key: 'strength_watts',  label: 'Strength (Watt)', icon: 'barbell', color: '#FF453A' },
+    { key: 'endurance_gps',   label: 'GPS Endurance', icon: 'navigate', color: '#00E5FF' },
+    { key: 'strength_watts',  label: 'Strength (Watt)', icon: 'barbell', color: '#FF3B30' },
     { key: 'sleep_score',     label: 'Sleep Score', icon: 'moon', color: '#AF52DE' },
-    { key: 'hrv_score',       label: 'HRV Score', icon: 'heart', color: '#34C759' },
+    { key: 'hrv_score',       label: 'HRV Score', icon: 'heart', color: '#00FF87' },
   ];
 
   return (
@@ -297,8 +297,8 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
             <View style={dp$.secHeader}>
               <Text style={[dp$.sectionTitle, MONT('900'), { color: koreData.color }]}>KORE SCORE — L'ARBITRO</Text>
               {koreData.penalty_active && (
-                <View style={[dp$.penaltyTag, { borderColor: '#FF453A40' }]}>
-                  <Ionicons name="warning" size={10} color="#FF453A" />
+                <View style={[dp$.penaltyTag, { borderColor: '#FF3B3040' }]}>
+                  <Ionicons name="warning" size={10} color="#FF3B30" />
                   <Text style={dp$.penaltyTagText}>PENALITÀ POSTURA</Text>
                 </View>
               )}
@@ -348,7 +348,7 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
           <Text style={[dp$.sectionTitle, MONT('900'), { color: theme.textTer }]}>TREND SCAN NEXUS</Text>
           <View style={dp$.trendRow}>
             <TrendSparkline trend={profile.scan_trend || []} direction={profile.trend_direction} />
-            <Text style={[dp$.trendLabel, INTER('300'), { color: profile.trend_direction === 'up' ? '#34C759' : profile.trend_direction === 'down' ? '#FF453A' : theme.textTer }]}>
+            <Text style={[dp$.trendLabel, INTER('300'), { color: profile.trend_direction === 'up' ? '#00FF87' : profile.trend_direction === 'down' ? '#FF3B30' : theme.textTer }]}>
               {profile.trend_direction === 'up' ? '↑ In miglioramento' : profile.trend_direction === 'down' ? '↓ In calo' : '→ Stabile'}
             </Text>
           </View>
@@ -395,7 +395,7 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
 
 const dp$ = StyleSheet.create({
   panel: { width: 310, borderLeftWidth: 1, paddingTop: 16, flexShrink: 0 },
-  header: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 14, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
+  header: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 24, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
   avatar: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
   avatarLetter: { color: '#000', fontSize: 17, fontWeight: '900' },
   headerInfo: { flex: 1, gap: 2 },
@@ -403,7 +403,7 @@ const dp$ = StyleSheet.create({
   meta: { fontSize: 10, letterSpacing: 0.5 },
   crewBadge: { fontSize: 10, letterSpacing: 1 },
   closeBtn: { padding: 4 },
-  section: { paddingHorizontal: 14, paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  section: { paddingHorizontal: 24, paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   sectionTitle: { fontSize: 9, letterSpacing: 3 },
   radarWrap: { alignItems: 'center' },
   axisGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
@@ -420,8 +420,8 @@ const dp$ = StyleSheet.create({
   trendRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   trendLabel: { fontSize: 11 },
   secHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  penaltyTag: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2, backgroundColor: 'rgba(255,69,58,0.08)' },
-  penaltyTagText: { color: '#FF453A', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
+  penaltyTag: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2, backgroundColor: 'rgba(255,59,48,0.08)' },
+  penaltyTagText: { color: '#FF3B30', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
   msRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   msLabel: { flex: 1, fontSize: 11 },
   msVal: { fontSize: 14 },
@@ -617,10 +617,10 @@ function CrewPanel() {
               <Text style={[INTER(), { flex: 1, color: theme.textSec, fontSize: 12 }]}>{inv.invitee}</Text>
               <Text style={[INTER('300'), { color: theme.textTer, fontSize: 11 }]}>{inv.crew_name}</Text>
               <View style={[cp$.statusPill, {
-                backgroundColor: inv.status === 'accepted' ? '#34C75915' : inv.status === 'declined' ? '#FF453A15' : theme.surface2,
-                borderColor: inv.status === 'accepted' ? '#34C75940' : inv.status === 'declined' ? '#FF453A40' : theme.border,
+                backgroundColor: inv.status === 'accepted' ? '#00FF8715' : inv.status === 'declined' ? '#FF3B3015' : theme.surface2,
+                borderColor: inv.status === 'accepted' ? '#00FF8740' : inv.status === 'declined' ? '#FF3B3040' : theme.border,
               }]}>
-                <Text style={[MONT('900'), { fontSize: 8, letterSpacing: 1.5, color: inv.status === 'accepted' ? '#34C759' : inv.status === 'declined' ? '#FF453A' : theme.textTer }]}>
+                <Text style={[MONT('900'), { fontSize: 8, letterSpacing: 1.5, color: inv.status === 'accepted' ? '#00FF87' : inv.status === 'declined' ? '#FF3B30' : theme.textTer }]}>
                   {(inv.status || 'PENDING').toUpperCase()}
                 </Text>
               </View>
@@ -663,7 +663,7 @@ const cp$ = StyleSheet.create({
   inviteTitle: { fontSize: 9, letterSpacing: 2.5 },
   inviteInput: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 12 } as any,
   roleRow: { flexDirection: 'row', gap: 6, alignItems: 'center' },
-  roleOpt: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 6, borderColor: 'rgba(255,255,255,0.1)' },
+  roleOpt: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 6, borderColor: 'rgba(255,255,255,0.07)' },
   roleOptTxt: { fontSize: 9, letterSpacing: 1.5 },
   inviteBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 8, paddingVertical: 8 },
   inviteBtnTxt: { fontSize: 10, letterSpacing: 1.5 },
@@ -757,10 +757,10 @@ export default function AthletesModule() {
             {/* Injury filter */}
             {INJURY_FILTERS.map(f => (
               <TouchableOpacity key={f}
-                style={[am$.sortBtn, injuryFilter === f && { borderColor: f === 'HIGH' ? '#FF453A50' : f === 'MEDIUM' ? '#FF950050' : f === 'LOW' ? '#34C75950' : theme.accent + '50', backgroundColor: f === 'HIGH' ? '#FF453A10' : f === 'MEDIUM' ? '#FF950010' : f === 'LOW' ? '#34C75910' : theme.accent + '10' }]}
+                style={[am$.sortBtn, injuryFilter === f && { borderColor: f === 'HIGH' ? '#FF3B3050' : f === 'MEDIUM' ? '#FF950050' : f === 'LOW' ? '#00FF8750' : theme.accent + '50', backgroundColor: f === 'HIGH' ? '#FF3B3010' : f === 'MEDIUM' ? '#FF950010' : f === 'LOW' ? '#00FF8710' : theme.accent + '10' }]}
                 onPress={() => setInjuryFilter(f)}
               >
-                <Text style={[am$.sortTxt, MONT('900'), { color: injuryFilter === f ? (f === 'HIGH' ? '#FF453A' : f === 'MEDIUM' ? '#FF9500' : f === 'LOW' ? '#34C759' : theme.accent) : theme.textTer }]}>
+                <Text style={[am$.sortTxt, MONT('900'), { color: injuryFilter === f ? (f === 'HIGH' ? '#FF3B30' : f === 'MEDIUM' ? '#FF9500' : f === 'LOW' ? '#00FF87' : theme.accent) : theme.textTer }]}>
                   {f === 'ALL' ? 'TUTTI' : f}
                 </Text>
               </TouchableOpacity>
@@ -825,7 +825,7 @@ export default function AthletesModule() {
                       {/* Scan trend */}
                       <View style={{ width: 50, alignItems: 'center' }}>
                         {a.days_since_scan !== null && a.days_since_scan !== undefined
-                          ? <Text style={[am$.tdSub, { color: a.days_since_scan > 7 ? '#FF9500' : '#34C759' }]}>{a.days_since_scan}g</Text>
+                          ? <Text style={[am$.tdSub, { color: a.days_since_scan > 7 ? '#FF9500' : '#00FF87' }]}>{a.days_since_scan}g</Text>
                           : <Text style={[am$.tdSub, { color: theme.textTer }]}>—</Text>}
                       </View>
                       {/* Crew */}
@@ -859,7 +859,7 @@ export default function AthletesModule() {
 
 const am$ = StyleSheet.create({
   root: { flex: 1 },
-  topBar: { borderBottomWidth: 1, paddingHorizontal: 16, paddingVertical: 10, gap: 10 },
+  topBar: { borderBottomWidth: 1, paddingHorizontal: 24, paddingVertical: 10, gap: 10 },
   viewSwitch: { flexDirection: 'row', gap: 8 },
   viewBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: 'transparent', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
   viewBtnTxt: { fontSize: 11, letterSpacing: 1.5 },
@@ -873,9 +873,9 @@ const am$ = StyleSheet.create({
   loadWrap: { alignItems: 'center', paddingTop: 40 },
   koreGradePill: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1 },
   koreGradeText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
-  tableHead: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, gap: 8 },
+  tableHead: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 12, borderBottomWidth: 1, gap: 8 },
   th: { fontSize: 8, letterSpacing: 2.5, width: 50, textAlign: 'center' },
-  tableRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, gap: 8, position: 'relative' },
+  tableRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 14, borderBottomWidth: 1, gap: 8, position: 'relative' },
   rowIndicator: { position: 'absolute', left: 0, top: 4, bottom: 4, width: 3, borderRadius: 2 },
   athleteCell: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   rowAvatar: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },

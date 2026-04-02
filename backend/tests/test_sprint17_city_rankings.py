@@ -8,7 +8,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', '').rstrip('/') or 'https://voice-coach-40.preview.emergentagent.com'
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', '').rstrip('/') or 'https://arena-scan-lab.preview.emergentagent.com'
 
 FOUNDER_EMAIL = "ogrisek.stefano@gmail.com"
 FOUNDER_PASSWORD = "Founder@KORE2026!"

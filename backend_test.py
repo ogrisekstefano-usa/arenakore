@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Base URL from frontend/.env
-BASE_URL = "https://voice-coach-40.preview.emergentagent.com/api"
+BASE_URL = "https://arena-scan-lab.preview.emergentagent.com/api"
 
 # Test credentials from /app/memory/test_credentials.md
 ADMIN_EMAIL = "admin@arenadare.com"

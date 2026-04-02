@@ -43,11 +43,11 @@ export default function MyAthletes() {
       <StatusBar barStyle="light-content" />
       <Header title="I MIEI ATLETI" />
       {loading ? (
-        <View style={s.center}><ActivityIndicator color="#00F2FF" size="large" /></View>
+        <View style={s.center}><ActivityIndicator color="#00E5FF" size="large" /></View>
       ) : (
         <ScrollView
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#00F2FF" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#00E5FF" />}
         >
           <Text style={s.sectionTitle}>ROSTER — {athletes.length} ATLETI</Text>
           {athletes.map((a, idx) => {
@@ -70,7 +70,7 @@ export default function MyAthletes() {
                   )}
                 </View>
                 <TouchableOpacity style={s.actionBtn}>
-                  <Ionicons name="bar-chart" size={14} color="#00F2FF" />
+                  <Ionicons name="bar-chart" size={14} color="#00E5FF" />
                 </TouchableOpacity>
               </View>
             );
@@ -82,26 +82,26 @@ export default function MyAthletes() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#050505' },
+  root: { flex: 1, backgroundColor: '#000000' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   sectionTitle: {
-    color: 'rgba(0,242,255,0.5)', fontSize: 11, fontWeight: '900',
+    color: 'rgba(0,229,255,0.5)', fontSize: 11, fontWeight: '900',
     letterSpacing: 4, marginBottom: 14,
   },
   card: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 12,
     padding: 14, marginBottom: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   rankBox: { width: 32, alignItems: 'center' },
-  rank: { color: 'rgba(255,255,255,0.40)', fontSize: 13, fontWeight: '900' },
+  rank: { color: '#AAAAAA', fontSize: 13, fontWeight: '900' },
   info: { flex: 1, gap: 2 },
   name: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
-  sub: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '400' },
+  sub: { color: '#AAAAAA', fontSize: 12, fontWeight: '400' },
   stats: { alignItems: 'flex-end', gap: 4 },
-  xp: { color: '#D4AF37', fontSize: 13, fontWeight: '900' },
+  xp: { color: '#FFD700', fontSize: 13, fontWeight: '900' },
   dnaChip: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  dnaChipText: { color: '#00F2FF', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  dnaChipText: { color: '#00E5FF', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
   actionBtn: { padding: 8 },
 });

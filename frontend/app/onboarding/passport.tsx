@@ -18,10 +18,10 @@ import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 
 // ── Design tokens
-const GOLD   = '#D4AF37';
-const CYAN   = '#00F2FF';
-const BG     = '#050505';
-const CARD   = '#080808';
+const GOLD   = '#FFD700';
+const CYAN   = '#00E5FF';
+const BG     = '#000000';
+const CARD   = '#0a0a0a';
 
 interface ScanResult {
   kore_score:  number;
@@ -84,7 +84,7 @@ export default function PassportScreen() {
     );
   }, []);
   const glowStyle = useAnimatedStyle(() => ({
-    textShadowColor: `rgba(212,175,55,${glow.value * 0.9})`,
+    textShadowColor: `rgba(255,215,0,${glow.value * 0.9})`,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 28 * glow.value,
   }));
@@ -129,7 +129,7 @@ export default function PassportScreen() {
       } else {
         // Fallback: native Share sheet
         await Share.share({
-          message: `ARENAKORE — KORE DNA PASSPORT\n\nDNA SCORE: ${result?.kore_score}/100\nSTABILITÀ: ${result?.stability}% | AMPIEZZA: ${result?.amplitude}%\nCERTIFIED IN ${result?.city}\n${result ? formatDate(result.scan_date) : ''}\n\nhttps://voice-coach-40.preview.emergentagent.com`,
+          message: `ARENAKORE — KORE DNA PASSPORT\n\nDNA SCORE: ${result?.kore_score}/100\nSTABILITÀ: ${result?.stability}% | AMPIEZZA: ${result?.amplitude}%\nCERTIFIED IN ${result?.city}\n${result ? formatDate(result.scan_date) : ''}\n\nhttps://arena-scan-lab.preview.emergentagent.com`,
           title: 'KORE DNA PASSPORT',
         });
       }
@@ -300,12 +300,12 @@ function formatDate(iso: string): string {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: BG, paddingHorizontal: 16 },
+  root: { flex: 1, backgroundColor: BG, paddingHorizontal: 24 },
 
   // Top bar
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   brand: { fontSize: 13, fontWeight: '900', letterSpacing: 4 },
-  stepPill: { backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)' },
+  stepPill: { backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)' },
   stepTxt: { color: GOLD, fontSize: 11, fontWeight: '400', letterSpacing: 3 },
 
   // Card wrapper
@@ -313,21 +313,21 @@ const s = StyleSheet.create({
   card: {
     backgroundColor: CARD,
     borderRadius: 16, overflow: 'hidden',
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
     flex: 1,
   },
   cardTopBar: { height: 3, backgroundColor: GOLD },
-  cardDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginHorizontal: 16 },
+  cardDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginHorizontal: 24 },
 
   // Header
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 16 },
   cardBrandArena: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
-  cardLabel: { color: 'rgba(212,175,55,0.5)', fontSize: 8, fontWeight: '900', letterSpacing: 3, marginTop: 2 },
+  cardLabel: { color: 'rgba(255,215,0,0.5)', fontSize: 8, fontWeight: '900', letterSpacing: 3, marginTop: 2 },
   cardDate: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '400', letterSpacing: 1 },
   cardCity: { color: CYAN, fontSize: 11, fontWeight: '400', letterSpacing: 2 },
 
   // ID row
-  idRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
+  idRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 12 },
   idBadge: { gap: 2 },
   idLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '400', letterSpacing: 4 },
   idNum: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 2 },
@@ -339,15 +339,15 @@ const s = StyleSheet.create({
   scoreWrap: { alignItems: 'center', paddingVertical: 12, gap: 4 },
   scoreBig: {
     color: GOLD, fontSize: 80, fontWeight: '400', letterSpacing: -4, lineHeight: 84,
-    textShadowColor: 'rgba(212,175,55,0.8)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 24,
+    textShadowColor: 'rgba(255,215,0,0.8)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 24,
   },
-  scoreSubLabel: { color: 'rgba(212,175,55,0.6)', fontSize: 10, fontWeight: '900', letterSpacing: 5 },
-  scoreArc: { height: 4, width: 160, backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 2, overflow: 'hidden', marginTop: 6 },
+  scoreSubLabel: { color: 'rgba(255,215,0,0.6)', fontSize: 10, fontWeight: '900', letterSpacing: 5 },
+  scoreArc: { height: 4, width: 160, backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 2, overflow: 'hidden', marginTop: 6 },
   scoreArcFill: { height: 4, backgroundColor: GOLD, borderRadius: 2 },
 
   // Bars section
   barsWrap: { padding: 14, paddingBottom: 8 },
-  barsSectionLabel: { color: 'rgba(0,242,255,0.4)', fontSize: 8, fontWeight: '900', letterSpacing: 4, marginBottom: 10 },
+  barsSectionLabel: { color: 'rgba(0,229,255,0.4)', fontSize: 8, fontWeight: '900', letterSpacing: 4, marginBottom: 10 },
 
   // Location badge
   locBadge: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
@@ -356,8 +356,8 @@ const s = StyleSheet.create({
   locSub: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '400', letterSpacing: 1, marginTop: 2 },
 
   // Scan pattern bottom
-  scanLine: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 16, paddingBottom: 10, gap: 3, marginTop: 4 },
-  scanTick: { width: 2, height: 4, backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 1 },
+  scanLine: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 24, paddingBottom: 10, gap: 3, marginTop: 4 },
+  scanTick: { width: 2, height: 4, backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 1 },
   scanTickTall: { height: 10, backgroundColor: 'rgba(255,255,255,0.3)' },
 
   // CTAs
@@ -372,8 +372,8 @@ const s = StyleSheet.create({
   downloadTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   continueBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 10, paddingVertical: 14,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 10, paddingVertical: 14,
   },
   continueTxt: { color: CYAN, fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
-  footerNote: { color: 'rgba(255,255,255,0.50)', fontSize: 11, fontWeight: '400', textAlign: 'center', letterSpacing: 1 },
+  footerNote: { color: '#AAAAAA', fontSize: 11, fontWeight: '400', textAlign: 'center', letterSpacing: 1 },
 });

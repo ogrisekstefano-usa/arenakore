@@ -22,35 +22,35 @@ export function CyberGrid({ intensity, scanning }: { intensity: number; scanning
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       <Svg width={SW} height={SH}>
         {Array.from({ length: cols }).map((_, i) => (
-          <Line key={`v${i}`} x1={i * G_SIZE} y1={0} x2={i * G_SIZE} y2={SH} stroke="#00F2FF" strokeWidth={0.3} opacity={op * 0.6} />
+          <Line key={`v${i}`} x1={i * G_SIZE} y1={0} x2={i * G_SIZE} y2={SH} stroke="#00E5FF" strokeWidth={0.3} opacity={op * 0.6} />
         ))}
         {Array.from({ length: rows }).map((_, i) => (
-          <Line key={`h${i}`} x1={0} y1={i * G_SIZE} x2={SW} y2={i * G_SIZE} stroke="#00F2FF" strokeWidth={0.3} opacity={op * 0.6} />
+          <Line key={`h${i}`} x1={0} y1={i * G_SIZE} x2={SW} y2={i * G_SIZE} stroke="#00E5FF" strokeWidth={0.3} opacity={op * 0.6} />
         ))}
         {!scanning && (
           <>
-            <Circle cx={SW / 2} cy={SH * 0.4} r={55} stroke="#00F2FF" strokeWidth={1} fill="none" opacity={op} />
-            <Circle cx={SW / 2} cy={SH * 0.4} r={85} stroke="#00F2FF" strokeWidth={0.6} fill="none" opacity={op * 0.5} strokeDasharray="6,5" />
+            <Circle cx={SW / 2} cy={SH * 0.4} r={55} stroke="#00E5FF" strokeWidth={1} fill="none" opacity={op} />
+            <Circle cx={SW / 2} cy={SH * 0.4} r={85} stroke="#00E5FF" strokeWidth={0.6} fill="none" opacity={op * 0.5} strokeDasharray="6,5" />
           </>
         )}
         {scanning && (
           <>
             {/* Targeting reticle for scanning mode */}
-            <Circle cx={SW / 2} cy={SH * 0.4} r={100} stroke="#00F2FF" strokeWidth={0.5} fill="none" opacity={0.12} strokeDasharray="8,6" />
-            <Circle cx={SW / 2} cy={SH * 0.4} r={140} stroke="#00F2FF" strokeWidth={0.3} fill="none" opacity={0.06} strokeDasharray="4,8" />
+            <Circle cx={SW / 2} cy={SH * 0.4} r={100} stroke="#00E5FF" strokeWidth={0.5} fill="none" opacity={0.12} strokeDasharray="8,6" />
+            <Circle cx={SW / 2} cy={SH * 0.4} r={140} stroke="#00E5FF" strokeWidth={0.3} fill="none" opacity={0.06} strokeDasharray="4,8" />
             {/* Corner brackets */}
-            <Line x1={16} y1={80} x2={50} y2={80} stroke="#00F2FF" strokeWidth={1.5} opacity={0.3} />
-            <Line x1={16} y1={80} x2={16} y2={114} stroke="#00F2FF" strokeWidth={1.5} opacity={0.3} />
-            <Line x1={SW - 16} y1={80} x2={SW - 50} y2={80} stroke="#00F2FF" strokeWidth={1.5} opacity={0.3} />
-            <Line x1={SW - 16} y1={80} x2={SW - 16} y2={114} stroke="#00F2FF" strokeWidth={1.5} opacity={0.3} />
-            <Line x1={16} y1={SH - 180} x2={50} y2={SH - 180} stroke="#00F2FF" strokeWidth={1.5} opacity={0.3} />
-            <Line x1={16} y1={SH - 180} x2={16} y2={SH - 214} stroke="#00F2FF" strokeWidth={1.5} opacity={0.3} />
-            <Line x1={SW - 16} y1={SH - 180} x2={SW - 50} y2={SH - 180} stroke="#00F2FF" strokeWidth={1.5} opacity={0.3} />
-            <Line x1={SW - 16} y1={SH - 180} x2={SW - 16} y2={SH - 214} stroke="#00F2FF" strokeWidth={1.5} opacity={0.3} />
+            <Line x1={16} y1={80} x2={50} y2={80} stroke="#00E5FF" strokeWidth={1.5} opacity={0.3} />
+            <Line x1={16} y1={80} x2={16} y2={114} stroke="#00E5FF" strokeWidth={1.5} opacity={0.3} />
+            <Line x1={SW - 16} y1={80} x2={SW - 50} y2={80} stroke="#00E5FF" strokeWidth={1.5} opacity={0.3} />
+            <Line x1={SW - 16} y1={80} x2={SW - 16} y2={114} stroke="#00E5FF" strokeWidth={1.5} opacity={0.3} />
+            <Line x1={16} y1={SH - 180} x2={50} y2={SH - 180} stroke="#00E5FF" strokeWidth={1.5} opacity={0.3} />
+            <Line x1={16} y1={SH - 180} x2={16} y2={SH - 214} stroke="#00E5FF" strokeWidth={1.5} opacity={0.3} />
+            <Line x1={SW - 16} y1={SH - 180} x2={SW - 50} y2={SH - 180} stroke="#00E5FF" strokeWidth={1.5} opacity={0.3} />
+            <Line x1={SW - 16} y1={SH - 180} x2={SW - 16} y2={SH - 214} stroke="#00E5FF" strokeWidth={1.5} opacity={0.3} />
           </>
         )}
-        <SvgText x={20} y={68} fill="#00F2FF" fontSize={8} fontWeight="bold" opacity={0.4}>ARENAKORE v2.1</SvgText>
-        <SvgText x={SW - 110} y={68} fill="#00F2FF" fontSize={8} fontWeight="bold" opacity={0.4}>NEXUS SYNC</SvgText>
+        <SvgText x={20} y={68} fill="#00E5FF" fontSize={8} fontWeight="bold" opacity={0.4}>ARENAKORE v2.1</SvgText>
+        <SvgText x={SW - 110} y={68} fill="#00E5FF" fontSize={8} fontWeight="bold" opacity={0.4}>NEXUS SYNC</SvgText>
       </Svg>
     </View>
   );
@@ -72,8 +72,8 @@ export function DigitalShadow({ pose, exercise, goldFlash, motionActive, deviceT
   // SPRINT 5: Always render full skeleton — no legacy degradation during scan
   const active = motionActive ? 1 : 0;
   const intensity = motionActive ? (0.5 + pose.intensity * 0.5) : 0.2;
-  const col = goldFlash ? '#D4AF37' : '#00F2FF';
-  const glowCol = goldFlash ? 'rgba(212,175,55,' : 'rgba(0,242,255,';
+  const col = goldFlash ? '#FFD700' : '#00E5FF';
+  const glowCol = goldFlash ? 'rgba(255,215,0,' : 'rgba(0,229,255,';
 
   const tilt = pose.torsoTilt * active;
   const knee = pose.kneeAngle * active;
@@ -235,7 +235,7 @@ export function ScanLine({ active }: { active: boolean }) {
   const s = useAnimatedStyle(() => ({ transform: [{ translateY: ty.value }], opacity: active ? 0.45 : 0 }));
   return (
     <Animated.View style={[{ position: 'absolute', left: 0, right: 0, height: 2, zIndex: 10 }, s]} pointerEvents="none">
-      <View style={{ flex: 1, backgroundColor: '#00F2FF' }} />
+      <View style={{ flex: 1, backgroundColor: '#00E5FF' }} />
     </Animated.View>
   );
 }

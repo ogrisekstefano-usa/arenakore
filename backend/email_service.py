@@ -19,7 +19,7 @@ SMTP_USER     = "no-reply@arenakore.com"
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
 SMTP_FROM     = "ARENAKORE <no-reply@arenakore.com>"
 
-APP_URL = "https://voice-coach-40.preview.emergentagent.com"
+APP_URL = "https://arena-scan-lab.preview.emergentagent.com"
 
 
 # ===================================================================

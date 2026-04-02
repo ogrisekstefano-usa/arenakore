@@ -15,7 +15,7 @@ export function CertBadge({ certified, size = 'sm' }: {
   if (certified) {
     return (
       <View style={[cb$.badge, cb$.certBadge, { paddingHorizontal: cfg.px, paddingVertical: cfg.py }]}>
-        <Ionicons name="shield-checkmark" size={cfg.icon} color="#00F2FF" />
+        <Ionicons name="shield-checkmark" size={cfg.icon} color="#00E5FF" />
         {size !== 'xs' && <Text style={[cb$.certText, { fontSize: cfg.text }]}>NÈXUS CERTIFIED</Text>}
       </View>
     );
@@ -36,10 +36,10 @@ const SIZE_CFG = {
 
 const cb$ = StyleSheet.create({
   badge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 6, borderWidth: 1 },
-  certBadge: { backgroundColor: 'rgba(0,242,255,0.09)', borderColor: 'rgba(0,242,255,0.4)' },
+  certBadge: { backgroundColor: 'rgba(0,229,255,0.09)', borderColor: '#00E5FF44' },
   uncertBadge: { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.12)' },
-  certText: { color: '#00F2FF', fontWeight: '900', letterSpacing: 1.5 },
-  uncertText: { color: 'rgba(255,255,255,0.35)', fontWeight: '700', letterSpacing: 1.5 },
+  certText: { color: '#00E5FF', fontWeight: '900', letterSpacing: 1.5 },
+  uncertText: { color: 'rgba(255,255,255,0.30)', fontWeight: '700', letterSpacing: 1.5 },
 });
 
 // ── AK DROPS Wallet Widget ────────────────────────────────────────────────────
@@ -55,7 +55,7 @@ export function AKDropsWallet({ user }: { user: any }) {
     return (
       <View style={dw$.lockedCard}>
         <View style={dw$.lockedIcon}>
-          <Ionicons name="lock-closed" size={22} color="#D4AF37" />
+          <Ionicons name="lock-closed" size={22} color="#FFD700" />
         </View>
         <View style={dw$.lockedInfo}>
           <Text style={dw$.lockedTitle}>💧 AK DROPS BLOCCATI</Text>
@@ -105,34 +105,34 @@ export function AKDropsWallet({ user }: { user: any }) {
 const dw$ = StyleSheet.create({
   // Locked state
   lockedCard: {
-    marginHorizontal: 16, marginBottom: 10,
-    backgroundColor: 'rgba(212,175,55,0.06)',
+    marginHorizontal: 24, marginBottom: 10,
+    backgroundColor: 'rgba(255,215,0,0.06)',
     borderRadius: 14, padding: 16,
-    borderWidth: 1.5, borderColor: 'rgba(212,175,55,0.25)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
     flexDirection: 'row', alignItems: 'center', gap: 12,
   },
-  lockedIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(212,175,55,0.1)', alignItems: 'center', justifyContent: 'center' },
+  lockedIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,215,0,0.1)', alignItems: 'center', justifyContent: 'center' },
   lockedInfo: { flex: 1, gap: 4 },
-  lockedTitle: { color: '#D4AF37', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
-  lockedSub: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '300', lineHeight: 16 },
-  certBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#D4AF37', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
+  lockedTitle: { color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  lockedSub: { color: '#AAAAAA', fontSize: 11, fontWeight: '300', lineHeight: 16 },
+  certBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FFD700', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
   certBtnText: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   // Active wallet
   card: {
-    marginHorizontal: 16, marginBottom: 10,
+    marginHorizontal: 24, marginBottom: 10,
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 14, padding: 16,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.15)',
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)',
     gap: 10,
   },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   headerTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   balanceRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
-  balance: { color: '#00F2FF', fontSize: 36, fontWeight: '900', letterSpacing: 1 },
-  balanceUnit: { color: 'rgba(0,242,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 2, marginBottom: 6 },
-  earnHint: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '300' },
+  balance: { color: '#00E5FF', fontSize: 36, fontWeight: '900', letterSpacing: 1 },
+  balanceUnit: { color: 'rgba(0,229,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 2, marginBottom: 6 },
+  earnHint: { color: 'rgba(255,255,255,0.30)', fontSize: 11, fontWeight: '300' },
   ruleRow: { flexDirection: 'row', gap: 8 },
   ruleItem: { flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 8, gap: 3, alignItems: 'center' },
   ruleLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '400', textAlign: 'center' },
-  ruleVal: { color: '#00F2FF', fontSize: 12, fontWeight: '900' },
+  ruleVal: { color: '#00E5FF', fontSize: 12, fontWeight: '900' },
 });

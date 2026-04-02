@@ -13,7 +13,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 
 const DIFF_CFG: Record<string, { color: string; label: string }> = {
-  easy:    { color: '#34C759', label: 'EASY' },
+  easy:    { color: '#00FF87', label: 'EASY' },
   medium:  { color: '#FF9500', label: 'MEDIUM' },
   hard:    { color: '#FF3B30', label: 'HARD' },
   extreme: { color: '#AF52DE', label: 'EXTREME' },
@@ -51,7 +51,7 @@ export function TrainingTemplateCard() {
   if (!data?.template) return null;
 
   const t = data.template;
-  const diff = DIFF_CFG[t.difficulty] || { color: '#00F2FF', label: t.difficulty?.toUpperCase() };
+  const diff = DIFF_CFG[t.difficulty] || { color: '#00E5FF', label: t.difficulty?.toUpperCase() };
   const dnaP = data.relevant_potential || 0;
 
   const handleStart = () => {
@@ -76,7 +76,7 @@ export function TrainingTemplateCard() {
         <Animated.View style={[c$.dot, glowStyle]} />
         <Text style={c$.sectionTitle}>SESSION DEL GIORNO</Text>
         {t.already_done_today && (
-          <View style={c$.donePill}><Ionicons name="checkmark" size={10} color="#34C759" /><Text style={c$.doneText}>COMPLETATA</Text></View>
+          <View style={c$.donePill}><Ionicons name="checkmark" size={10} color="#00FF87" /><Text style={c$.doneText}>COMPLETATA</Text></View>
         )}
       </View>
 
@@ -109,7 +109,7 @@ export function TrainingTemplateCard() {
           activeOpacity={0.85}
         >
           {t.already_done_today ? (
-            <><Ionicons name="checkmark-circle" size={16} color="#34C759" /><Text style={c$.startBtnDoneText}>COMPLETATA OGGI</Text></>
+            <><Ionicons name="checkmark-circle" size={16} color="#00FF87" /><Text style={c$.startBtnDoneText}>COMPLETATA OGGI</Text></>
           ) : (
             <><Ionicons name="flash-sharp" size={16} color="#000000" /><Text style={c$.startBtnText}>AVVIA</Text></>
           )}
@@ -121,25 +121,25 @@ export function TrainingTemplateCard() {
 
 const c$ = StyleSheet.create({
   section: { marginTop: 12, marginBottom: 4 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, marginBottom: 8 },
-  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#D4AF37', shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
-  sectionTitle: { flex: 1, color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, marginBottom: 8 },
+  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FFD700', shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
+  sectionTitle: { flex: 1, color: 'rgba(255,255,255,0.30)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
   donePill: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  doneText: { color: '#34C759', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-  card: { marginHorizontal: 16, backgroundColor: '#000000', borderRadius: 16, padding: 18, borderWidth: 1, borderColor: 'rgba(212,175,55,0.15)', gap: 14 },
+  doneText: { color: '#00FF87', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  card: { marginHorizontal: 24, backgroundColor: '#000000', borderRadius: 16, padding: 18, borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)', gap: 14 },
   templateName: { color: '#FFFFFF', fontSize: 19, fontWeight: '900', letterSpacing: 2, lineHeight: 24 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
-  xpBig: { color: '#D4AF37', fontSize: 18, fontWeight: '900', letterSpacing: 1 },
+  xpBig: { color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 1 },
   diffPill: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   diffText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   discLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '300', letterSpacing: 1 },
   dnaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   dnaLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   dnaBar: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' },
-  dnaFill: { height: '100%', backgroundColor: '#D4AF37', borderRadius: 2 },
-  dnaVal: { color: 'rgba(212,175,55,0.7)', fontSize: 11, fontWeight: '700', width: 34, textAlign: 'right' },
-  startBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: '#D4AF37', borderRadius: 12, paddingVertical: 16 },
-  startBtnDone: { backgroundColor: 'rgba(52,199,89,0.06)', borderWidth: 1, borderColor: 'rgba(52,199,89,0.2)' },
+  dnaFill: { height: '100%', backgroundColor: '#FFD700', borderRadius: 2 },
+  dnaVal: { color: 'rgba(255,215,0,0.7)', fontSize: 11, fontWeight: '700', width: 34, textAlign: 'right' },
+  startBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: '#FFD700', borderRadius: 12, paddingVertical: 16 },
+  startBtnDone: { backgroundColor: 'rgba(0,255,135,0.06)', borderWidth: 1, borderColor: 'rgba(0,255,135,0.2)' },
   startBtnText: { color: '#000000', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
-  startBtnDoneText: { color: '#34C759', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  startBtnDoneText: { color: '#00FF87', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
 });

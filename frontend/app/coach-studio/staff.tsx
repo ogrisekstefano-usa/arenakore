@@ -13,9 +13,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 
 const ROLE_CFG: Record<string, { color: string; bg: string }> = {
-  GYM_OWNER: { color: '#D4AF37', bg: 'rgba(212,175,55,0.1)' },
-  COACH:     { color: '#00F2FF', bg: 'rgba(0,242,255,0.08)' },
-  ATHLETE:   { color: 'rgba(255,255,255,0.35)', bg: 'rgba(255,255,255,0.04)' },
+  GYM_OWNER: { color: '#FFD700', bg: 'rgba(255,215,0,0.1)' },
+  COACH:     { color: '#00E5FF', bg: 'rgba(0,229,255,0.08)' },
+  ATHLETE:   { color: 'rgba(255,255,255,0.30)', bg: 'rgba(255,255,255,0.04)' },
 };
 
 export default function StaffManagement() {
@@ -80,7 +80,7 @@ export default function StaffManagement() {
     }
   };
 
-  if (loading) return <View style={s$.center}><ActivityIndicator color="#00F2FF" /></View>;
+  if (loading) return <View style={s$.center}><ActivityIndicator color="#00E5FF" /></View>;
 
   return (
     <ScrollView style={s$.root} contentContainerStyle={s$.content}>
@@ -101,7 +101,7 @@ export default function StaffManagement() {
               const rc = ROLE_CFG[member.role] || ROLE_CFG.ATHLETE;
               return (
                 <Animated.View key={member.id} entering={FadeInDown.delay(i * 50).duration(200)} style={s$.memberRow}>
-                  <View style={[s$.avatar, { backgroundColor: member.role === 'GYM_OWNER' ? '#D4AF37' : '#00F2FF' }]}>
+                  <View style={[s$.avatar, { backgroundColor: member.role === 'GYM_OWNER' ? '#FFD700' : '#00E5FF' }]}>
                     <Text style={s$.avatarLetter}>{member.username?.[0] || '?'}</Text>
                   </View>
                   <View style={s$.memberInfo}>
@@ -130,8 +130,8 @@ export default function StaffManagement() {
                         disabled={removing === member.id}
                       >
                         {removing === member.id
-                          ? <ActivityIndicator color="#FF453A" size="small" />
-                          : <Ionicons name="trash-outline" size={14} color="#FF453A" />}
+                          ? <ActivityIndicator color="#FF3B30" size="small" />
+                          : <Ionicons name="trash-outline" size={14} color="#FF3B30" />}
                       </TouchableOpacity>
                     )}
                   </View>
@@ -187,7 +187,7 @@ export default function StaffManagement() {
             </TouchableOpacity>
 
             <View style={s$.infoBox}>
-              <Ionicons name="shield-checkmark" size={13} color="rgba(0,242,255,0.5)" />
+              <Ionicons name="shield-checkmark" size={13} color="rgba(0,229,255,0.5)" />
               <Text style={s$.infoText}>Solo il GYM_OWNER può aggiungere o rimuovere staff. Ogni Coach può vedere solo i propri atleti.</Text>
             </View>
           </View>
@@ -210,7 +210,7 @@ const s$ = StyleSheet.create({
   empty: { alignItems: 'center', paddingVertical: 24, gap: 10 },
   emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 12, textAlign: 'center', lineHeight: 18 },
   memberRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#111' },
-  avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 36, height: 36, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   avatarLetter: { color: '#000', fontSize: 16, fontWeight: '900' },
   memberInfo: { flex: 1, gap: 1 },
   memberName: { color: '#FFF', fontSize: 13, fontWeight: '700', letterSpacing: 0.5 },
@@ -222,16 +222,16 @@ const s$ = StyleSheet.create({
   switchBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   switchText: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '700' },
   removeBtn: { padding: 4 },
-  addDesc: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '300', lineHeight: 17 },
+  addDesc: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '300', lineHeight: 17 },
   fieldGroup: { gap: 6 },
   fieldLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
   input: { backgroundColor: '#111', color: '#FFF', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontSize: 13, borderWidth: 1, borderColor: '#1E1E1E', outlineStyle: 'none' } as any,
   roleRow: { flexDirection: 'row', gap: 8 },
-  roleOption: { flex: 1, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', borderRadius: 8, paddingVertical: 9, alignItems: 'center' },
-  roleOptionText: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
-  addBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#00F2FF', borderRadius: 8, paddingVertical: 12 },
+  roleOption: { flex: 1, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', borderRadius: 8, paddingVertical: 9, alignItems: 'center' },
+  roleOptionText: { color: 'rgba(255,255,255,0.30)', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  addBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#00E5FF', borderRadius: 8, paddingVertical: 12 },
   addBtnOff: { opacity: 0.4 },
   addBtnText: { color: '#000', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
-  infoBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: 'rgba(0,242,255,0.05)', borderRadius: 8, padding: 10 },
-  infoText: { flex: 1, color: 'rgba(0,242,255,0.4)', fontSize: 11, fontWeight: '300', lineHeight: 16 },
+  infoBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: 'rgba(0,229,255,0.05)', borderRadius: 8, padding: 10 },
+  infoText: { flex: 1, color: 'rgba(0,229,255,0.4)', fontSize: 11, fontWeight: '300', lineHeight: 16 },
 });

@@ -60,7 +60,7 @@ export function ProUnlockModal({ visible, onClose, avgDna }: ProUnlockModalProps
   }, [visible]);
 
   const overlayGlowStyle = useAnimatedStyle(() => ({
-    shadowColor: '#D4AF37',
+    shadowColor: '#FFD700',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: interpolate(glowPulse.value, [0, 1], [0, 0.65]),
     shadowRadius: interpolate(glowPulse.value, [0, 1], [10, 50]),
@@ -86,7 +86,7 @@ export function ProUnlockModal({ visible, onClose, avgDna }: ProUnlockModalProps
   }));
 
   const titleGlowStyle = useAnimatedStyle(() => ({
-    textShadowColor: '#D4AF37',
+    textShadowColor: '#FFD700',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: interpolate(titleGlowPulse.value, [0, 1], [0, 18]),
     opacity: interpolate(titleGlowPulse.value, [0, 1], [0.7, 1]),
@@ -108,7 +108,7 @@ export function ProUnlockModal({ visible, onClose, avgDna }: ProUnlockModalProps
 
         <Animated.View style={[styles.card, overlayGlowStyle, cardScaleStyle]}>
           <LinearGradient
-            colors={['#0d0d0d', '#050505', '#020202']}
+            colors={['#0d0d0d', '#000000', '#020202']}
             style={styles.cardGradient}
           >
             {/* TOP BORDER LINE SWEEP */}
@@ -135,7 +135,7 @@ export function ProUnlockModal({ visible, onClose, avgDna }: ProUnlockModalProps
             {avgDna !== undefined && (
               <Animated.View style={[styles.scoreContainer, contentStyle]}>
                 <View style={styles.scoreBadge}>
-                  <Ionicons name="analytics" size={13} color="#D4AF37" />
+                  <Ionicons name="analytics" size={13} color="#FFD700" />
                   <Text style={styles.scoreLabel}>BIO-SCORE MEDIO</Text>
                   <Text style={styles.scoreValue}>{Math.round(avgDna)}/100</Text>
                 </View>
@@ -157,7 +157,7 @@ export function ProUnlockModal({ visible, onClose, avgDna }: ProUnlockModalProps
                 { icon: 'star' as const,      label: 'RANKING PRO TIER'         },
               ].map((f, i) => (
                 <View key={i} style={styles.featureRow}>
-                  <Ionicons name={f.icon} size={11} color="#00F2FF" />
+                  <Ionicons name={f.icon} size={11} color="#00E5FF" />
                   <Text style={styles.featureText}>{f.label}</Text>
                 </View>
               ))}
@@ -167,12 +167,12 @@ export function ProUnlockModal({ visible, onClose, avgDna }: ProUnlockModalProps
             <Animated.View style={[contentStyle, { width: '100%' }]}>
               <TouchableOpacity style={styles.ctaBtn} onPress={onClose} activeOpacity={0.8}>
                 <LinearGradient
-                  colors={['rgba(212,175,55,0.18)', 'rgba(212,175,55,0.06)']}
+                  colors={['rgba(255,215,0,0.18)', 'rgba(255,215,0,0.06)']}
                   start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                   style={styles.ctaBtnInner}
                 >
                   <Text style={styles.ctaText}>INIZIA A DOMINARE</Text>
-                  <Ionicons name="arrow-forward" size={13} color="#D4AF37" />
+                  <Ionicons name="arrow-forward" size={13} color="#FFD700" />
                 </LinearGradient>
               </TouchableOpacity>
             </Animated.View>
@@ -198,11 +198,11 @@ const styles = StyleSheet.create({
   },
   gridLine: {
     position: 'absolute', left: 0, right: 0, height: 1,
-    backgroundColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(0,229,255,0.65)',
   },
   gridLineV: {
     position: 'absolute', top: 0, bottom: 0, width: 1,
-    backgroundColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(0,229,255,0.65)',
   },
   card: {
     width: '100%',
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(212,175,55,0.18)',
+    borderColor: 'rgba(255,215,0,0.18)',
   },
   cardGradient: {
     paddingVertical: 28,
@@ -226,16 +226,16 @@ const styles = StyleSheet.create({
   },
   borderFillGold: {
     height: '100%',
-    backgroundColor: '#D4AF37',
-    shadowColor: '#D4AF37',
+    backgroundColor: '#FFD700',
+    shadowColor: '#FFD700',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 6,
   },
   borderFillCyan: {
     height: '100%',
-    backgroundColor: '#00F2FF',
-    shadowColor: '#00F2FF',
+    backgroundColor: '#00E5FF',
+    shadowColor: '#00E5FF',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 6,
@@ -248,14 +248,14 @@ const styles = StyleSheet.create({
   },
   statusDot: {
     width: 6, height: 6, borderRadius: 3,
-    backgroundColor: '#00F2FF',
-    shadowColor: '#00F2FF',
+    backgroundColor: '#00E5FF',
+    shadowColor: '#00E5FF',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
     shadowRadius: 6,
   },
   statusText: {
-    color: '#00F2FF',
+    color: '#00E5FF',
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 3,
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     lineHeight: 40,
   },
   titleLine3: {
-    color: '#D4AF37',
+    color: '#FFD700',
     fontSize: 48,
     fontWeight: '900',
     letterSpacing: 6,
@@ -292,21 +292,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(212,175,55,0.08)',
+    backgroundColor: 'rgba(255,215,0,0.08)',
     borderRadius: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: 'rgba(212,175,55,0.2)',
+    borderColor: 'rgba(255,215,0,0.2)',
   },
   scoreLabel: {
-    color: 'rgba(255,255,255,0.45)',
+    color: '#AAAAAA',
     fontSize: 11,
     fontWeight: '400',
     letterSpacing: 2,
   },
   scoreValue: {
-    color: '#D4AF37',
+    color: '#FFD700',
     fontSize: 16,
     fontWeight: '900',
     letterSpacing: 1,
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.06)',
   },
   dividerLabel: {
-    color: 'rgba(255,255,255,0.60)',
+    color: '#AAAAAA',
     fontSize: 8,
     fontWeight: '800',
     letterSpacing: 2,
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   featureText: {
-    color: 'rgba(255,255,255,0.65)',
+    color: '#AAAAAA',
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1.5,
@@ -348,8 +348,8 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 14,
     overflow: 'hidden',
-    borderWidth: 1.5,
-    borderColor: 'rgba(212,175,55,0.3)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,215,0,0.3)',
   },
   ctaBtnInner: {
     flexDirection: 'row',
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   ctaText: {
-    color: '#D4AF37',
+    color: '#FFD700',
     fontSize: 13,
     fontWeight: '900',
     letterSpacing: 3,

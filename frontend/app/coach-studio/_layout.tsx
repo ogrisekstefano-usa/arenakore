@@ -107,8 +107,8 @@ const NAV_ITEMS_COACH = [
 ];
 
 const ROLE_BADGE: Record<string, { color: string; bg: string; label: string }> = {
-  GYM_OWNER: { color: '#D4AF37', bg: 'rgba(212,175,55,0.12)', label: 'OWNER' },
-  COACH:     { color: '#00F2FF', bg: 'rgba(0,242,255,0.08)',   label: 'COACH' },
+  GYM_OWNER: { color: '#FFD700', bg: 'rgba(255,215,0,0.12)', label: 'OWNER' },
+  COACH:     { color: '#00E5FF', bg: 'rgba(0,229,255,0.08)',   label: 'COACH' },
   ATHLETE:   { color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.05)', label: 'ATHLETE' },
   ADMIN:     { color: '#AF52DE', bg: 'rgba(175,82,222,0.1)',   label: 'ADMIN' },
 };
@@ -138,7 +138,7 @@ function ThemeToggle() {
 }
 const tg$ = StyleSheet.create({
   wrap: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 6, position: 'relative' },
-  pill: { position: 'absolute', left: 4, top: 4, width: '46%' as any, bottom: 4, borderRadius: 16, backgroundColor: 'rgba(0,242,255,0.3)', transition: 'left 0.2s' } as any,
+  pill: { position: 'absolute', left: 4, top: 4, width: '46%' as any, bottom: 4, borderRadius: 16, backgroundColor: 'rgba(0,229,255,0.3)', transition: 'left 0.2s' } as any,
 });
 
 // ── Nav Item ──────────────────────────────────────────────────────────────────
@@ -180,7 +180,7 @@ function NavItem({ item, isActive, theme, onPress }: any) {
   );
 }
 const ni$ = StyleSheet.create({
-  item: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, position: 'relative', overflow: 'hidden' },
+  item: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 24, paddingVertical: 10, borderRadius: 10, position: 'relative', overflow: 'hidden' },
   activeBar: { position: 'absolute', left: 0, top: 8, bottom: 8, width: 3, borderRadius: 2 },
   activeBg: { ...StyleSheet.absoluteFillObject, borderRadius: 10 },
   text: { flex: 1, gap: 1 },
@@ -322,7 +322,7 @@ export default function CoachStudioLayout() {
 const l$ = StyleSheet.create({
   root: { flex: 1, flexDirection: 'row' },
   sidebar: { width: 210, borderRightWidth: 1, paddingTop: 20, paddingBottom: 16, justifyContent: 'space-between' },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, marginBottom: 28 },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 24, marginBottom: 28 },
   brandAccent: { width: 4, height: 28, borderRadius: 2 },
   brandName: { fontSize: 15, letterSpacing: 3 },
   brandSub: { fontSize: 8, letterSpacing: 3, marginTop: 1 },

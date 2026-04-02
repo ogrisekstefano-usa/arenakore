@@ -13,7 +13,7 @@ import * as Haptics from 'expo-haptics';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 
-const DISC_COLORS: Record<string, string> = { power: '#FF453A', agility: '#00F2FF', endurance: '#D4AF37' };
+const DISC_COLORS: Record<string, string> = { power: '#FF3B30', agility: '#00E5FF', endurance: '#FFD700' };
 const DISC_ICONS: Record<string, any> = { power: 'barbell', agility: 'hand-left', endurance: 'timer' };
 
 export function PvPPendingCard() {
@@ -116,7 +116,7 @@ export function PvPPendingCard() {
         return (
           <Animated.View key={ch.id} entering={FadeInDown.delay(idx * 60).duration(250)} style={p$.activeCard}>
             <View style={p$.activeHeader}>
-              <Ionicons name="flash" size={12} color="#FF453A" />
+              <Ionicons name="flash" size={12} color="#FF3B30" />
               <Text style={p$.activeLabel}>BATTLE ATTIVA</Text>
               <View style={p$.discPill}>
                 <Text style={[p$.discPillText, { color: DISC_COLORS[ch.discipline] }]}>{ch.discipline_label}</Text>
@@ -127,7 +127,7 @@ export function PvPPendingCard() {
             </Text>
             {ch.status === 'challenger_done' && myRole === 'challenged' && (
               <View style={p$.ghostAvail}>
-                <Ionicons name="eye" size={10} color="rgba(0,242,255,0.7)" />
+                <Ionicons name="eye" size={10} color="rgba(0,229,255,0.7)" />
                 <Text style={p$.ghostAvailText}>GHOST DISPONIBILE — vedi il risultato del rivale</Text>
               </View>
             )}
@@ -161,36 +161,36 @@ export function PvPPendingCard() {
 
 const p$ = StyleSheet.create({
   section: { marginTop: 10, marginBottom: 4 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, marginBottom: 8 },
-  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FF453A', shadowColor: '#FF453A', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
-  sectionTitle: { flex: 1, color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
-  badgeCount: { backgroundColor: '#FF453A', borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, marginBottom: 8 },
+  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FF3B30', shadowColor: '#FF3B30', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
+  sectionTitle: { flex: 1, color: '#AAAAAA', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  badgeCount: { backgroundColor: '#FF3B30', borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2 },
   badgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '900' },
-  card: { marginHorizontal: 16, marginBottom: 8, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,69,58,0.2)', gap: 8 },
+  card: { marginHorizontal: 24, marginBottom: 8, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)', gap: 8 },
   disciplineBar: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1 },
   disciplineText: { flex: 1, fontSize: 11, fontWeight: '900', letterSpacing: 2 },
-  stakePill: { backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 },
-  stakeText: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  stakePill: { backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 },
+  stakeText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   cardBody: { gap: 2 },
   challengerName: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
   cardSub: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '400' },
   actionsRow: { flexDirection: 'row', gap: 8 },
-  acceptBtn: { flex: 1, backgroundColor: '#00F2FF', borderRadius: 8, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', minHeight: 38 },
-  acceptText: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
-  declineBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
+  acceptBtn: { flex: 1, backgroundColor: '#00E5FF', borderRadius: 8, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', minHeight: 38 },
+  acceptText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  declineBtn: { paddingHorizontal: 24, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
   declineText: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
-  activeCard: { marginHorizontal: 16, marginBottom: 8, backgroundColor: 'rgba(255,69,58,0.06)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,69,58,0.25)', gap: 6 },
+  activeCard: { marginHorizontal: 24, marginBottom: 8, backgroundColor: 'rgba(255,59,48,0.06)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,59,48,0.25)', gap: 6 },
   activeHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  activeLabel: { flex: 1, color: '#FF453A', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  activeLabel: { flex: 1, color: '#FF3B30', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   discPill: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, backgroundColor: 'rgba(255,255,255,0.06)' },
   discPillText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
   opponentText: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '700' },
-  ghostAvail: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(0,242,255,0.06)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
-  ghostAvailText: { color: 'rgba(0,242,255,0.7)', fontSize: 11, fontWeight: '700' },
-  scanBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#FF453A', borderRadius: 10, paddingVertical: 12 },
-  scanBtnText: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  ghostAvail: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(0,229,255,0.06)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
+  ghostAvailText: { color: 'rgba(0,229,255,0.7)', fontSize: 11, fontWeight: '700' },
+  scanBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#FF3B30', borderRadius: 10, paddingVertical: 12 },
+  scanBtnText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   waitingRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   waitingText: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '400' },
-  sentRow: { marginHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6 },
+  sentRow: { marginHorizontal: 24, flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6 },
   sentText: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '400' },
 });

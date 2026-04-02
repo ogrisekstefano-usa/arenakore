@@ -14,9 +14,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 
 const DISCIPLINES = [
-  { key: 'power',     label: 'POWER',     sub: 'Squat · 30s · Forza & Potenza',    icon: 'barbell' as const,    color: '#FF453A' },
-  { key: 'agility',   label: 'AGILITY',   sub: 'Punch · 30s · Velocità & Agilità',  icon: 'hand-left' as const,  color: '#00F2FF' },
-  { key: 'endurance', label: 'ENDURANCE', sub: 'Squat · 60s · Resistenza massima', icon: 'timer' as const,      color: '#D4AF37' },
+  { key: 'power',     label: 'POWER',     sub: 'Squat · 30s · Forza & Potenza',    icon: 'barbell' as const,    color: '#FF3B30' },
+  { key: 'agility',   label: 'AGILITY',   sub: 'Punch · 30s · Velocità & Agilità',  icon: 'hand-left' as const,  color: '#00E5FF' },
+  { key: 'endurance', label: 'ENDURANCE', sub: 'Squat · 60s · Resistenza massima', icon: 'timer' as const,      color: '#FFD700' },
 ];
 
 const STAKES = [
@@ -74,7 +74,7 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
             {/* Header */}
             <View style={m$.header}>
               <View style={m$.headerLeft}>
-                <Ionicons name="flash-sharp" size={18} color="#FF453A" />
+                <Ionicons name="flash-sharp" size={18} color="#FF3B30" />
                 <Text style={m$.title}>SFIDA PVP</Text>
               </View>
               <TouchableOpacity onPress={onClose}>
@@ -86,7 +86,7 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
             <View style={m$.faceOff}>
               {/* My side */}
               <View style={m$.faceCard}>
-                <View style={[m$.faceAvatar, { backgroundColor: '#00F2FF' }]}>
+                <View style={[m$.faceAvatar, { backgroundColor: '#00E5FF' }]}>
                   <Text style={m$.faceLetter}>{(user?.username || 'TU')[0].toUpperCase()}</Text>
                 </View>
                 <Text style={m$.faceName} numberOfLines={1}>{(user?.username || 'TU').toUpperCase()}</Text>
@@ -100,7 +100,7 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
 
               {/* Opponent */}
               <View style={[m$.faceCard, { alignItems: 'flex-end' }]}>
-                <View style={[m$.faceAvatar, { backgroundColor: '#FF453A' }]}>
+                <View style={[m$.faceAvatar, { backgroundColor: '#FF3B30' }]}>
                   <Text style={m$.faceLetter}>{opponent.username[0].toUpperCase()}</Text>
                 </View>
                 <Text style={m$.faceName} numberOfLines={1}>{opponent.username.toUpperCase()}</Text>
@@ -142,7 +142,7 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
                   onPress={() => setStake(s.xp)}
                   activeOpacity={0.8}
                 >
-                  <Text style={[m$.stakeXp, stake === s.xp && { color: '#D4AF37' }]}>{s.label}</Text>
+                  <Text style={[m$.stakeXp, stake === s.xp && { color: '#FFD700' }]}>{s.label}</Text>
                   <Text style={m$.stakeSub}>{s.sub}</Text>
                 </TouchableOpacity>
               ))}
@@ -183,20 +183,20 @@ const m$ = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: '#000000', borderTopLeftRadius: 20, borderTopRightRadius: 20,
-    padding: 20, borderWidth: 1, borderColor: 'rgba(255,69,58,0.2)',
+    padding: 20, borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)',
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  title: { color: '#FF453A', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#FF3B30', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   // Face-off
   faceOff: { flexDirection: 'row', alignItems: 'center', marginBottom: 22, paddingVertical: 16, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.03)' },
-  faceCard: { flex: 1, alignItems: 'flex-start', paddingHorizontal: 16, gap: 6 },
+  faceCard: { flex: 1, alignItems: 'flex-start', paddingHorizontal: 24, gap: 6 },
   faceAvatar: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
-  faceLetter: { color: '#050505', fontSize: 24, fontWeight: '900' },
+  faceLetter: { color: '#000000', fontSize: 24, fontWeight: '900' },
   faceName: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   faceXp: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '300', letterSpacing: 1 },
   faceVs: { alignItems: 'center', justifyContent: 'center', width: 44 },
-  vsText: { color: '#D4AF37', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
+  vsText: { color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
   // Legacy (cleanup)
   opponentRow: { display: 'none' },
   opponentAvatar: { display: 'none' },
@@ -211,7 +211,7 @@ const m$ = StyleSheet.create({
   discCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 12,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 8,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginBottom: 8,
   },
   discInfo: { flex: 1 },
   discLabel: { color: 'rgba(255,255,255,0.75)', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
@@ -219,9 +219,9 @@ const m$ = StyleSheet.create({
   stakesRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   stakeBtn: {
     flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
-  stakeBtnActive: { borderColor: '#D4AF37', backgroundColor: 'rgba(212,175,55,0.08)' },
+  stakeBtnActive: { borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.08)' },
   stakeBtnDisabled: { opacity: 0.3 },
   stakeXp: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
   stakeSub: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '300', letterSpacing: 0.5, textAlign: 'center', marginTop: 2 },
@@ -229,7 +229,7 @@ const m$ = StyleSheet.create({
   warningText: { color: '#FF9500', fontSize: 12, fontWeight: '700' },
   cta: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#FF453A', borderRadius: 12, paddingVertical: 16, marginTop: 4,
+    backgroundColor: '#FF3B30', borderRadius: 12, paddingVertical: 16, marginTop: 4,
   },
   ctaDisabled: { opacity: 0.4 },
   ctaText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 2 },

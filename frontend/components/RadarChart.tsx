@@ -55,7 +55,7 @@ export function RadarChart({ stats, size = 280, glowing = false, recordsBroken =
   }, [glowing]);
 
   const glowStyle = useAnimatedStyle(() => ({
-    shadowColor: '#00F2FF',
+    shadowColor: '#00E5FF',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: interpolate(glowPulse.value, [0, 1], [0, 0.9]),
     shadowRadius: interpolate(glowPulse.value, [0, 1], [0, 30]),
@@ -91,8 +91,8 @@ export function RadarChart({ stats, size = 280, glowing = false, recordsBroken =
         <Svg width={size} height={size}>
           <Defs>
             <RadialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
-              <Stop offset="0%" stopColor="#00F2FF" stopOpacity={glowing ? 0.15 : 0} />
-              <Stop offset="100%" stopColor="#00F2FF" stopOpacity={0} />
+              <Stop offset="0%" stopColor="#00E5FF" stopOpacity={glowing ? 0.15 : 0} />
+              <Stop offset="100%" stopColor="#00E5FF" stopOpacity={0} />
             </RadialGradient>
           </Defs>
 
@@ -109,8 +109,8 @@ export function RadarChart({ stats, size = 280, glowing = false, recordsBroken =
           ))}
           <Polygon
             points={dataPolygon}
-            fill={glowing ? "rgba(0,242,255,0.65)" : "rgba(0,229,255,0.12)"}
-            stroke={glowing ? "#00F2FF" : "#00F2FF"}
+            fill={glowing ? "rgba(0,229,255,0.65)" : "rgba(0,229,255,0.12)"}
+            stroke={glowing ? "#00E5FF" : "#00E5FF"}
             strokeWidth={glowing ? 2.5 : 2}
           />
           {dataPoints.map((p, i) => {
@@ -118,12 +118,12 @@ export function RadarChart({ stats, size = 280, glowing = false, recordsBroken =
             return (
               <React.Fragment key={`dot-${i}`}>
                 {broken && (
-                  <Circle cx={p.x} cy={p.y} r={10} fill="rgba(212,175,55,0.2)" />
+                  <Circle cx={p.x} cy={p.y} r={10} fill="rgba(255,215,0,0.2)" />
                 )}
                 <Circle
                   cx={p.x} cy={p.y}
                   r={broken ? 6 : 4}
-                  fill={broken ? '#D4AF37' : '#00F2FF'}
+                  fill={broken ? '#FFD700' : '#00E5FF'}
                 />
               </React.Fragment>
             );
@@ -136,7 +136,7 @@ export function RadarChart({ stats, size = 280, glowing = false, recordsBroken =
                 key={`lbl-${i}`}
                 x={lp.x}
                 y={lp.y}
-                fill={broken ? '#D4AF37' : '#888888'}
+                fill={broken ? '#FFD700' : '#888888'}
                 fontSize={broken ? 11 : 10}
                 fontWeight={broken ? 'bold' : 'normal'}
                 textAnchor="middle"

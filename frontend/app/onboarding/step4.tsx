@@ -170,14 +170,14 @@ export default function LegacyStep4() {
               autoCapitalize="none"
             />
             <TouchableOpacity onPress={() => setShowPwd(!showPwd)} style={s.eye}>
-              <Ionicons name={showPwd ? 'eye-off' : 'eye'} size={18} color="#00F2FF" />
+              <Ionicons name={showPwd ? 'eye-off' : 'eye'} size={18} color="#00E5FF" />
             </TouchableOpacity>
           </View>
           {password.length > 0 && (
             <View style={s.strengthBar}>
               <View style={[s.strengthFill, {
                 width: `${Math.min(100, (password.length / 12) * 100)}%` as any,
-                backgroundColor: password.length >= 8 ? '#00F2FF' : '#FF3B30',
+                backgroundColor: password.length >= 8 ? '#00E5FF' : '#FF3B30',
               }]} />
             </View>
           )}
@@ -203,7 +203,7 @@ export default function LegacyStep4() {
 
         {/* Bcrypt note */}
         <Animated.View entering={FadeInDown.delay(480)} style={s.secNote}>
-          <Ionicons name="lock-closed" size={11} color="#00F2FF" />
+          <Ionicons name="lock-closed" size={11} color="#00E5FF" />
           <Text style={s.secTxt}>PASSWORD CIFRATA CON BCRYPT — IRREVERSIBILE</Text>
         </Animated.View>
 
@@ -233,24 +233,24 @@ export default function LegacyStep4() {
           onPress={() => router.replace('/login')}
           style={s.loginLink}
         >
-          <Text style={s.loginLinkTxt}>HAI GIÀ UN KORE ID?  <Text style={{ color: '#00F2FF', fontWeight: '900' }}>RESUME</Text></Text>
+          <Text style={s.loginLinkTxt}>HAI GIÀ UN KORE ID?  <Text style={{ color: '#00E5FF', fontWeight: '900' }}>RESUME</Text></Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-const CYAN = '#00F2FF';
+const CYAN = '#00E5FF';
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#050505' },
+  root: { flex: 1, backgroundColor: '#000000' },
   content: { paddingHorizontal: 24 },
   topBar: {
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 12,
   },
-  brand: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
+  brand: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
-    backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 20,
+    backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 20,
     paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
@@ -272,26 +272,26 @@ const s = StyleSheet.create({
   fieldLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
   charCount: { color: '#222', fontSize: 10, fontWeight: '700' },
   input: {
-    backgroundColor: '#00F2FF', borderWidth: 1.5, borderColor: '#1A1A1A',
+    backgroundColor: '#00E5FF', borderWidth: 1, borderColor: '#1A1A1A',
     borderRadius: 8, padding: 16, color: '#FFFFFF', fontSize: 16, fontWeight: '800',
   },
   pwdRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#00F2FF', borderWidth: 1.5, borderColor: '#1A1A1A', borderRadius: 8,
+    backgroundColor: '#00E5FF', borderWidth: 1, borderColor: '#1A1A1A', borderRadius: 8,
   },
   pwdInput: { flex: 1, padding: 16, color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
-  eye: { paddingHorizontal: 16 },
+  eye: { paddingHorizontal: 24 },
   strengthBar: { height: 2, backgroundColor: '#111', borderRadius: 2, overflow: 'hidden' },
   strengthFill: { height: '100%', borderRadius: 2 },
   mismatch: { color: '#FF3B30', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
   secNote: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 6,
+    backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 6,
     paddingHorizontal: 12, paddingVertical: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
     marginBottom: 20,
   },
-  secTxt: { color: 'rgba(0,242,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  secTxt: { color: 'rgba(0,229,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
   error: {
     color: '#FF3B30', fontSize: 12, fontWeight: '800', letterSpacing: 1,
     textAlign: 'center', marginBottom: 12,
@@ -301,7 +301,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
   },
   ctaLoading: { opacity: 0.7 },
-  ctaTxt: { color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+  ctaTxt: { color: '#000000', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   loginLink: { alignItems: 'center', paddingVertical: 16 },
   loginLinkTxt: { color: '#333', fontSize: 12, fontWeight: '700', letterSpacing: 2 },
 });

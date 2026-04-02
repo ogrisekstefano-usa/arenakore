@@ -14,9 +14,9 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CYAN = '#00F2FF';
-const GOLD = '#D4AF37';
-const BG   = '#050505';
+const CYAN = '#00E5FF';
+const GOLD = '#FFD700';
+const BG   = '#000000';
 
 export default function ManualOnboarding() {
   const router = useRouter();
@@ -100,7 +100,7 @@ export default function ManualOnboarding() {
             <Text style={s.label}>ALTEZZA (CM)</Text>
             <TextInput
               style={s.input} value={height} onChangeText={setHeight}
-              placeholder="180" placeholderTextColor="rgba(0,242,255,0.2)"
+              placeholder="180" placeholderTextColor="rgba(0,229,255,0.2)"
               keyboardType="decimal-pad" maxLength={5} selectionColor={CYAN}
             />
           </View>
@@ -108,7 +108,7 @@ export default function ManualOnboarding() {
             <Text style={s.label}>PESO (KG)</Text>
             <TextInput
               style={s.input} value={weight} onChangeText={setWeight}
-              placeholder="75" placeholderTextColor="rgba(0,242,255,0.2)"
+              placeholder="75" placeholderTextColor="rgba(0,229,255,0.2)"
               keyboardType="decimal-pad" maxLength={5} selectionColor={CYAN}
             />
           </View>
@@ -116,7 +116,7 @@ export default function ManualOnboarding() {
             <Text style={s.label}>ETÀ</Text>
             <TextInput
               style={s.input} value={age} onChangeText={setAge}
-              placeholder="25" placeholderTextColor="rgba(0,242,255,0.2)"
+              placeholder="25" placeholderTextColor="rgba(0,229,255,0.2)"
               keyboardType="number-pad" maxLength={3} selectionColor={CYAN}
             />
           </View>
@@ -151,8 +151,8 @@ const s = StyleSheet.create({
 
   alertBanner: {
     flexDirection: 'row', gap: 12, alignItems: 'flex-start',
-    backgroundColor: 'rgba(212,175,55,0.06)',
-    borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)',
+    backgroundColor: 'rgba(255,215,0,0.06)',
+    borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
     marginBottom: 28,
   },
   alertBody: { flex: 1, gap: 4 },
@@ -163,12 +163,12 @@ const s = StyleSheet.create({
   title:  { color: CYAN, fontSize: 14, fontWeight: '400', letterSpacing: 6 },
   titleBig: { color: '#FFFFFF', fontSize: 38, fontWeight: '400', letterSpacing: 0.5, lineHeight: 42 },
   accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: {width:0,height:0}, shadowOpacity:0.8, shadowRadius:6 },
-  subtitle: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, lineHeight: 18 },
+  subtitle: { color: 'rgba(255,255,255,0.30)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, lineHeight: 18 },
 
   form:  { gap: 16 },
   field: { gap: 8 },
   label: { color: '#E0E0E0', fontSize: 9, fontWeight: '900', letterSpacing: 3 },
-  input: { backgroundColor: 'rgba(0,242,255,0.025)', borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)', borderRadius: 10, padding: 16, color: CYAN, fontSize: 22, fontWeight: '900', letterSpacing: 1 },
+  input: { backgroundColor: 'rgba(0,229,255,0.025)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', borderRadius: 10, padding: 16, color: CYAN, fontSize: 22, fontWeight: '900', letterSpacing: 1 },
 
   errorBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,59,48,0.06)', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)' },
   errorTxt: { color: '#FF3B30', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
@@ -176,5 +176,5 @@ const s = StyleSheet.create({
   cta: { backgroundColor: GOLD, borderRadius: 10, paddingVertical: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, shadowColor: GOLD, shadowOffset: {width:0,height:0}, shadowOpacity:0.5, shadowRadius:12, elevation: 8 },
   ctaTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
 
-  note: { color: 'rgba(255,255,255,0.65)', fontSize: 11, fontWeight: '400', textAlign: 'center', lineHeight: 16 },
+  note: { color: '#AAAAAA', fontSize: 11, fontWeight: '400', textAlign: 'center', lineHeight: 16 },
 });

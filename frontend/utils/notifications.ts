@@ -19,19 +19,19 @@ const SPORT_CONFIGS: Record<string, SportNotificationConfig> = {
   'CrossFit': { tone: 'adrenalina', title_prefix: '💥 WOD!', vibration: [0, 200, 50, 200, 50, 300], color: '#FF3B30' },
   'Boxe': { tone: 'adrenalina', title_prefix: '🥊 FIGHT!', vibration: [0, 200, 50, 200, 50, 300], color: '#FF3B30' },
   // PRECISIONE — Golf, Nuoto, Tiro
-  'Golf': { tone: 'precisione', title_prefix: '🎯 FOCUS!', vibration: [0, 100, 200, 100], color: '#34C759' },
+  'Golf': { tone: 'precisione', title_prefix: '🎯 FOCUS!', vibration: [0, 100, 200, 100], color: '#00FF87' },
   'Nuoto': { tone: 'precisione', title_prefix: '🌊 FLOW!', vibration: [0, 100, 200, 100], color: '#007AFF' },
-  'Tiro': { tone: 'precisione', title_prefix: '🎯 LOCK!', vibration: [0, 100, 200, 100], color: '#34C759' },
+  'Tiro': { tone: 'precisione', title_prefix: '🎯 LOCK!', vibration: [0, 100, 200, 100], color: '#00FF87' },
   // POWER — Powerlifting, Fitness, General
-  'Powerlifting': { tone: 'power', title_prefix: '💪 POWER!', vibration: [0, 300, 100, 300], color: '#D4AF37' },
-  'Fitness': { tone: 'power', title_prefix: '🏋️ GRIND!', vibration: [0, 300, 100, 300], color: '#D4AF37' },
+  'Powerlifting': { tone: 'power', title_prefix: '💪 POWER!', vibration: [0, 300, 100, 300], color: '#FFD700' },
+  'Fitness': { tone: 'power', title_prefix: '🏋️ GRIND!', vibration: [0, 300, 100, 300], color: '#FFD700' },
 };
 
 const DEFAULT_CONFIG: SportNotificationConfig = {
   tone: 'adrenalina',
   title_prefix: '⚡ ARENA!',
   vibration: [0, 200, 100, 200],
-  color: '#00F2FF',
+  color: '#00E5FF',
 };
 
 function getSportConfig(sport?: string): SportNotificationConfig {
@@ -84,7 +84,7 @@ export async function setupAndroidNotificationChannel() {
     name: 'ArenaKore Precisione',
     importance: Notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 100, 200, 100],
-    lightColor: '#34C759',
+    lightColor: '#00FF87',
     sound: 'default',
   });
   // Power channel
@@ -92,7 +92,7 @@ export async function setupAndroidNotificationChannel() {
     name: 'ArenaKore Power',
     importance: Notifications.AndroidImportance.MAX,
     vibrationPattern: [0, 300, 100, 300],
-    lightColor: '#D4AF37',
+    lightColor: '#FFD700',
     sound: 'default',
   });
 }

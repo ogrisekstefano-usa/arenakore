@@ -27,7 +27,7 @@ export function FeatureGate({ children, featureKey, features, onUpgrade }: Featu
       </View>
       {/* Lock overlay */}
       <Animated.View entering={FadeIn.duration(300)} style={fg$.overlay}>
-        <Ionicons name="lock-closed" size={28} color="#D4AF37" />
+        <Ionicons name="lock-closed" size={28} color="#FFD700" />
         <Text style={fg$.title}>ENTERPRISE ONLY</Text>
         <Text style={fg$.subtitle}>UPGRADE TO UNLOCK</Text>
         {onUpgrade && (
@@ -49,10 +49,10 @@ const fg$ = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.82)',
     alignItems: 'center', justifyContent: 'center',
     gap: 8, borderRadius: 12,
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
   },
-  title: { color: '#D4AF37', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
-  subtitle: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '300', letterSpacing: 1.5 },
-  upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#D4AF37', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, marginTop: 4 },
+  title: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+  subtitle: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '300', letterSpacing: 1.5 },
+  upgradeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FFD700', borderRadius: 8, paddingHorizontal: 24, paddingVertical: 8, marginTop: 4 },
   upgradeBtnText: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
 });

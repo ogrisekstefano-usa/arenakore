@@ -20,7 +20,7 @@ import { PvPChallengeModal } from './pvp/PvPChallengeModal';
 import { CertBadge } from './CertBadge';
 
 const MEDAL_COLORS: Record<number, { bg: string; border: string; text: string; glow: string }> = {
-  1: { bg: 'rgba(212,175,55,0.2)', border: 'rgba(212,175,55,0.5)', text: '#D4AF37', glow: '#D4AF37' },
+  1: { bg: 'rgba(255,215,0,0.2)', border: 'rgba(255,215,0,0.5)', text: '#FFD700', glow: '#FFD700' },
   2: { bg: 'rgba(192,192,192,0.15)', border: 'rgba(192,192,192,0.4)', text: '#C0C0C0', glow: '#C0C0C0' },
   3: { bg: 'rgba(205,127,50,0.15)', border: 'rgba(205,127,50,0.4)', text: '#CD7F32', glow: '#CD7F32' },
 };
@@ -29,8 +29,8 @@ const SPORT_ICON_MAP: Record<string, { icon: keyof typeof Ionicons.glyphMap; col
   atletica: { icon: 'walk', color: '#FF6B00' },
   combat:   { icon: 'hand-left', color: '#FF3B30' },
   acqua:    { icon: 'water', color: '#007AFF' },
-  team:     { icon: 'football', color: '#34C759' },
-  fitness:  { icon: 'barbell', color: '#D4AF37' },
+  team:     { icon: 'football', color: '#00FF87' },
+  fitness:  { icon: 'barbell', color: '#FFD700' },
   outdoor:  { icon: 'trail-sign', color: '#30B0C7' },
   mind_body: { icon: 'leaf', color: '#AF52DE' },
   extreme:  { icon: 'flame', color: '#FF2D55' },
@@ -82,13 +82,13 @@ function GiantCard({ item, medal }: { item: any; medal: typeof MEDAL_COLORS[1] }
         <Text style={[giant$.rankNum, { color: medal.text }]}>#{item.rank}</Text>
       </View>
       <Animated.View style={[giant$.avatarWrap, { borderColor: medal.glow }, glowStyle]}>
-        <View style={[giant$.avatar, { backgroundColor: item.avatar_color || '#00F2FF' }]}>
+        <View style={[giant$.avatar, { backgroundColor: item.avatar_color || '#00E5FF' }]}>
           <Text style={giant$.avatarText}>{item.username?.[0]?.toUpperCase()}</Text>
         </View>
       </Animated.View>
       <ShimmerName name={item.username} color={medal.text} />
       <View style={giant$.sportRow}>
-        <Ionicons name={sportCfg?.icon || 'flash'} size={10} color={sportCfg?.color || '#00F2FF'} />
+        <Ionicons name={sportCfg?.icon || 'flash'} size={10} color={sportCfg?.color || '#00E5FF'} />
         <Text style={giant$.sport}>{item.sport || '\u2014'}</Text>
       </View>
       <View style={[giant$.xpBadge, { backgroundColor: medal.bg }]}>
@@ -107,7 +107,7 @@ const giant$ = StyleSheet.create({
   card: {
     flex: 1, alignItems: 'center', gap: 4, paddingVertical: 16, paddingHorizontal: 6,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16,
-    borderWidth: 1.5, minHeight: 170,
+    borderWidth: 1, minHeight: 170,
   },
   rankBadge: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   rankNum: { fontSize: 16, fontWeight: '400', letterSpacing: 1 },
@@ -117,16 +117,16 @@ const giant$ = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 }, shadowRadius: 12, elevation: 8,
   },
   avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#050505', fontSize: 18, fontWeight: '900' },
+  avatarText: { color: '#000000', fontSize: 18, fontWeight: '900' },
   sportRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   sport: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '700' },
   xpBadge: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 3, marginTop: 2 },
   xpText: { fontSize: 15, fontWeight: '900' },
   founderTag: {
-    backgroundColor: 'rgba(212,175,55,0.15)', borderRadius: 4,
-    paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(212,175,55,0.35)',
+    backgroundColor: 'rgba(255,215,0,0.15)', borderRadius: 4,
+    paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(255,215,0,0.35)',
   },
-  founderText: { color: '#D4AF37', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  founderText: { color: '#FFD700', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
 });
 
 // REGULAR LEADERBOARD ROW
@@ -135,8 +135,8 @@ function LeaderRow({ item, index, onChallenge }: { item: any; index: number; onC
   return (
     <Animated.View entering={FadeInDown.delay(index * 40).duration(250)}>
       <View style={row$.container}>
-        <Text style={[row$.rank, item.rank <= 10 && { color: '#00F2FF' }]}>{item.rank}</Text>
-        <View style={[row$.avatar, { backgroundColor: item.avatar_color || '#00F2FF' }]}>
+        <Text style={[row$.rank, item.rank <= 10 && { color: '#00E5FF' }]}>{item.rank}</Text>
+        <View style={[row$.avatar, { backgroundColor: item.avatar_color || '#00E5FF' }]}>
           <Text style={row$.avatarText}>{item.username?.[0]?.toUpperCase()}</Text>
         </View>
         <View style={row$.info}>
@@ -149,12 +149,12 @@ function LeaderRow({ item, index, onChallenge }: { item: any; index: number; onC
             )}
             {item.is_nexus_certified && (
               <View style={row$.certMini}>
-                <Ionicons name="shield-checkmark" size={8} color="#00F2FF" />
+                <Ionicons name="shield-checkmark" size={8} color="#00E5FF" />
               </View>
             )}
           </View>
           <View style={row$.sportRow}>
-            <Ionicons name={sportCfg?.icon || 'flash'} size={10} color={sportCfg?.color || '#00F2FF'} />
+            <Ionicons name={sportCfg?.icon || 'flash'} size={10} color={sportCfg?.color || '#00E5FF'} />
             <Text style={row$.sport}>{item.sport || '\u2014'} {'\u00b7'} LVL {item.level}</Text>
           </View>
         </View>
@@ -175,27 +175,27 @@ function LeaderRow({ item, index, onChallenge }: { item: any; index: number; onC
 const row$ = StyleSheet.create({
   container: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingHorizontal: 16, paddingVertical: 10,
+    paddingHorizontal: 24, paddingVertical: 10,
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)',
   },
   rank: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '900', width: 30, textAlign: 'center' },
-  avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#050505', fontSize: 17, fontWeight: '900' },
+  avatar: { width: 36, height: 36, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { color: '#000000', fontSize: 17, fontWeight: '900' },
   info: { flex: 1, gap: 2 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   name: { color: '#FFFFFF', fontSize: 17, fontWeight: '800' },
   founderPill: {
-    backgroundColor: 'rgba(212,175,55,0.2)', width: 16, height: 16,
+    backgroundColor: 'rgba(255,215,0,0.2)', width: 16, height: 16,
     borderRadius: 8, alignItems: 'center', justifyContent: 'center',
   },
-  founderPillText: { color: '#D4AF37', fontSize: 11, fontWeight: '900' },
-  certMini: { width: 14, height: 14, borderRadius: 7, backgroundColor: 'rgba(0,242,255,0.1)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)' },
+  founderPillText: { color: '#FFD700', fontSize: 11, fontWeight: '900' },
+  certMini: { width: 14, height: 14, borderRadius: 7, backgroundColor: 'rgba(0,229,255,0.1)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#00E5FF22' },
   sportRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  sport: { color: 'rgba(255,255,255,0.45)', fontSize: 14, fontWeight: '600' },
+  sport: { color: '#AAAAAA', fontSize: 14, fontWeight: '600' },
   right: { alignItems: 'flex-end', gap: 4 },
-  xp: { color: '#D4AF37', fontSize: 17, fontWeight: '900' },
-  challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FF453A', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
-  challengeText: { color: '#050505', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  xp: { color: '#FFD700', fontSize: 17, fontWeight: '900' },
+  challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FF3B30', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
+  challengeText: { color: '#000000', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
 });
 
 // CREW LEADERBOARD ROW
@@ -215,7 +215,7 @@ function CrewRow({ item, index }: { item: any; index: number }) {
         </View>
         <View style={cr$.info}>
           <View style={cr$.nameRow}>
-            <Ionicons name={sportCfg?.icon || 'shield'} size={14} color={sportCfg?.color || '#00F2FF'} />
+            <Ionicons name={sportCfg?.icon || 'shield'} size={14} color={sportCfg?.color || '#00E5FF'} />
             <Text style={cr$.name}>{item.name}</Text>
           </View>
           {item.tagline ? <Text style={cr$.tagline}>{item.tagline}</Text> : null}
@@ -242,7 +242,7 @@ function CrewRow({ item, index }: { item: any; index: number }) {
 const cr$ = StyleSheet.create({
   container: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingHorizontal: 16, paddingVertical: 12,
+    paddingHorizontal: 24, paddingVertical: 12,
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)',
   },
   rankWrap: { width: 32, alignItems: 'center' },
@@ -250,11 +250,11 @@ const cr$ = StyleSheet.create({
   info: { flex: 1, gap: 3 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   name: { color: '#FFFFFF', fontSize: 17, fontWeight: '900' },
-  tagline: { color: 'rgba(255,255,255,0.45)', fontSize: 16, fontStyle: 'italic' },
+  tagline: { color: '#AAAAAA', fontSize: 16, fontStyle: 'italic' },
   dnaRow: { flexDirection: 'row', gap: 8, marginTop: 2 },
-  dnaStat: { color: '#00F2FF', fontSize: 14, fontWeight: '400', letterSpacing: 0.5 },
+  dnaStat: { color: '#00E5FF', fontSize: 14, fontWeight: '400', letterSpacing: 0.5 },
   right: { alignItems: 'flex-end', gap: 2 },
-  xp: { color: '#D4AF37', fontSize: 17, fontWeight: '400' },
+  xp: { color: '#FFD700', fontSize: 17, fontWeight: '900' },
   membersRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   members: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '700' },
 });
@@ -274,7 +274,7 @@ function MyStatusBar({ rankData }: { rankData: any }) {
   }, [isTop10]);
 
   const borderStyle = useAnimatedStyle(() => ({
-    borderColor: isTop10 ? `rgba(0,242,255,${pulseOpacity.value})` : 'rgba(255,255,255,0.05)',
+    borderColor: isTop10 ? `rgba(0,229,255,${pulseOpacity.value})` : 'rgba(255,255,255,0.05)',
   }));
 
   if (!rankData) return null;
@@ -290,7 +290,7 @@ function MyStatusBar({ rankData }: { rankData: any }) {
       <LinearGradient colors={['rgba(5,5,5,0.95)', 'rgba(5,5,5,0.98)']} style={status$.grad}>
         <View style={status$.row}>
           <View style={status$.rankCircle}>
-            <Text style={[status$.rankText, isTop10 && { color: '#00F2FF' }]}>#{rankData.rank}</Text>
+            <Text style={[status$.rankText, isTop10 && { color: '#00E5FF' }]}>#{rankData.rank}</Text>
           </View>
           <View style={status$.textCol}>
             <Text style={status$.motiv} numberOfLines={1}>{motivText}</Text>
@@ -308,15 +308,15 @@ function MyStatusBar({ rankData }: { rankData: any }) {
 }
 
 const status$ = StyleSheet.create({
-  container: { borderTopWidth: 2, borderColor: 'rgba(255,255,255,0.05)' },
-  grad: { paddingHorizontal: 16, paddingVertical: 12 },
+  container: { borderTopWidth: 2, borderColor: 'rgba(255,255,255,0.07)' },
+  grad: { paddingHorizontal: 24, paddingVertical: 12 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   rankCircle: {
     width: 42, height: 42, borderRadius: 21,
-    backgroundColor: 'rgba(212,175,55,0.12)', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.3)',
+    backgroundColor: 'rgba(255,215,0,0.12)', alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.3)',
   },
-  rankText: { color: '#D4AF37', fontSize: 17, fontWeight: '900' },
+  rankText: { color: '#FFD700', fontSize: 17, fontWeight: '900' },
   textCol: { flex: 1, gap: 2 },
   motiv: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
   sub: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '400' },
@@ -324,7 +324,7 @@ const status$ = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)',
   },
-  topText: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  topText: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
 });
 
 // ===========================
@@ -389,11 +389,11 @@ export function HallOfKore() {
         {/* Header */}
         <View style={[gl$.header, { paddingTop: insets.top + 8 }]}>
           <View style={gl$.titleWrap}>
-            <Ionicons name="trophy" size={22} color="#D4AF37" />
+            <Ionicons name="trophy" size={22} color="#FFD700" />
             <Text style={gl$.title}>HALL OF KORE</Text>
           </View>
           <TouchableOpacity onPress={() => setMenuOpen(true)} style={{ padding: 6 }}>
-            <Ionicons name="menu" size={24} color="#00F2FF" />
+            <Ionicons name="menu" size={24} color="#00E5FF" />
           </TouchableOpacity>
         </View>
 
@@ -414,7 +414,7 @@ export function HallOfKore() {
             onPress={() => setVerifiedOnly(v => !v)}
             activeOpacity={0.8}
           >
-            <Ionicons name="shield-checkmark" size={11} color={verifiedOnly ? '#000' : '#00F2FF'} />
+            <Ionicons name="shield-checkmark" size={11} color={verifiedOnly ? '#000' : '#00E5FF'} />
             <Text style={[gl$.verifiedText, verifiedOnly && { color: '#000' }]}>VERIFIED</Text>
           </TouchableOpacity>
         </View>
@@ -436,7 +436,7 @@ export function HallOfKore() {
                   style={[gl$.catChip, selectedCategory === c && gl$.catChipActive]}
                   onPress={() => setSelectedCategory(c)}
                 >
-                  {cfg && <Ionicons name={cfg.icon} size={12} color={selectedCategory === c ? '#D4AF37' : cfg.color} />}
+                  {cfg && <Ionicons name={cfg.icon} size={12} color={selectedCategory === c ? '#FFD700' : cfg.color} />}
                   <Text style={[gl$.catChipText, selectedCategory === c && gl$.catChipTextActive]}>{CATEGORY_LABELS[c]}</Text>
                 </TouchableOpacity>
               );
@@ -447,7 +447,7 @@ export function HallOfKore() {
         {/* Content */}
         {loading ? (
           <View style={gl$.center}>
-            <ActivityIndicator color="#D4AF37" size="large" />
+            <ActivityIndicator color="#FFD700" size="large" />
             <Text style={gl$.loadingText}>Caricamento classifica...</Text>
           </View>
         ) : leaderboard.length === 0 ? (
@@ -459,13 +459,13 @@ export function HallOfKore() {
         ) : (
           <ScrollView
             showsVerticalScrollIndicator={false}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} tintColor="#D4AF37" />}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} tintColor="#FFD700" />}
           >
             {/* THE GIANTS (Top 3) */}
             {top3.length > 0 && (
               <>
                 <View style={gl$.sectionRow}>
-                  <Ionicons name="diamond" size={14} color="#D4AF37" />
+                  <Ionicons name="diamond" size={14} color="#FFD700" />
                   <Text style={gl$.sectionTitle}>THE GIANTS</Text>
                 </View>
                 <View style={gl$.giantsRow}>
@@ -481,7 +481,7 @@ export function HallOfKore() {
             {activeTab === 'crews' ? (
               <>
                 <View style={gl$.sectionRow}>
-                  <Ionicons name="shield" size={14} color="#00F2FF" />
+                  <Ionicons name="shield" size={14} color="#00E5FF" />
                   <Text style={gl$.sectionTitle}>CREW RANKING</Text>
                 </View>
                 {rest.map((item, i) => <CrewRow key={item.id} item={item} index={i} />)}
@@ -490,7 +490,7 @@ export function HallOfKore() {
               <>
                 {rest.length > 0 && (
                   <View style={gl$.sectionRow}>
-                    <Ionicons name="flash" size={14} color="#00F2FF" />
+                    <Ionicons name="flash" size={14} color="#00E5FF" />
                     <Text style={gl$.sectionTitle}>THE HUNT</Text>
                   </View>
                 )}
@@ -529,40 +529,40 @@ const gl$ = StyleSheet.create({
   overlay: { flex: 1 },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 10,
+    paddingHorizontal: 24, paddingBottom: 10,
   },
   titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
   tabRow: {
-    flexDirection: 'row', marginHorizontal: 16, gap: 4,
+    flexDirection: 'row', marginHorizontal: 24, gap: 4,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 3,
     alignItems: 'center',
   },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
-  tabActive: { backgroundColor: 'rgba(212,175,55,0.15)' },
-  tabText: { color: 'rgba(255,255,255,0.72)', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
-  tabTextActive: { color: '#D4AF37' },
+  tabActive: { backgroundColor: 'rgba(255,215,0,0.15)' },
+  tabText: { color: '#AAAAAA', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  tabTextActive: { color: '#FFD700' },
   // Verified Only toggle
-  verifiedToggle: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: 'rgba(0,242,255,0.3)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 6, backgroundColor: 'rgba(0,242,255,0.04)' },
-  verifiedToggleOn: { backgroundColor: '#00F2FF', borderColor: '#00F2FF' },
-  verifiedText: { color: '#00F2FF', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  verifiedToggle: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: '#00E5FF22', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 6, backgroundColor: 'rgba(0,229,255,0.04)' },
+  verifiedToggleOn: { backgroundColor: '#00E5FF', borderColor: '#00E5FF' },
+  verifiedText: { color: '#00E5FF', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
   // Certified row glow border
-  certifiedRow: { borderLeftWidth: 2, borderLeftColor: '#00F2FF', borderRadius: 4 },
-  catRow: { paddingHorizontal: 16, paddingVertical: 10, gap: 6 },
+  certifiedRow: { borderLeftWidth: 2, borderLeftColor: '#00E5FF', borderRadius: 4 },
+  catRow: { paddingHorizontal: 24, paddingVertical: 10, gap: 6 },
   catChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
     borderWidth: 1, borderColor: '#2A2A2A',
   },
-  catChipActive: { borderColor: '#D4AF37', backgroundColor: 'rgba(212,175,55,0.1)' },
+  catChipActive: { borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.1)' },
   catChipText: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
-  catChipTextActive: { color: '#D4AF37' },
+  catChipTextActive: { color: '#FFD700' },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10,
+    paddingHorizontal: 24, paddingTop: 16, paddingBottom: 10,
   },
   sectionTitle: {
-    color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 2,
+    color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 2,
   },
   giantsRow: { flexDirection: 'row', paddingHorizontal: 12, gap: 8 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
@@ -572,19 +572,19 @@ const gl$ = StyleSheet.create({
 });
 
 const sw$ = StyleSheet.create({
-  row: { flexDirection: 'row', marginHorizontal: 16, marginBottom: 12, gap: 4 },
-  btn: { flex: 1, paddingVertical: 9, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', alignItems: 'center' },
-  btnActive: { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: '#00F2FF' },
-  text: { color: 'rgba(255,255,255,0.50)', fontSize: 12, fontWeight: '700', letterSpacing: 1.5 },
-  textActive: { color: '#00F2FF', fontWeight: '900' },
+  row: { flexDirection: 'row', marginHorizontal: 24, marginBottom: 12, gap: 4 },
+  btn: { flex: 1, paddingVertical: 9, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', alignItems: 'center' },
+  btnActive: { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: '#00E5FF' },
+  text: { color: '#AAAAAA', fontSize: 12, fontWeight: '700', letterSpacing: 1.5 },
+  textActive: { color: '#00E5FF', fontWeight: '900' },
 });
 
 const cr2$ = StyleSheet.create({
-  card: { marginHorizontal: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  card: { marginHorizontal: 24, marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   info: { flex: 1, gap: 2 },
   label: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  sub: { color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: '400' },
-  btn: { backgroundColor: '#00F2FF', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 9 },
-  btnText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  sub: { color: '#AAAAAA', fontSize: 12, fontWeight: '400' },
+  btn: { backgroundColor: '#00E5FF', borderRadius: 8, paddingHorizontal: 24, paddingVertical: 9 },
+  btnText: { color: '#000000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
 });
 

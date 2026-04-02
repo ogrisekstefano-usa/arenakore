@@ -9,9 +9,9 @@ const ROLE_KEY = '@arenakore_active_role';
 export type UserRole = 'ADMIN' | 'GYM_OWNER' | 'COACH' | 'ATHLETE';
 
 export const ROLE_CONFIG: Record<UserRole, { label: string; ionicon: string; color: string; description: string }> = {
-  ADMIN: { label: 'ADMIN', ionicon: 'shield-checkmark', color: '#FF453A', description: 'Full system access' },
-  GYM_OWNER: { label: 'GYM OWNER', ionicon: 'business', color: '#D4AF37', description: 'Gym & Coach management' },
-  COACH: { label: 'COACH', ionicon: 'fitness', color: '#00F2FF', description: 'Studio & Template control' },
+  ADMIN: { label: 'ADMIN', ionicon: 'shield-checkmark', color: '#FF3B30', description: 'Full system access' },
+  GYM_OWNER: { label: 'GYM OWNER', ionicon: 'business', color: '#FFD700', description: 'Gym & Coach management' },
+  COACH: { label: 'COACH', ionicon: 'fitness', color: '#00E5FF', description: 'Studio & Template control' },
   ATHLETE: { label: 'ATHLETE', ionicon: 'person', color: '#32D74B', description: 'Standard experience' },
 };
 

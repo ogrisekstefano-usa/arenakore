@@ -132,7 +132,7 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
           <>
             <Text style={bio$.matchLabel}>BIO-SIGNATURE MATCHED</Text>
             <Text style={bio$.matchText}>{matchText}</Text>
-            {isFounder && <Text style={bio$.founderGlow}><Ionicons name="star" size={12} color="#D4AF37" /> FOUNDER #{user?.founder_number || '?'}</Text>}
+            {isFounder && <Text style={bio$.founderGlow}><Ionicons name="star" size={12} color="#FFD700" /> FOUNDER #{user?.founder_number || '?'}</Text>}
           </>
         )}
       </View>
@@ -147,25 +147,25 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
 const bio$ = StyleSheet.create({
   overlay: { ...StyleSheet.absoluteFillObject, zIndex: 50, backgroundColor: 'rgba(5,5,5,0.94)', justifyContent: 'center', alignItems: 'center' },
   laserWrap: { position: 'absolute', left: 0, right: 0, height: 6, alignItems: 'center' },
-  laserLine: { height: 2, width: '100%', backgroundColor: '#0D0D0D' },
-  laserGlow: { height: 16, width: '85%', backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 8 },
+  laserLine: { height: 2, width: '100%', backgroundColor: '#0a0a0a' },
+  laserGlow: { height: 16, width: '85%', backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 8 },
   center: { alignItems: 'center', gap: 14, paddingHorizontal: 32 },
-  title: { color: '#00F2FF', fontSize: 17, fontWeight: '900', letterSpacing: 4 },
-  phase: { color: '#D4AF37', fontSize: 13, fontWeight: '700', letterSpacing: 2 },
+  title: { color: '#00E5FF', fontSize: 17, fontWeight: '900', letterSpacing: 4 },
+  phase: { color: '#FFD700', fontSize: 13, fontWeight: '700', letterSpacing: 2 },
   bioRow: { flexDirection: 'row', gap: 24, marginTop: 4 },
   bioItem: { alignItems: 'center', gap: 2 },
   bioLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '400', letterSpacing: 2 },
-  bioVal: { color: '#00F2FF', fontSize: 16, fontWeight: '900' },
+  bioVal: { color: '#00E5FF', fontSize: 16, fontWeight: '900' },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: SW * 0.55, marginTop: 8 },
-  progressTrack: { flex: 1, height: 3, backgroundColor: 'rgba(0,242,255,0.15)', borderRadius: 2, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: '#0D0D0D', borderRadius: 2 },
-  progressPct: { color: '#00F2FF', fontSize: 18, fontWeight: '900', fontVariant: ['tabular-nums'], width: 50 },
-  matchLabel: { color: '#00F2FF', fontSize: 14, fontWeight: '400', letterSpacing: 4 },
-  matchText: { color: '#D4AF37', fontSize: 18, fontWeight: '900', letterSpacing: 2, fontVariant: ['tabular-nums'], textAlign: 'center' },
-  founderGlow: { color: '#D4AF37', fontSize: 15, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
+  progressTrack: { flex: 1, height: 3, backgroundColor: 'rgba(0,229,255,0.15)', borderRadius: 2, overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: '#0a0a0a', borderRadius: 2 },
+  progressPct: { color: '#00E5FF', fontSize: 18, fontWeight: '900', fontVariant: ['tabular-nums'], width: 50 },
+  matchLabel: { color: '#00E5FF', fontSize: 14, fontWeight: '400', letterSpacing: 4 },
+  matchText: { color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 2, fontVariant: ['tabular-nums'], textAlign: 'center' },
+  founderGlow: { color: '#FFD700', fontSize: 15, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
   bracket: { position: 'absolute' },
-  bH: { width: 30, height: 2, backgroundColor: '#00F2FF', opacity: 0.5 },
-  bV: { width: 2, height: 30, backgroundColor: '#00F2FF', opacity: 0.5 },
+  bH: { width: 30, height: 2, backgroundColor: '#00E5FF', opacity: 0.5 },
+  bV: { width: 2, height: 30, backgroundColor: '#00E5FF', opacity: 0.5 },
 });
 
 // ========== NEXUS PROACTIVE ENGINE — 6 CTA CARDS ==========
@@ -190,10 +190,10 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
   // 1. SFIDA IL RIVALE — solo se c'è un utente sopra in classifica
   if (myRank?.next_username) {
     cards.push({
-      id: 'rival', icon: 'flash-sharp', iconColor: '#D4AF37', borderColor: '#D4AF37',
+      id: 'rival', icon: 'flash-sharp', iconColor: '#FFD700', borderColor: '#FFD700',
       title: 'SFIDA IL RIVALE',
       subtitle: `${myRank.next_username.toUpperCase()} · ${myRank.xp_gap || '?'} XP sopra di te`,
-      cta: 'SFIDA ORA', ctaColor: '#D4AF37',
+      cta: 'SFIDA ORA', ctaColor: '#FFD700',
       action: () => onNavigate('/(tabs)/arena'),
     });
   }
@@ -225,10 +225,10 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
   // 4. SYNC TO GLOBAL RANK — mostra sempre il gap al rank successivo
   if (myRank?.rank && myRank.rank > 1) {
     cards.push({
-      id: 'sync', icon: 'trending-up', iconColor: '#00F2FF', borderColor: '#00F2FF',
+      id: 'sync', icon: 'trending-up', iconColor: '#00E5FF', borderColor: '#00E5FF',
       title: 'SCALA LA CLASSIFICA',
       subtitle: `Rank #${myRank.rank} · ${myRank.xp_gap || '?'} XP alla vetta della Hall`,
-      cta: 'GUADAGNA XP', ctaColor: '#00F2FF',
+      cta: 'GUADAGNA XP', ctaColor: '#00E5FF',
       action: () => onNavigate('/(tabs)/hall'),
     });
   }
@@ -244,13 +244,13 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
 
   // 6. PUSH TO COACH
   cards.push({
-    id: 'coach', icon: 'send', iconColor: '#34C759', borderColor: '#34C759',
+    id: 'coach', icon: 'send', iconColor: '#00FF87', borderColor: '#00FF87',
     title: 'PUSH AL COACH',
     subtitle: myCrews && myCrews.length > 0
       ? 'Invia la tua Bio-Signature al Coach per il workout'
       : 'Unisciti a una Crew con un Coach KORE',
     cta: myCrews && myCrews.length > 0 ? 'INVIA DATI' : 'TROVA CREW',
-    ctaColor: '#34C759',
+    ctaColor: '#00FF87',
     action: () => onNavigate('/(tabs)/kore'),
   });
 
@@ -280,19 +280,19 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
 
 const pro$ = StyleSheet.create({
   section: { marginTop: 12, marginBottom: 4 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, marginBottom: 10 },
-  sectionDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#00F2FF',
-    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
-  sectionTitle: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
-  scroll: { paddingHorizontal: 16, gap: 10, paddingBottom: 4 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, marginBottom: 10 },
+  sectionDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#00E5FF',
+    shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
+  sectionTitle: { color: '#AAAAAA', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  scroll: { paddingHorizontal: 24, gap: 10, paddingBottom: 4 },
   card: {
     width: SW * 0.68, backgroundColor: 'rgba(255,255,255,0.04)',
     borderRadius: 14, padding: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
     borderLeftWidth: 3, gap: 6,
   },
   cardTitle: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
-  cardSub: { color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: '400', lineHeight: 16 },
+  cardSub: { color: '#AAAAAA', fontSize: 12, fontWeight: '400', lineHeight: 16 },
   ctaBtn: { marginTop: 6, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 6, paddingHorizontal: 12, paddingVertical: 5 },
   ctaText: { fontSize: 11, fontWeight: '900', letterSpacing: 2 },
 });
@@ -342,7 +342,7 @@ function AIPromptBanner() {
 }
 
 const apb$ = StyleSheet.create({
-  card: { marginHorizontal: 16, marginTop: 10, marginBottom: 4, flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
+  card: { marginHorizontal: 24, marginTop: 10, marginBottom: 4, flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   bar: { width: 3 },
   body: { flex: 1, padding: 12, gap: 6 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -370,14 +370,14 @@ function GhostSessionHUD({ ghost, currentReps, currentQuality, exercise }: {
     <Animated.View entering={FadeIn.duration(400)} style={ghost$.container}>
       {/* Ghost indicator */}
       <View style={ghost$.ghostRow}>
-        <Ionicons name="eye" size={11} color="rgba(0,242,255,0.6)" />
+        <Ionicons name="eye" size={11} color="rgba(0,229,255,0.6)" />
         <Text style={ghost$.ghostLabel}>GHOST: {ghost.username.toUpperCase()}</Text>
       </View>
       {/* Target reps */}
       <View style={ghost$.compRow}>
         <View style={ghost$.statCol}>
           <Text style={ghost$.statLabel}>TUO</Text>
-          <Text style={[ghost$.statVal, { color: isLeading ? '#00F2FF' : '#FF453A' }]}>{currentReps}</Text>
+          <Text style={[ghost$.statVal, { color: isLeading ? '#00E5FF' : '#FF3B30' }]}>{currentReps}</Text>
         </View>
         <View style={ghost$.divider} />
         <View style={ghost$.statCol}>
@@ -387,8 +387,8 @@ function GhostSessionHUD({ ghost, currentReps, currentQuality, exercise }: {
       </View>
       {/* Status badge */}
       <Animated.View style={[ghost$.statusBadge, isLeading ? ghost$.statusWin : ghost$.statusLose, pulseStyle]}>
-        <Ionicons name={isLeading ? 'trending-up' : 'trending-down'} size={10} color={isLeading ? '#00F2FF' : '#FF453A'} />
-        <Text style={[ghost$.statusText, { color: isLeading ? '#00F2FF' : '#FF453A' }]}>
+        <Ionicons name={isLeading ? 'trending-up' : 'trending-down'} size={10} color={isLeading ? '#00E5FF' : '#FF3B30'} />
+        <Text style={[ghost$.statusText, { color: isLeading ? '#00E5FF' : '#FF3B30' }]}>
           {isLeading
             ? currentReps > ghost.reps ? `+${currentReps - ghost.reps} AVANTI` : 'IN PARITÀ'
             : `${ghost.reps - currentReps} DA RECUPERARE`}
@@ -402,18 +402,18 @@ const ghost$ = StyleSheet.create({
   container: {
     position: 'absolute', bottom: 170, right: 10, zIndex: 35,
     backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 12, padding: 10,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.2)', gap: 6, minWidth: 120,
+    borderWidth: 1, borderColor: '#00E5FF22', gap: 6, minWidth: 120,
   },
   ghostRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  ghostLabel: { color: 'rgba(0,242,255,0.6)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  ghostLabel: { color: 'rgba(0,229,255,0.6)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
   compRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statCol: { alignItems: 'center', gap: 1, flex: 1 },
   statLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
   statVal: { fontSize: 22, fontWeight: '900', letterSpacing: 1 },
   divider: { width: 1, height: 30, backgroundColor: 'rgba(255,255,255,0.1)' },
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
-  statusWin: { backgroundColor: 'rgba(0,242,255,0.08)' },
-  statusLose: { backgroundColor: 'rgba(255,69,58,0.08)' },
+  statusWin: { backgroundColor: 'rgba(0,229,255,0.08)' },
+  statusLose: { backgroundColor: 'rgba(255,59,48,0.08)' },
   statusText: { fontSize: 9, fontWeight: '900', letterSpacing: 1 },
 });
 
@@ -429,8 +429,8 @@ function NexusConsole({ user, onScan, onForge, deviceTier, eligibility, myRank, 
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: founderShimmer.value }));
 
   const CONSOLE_ICONS: Record<string, { ionName: keyof typeof Ionicons.glyphMap; color: string }> = {
-    scan: { ionName: 'scan', color: '#00F2FF' }, forge: { ionName: 'construct', color: '#D4AF37' },
-    hall: { ionName: 'trophy', color: '#D4AF37' }, dna: { ionName: 'analytics', color: '#00F2FF' },
+    scan: { ionName: 'scan', color: '#00E5FF' }, forge: { ionName: 'construct', color: '#FFD700' },
+    hall: { ionName: 'trophy', color: '#FFD700' }, dna: { ionName: 'analytics', color: '#00E5FF' },
   };
   const buttons = [
     { key: 'scan', title: 'NEXUS SCAN', sub: 'BIO-SKELETON TRACKING', image: CONSOLE_IMAGES.scan, action: onScan },
@@ -449,7 +449,7 @@ function NexusConsole({ user, onScan, onForge, deviceTier, eligibility, myRank, 
           <Text style={cn$.subtitle}>COMMAND CENTER</Text>
           {isFounder && (
             <Animated.View style={[cn$.founderBadge, shimmerStyle]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Ionicons name="star" size={10} color="#D4AF37" /><Text style={cn$.founderText}>FOUNDER</Text></View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Ionicons name="star" size={10} color="#FFD700" /><Text style={cn$.founderText}>FOUNDER</Text></View>
             </Animated.View>
           )}
           <View style={cn$.tierRow}><View style={cn$.tierDot} /><Text style={cn$.tierText}>{getTierLabel(deviceTier)} ACTIVE</Text></View>
@@ -464,7 +464,7 @@ function NexusConsole({ user, onScan, onForge, deviceTier, eligibility, myRank, 
               <Ionicons
                 name={eligibility.can_scan ? 'scan' : eligibility.phase === 'locked' ? 'lock-closed' : 'time-outline'}
                 size={12}
-                color={eligibility.can_scan ? '#00F2FF' : eligibility.phase === 'locked' ? '#444' : '#D4AF37'}
+                color={eligibility.can_scan ? '#00E5FF' : eligibility.phase === 'locked' ? '#444' : '#FFD700'}
               />
               <Text style={[cn$.eligText, eligibility.can_scan ? cn$.eligTextActive : cn$.eligTextLocked]}>
                 {eligibility.message}
@@ -508,36 +508,36 @@ const cn$ = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
   safe: { flex: 1 },
   header: { alignItems: 'center', paddingTop: 16, paddingBottom: 8, gap: 2 },
-  brandLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 12, fontWeight: '800', letterSpacing: 4 },
-  title: { color: '#D4AF37', fontSize: 32, fontWeight: '900', letterSpacing: 8 },
-  subtitle: { color: '#00F2FF', fontSize: 14, fontWeight: '400', letterSpacing: 4, opacity: 0.85 },
-  founderBadge: { marginTop: 6, paddingHorizontal: 14, paddingVertical: 4, borderRadius: 12, borderWidth: 1, borderColor: '#D4AF37', backgroundColor: 'rgba(212,175,55,0.08)' },
-  founderText: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  brandLabel: { color: '#AAAAAA', fontSize: 12, fontWeight: '800', letterSpacing: 4 },
+  title: { color: '#FFD700', fontSize: 32, fontWeight: '900', letterSpacing: 8 },
+  subtitle: { color: '#00E5FF', fontSize: 14, fontWeight: '400', letterSpacing: 4, opacity: 0.85 },
+  founderBadge: { marginTop: 6, paddingHorizontal: 24, paddingVertical: 4, borderRadius: 12, borderWidth: 1, borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.08)' },
+  founderText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   tierRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
-  tierDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
-  tierText: { color: '#00F2FF', fontSize: 11, fontWeight: '800', letterSpacing: 2, opacity: 0.6 },
+  tierDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF' },
+  tierText: { color: '#00E5FF', fontSize: 11, fontWeight: '800', letterSpacing: 2, opacity: 0.6 },
   scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 16, paddingBottom: 100 },
+  scrollContent: { paddingHorizontal: 24, paddingBottom: 100 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 10 },
-  card: { width: (SW - 44) / 2, height: (SW - 44) / 2 * 1.15, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
+  card: { width: (SW - 44) / 2, height: (SW - 44) / 2 * 1.15, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   cardBg: { flex: 1 },
   cardImage: { borderRadius: 16 },
   cardGradient: { flex: 1, justifyContent: 'space-between', padding: 16 },
   cardBottom: { gap: 4 },
-  cardTitle: { color: '#D4AF37', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
-  cardSub: { color: '#00F2FF', fontSize: 11, fontWeight: '400', letterSpacing: 1.5, opacity: 0.7 },
+  cardTitle: { color: '#FFD700', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
+  cardSub: { color: '#00E5FF', fontSize: 11, fontWeight: '400', letterSpacing: 1.5, opacity: 0.7 },
   // BIO-SCAN ELIGIBILITY BANNER
   eligBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
+    borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10,
     borderWidth: 1, marginTop: 10, marginBottom: 2,
   },
-  eligBannerActive: { backgroundColor: 'transparent', borderColor: '#00F2FF' },
-  eligBannerLocked: { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.05)' },
+  eligBannerActive: { backgroundColor: 'transparent', borderColor: '#00E5FF' },
+  eligBannerLocked: { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.07)' },
   eligText: { flex: 1, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  eligTextActive: { color: '#00F2FF' },
+  eligTextActive: { color: '#00E5FF' },
   eligTextLocked: { color: 'rgba(255,255,255,0.3)' },
-  eligReadyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF', shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4 },
+  eligReadyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF', shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4 },
 });
 
 // ========== CHALLENGE FORGE ==========
@@ -583,12 +583,12 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
         </Text>
         <View style={fg$.exRow}>
           <TouchableOpacity style={fg$.exCard} onPress={() => onSelect(mode, 'squat')} activeOpacity={0.8}>
-            <Ionicons name="barbell" size={36} color="#00F2FF" />
+            <Ionicons name="barbell" size={36} color="#00E5FF" />
             <Text style={fg$.exName}>DEEP SQUAT</Text>
             <Text style={fg$.exDesc}>Forza {'\u00b7'} Potenza</Text>
           </TouchableOpacity>
           <TouchableOpacity style={fg$.exCard} onPress={() => onSelect(mode, 'punch')} activeOpacity={0.8}>
-            <Ionicons name="hand-left" size={36} color="#00F2FF" />
+            <Ionicons name="hand-left" size={36} color="#00E5FF" />
             <Text style={fg$.exName}>EXPLOSIVE PUNCH</Text>
             <Text style={fg$.exDesc}>Velocit{'\u00e0'} {'\u00b7'} Agilit{'\u00e0'}</Text>
           </TouchableOpacity>
@@ -608,15 +608,15 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
       <View style={fg$.cardsCol}>
         <ForgeCard title="PERSONAL TRAINING" subtitle={"Focus DNA \u00b7 Migliora le tue stats atletiche"}
           image={FORGE_IMAGES.personal} onPress={() => setMode('personal')}
-          iconEl={<Animated.View style={dnaS}><Ionicons name="analytics" size={24} color="#00F2FF" /></Animated.View>}
+          iconEl={<Animated.View style={dnaS}><Ionicons name="analytics" size={24} color="#00E5FF" /></Animated.View>}
         />
         <ForgeCard title="POINTS BATTLE" subtitle={"Hall of Kore \u00b7 XP massimo per scalare il Rank"}
           image={FORGE_IMAGES.battle} onPress={() => setMode('battle')}
-          iconEl={<View style={fg$.iconRow}><Ionicons name="trophy" size={24} color="#D4AF37" /><Animated.View style={flameS}><Ionicons name="flame" size={14} color="#FF3B30" style={{ marginLeft: -4, marginTop: -6 }} /></Animated.View></View>}
+          iconEl={<View style={fg$.iconRow}><Ionicons name="trophy" size={24} color="#FFD700" /><Animated.View style={flameS}><Ionicons name="flame" size={14} color="#FF3B30" style={{ marginLeft: -4, marginTop: -6 }} /></Animated.View></View>}
         />
         <ForgeCard title="LIVE DUEL" subtitle={"Tempo reale \u00b7 Sfida un avversario"}
           image={FORGE_IMAGES.duel} onPress={() => setMode('duel')}
-          iconEl={<Animated.View style={boltS}><Ionicons name="flash" size={24} color="#00F2FF" /></Animated.View>}
+          iconEl={<Animated.View style={boltS}><Ionicons name="flash" size={24} color="#00E5FF" /></Animated.View>}
         />
       </View>
     </Animated.View>
@@ -624,9 +624,9 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
 }
 
 const fg$ = StyleSheet.create({
-  container: { alignItems: 'center', gap: 12, paddingHorizontal: 16, width: '100%' },
+  container: { alignItems: 'center', gap: 12, paddingHorizontal: 24, width: '100%' },
   title: { color: '#FFFFFF', fontSize: 26, fontWeight: '900', letterSpacing: 5 },
-  sub: { color: 'rgba(255,255,255,0.55)', fontSize: 17, marginBottom: 4, fontWeight: '400' },
+  sub: { color: '#AAAAAA', fontSize: 17, marginBottom: 4, fontWeight: '400' },
   cardsCol: { width: '100%', gap: 10 },
   card: { width: '100%', height: 130, borderRadius: 16, overflow: 'hidden' },
   imageBg: { width: '100%', height: '100%' },
@@ -635,17 +635,17 @@ const fg$ = StyleSheet.create({
   cardTop: { alignSelf: 'flex-start' },
   cardBottom: { gap: 2 },
   cardTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
-  cardSub: { color: 'rgba(255,255,255,0.65)', fontSize: 17, fontWeight: '400' },
+  cardSub: { color: '#AAAAAA', fontSize: 17, fontWeight: '400' },
   iconRow: { flexDirection: 'row', alignItems: 'flex-start' },
   selectWrap: { alignItems: 'center', gap: 14, paddingHorizontal: 20, width: '100%' },
   selectTitle: { color: '#FFFFFF', fontSize: 30, fontWeight: '900', letterSpacing: 4 },
-  selectSub: { color: 'rgba(255,255,255,0.55)', fontSize: 17, textAlign: 'center', fontWeight: '400' },
+  selectSub: { color: '#AAAAAA', fontSize: 17, textAlign: 'center', fontWeight: '400' },
   exRow: { flexDirection: 'row', gap: 12, width: '100%' },
   exCard: {
     flex: 1, alignItems: 'center', gap: 8, paddingVertical: 28,
-    backgroundColor: 'rgba(0,242,255,0.05)', borderRadius: 16, borderWidth: 1.5, borderColor: '#00F2FF',
+    backgroundColor: 'rgba(0,229,255,0.05)', borderRadius: 16, borderWidth: 1, borderColor: '#00E5FF',
   },
-  exName: { color: '#00F2FF', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
+  exName: { color: '#00E5FF', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
   exDesc: { color: 'rgba(255,255,255,0.6)', fontSize: 17, fontWeight: '400' },
   backBtn: { marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 },
   backText: { color: '#555', fontSize: 15, fontWeight: '800', letterSpacing: 1 },
@@ -666,11 +666,11 @@ function MiniDNARadar({ dna, explosive }: { dna: any; explosive: boolean }) {
   return (
     <Animated.View style={[{ position: 'absolute', bottom: 130, left: 10, zIndex: 35 }, as]}>
       <Svg width={76} height={76}>
-        {grid.map((g, i) => <Polygon key={i} points={g} fill="none" stroke="#00F2FF" strokeWidth={0.5} opacity={0.2} />)}
-        <Polygon points={pts} fill="rgba(0,242,255,0.65)" stroke="#00F2FF" strokeWidth={1.5} opacity={0.8} />
-        {explosive && <Circle cx={cx + r * vals[5] * Math.cos(pAngle)} cy={cy + r * vals[5] * Math.sin(pAngle)} r={6} fill="#00F2FF" opacity={0.9} />}
+        {grid.map((g, i) => <Polygon key={i} points={g} fill="none" stroke="#00E5FF" strokeWidth={0.5} opacity={0.2} />)}
+        <Polygon points={pts} fill="rgba(0,229,255,0.65)" stroke="#00E5FF" strokeWidth={1.5} opacity={0.8} />
+        {explosive && <Circle cx={cx + r * vals[5] * Math.cos(pAngle)} cy={cy + r * vals[5] * Math.sin(pAngle)} r={6} fill="#00E5FF" opacity={0.9} />}
       </Svg>
-      <Text style={{ color: '#00F2FF', fontSize: 10, fontWeight: '800', letterSpacing: 2, textAlign: 'center', marginTop: -2 }}>DNA</Text>
+      <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '800', letterSpacing: 2, textAlign: 'center', marginTop: -2 }}>DNA</Text>
     </Animated.View>
   );
 }
@@ -778,7 +778,7 @@ function SmoothedValidation({ exercise, onComplete }: { exercise: ExerciseType; 
         <Animated.View style={[StyleSheet.absoluteFill, smv$.flashGold, flashStyle]} />
         <Animated.View style={[smv$.doneWrap, doneStyle]}>
           <View style={smv$.doneCircle}>
-            <Ionicons name="shield-checkmark" size={64} color="#D4AF37" />
+            <Ionicons name="shield-checkmark" size={64} color="#FFD700" />
           </View>
           <Text style={smv$.doneTitle}>KORE IDENTIFICATO</Text>
           <View style={smv$.doneDivider} />
@@ -802,11 +802,11 @@ function SmoothedValidation({ exercise, onComplete }: { exercise: ExerciseType; 
 
         {/* Icon + neon glow */}
         <Animated.View style={[smv$.iconCircle, glowStyle]}>
-          <Ionicons name={exercise === 'squat' ? 'body' : 'hand-left'} size={56} color="#00F2FF" />
+          <Ionicons name={exercise === 'squat' ? 'body' : 'hand-left'} size={56} color="#00E5FF" />
         </Animated.View>
 
         {/* Main status message — GIANT */}
-        <Text style={[smv$.mainMsg, { color: isStable ? '#00F2FF' : '#FFFFFF' }]}>
+        <Text style={[smv$.mainMsg, { color: isStable ? '#00E5FF' : '#FFFFFF' }]}>
           {statusMsg}
         </Text>
 
@@ -821,13 +821,13 @@ function SmoothedValidation({ exercise, onComplete }: { exercise: ExerciseType; 
         <View style={smv$.section}>
           <View style={smv$.barRow}>
             <Text style={smv$.barLabel}>STABILITÀ CORPO</Text>
-            <Text style={[smv$.barPct, { color: isStable ? '#00F2FF' : 'rgba(255,255,255,0.4)' }]}>
+            <Text style={[smv$.barPct, { color: isStable ? '#00E5FF' : 'rgba(255,255,255,0.4)' }]}>
               {Math.round(stability * 100)}%
             </Text>
           </View>
           <View style={smv$.barBg}>
             <Animated.View style={[smv$.stabFill, stabStyle, {
-              backgroundColor: isStable ? '#00F2FF' : '#FF453A',
+              backgroundColor: isStable ? '#00E5FF' : '#FF3B30',
             }]} />
           </View>
         </View>
@@ -856,50 +856,308 @@ const smv$ = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.85)',
     justifyContent: 'center', alignItems: 'center',
   },
-  flashGold: { backgroundColor: '#D4AF37', zIndex: 31 },
+  flashGold: { backgroundColor: '#FFD700', zIndex: 31 },
   content: { alignItems: 'center', gap: 22, paddingHorizontal: 32, width: '100%' },
-  phaseLabel: { color: 'rgba(0,242,255,0.55)', fontSize: 14, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
+  phaseLabel: { color: 'rgba(0,229,255,0.55)', fontSize: 14, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
   iconCircle: {
     width: 110, height: 110, borderRadius: 55,
-    backgroundColor: 'rgba(0,242,255,0.06)',
-    borderWidth: 2.5, borderColor: '#00F2FF',
+    backgroundColor: 'rgba(0,229,255,0.06)',
+    borderWidth: 2.5, borderColor: '#00E5FF',
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
+    shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.9, shadowRadius: 28,
   },
   mainMsg: { fontSize: 34, fontWeight: '900', letterSpacing: 4, textAlign: 'center' },
-  hint: { color: 'rgba(0,242,255,0.65)', fontSize: 16, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center', marginTop: -8 },
+  hint: { color: 'rgba(0,229,255,0.65)', fontSize: 16, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center', marginTop: -8 },
   section: { width: '100%', gap: 8 },
   barRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   barLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   barPct: { fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   barBg: { height: 5, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 2.5, overflow: 'hidden' },
   stabFill: { height: '100%', borderRadius: 2.5 },
-  progressBg: { height: 7, backgroundColor: 'rgba(0,242,255,0.15)', borderRadius: 3.5, overflow: 'hidden' },
+  progressBg: { height: 7, backgroundColor: 'rgba(0,229,255,0.15)', borderRadius: 3.5, overflow: 'hidden' },
   progressFill: {
-    height: '100%', borderRadius: 3.5, backgroundColor: '#00F2FF',
-    shadowColor: '#00F2FF', shadowOffset: { width: 0, height: 0 },
+    height: '100%', borderRadius: 3.5, backgroundColor: '#00E5FF',
+    shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1, shadowRadius: 10,
   },
-  progressPct: { color: '#00F2FF', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
+  progressPct: { color: '#00E5FF', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
   progressNote: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center' },
   // Done state
   doneWrap: { alignItems: 'center', gap: 16, paddingHorizontal: 32 },
   doneCircle: {
     width: 130, height: 130, borderRadius: 65,
-    backgroundColor: 'rgba(212,175,55,0.08)',
-    borderWidth: 3, borderColor: '#D4AF37',
+    backgroundColor: 'rgba(255,215,0,0.08)',
+    borderWidth: 3, borderColor: '#FFD700',
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 },
+    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1, shadowRadius: 40,
   },
-  doneTitle: { color: '#D4AF37', fontSize: 38, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
-  doneDivider: { width: 80, height: 2.5, backgroundColor: '#D4AF37', borderRadius: 1.5 },
+  doneTitle: { color: '#FFD700', fontSize: 38, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
+  doneDivider: { width: 80, height: 2.5, backgroundColor: '#FFD700', borderRadius: 1.5 },
   doneAccess: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
-  doneDesc: { color: 'rgba(255,255,255,0.45)', fontSize: 15, fontWeight: '800', letterSpacing: 3, textAlign: 'center' },
+  doneDesc: { color: '#AAAAAA', fontSize: 15, fontWeight: '800', letterSpacing: 3, textAlign: 'center' },
 });
 
 // ========== COUNTDOWN ==========
+// ========== BATTLE INTRO OVERLAY (Cinematic Countdown) ==========
+import { Animated as RNAnimated } from 'react-native';
+
+function BattleIntroOverlay({ user, pvpChallenge, onComplete }: {
+  user: any;
+  pvpChallenge?: any;
+  onComplete: () => void;
+}) {
+  const [count, setCount] = useState(3);
+  const [showGo, setShowGo] = useState(false);
+  const leftX = useSharedValue(-SW);
+  const rightX = useSharedValue(SW);
+  const flashOpacity = useSharedValue(0);
+  const countScale = useSharedValue(0.2);
+  const countOpacity = useSharedValue(0);
+
+  const opponent = pvpChallenge?.ghost
+    ? { username: pvpChallenge.challenger_username || 'AVVERSARIO', color: '#FF3B30' }
+    : { username: 'AI NEXUS', color: '#FFD700' };
+
+  useEffect(() => {
+    // Slide in avatars
+    leftX.value = withSpring(0, { damping: 14, stiffness: 100 });
+    rightX.value = withSpring(0, { damping: 14, stiffness: 100 });
+
+    let cnt = 3;
+    const tick = () => {
+      Haptics.impactAsync(cnt === 1 ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      RemoteUXEngine.ping.playPing(520 + (3 - cnt) * 280, 0.08, 0.18);
+      // Cyan flash
+      flashOpacity.value = withSequence(withTiming(0.6, { duration: 60 }), withTiming(0, { duration: 220 }));
+      // Count animation
+      countScale.value = 0.1;
+      countOpacity.value = 1;
+      countScale.value = withSpring(1, { damping: 6, stiffness: 200 });
+      countOpacity.value = withSequence(withTiming(1, { duration: 100 }), withDelay(400, withTiming(0, { duration: 200 })));
+
+      cnt--;
+      setCount(cnt);
+
+      if (cnt <= 0) {
+        // GO!
+        setShowGo(true);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+        RemoteUXEngine.ping.playPing(880, 0.15, 0.25);
+        flashOpacity.value = withSequence(withTiming(0.9, { duration: 50 }), withTiming(0, { duration: 400 }));
+        setTimeout(() => { setShowGo(false); onComplete(); }, 600);
+        return;
+      }
+      setTimeout(tick, 1000);
+    };
+    const startTimer = setTimeout(tick, 600); // brief pause for avatars to slide in
+    return () => clearTimeout(startTimer);
+  }, []);
+
+  const leftStyle = useAnimatedStyle(() => ({ transform: [{ translateX: leftX.value }] }));
+  const rightStyle = useAnimatedStyle(() => ({ transform: [{ translateX: rightX.value }] }));
+  const flashStyle = useAnimatedStyle(() => ({ opacity: flashOpacity.value }));
+  const countStyle = useAnimatedStyle(() => ({ transform: [{ scale: countScale.value }], opacity: countOpacity.value }));
+
+  const userColor = user?.avatar_color || '#00E5FF';
+
+  return (
+    <View style={bi$.root}>
+      {/* Cyan flash */}
+      <Animated.View style={[bi$.flash, flashStyle]} pointerEvents="none" />
+
+      {/* Gradient split background */}
+      <LinearGradient
+        colors={[userColor + '18', 'rgba(0,0,0,0.96)', opponent.color + '18']}
+        locations={[0, 0.5, 1]}
+        start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }}
+        style={StyleSheet.absoluteFillObject}
+      />
+
+      {/* Left: User avatar */}
+      <Animated.View style={[bi$.avatarLeft, leftStyle]}>
+        <View style={[bi$.avatarCircle, { backgroundColor: userColor, shadowColor: userColor }]}>
+          <Text style={bi$.avatarLetter}>{(user?.username || 'TU')[0].toUpperCase()}</Text>
+        </View>
+        <Text style={bi$.avatarName}>{(user?.username || 'TU').toUpperCase()}</Text>
+        <View style={[bi$.avatarBadge, { borderColor: userColor + '60' }]}>
+          <Text style={[bi$.avatarBadgeTxt, { color: userColor }]}>LVL {user?.level || 1}</Text>
+        </View>
+      </Animated.View>
+
+      {/* Center: VS + Countdown */}
+      <View style={bi$.center}>
+        {!showGo && count > 0 && (
+          <Animated.Text style={[bi$.countNum, countStyle, { color: '#00E5FF' }]}>{count}</Animated.Text>
+        )}
+        {showGo && (
+          <Animated.Text style={[bi$.countNum, { color: '#00FF87', fontSize: 72 }]}>VIA!</Animated.Text>
+        )}
+        <Text style={bi$.vsText}>VS</Text>
+      </View>
+
+      {/* Right: Opponent avatar */}
+      <Animated.View style={[bi$.avatarRight, rightStyle]}>
+        <View style={[bi$.avatarCircle, { backgroundColor: opponent.color, shadowColor: opponent.color }]}>
+          <Text style={bi$.avatarLetter}>{(pvpChallenge?.challenged_username || opponent.username)[0].toUpperCase()}</Text>
+        </View>
+        <Text style={bi$.avatarName}>{(pvpChallenge?.challenged_username || opponent.username).toUpperCase()}</Text>
+        <View style={[bi$.avatarBadge, { borderColor: opponent.color + '60' }]}>
+          <Text style={[bi$.avatarBadgeTxt, { color: opponent.color }]}>
+            {pvpChallenge ? 'CHALLENGER' : 'AI NEXUS'}
+          </Text>
+        </View>
+      </Animated.View>
+
+      {/* Bottom label */}
+      <Text style={bi$.bottomLabel}>{count > 0 ? 'PREPARATI' : 'NEXUS ATTIVATO'}</Text>
+    </View>
+  );
+}
+
+const bi$ = StyleSheet.create({
+  root: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 40, backgroundColor: '#000000' },
+  flash: { ...StyleSheet.absoluteFillObject, backgroundColor: '#00E5FF', zIndex: 45 },
+  avatarLeft: { position: 'absolute', left: 20, alignItems: 'center', gap: 8 },
+  avatarRight: { position: 'absolute', right: 20, alignItems: 'center', gap: 8 },
+  avatarCircle: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 20, elevation: 12 },
+  avatarLetter: { color: '#000', fontSize: 32, fontWeight: '900' },
+  avatarName: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
+  avatarBadge: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
+  avatarBadgeTxt: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  center: { alignItems: 'center', gap: 8 },
+  countNum: { fontSize: 110, fontWeight: '900', letterSpacing: -4, lineHeight: 110, textShadowColor: 'rgba(0,229,255,0.5)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 30 },
+  vsText: { color: 'rgba(255,255,255,0.2)', fontSize: 13, fontWeight: '900', letterSpacing: 6, marginTop: 4 },
+  bottomLabel: { position: 'absolute', bottom: 80, color: 'rgba(255,255,255,0.30)', fontSize: 13, fontWeight: '900', letterSpacing: 4 },
+});
+
+// ========== GHOST SHADOW (Silhouette during scan) ==========
+function GhostShadow({ isAhead, currentReps, ghostReps }: {
+  isAhead: boolean;
+  currentReps: number;
+  ghostReps: number;
+}) {
+  const gap = Math.abs(currentReps - ghostReps);
+  const intensity = Math.min(0.3, 0.1 + gap * 0.03);
+  const translateX = useSharedValue(isAhead ? SW * 0.15 : -SW * 0.1);
+
+  useEffect(() => {
+    translateX.value = withTiming(isAhead ? SW * 0.15 : -SW * 0.1, { duration: 600 });
+  }, [isAhead]);
+
+  const style = useAnimatedStyle(() => ({ transform: [{ translateX: translateX.value }] }));
+
+  return (
+    <Animated.View style={[gs$.container, style]} pointerEvents="none">
+      <Ionicons name="body" size={160} color={isAhead ? '#00E5FF' : '#FF9500'} style={{ opacity: intensity }} />
+      {gap > 0 && (
+        <View style={[gs$.gap, { borderColor: isAhead ? '#00FF87' : '#FF3B30' }]}>
+          <Text style={[gs$.gapText, { color: isAhead ? '#00FF87' : '#FF3B30' }]}>
+            {isAhead ? `+${gap}` : `-${gap}`}
+          </Text>
+        </View>
+      )}
+    </Animated.View>
+  );
+}
+
+const gs$ = StyleSheet.create({
+  container: { position: 'absolute', top: '20%' as any, left: 0, right: 0, alignItems: 'center', zIndex: 30 },
+  gap: { position: 'absolute', top: 20, borderWidth: 1, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+  gapText: { fontSize: 16, fontWeight: '900', letterSpacing: 2 },
+});
+
+// ========== AK DROPS RAIN ==========
+function AKDropsRain({ drops, visible }: { drops: number; visible: boolean }) {
+  const count = Math.min(Math.max(drops, 3), 25);
+  const anims = useRef(
+    Array.from({ length: count }, (_, i) => ({
+      y: new RNAnimated.Value(-80),
+      x: new RNAnimated.Value(40 + Math.random() * (SW - 80)),
+      opacity: new RNAnimated.Value(0),
+      rotate: new RNAnimated.Value(0),
+    }))
+  ).current;
+
+  useEffect(() => {
+    if (!visible) return;
+    anims.forEach((a, i) => {
+      a.y.setValue(-80 - Math.random() * 100);
+      a.x.setValue(40 + Math.random() * (SW - 80));
+      a.opacity.setValue(1);
+      a.rotate.setValue(0);
+      RNAnimated.sequence([
+        RNAnimated.delay(i * 60 + Math.random() * 200),
+        RNAnimated.parallel([
+          RNAnimated.timing(a.y, { toValue: 500 + Math.random() * 200, duration: 1800 + Math.random() * 600, useNativeDriver: true }),
+          RNAnimated.timing(a.rotate, { toValue: (Math.random() - 0.5) * 4, duration: 2000, useNativeDriver: true }),
+          RNAnimated.sequence([
+            RNAnimated.timing(a.opacity, { toValue: 1, duration: 100, useNativeDriver: true }),
+            RNAnimated.delay(1200),
+            RNAnimated.timing(a.opacity, { toValue: 0, duration: 500, useNativeDriver: true }),
+          ]),
+        ]),
+      ]).start();
+    });
+  }, [visible]);
+
+  if (!visible) return null;
+  return (
+    <View style={dr$.container} pointerEvents="none">
+      {anims.map((a, i) => (
+        <RNAnimated.Text key={i} style={[dr$.drop, {
+          transform: [{ translateY: a.y }, { translateX: a.x }, { rotate: a.rotate.interpolate({ inputRange: [-4, 4], outputRange: ['-720deg', '720deg'] }) }],
+          opacity: a.opacity,
+        }]}>
+          💧
+        </RNAnimated.Text>
+      ))}
+      <View style={dr$.badge}>
+        <Text style={dr$.badgeText}>+{drops} 💧</Text>
+      </View>
+    </View>
+  );
+}
+
+const dr$ = StyleSheet.create({
+  container: { ...StyleSheet.absoluteFillObject, zIndex: 55 },
+  drop: { position: 'absolute', top: 0, left: 0, fontSize: 28 },
+  badge: { position: 'absolute', top: '40%' as any, alignSelf: 'center', backgroundColor: 'rgba(0,229,255,0.15)', borderRadius: 20, borderWidth: 2, borderColor: '#00E5FF', paddingHorizontal: 24, paddingVertical: 10, shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 20 },
+  badgeText: { color: '#00E5FF', fontSize: 28, fontWeight: '900', letterSpacing: 4 },
+});
+
+// ========== VICTORY OVERLAY ==========
+function VictoryOverlay({ visible, xpChange }: { visible: boolean; xpChange?: number }) {
+  const glow = useSharedValue(0.5);
+  useEffect(() => {
+    if (!visible) return;
+    glow.value = withRepeat(withSequence(withTiming(1, { duration: 700 }), withTiming(0.5, { duration: 700 })), -1, false);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+  }, [visible]);
+  const glowStyle = useAnimatedStyle(() => ({
+    shadowOpacity: glow.value,
+    opacity: 0.8 + glow.value * 0.2,
+  }));
+  if (!visible) return null;
+  return (
+    <Animated.View style={[vo$.container, glowStyle]} pointerEvents="none">
+      <Ionicons name="trophy" size={48} color="#FFD700" />
+      <Text style={vo$.victory}>VICTORY</Text>
+      {xpChange && xpChange > 0 && (
+        <Text style={vo$.xp}>+{xpChange} XP · +50💧</Text>
+      )}
+    </Animated.View>
+  );
+}
+
+const vo$ = StyleSheet.create({
+  container: { position: 'absolute', top: 80, alignSelf: 'center', alignItems: 'center', gap: 8, zIndex: 50, shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowRadius: 30 },
+  victory: { color: '#FFD700', fontSize: 42, fontWeight: '900', letterSpacing: 6, textShadowColor: 'rgba(255,215,0,0.5)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 20 },
+  xp: { color: '#FFFFFF', fontSize: 18, fontWeight: '700', letterSpacing: 2 },
+});
+
+// ========== ORIGINAL COUNTDOWN (kept as fallback) ==========
 function Countdown({ onComplete }: { onComplete: () => void }) {
   const [count, setCount] = useState(3);
   const scale = useSharedValue(0.3);
@@ -919,8 +1177,8 @@ function Countdown({ onComplete }: { onComplete: () => void }) {
   const as = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }], opacity: opacity.value }));
   return (
     <View style={{ ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 25, backgroundColor: 'rgba(5,5,5,0.88)' }}>
-      <Animated.View style={[{ width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(5,5,5,0.95)', borderWidth: 3, borderColor: '#00F2FF', alignItems: 'center', justifyContent: 'center' }, as]}>
-        <Text style={{ color: '#00F2FF', fontSize: 64, fontWeight: '900' }}>{count === 0 ? 'GO' : count}</Text>
+      <Animated.View style={[{ width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(5,5,5,0.95)', borderWidth: 3, borderColor: '#00E5FF', alignItems: 'center', justifyContent: 'center' }, as]}>
+        <Text style={{ color: '#00E5FF', fontSize: 64, fontWeight: '900' }}>{count === 0 ? 'GO' : count}</Text>
       </Animated.View>
       <Text style={{ color: '#888', fontSize: 15, fontWeight: '700', letterSpacing: 3, marginTop: 24 }}>{count > 0 ? 'PREPARATI' : 'NEXUS ATTIVATO'}</Text>
     </View>
@@ -962,6 +1220,10 @@ export default function NexusTriggerScreen() {
   const trainingTargetReps = parseInt(params.trainingTargetReps || '20', 10);
   const trainingTargetTime = parseInt(params.trainingTargetTime || '60', 10);
   const dnaPotential = parseFloat(params.dnaPotential || '70');
+  // Dopamine layer: AK Drops Rain + Victory
+  const [showDropsRain, setShowDropsRain] = useState(false);
+  const [dropsEarned, setDropsEarned] = useState(0);
+  const [isVictory, setIsVictory] = useState(false);
 
   const analyzerRef = useRef<MotionAnalyzer | null>(null);
   const startTimeRef = useRef(0);
@@ -1118,6 +1380,9 @@ export default function NexusTriggerScreen() {
         }, token);
         setScanResult({ ...r, training_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, ai_feedback_score: aiFeedbackScore, training_name: params.trainingName });
         if (r.user) updateUser(r.user);
+        // AK Drops Rain
+        setDropsEarned(10); setShowDropsRain(true);
+        setTimeout(() => setShowDropsRain(false), 3000);
         if (r.coach_notified) playBioMatchPing(); else playAcceptPing();
       } catch (_) {
         setScanResult({ training_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: 0 });
@@ -1198,7 +1463,15 @@ export default function NexusTriggerScreen() {
       <DigitalShadow pose={skeleton} exercise={exercise} goldFlash={goldFlash} motionActive={motionActive} deviceTier={deviceTier} />
       <ScanLine active={phase === 'scanning'} />
       {phase === 'scanning' && <MiniDNARadar dna={user?.dna} explosive={motionActive} />}
-      {/* PvP Ghost Session HUD */}
+      {/* Ghost Shadow during PvP (positional silhouette) */}
+      {phase === 'scanning' && pvpChallenge?.ghost && (
+        <GhostShadow
+          isAhead={(motionState?.reps || 0) > pvpChallenge.ghost.reps}
+          currentReps={motionState?.reps || 0}
+          ghostReps={pvpChallenge.ghost.reps}
+        />
+      )}
+      {/* PvP HUD: numeric ghost comparison */}
       {phase === 'scanning' && pvpChallenge?.ghost && (
         <GhostSessionHUD
           ghost={pvpChallenge.ghost}
@@ -1242,7 +1515,14 @@ export default function NexusTriggerScreen() {
           } catch (_) { /* silenced — user goes to forge regardless */ }
         }
       }} />}
-      {phase === 'countdown' && <Countdown onComplete={handleCountdownDone} />}
+      {/* ── CINEMATIC BATTLE INTRO (replaces plain countdown) ── */}
+      {phase === 'countdown' && (
+        <BattleIntroOverlay
+          user={user}
+          pvpChallenge={pvpChallengeId ? pvpChallenge : undefined}
+          onComplete={handleCountdownDone}
+        />
+      )}
 
       {/* SPRINT 5: Military/Tech HUD — Corner Layout */}
       {phase === 'scanning' && (
@@ -1263,7 +1543,7 @@ export default function NexusTriggerScreen() {
             <Text style={hud$.cornerLabel}>PROTOCOL</Text>
             <Text style={hud$.exerciseVal}>{exercise === 'squat' ? 'DEEP SQUAT' : 'EXPLOSIVE PUNCH'}</Text>
             <View style={hud$.modeBadge}>
-              <Ionicons name={forgeMode === 'personal' ? 'analytics' : forgeMode === 'battle' ? 'trophy' : 'flash'} size={10} color="#D4AF37" />
+              <Ionicons name={forgeMode === 'personal' ? 'analytics' : forgeMode === 'battle' ? 'trophy' : 'flash'} size={10} color="#FFD700" />
               <Text style={hud$.modeText}>{forgeMode.toUpperCase()}</Text>
             </View>
           </View>
@@ -1272,15 +1552,15 @@ export default function NexusTriggerScreen() {
           <View style={hud$.centerFeedback}>
             {motionState?.lastRepQuality ? (
               <Animated.View entering={FadeInDown.duration(200)} key={motionState.reps} style={hud$.repFeedback}>
-                <View style={[hud$.repFeedbackDot, motionState.lastRepQuality >= 80 && { backgroundColor: '#D4AF37' }]} />
-                <Text style={[hud$.repFeedbackText, motionState.lastRepQuality >= 80 && { color: '#D4AF37' }]}>
+                <View style={[hud$.repFeedbackDot, motionState.lastRepQuality >= 80 && { backgroundColor: '#FFD700' }]} />
+                <Text style={[hud$.repFeedbackText, motionState.lastRepQuality >= 80 && { color: '#FFD700' }]}>
                   REP #{motionState.reps} {'\u2014'} Q{motionState.lastRepQuality}
                 </Text>
               </Animated.View>
             ) : (
               <View style={hud$.phaseIndicator}>
-                <View style={[hud$.phaseDot, motionActive && { backgroundColor: '#00F2FF' }]} />
-                <Text style={[hud$.phaseText, motionActive && { color: '#00F2FF' }]}>
+                <View style={[hud$.phaseDot, motionActive && { backgroundColor: '#00E5FF' }]} />
+                <Text style={[hud$.phaseText, motionActive && { color: '#00E5FF' }]}>
                   {motionActive ? 'TRACKING ACTIVE' : 'AWAITING MOTION'}
                 </Text>
               </View>
@@ -1297,7 +1577,7 @@ export default function NexusTriggerScreen() {
           {/* BOTTOM-RIGHT: Quality Score */}
           <View style={hud$.bottomRight}>
             <Text style={hud$.cornerLabel}>QUALITY</Text>
-            <Text style={[hud$.qualityVal, (motionState?.quality || 0) >= 80 && { color: '#D4AF37' }]}>{motionState?.quality || 0}</Text>
+            <Text style={[hud$.qualityVal, (motionState?.quality || 0) >= 80 && { color: '#FFD700' }]}>{motionState?.quality || 0}</Text>
             <Text style={hud$.qualityUnit}>AVG SCORE</Text>
           </View>
 
@@ -1310,6 +1590,13 @@ export default function NexusTriggerScreen() {
           </View>
         </SafeAreaView>
       )}
+
+      {/* ── DOPAMINE LAYER: AK Drops Rain + Victory ── */}
+      <AKDropsRain drops={dropsEarned} visible={showDropsRain} />
+      <VictoryOverlay
+        visible={phase === 'results' && isVictory}
+        xpChange={scanResult?.xp_change}
+      />
 
       <CinemaResults visible={phase === 'results'} result={scanResult} user={user} onClose={handleResultClose} />
       <ProUnlockModal
@@ -1345,11 +1632,11 @@ const hud$ = StyleSheet.create({
     gap: 3,
   },
   cornerLabel: {
-    color: 'rgba(0,242,255,0.5)', fontSize: 11, fontWeight: '900',
+    color: 'rgba(0,229,255,0.5)', fontSize: 11, fontWeight: '900',
     letterSpacing: 3,
   },
   timerVal: {
-    color: '#00F2FF', fontSize: 28, fontWeight: '900',
+    color: '#00E5FF', fontSize: 28, fontWeight: '900',
     fontVariant: ['tabular-nums'], letterSpacing: 2,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
@@ -1358,7 +1645,7 @@ const hud$ = StyleSheet.create({
     borderRadius: 1, overflow: 'hidden',
   },
   timerBarFill: {
-    height: '100%', backgroundColor: '#00F2FF', borderRadius: 1,
+    height: '100%', backgroundColor: '#00E5FF', borderRadius: 1,
   },
   // TOP-RIGHT: Exercise & Mode
   topRight: {
@@ -1371,12 +1658,12 @@ const hud$ = StyleSheet.create({
   },
   modeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: 'rgba(212,175,55,0.1)',
+    backgroundColor: 'rgba(255,215,0,0.1)',
     borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
   },
   modeText: {
-    color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 1.5,
+    color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1.5,
   },
   // CENTER: Rep Feedback
   centerFeedback: {
@@ -1386,14 +1673,14 @@ const hud$ = StyleSheet.create({
   repFeedback: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8,
-    paddingHorizontal: 14, paddingVertical: 8,
+    paddingHorizontal: 24, paddingVertical: 8,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
   repFeedbackDot: {
-    width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF',
+    width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF',
   },
   repFeedbackText: {
-    color: '#00F2FF', fontSize: 15, fontWeight: '800', letterSpacing: 2,
+    color: '#00E5FF', fontSize: 15, fontWeight: '800', letterSpacing: 2,
   },
   phaseIndicator: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
@@ -1413,12 +1700,12 @@ const hud$ = StyleSheet.create({
     gap: 2,
   },
   repsVal: {
-    color: '#00F2FF', fontSize: 48, fontWeight: '900',
+    color: '#00E5FF', fontSize: 48, fontWeight: '900',
     fontVariant: ['tabular-nums'], letterSpacing: 1,
     lineHeight: 50,
   },
   repsUnit: {
-    color: 'rgba(0,242,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 2,
+    color: 'rgba(0,229,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 2,
   },
   // BOTTOM-RIGHT: Quality
   bottomRight: {
@@ -1426,12 +1713,12 @@ const hud$ = StyleSheet.create({
     alignItems: 'flex-end', gap: 2,
   },
   qualityVal: {
-    color: '#00F2FF', fontSize: 48, fontWeight: '900',
+    color: '#00E5FF', fontSize: 48, fontWeight: '900',
     fontVariant: ['tabular-nums'], letterSpacing: 1,
     lineHeight: 50,
   },
   qualityUnit: {
-    color: 'rgba(0,242,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 2,
+    color: 'rgba(0,229,255,0.35)', fontSize: 10, fontWeight: '900', letterSpacing: 2,
   },
   // BOTTOM: Stop Button
   stopWrap: {
@@ -1440,17 +1727,17 @@ const hud$ = StyleSheet.create({
   stopBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: 'rgba(255,59,48,0.12)', borderRadius: 14, paddingVertical: 18,
-    borderWidth: 1.5, borderColor: 'rgba(255,59,48,0.35)',
+    borderWidth: 1, borderColor: 'rgba(255,59,48,0.35)',
   },
   stopDot: {
-    width: 10, height: 10, borderRadius: 5, backgroundColor: '#FF453A',
+    width: 10, height: 10, borderRadius: 5, backgroundColor: '#FF3B30',
   },
   stopText: {
-    color: '#FF453A', fontSize: 17, fontWeight: '900', letterSpacing: 3,
+    color: '#FF3B30', fontSize: 17, fontWeight: '900', letterSpacing: 3,
   },
 });
 const crewMsg$ = StyleSheet.create({
-  container: { marginHorizontal: 20, marginBottom: 16, padding: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-  text: { color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 20 },
-  cta: { color: '#00F2FF', fontWeight: '700' },
+  container: { marginHorizontal: 20, marginBottom: 16, padding: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
+  text: { color: '#AAAAAA', fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 20 },
+  cta: { color: '#00E5FF', fontWeight: '700' },
 });

@@ -45,7 +45,7 @@ export default function AICoachAssistant() {
     }).catch(() => {}).finally(() => setLoading(false));
   }, [token]);
 
-  if (loading) return <View style={ai$.center}><ActivityIndicator color="#00F2FF" /></View>;
+  if (loading) return <View style={ai$.center}><ActivityIndicator color="#00E5FF" /></View>;
 
   const risks = data?.injury_risks || [];
   const forecasts = data?.forecasts || [];
@@ -60,15 +60,15 @@ export default function AICoachAssistant() {
         </View>
         <View style={ai$.groupStats}>
           <View style={ai$.groupStat}>
-            <Text style={[ai$.groupVal, { color: summary.high_risk > 0 ? '#FF453A' : '#34C759' }]}>{summary.high_risk || 0}</Text>
+            <Text style={[ai$.groupVal, { color: summary.high_risk > 0 ? '#FF3B30' : '#00FF87' }]}>{summary.high_risk || 0}</Text>
             <Text style={ai$.groupLabel}>HIGH RISK</Text>
           </View>
           <View style={ai$.groupStat}>
-            <Text style={[ai$.groupVal, { color: '#34C759' }]}>{summary.improving || 0}</Text>
+            <Text style={[ai$.groupVal, { color: '#00FF87' }]}>{summary.improving || 0}</Text>
             <Text style={ai$.groupLabel}>IMPROVING</Text>
           </View>
           <View style={ai$.groupStat}>
-            <Text style={[ai$.groupVal, { color: '#00F2FF' }]}>{summary.total_athletes || 0}</Text>
+            <Text style={[ai$.groupVal, { color: '#00E5FF' }]}>{summary.total_athletes || 0}</Text>
             <Text style={ai$.groupLabel}>ATLETI</Text>
           </View>
         </View>
@@ -80,12 +80,12 @@ export default function AICoachAssistant() {
           <FeatureGate featureKey="ai_injury_risk" features={tierData?.features}>
           <View style={ai$.sectionCard}>
             <View style={ai$.secHeader}>
-              <Ionicons name="warning" size={14} color="#FF453A" />
+              <Ionicons name="warning" size={14} color="#FF3B30" />
               <Text style={ai$.secTitle}>INJURY RISK PREDICTOR</Text>
             </View>
             {risks.length === 0 ? (
               <View style={ai$.emptyBlock}>
-                <Ionicons name="shield-checkmark" size={28} color="#34C759" />
+                <Ionicons name="shield-checkmark" size={28} color="#00FF87" />
                 <Text style={ai$.emptyText}>Nessun rischio rilevato{'\n'}Parametri nella norma</Text>
               </View>
             ) : risks.map((r: any, i: number) => (
@@ -99,7 +99,7 @@ export default function AICoachAssistant() {
                 <RiskBar pct={r.risk_pct} color={r.color} />
                 <View style={ai$.riskDetail}>
                   <View style={ai$.riskMeta}>
-                    <Ionicons name="arrow-up" size={10} color="#FF453A" />
+                    <Ionicons name="arrow-up" size={10} color="#FF3B30" />
                     <Text style={ai$.riskMetaText}>Overload: {r.overloaded}</Text>
                   </View>
                   <View style={ai$.riskMeta}>
@@ -118,7 +118,7 @@ export default function AICoachAssistant() {
         <View style={ai$.col}>
           <View style={ai$.sectionCard}>
             <View style={ai$.secHeader}>
-              <Ionicons name="telescope" size={14} color="#D4AF37" />
+              <Ionicons name="telescope" size={14} color="#FFD700" />
               <Text style={ai$.secTitle}>PERFORMANCE FORECAST 30g</Text>
             </View>
             {forecasts.length === 0 ? (
@@ -126,7 +126,7 @@ export default function AICoachAssistant() {
                 <Text style={ai$.emptyText}>Dati insufficienti per la proiezione</Text>
               </View>
             ) : forecasts.map((f: any, i: number) => {
-              const trendColors: Record<string, string> = { rising: '#34C759', stable: '#888888', declining: '#FF453A' };
+              const trendColors: Record<string, string> = { rising: '#00FF87', stable: '#888888', declining: '#FF3B30' };
               const trendIcons: Record<string, any> = { rising: 'trending-up', stable: 'remove', declining: 'trending-down' };
               const tc = trendColors[f.trend] || '#888';
               const ti = trendIcons[f.trend] || 'remove';
@@ -141,7 +141,7 @@ export default function AICoachAssistant() {
                     <Text style={ai$.forecastMeta}>{f.scans_per_week}/sett · LVL {f.current_level}→{f.projected_level}</Text>
                   </View>
                   <View style={ai$.forecastRight}>
-                    <Text style={[ai$.forecastDna, { color: dnaDiff >= 0 ? '#34C759' : '#FF453A' }]}>
+                    <Text style={[ai$.forecastDna, { color: dnaDiff >= 0 ? '#00FF87' : '#FF3B30' }]}>
                       {dnaDiff >= 0 ? '+' : ''}{dnaDiff.toFixed(1)}
                     </Text>
                     <Text style={ai$.forecastDnaLabel}>DNA / 30g</Text>
@@ -158,7 +158,7 @@ export default function AICoachAssistant() {
       </View>
 
       <View style={ai$.aiNote}>
-        <Ionicons name="hardware-chip" size={14} color="rgba(0,242,255,0.5)" />
+        <Ionicons name="hardware-chip" size={14} color="rgba(0,229,255,0.5)" />
         <Text style={ai$.aiNoteText}>AI KORE Engine v2 · Analisi basata su DNA biometrico attuale + frequenza scan · Proiezioni 30 giorni</Text>
       </View>
     </ScrollView>
@@ -170,7 +170,7 @@ const ai$ = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   pageHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 },
   pageTitle: { color: '#FFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
-  pageSub: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '300', marginTop: 3 },
+  pageSub: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '300', marginTop: 3 },
   groupStats: { flexDirection: 'row', gap: 16 },
   groupStat: { alignItems: 'center', gap: 3 },
   groupVal: { fontSize: 24, fontWeight: '900', letterSpacing: 1 },
@@ -189,7 +189,7 @@ const ai$ = StyleSheet.create({
   riskBadgeText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
   riskDetail: { flexDirection: 'row', gap: 16 },
   riskMeta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  riskMetaText: { color: 'rgba(255,255,255,0.45)', fontSize: 11 },
+  riskMetaText: { color: '#AAAAAA', fontSize: 11 },
   riskRec: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '300', lineHeight: 16, borderTopWidth: 1, borderTopColor: '#1E1E1E', paddingTop: 8 },
   forecastRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#111' },
   forecastLeft: { flex: 1, gap: 3 },
@@ -200,8 +200,8 @@ const ai$ = StyleSheet.create({
   forecastDna: { fontSize: 18, fontWeight: '900', letterSpacing: 1 },
   forecastDnaLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
   forecastXp: { alignItems: 'center', minWidth: 70 },
-  forecastXpVal: { color: '#D4AF37', fontSize: 14, fontWeight: '900' },
+  forecastXpVal: { color: '#FFD700', fontSize: 14, fontWeight: '900' },
   forecastXpLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 9, marginTop: 2 },
   aiNote: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#0A0A0A', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#1E1E1E' },
-  aiNoteText: { flex: 1, color: 'rgba(0,242,255,0.4)', fontSize: 11, fontWeight: '300' },
+  aiNoteText: { flex: 1, color: 'rgba(0,229,255,0.4)', fontSize: 11, fontWeight: '300' },
 });

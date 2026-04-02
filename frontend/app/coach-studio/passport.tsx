@@ -33,7 +33,7 @@ function PassportRadar({ dna }: { dna: any }) {
           fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={1} />
       ))}
       {gridPts.map(([x, y], i) => <Line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth={1} />)}
-      <Polygon points={pts.map(p => p.join(',')).join(' ')} fill="rgba(0,242,255,0.12)" stroke="#00F2FF" strokeWidth={2} />
+      <Polygon points={pts.map(p => p.join(',')).join(' ')} fill="rgba(0,229,255,0.12)" stroke="#00E5FF" strokeWidth={2} />
       {gridPts.map(([x, y], i) => {
         const ax = cx + (x - cx) * 1.22, ay = cy + (y - cy) * 1.22;
         return <SvgText key={i} x={ax} y={ay + 3} fontSize={9} fill="rgba(255,255,255,0.35)" textAnchor="middle" fontWeight="bold">{DNA_LABELS[i]}</SvgText>;
@@ -55,7 +55,7 @@ export default function AthletePasPport() {
       .finally(() => setLoading(false));
   }, [token, user?.id]);
 
-  if (loading) return <View style={p$.center}><ActivityIndicator color="#00F2FF" /></View>;
+  if (loading) return <View style={p$.center}><ActivityIndicator color="#00E5FF" /></View>;
 
   const dna = user?.dna || {};
   const dnaAvg = DNA_KEYS.length ? Math.round(DNA_KEYS.reduce((s, k) => s + (dna[k] || 50), 0) / DNA_KEYS.length) : 0;
@@ -64,7 +64,7 @@ export default function AthletePasPport() {
     <ScrollView style={p$.root} contentContainerStyle={p$.content}>
       {/* Header */}
       <View style={p$.header}>
-        <View style={[p$.avatar, { backgroundColor: user?.avatar_color || '#00F2FF' }]}>
+        <View style={[p$.avatar, { backgroundColor: user?.avatar_color || '#00E5FF' }]}>
           <Text style={p$.avatarLetter}>{(user?.username || '?')[0].toUpperCase()}</Text>
         </View>
         <View style={p$.headerInfo}>
@@ -89,7 +89,7 @@ export default function AthletePasPport() {
             {DNA_KEYS.map((k, i) => (
               <View key={k} style={p$.dnaItem}>
                 <Text style={p$.dnaLabel}>{DNA_FULL[i]}</Text>
-                <Text style={[p$.dnaVal, { color: (dna[k] || 0) >= 80 ? '#D4AF37' : '#00F2FF' }]}>{dna[k] || '—'}</Text>
+                <Text style={[p$.dnaVal, { color: (dna[k] || 0) >= 80 ? '#FFD700' : '#00E5FF' }]}>{dna[k] || '—'}</Text>
                 <View style={p$.dnaBar}><View style={[p$.dnaFill, { width: `${dna[k] || 0}%` as any }]} /></View>
               </View>
             ))}
@@ -107,8 +107,8 @@ export default function AthletePasPport() {
           {/* Quick stats */}
           <View style={p$.statsCard}>
             {[
-              { label: 'LIVELLO', val: user?.level || 1, color: '#D4AF37' },
-              { label: 'XP TOTALI', val: (user?.xp || 0).toLocaleString(), color: '#00F2FF' },
+              { label: 'LIVELLO', val: user?.level || 1, color: '#FFD700' },
+              { label: 'XP TOTALI', val: (user?.xp || 0).toLocaleString(), color: '#00E5FF' },
               { label: 'DNA MEDIO', val: dnaAvg, color: '#AF52DE' },
             ].map((stat, i) => (
               <Animated.View key={stat.label} entering={FadeInDown.delay(i * 80).duration(200)} style={p$.statRow}>
@@ -132,11 +132,11 @@ const p$ = StyleSheet.create({
   headerInfo: { flex: 1, gap: 4 },
   name: { color: '#FFF', fontSize: 22, fontWeight: '900', letterSpacing: 2 },
   sub: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '300', letterSpacing: 1 },
-  rolePill: { alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  rolePill: { alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   roleText: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
   korScore: { alignItems: 'center' },
-  koreVal: { color: '#D4AF37', fontSize: 40, fontWeight: '900', letterSpacing: 2 },
-  koreLabel: { color: 'rgba(212,175,55,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 4 },
+  koreVal: { color: '#FFD700', fontSize: 40, fontWeight: '900', letterSpacing: 2 },
+  koreLabel: { color: 'rgba(255,215,0,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 4 },
   twoCol: { flexDirection: 'row', gap: 16, alignItems: 'flex-start' },
   radarCard: { flex: 1, backgroundColor: '#0A0A0A', borderRadius: 14, padding: 18, gap: 16, borderWidth: 1, borderColor: '#1E1E1E', alignItems: 'center' },
   sectionLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '900', letterSpacing: 3, alignSelf: 'flex-start' },
@@ -145,7 +145,7 @@ const p$ = StyleSheet.create({
   dnaLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '700', width: 70 },
   dnaVal: { fontSize: 13, fontWeight: '900', width: 28 },
   dnaBar: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' },
-  dnaFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
+  dnaFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 2 },
   statsCol: { flex: 1, gap: 14 },
   infoCard: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 18, gap: 10, borderWidth: 1, borderColor: '#1E1E1E', alignItems: 'center' },
   infoTitle: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '900', letterSpacing: 3 },

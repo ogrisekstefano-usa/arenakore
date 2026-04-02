@@ -22,10 +22,10 @@ import { DNA_HERO_IMAGE } from '../../utils/images';
 const { width: SCREEN_W } = Dimensions.get('window');
 
 const ATTRS: { key: string; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
-  { key: 'velocita',   label: 'VELOCITA',   icon: 'flash',           color: '#00F2FF' },
+  { key: 'velocita',   label: 'VELOCITA',   icon: 'flash',           color: '#00E5FF' },
   { key: 'forza',      label: 'FORZA',      icon: 'barbell',         color: '#FFFFFF' },
-  { key: 'resistenza', label: 'RESISTENZA', icon: 'heart',           color: '#FF453A' },
-  { key: 'agilita',    label: 'AGILITA',    icon: 'walk',            color: '#00F2FF' },
+  { key: 'resistenza', label: 'RESISTENZA', icon: 'heart',           color: '#FF3B30' },
+  { key: 'agilita',    label: 'AGILITA',    icon: 'walk',            color: '#00E5FF' },
   { key: 'tecnica',    label: 'TECNICA',    icon: 'navigate-circle', color: '#FFFFFF' },
   { key: 'potenza',    label: 'POTENZA',    icon: 'flash-sharp',     color: '#FFD700' },
 ];
@@ -74,21 +74,21 @@ function GlitchOverlay({ active }: { active: boolean }) {
 }
 
 const gStyles = StyleSheet.create({
-  tint: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,242,255,0.18)', zIndex: 50 },
+  tint: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,229,255,0.18)', zIndex: 50 },
   scanLine: {
     position: 'absolute', left: 0, right: 0, height: 2,
-    backgroundColor: '#00F2FF', shadowColor: '#00F2FF',
+    backgroundColor: '#00E5FF', shadowColor: '#00E5FF',
     shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.9, shadowRadius: 12,
     elevation: 10, zIndex: 51,
   },
   stripes: { ...StyleSheet.absoluteFillObject, zIndex: 50 },
-  stripe: { position: 'absolute', left: 0, right: 0, backgroundColor: 'rgba(0,242,255,0.35)' },
+  stripe: { position: 'absolute', left: 0, right: 0, backgroundColor: 'rgba(0,229,255,0.35)' },
 });
 
 function getRoleColor(role?: string) {
-  if (role === 'coach') return '#D4AF37';
+  if (role === 'coach') return '#FFD700';
   if (role === 'palestra') return '#AF52DE';
-  return '#00F2FF';
+  return '#00E5FF';
 }
 
 export default function DNATab() {
@@ -219,7 +219,7 @@ export default function DNATab() {
             style={styles.notifBell}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Ionicons name="notifications" size={19} color={unreadCount > 0 ? '#00F2FF' : 'rgba(255,255,255,0.4)'} />
+            <Ionicons name="notifications" size={19} color={unreadCount > 0 ? '#00E5FF' : 'rgba(255,255,255,0.4)'} />
             {unreadCount > 0 && (
               <View style={styles.notifBellBadge}>
                 <Text style={styles.notifBellBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
@@ -255,7 +255,7 @@ export default function DNATab() {
                 </View>
                 {(isGlowing && lastRecords.length > 0) && (
                   <View style={styles.glowBanner}>
-                    <Ionicons name="trophy" size={14} color="#D4AF37" />
+                    <Ionicons name="trophy" size={14} color="#FFD700" />
                     <Text style={styles.glowBannerText}>
                       RECORD: {lastRecords.map(r => r.toUpperCase()).join(' \u00b7 ')}
                     </Text>
@@ -263,7 +263,7 @@ export default function DNATab() {
                 )}
                 {showEvoGlow && (
                   <View style={styles.evoBanner}>
-                    <Ionicons name="analytics" size={12} color="#00F2FF" />
+                    <Ionicons name="analytics" size={12} color="#00E5FF" />
                     <Text style={styles.evoBannerText}>BIO-EVOLUZIONE RILEVATA</Text>
                   </View>
                 )}
@@ -275,7 +275,7 @@ export default function DNATab() {
         {!dna && (
           <View style={styles.noData}>
             <View style={styles.noDataIconWrap}>
-              <Ionicons name="scan" size={36} color="#00F2FF" />
+              <Ionicons name="scan" size={36} color="#00E5FF" />
             </View>
             <Text style={styles.noDataTitle}>DNA NON RILEVATO</Text>
             <Text style={styles.noDataText}>Completa il tuo onboarding per{'\n'}generare la tua firma biometrica</Text>
@@ -295,7 +295,7 @@ export default function DNATab() {
             <Ionicons
               name={eligibility.can_scan ? 'flash' : eligibility.phase === 'locked' ? 'lock-closed' : 'time'}
               size={12}
-              color={eligibility.can_scan ? '#00F2FF' : eligibility.phase === 'locked' ? '#555' : '#D4AF37'}
+              color={eligibility.can_scan ? '#00E5FF' : eligibility.phase === 'locked' ? '#555' : '#FFD700'}
             />
             <Text style={[
               styles.eligibilityText,
@@ -328,7 +328,7 @@ export default function DNATab() {
               activeOpacity={0.88}
             >
               <LinearGradient
-                colors={['#0B0900', '#100D02', '#0B0900']}
+                colors={['#0a0a0a', '#0a0a0a', '#0a0a0a']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.talosBannerGrad}
@@ -340,7 +340,7 @@ export default function DNATab() {
                   {/* LEFT: Copy */}
                   <View style={styles.talosLeft}>
                     <View style={styles.talosPartnerBadge}>
-                      <Ionicons name="shield-checkmark" size={9} color="#D4AF37" />
+                      <Ionicons name="shield-checkmark" size={9} color="#FFD700" />
                       <Text style={styles.talosPartnerText}>PARTNER UFFICIALE</Text>
                     </View>
                     <Text style={styles.talosBannerTitle}>EVOLVE YOUR DNA.</Text>
@@ -352,7 +352,7 @@ export default function DNATab() {
                     </Text>
                     <View style={styles.talosCta}>
                       <Text style={styles.talosCtaText}>SCOPRI I COACH</Text>
-                      <Ionicons name="arrow-forward" size={11} color="#D4AF37" />
+                      <Ionicons name="arrow-forward" size={11} color="#FFD700" />
                     </View>
                   </View>
 
@@ -388,7 +388,7 @@ export default function DNATab() {
                   improvement > 0 && !broken && styles.statCardImproved,
                 ]}>
                   <View style={styles.statCardTop}>
-                    <Ionicons name={a.icon} size={18} color={broken ? '#D4AF37' : improvement > 0 ? '#00F2FF' : a.color} />
+                    <Ionicons name={a.icon} size={18} color={broken ? '#FFD700' : improvement > 0 ? '#00E5FF' : a.color} />
                     {hasImprovement && (
                       <View style={[styles.improvBadge, improvement > 0 ? styles.improvPos : styles.improvNeg]}>
                         <Text style={[styles.improvText, improvement > 0 ? styles.improvTextPos : styles.improvTextNeg]}>
@@ -404,7 +404,7 @@ export default function DNATab() {
                   </View>
                   {broken && (
                     <View style={styles.newRecordRow}>
-                      <Ionicons name="star" size={8} color="#D4AF37" />
+                      <Ionicons name="star" size={8} color="#FFD700" />
                       <Text style={styles.newRecordBadge}>RECORD</Text>
                     </View>
                   )}
@@ -439,7 +439,7 @@ export default function DNATab() {
               activeOpacity={0.8}
             >
               <View style={styles.historyToggleLeft}>
-                <Ionicons name="analytics" size={13} color="#D4AF37" />
+                <Ionicons name="analytics" size={13} color="#FFD700" />
                 <Text style={styles.historyToggleLabel}>CRONOLOGIA BIO-SIGNATURE</Text>
                 <View style={styles.historyCountBadge}>
                   <Text style={styles.historyCountText}>{historyScans.length}</Text>
@@ -467,11 +467,11 @@ export default function DNATab() {
                     const avg = scan.dna
                       ? Math.round(Object.values(scan.dna as Record<string, number>).reduce((a: number, b: number) => a + b, 0) / 6)
                       : 0;
-                    const typeBadgeColor = scan.scan_type === 'baseline' ? 'rgba(255,255,255,0.72)' : scan.scan_type === 'validation' ? '#00F2FF' : '#D4AF37';
+                    const typeBadgeColor = scan.scan_type === 'baseline' ? 'rgba(255,255,255,0.72)' : scan.scan_type === 'validation' ? '#00E5FF' : '#FFD700';
                     return (
                       <View key={idx} style={styles.timelineRow}>
                         <View style={styles.timelineDotCol}>
-                          <View style={[styles.timelineDot, { backgroundColor: idx === 0 ? '#00F2FF' : idx === 1 ? '#D4AF37' : 'rgba(255,255,255,0.3)' }]} />
+                          <View style={[styles.timelineDot, { backgroundColor: idx === 0 ? '#00E5FF' : idx === 1 ? '#FFD700' : 'rgba(255,255,255,0.3)' }]} />
                           {idx < historyScans.length - 1 && <View style={styles.timelineLine} />}
                         </View>
                         <View style={styles.timelineInfo}>
@@ -515,65 +515,65 @@ const styles = StyleSheet.create({
   heroImageStyle: { opacity: 0.35 },
   heroGradient: { flex: 1, paddingTop: 16 },
   dnaHeader: { paddingHorizontal: 24, paddingBottom: 8, gap: 4 },
-  dnaLabel: { color: '#00F2FF', fontSize: 13, fontWeight: '800', letterSpacing: 3 },
-  dnaSport: { color: '#FFFFFF', fontSize: 30, fontWeight: '900', letterSpacing: 0.5, textTransform: 'uppercase' },
+  dnaLabel: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 4 },
+  dnaSport: { color: '#FFFFFF', fontSize: 32, fontWeight: '900', letterSpacing: 2, textTransform: 'uppercase' },
   roleBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, marginTop: 4 },
   roleText: { fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   chartGlass: {
-    alignItems: 'center', marginTop: 8, marginHorizontal: 16,
+    alignItems: 'center', marginTop: 8, marginHorizontal: 24,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: 12,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', overflow: 'hidden',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', overflow: 'hidden',
   },
   glassInner: { alignItems: 'center' },
   glowBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    width: '100%', backgroundColor: 'rgba(212,175,55,0.08)',
-    borderRadius: 10, padding: 10, borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)',
+    width: '100%', backgroundColor: 'rgba(255,215,0,0.08)',
+    borderRadius: 10, padding: 10, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
     justifyContent: 'center', marginTop: 8,
   },
-  glowBannerText: { color: '#D4AF37', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+  glowBannerText: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
   noData: { padding: 40, alignItems: 'center', gap: 12 },
   noDataIconWrap: {
     width: 72, height: 72, borderRadius: 36,
     backgroundColor: 'transparent',
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
     alignItems: 'center', justifyContent: 'center',
   },
   noDataTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
-  noDataText: { color: 'rgba(255,255,255,0.45)', fontSize: 16, textAlign: 'center', lineHeight: 22 },
+  noDataText: { color: '#AAAAAA', fontSize: 16, textAlign: 'center', lineHeight: 22 },
   firstScanCta: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'transparent', borderRadius: 10,
-    paddingHorizontal: 16, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    paddingHorizontal: 24, paddingVertical: 10,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
     marginTop: 4,
   },
-  firstScanDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00F2FF' },
-  firstScanCtaText: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  firstScanDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF' },
+  firstScanCtaText: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   // Eligibility Banner
   eligibilityBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginHorizontal: 14, marginTop: 12, marginBottom: 4,
-    borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
+    marginHorizontal: 24, marginTop: 12, marginBottom: 4,
+    borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10,
     borderWidth: 1,
   },
   eligibilityBannerActive: {
     backgroundColor: 'transparent',
-    borderColor: 'rgba(0,242,255,0.65)',
+    borderColor: 'rgba(255,255,255,0.07)',
   },
   eligibilityBannerLocked: {
     backgroundColor: 'rgba(255,255,255,0.05)',
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: 'rgba(255,255,255,0.07)',
   },
   eligibilityText: { flex: 1, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  eligibilityTextActive: { color: '#00F2FF' },
-  eligibilityTextLocked: { color: 'rgba(255,255,255,0.72)' },
+  eligibilityTextActive: { color: '#00E5FF' },
+  eligibilityTextLocked: { color: '#AAAAAA' },
   avgDnaBadge: {
-    backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: 8,
+    backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 8,
     paddingHorizontal: 8, paddingVertical: 3,
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
   },
-  avgDnaText: { color: '#D4AF37', fontSize: 13, fontWeight: '900' },
+  avgDnaText: { color: '#FFD700', fontSize: 13, fontWeight: '900' },
   // Evolution glow banner
   evoBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -581,55 +581,55 @@ const styles = StyleSheet.create({
     borderRadius: 10, padding: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center', marginTop: 8,
   },
-  evoBannerText: { color: '#00F2FF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  evoBannerText: { color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   // Stat card improvement
   statCardImproved: { borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'transparent' },
   statCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   improvBadge: { borderRadius: 6, paddingHorizontal: 5, paddingVertical: 2 },
   improvPos: { backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.3)' },
-  improvNeg: { backgroundColor: 'rgba(255,69,58,0.08)', borderWidth: 0.5, borderColor: 'rgba(255,69,58,0.2)' },
+  improvNeg: { backgroundColor: 'rgba(255,59,48,0.08)', borderWidth: 0.5, borderColor: 'rgba(255,59,48,0.2)' },
   improvText: { fontSize: 11, fontWeight: '900' },
-  improvTextPos: { color: '#00F2FF' },
-  improvTextNeg: { color: '#FF453A' },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 14, gap: 8, marginTop: 16 },
+  improvTextPos: { color: '#00E5FF' },
+  improvTextNeg: { color: '#FF3B30' },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 24, gap: 8, marginTop: 16 },
   statCard: {
     width: '30%', flexGrow: 1,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 12,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', gap: 3,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', gap: 3,
   },
-  statCardBroken: { borderColor: 'rgba(212,175,55,0.25)', backgroundColor: 'rgba(212,175,55,0.03)' },
+  statCardBroken: { borderColor: 'rgba(255,215,0,0.25)', backgroundColor: 'rgba(255,215,0,0.03)' },
   statLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
   statValue: { color: '#FFFFFF', fontSize: 24, fontWeight: '900' },
-  statValueBroken: { color: '#D4AF37' },
+  statValueBroken: { color: '#FFD700' },
   statBar: { height: 3, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden', marginTop: 2 },
-  statFill: { height: '100%', backgroundColor: '#00F2FF', borderRadius: 2 },
-  statFillBroken: { backgroundColor: '#D4AF37' },
+  statFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 2 },
+  statFillBroken: { backgroundColor: '#FFD700' },
   newRecordRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
-  newRecordBadge: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  newRecordBadge: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   talentSection: { marginTop: 20 },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 16, paddingBottom: 12,
+    paddingHorizontal: 24, paddingBottom: 12,
   },
   sectionTitle: {
-    color: '#FFFFFF', fontSize: 16, fontWeight: '900',
-    letterSpacing: 2, textTransform: 'uppercase',
+    color: '#FFFFFF', fontSize: 18, fontWeight: '900',
+    letterSpacing: 3, textTransform: 'uppercase',
   },
   // ===== TALOSFIT PARTNER BANNER — SPRINT 10 =====
   talosBannerWrap: {
-    marginHorizontal: 14, marginTop: 14,
-    borderRadius: 18, overflow: 'hidden',
+    marginHorizontal: 24, marginTop: 14,
+    borderRadius: 20, overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(212,175,55,0.32)',
-    shadowColor: '#D4AF37',
+    borderColor: 'rgba(255,215,0,0.32)',
+    shadowColor: '#FFD700',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 6,
   },
   talosBannerGrad: { overflow: 'hidden' },
-  talosTopLine: { height: 2, backgroundColor: '#D4AF37', opacity: 0.8 },
-  talosBottomLine: { height: 1, backgroundColor: '#0D0D0D', opacity: 0.25 },
+  talosTopLine: { height: 2, backgroundColor: '#FFD700', opacity: 0.8 },
+  talosBottomLine: { height: 1, backgroundColor: '#0a0a0a', opacity: 0.25 },
   talosBannerContent: {
     flexDirection: 'row', alignItems: 'center',
     justifyContent: 'space-between',
@@ -639,17 +639,17 @@ const styles = StyleSheet.create({
   talosPartnerBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(212,175,55,0.1)',
+    backgroundColor: 'rgba(255,215,0,0.1)',
     borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.22)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.22)',
   },
-  talosPartnerText: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  talosPartnerText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   talosBannerTitle: {
     color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1,
     lineHeight: 22,
   },
   talosBannerBody: {
-    color: 'rgba(255,255,255,0.45)', fontSize: 14,
+    color: '#AAAAAA', fontSize: 14,
     fontWeight: '600', lineHeight: 17,
   },
   talosBannerBodyAccent: {
@@ -658,23 +658,23 @@ const styles = StyleSheet.create({
   talosCta: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     alignSelf: 'flex-start',
-    borderBottomWidth: 1, borderBottomColor: 'rgba(212,175,55,0.4)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,215,0,0.4)',
     paddingBottom: 1,
   },
-  talosCtaText: { color: '#D4AF37', fontSize: 13, fontWeight: '900', letterSpacing: 2.5 },
+  talosCtaText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2.5 },
   talosRight: { alignItems: 'center', gap: 2, width: 52 },
   talosLogoWrap: {
     width: 40, height: 40, borderRadius: 12,
-    backgroundColor: 'rgba(212,175,55,0.1)',
-    borderWidth: 1.5, borderColor: 'rgba(212,175,55,0.35)',
+    backgroundColor: 'rgba(255,215,0,0.1)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.35)',
     alignItems: 'center', justifyContent: 'center',
     marginBottom: 4,
   },
   talosLogoT: {
-    color: '#D4AF37', fontSize: 22, fontWeight: '900', letterSpacing: 0.5,
+    color: '#FFD700', fontSize: 22, fontWeight: '900', letterSpacing: 0.5,
   },
   talosLogoName: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  talosLogoFit: { color: '#D4AF37', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  talosLogoFit: { color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   // Notification Bell
   notifBell: { position: 'relative', padding: 4 },
   notifBellBadge: {
@@ -687,25 +687,25 @@ const styles = StyleSheet.create({
   notifBellBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '900' },
   // History Section
   historySectionWrap: {
-    marginHorizontal: 14, marginTop: 16,
+    marginHorizontal: 24, marginTop: 16,
     borderRadius: 16, overflow: 'hidden',
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.14)',
-    backgroundColor: 'rgba(212,175,55,0.03)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.14)',
+    backgroundColor: 'rgba(255,215,0,0.03)',
   },
   historyToggle: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 14,
+    paddingHorizontal: 24, paddingVertical: 14,
   },
   historyToggleLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  historyToggleLabel: { color: '#D4AF37', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  historyToggleLabel: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   historyCountBadge: {
-    backgroundColor: 'rgba(212,175,55,0.15)', borderRadius: 8,
+    backgroundColor: 'rgba(255,215,0,0.15)', borderRadius: 8,
     paddingHorizontal: 7, paddingVertical: 2,
   },
-  historyCountText: { color: '#D4AF37', fontSize: 12, fontWeight: '900' },
-  historyContent: { borderTopWidth: 1, borderTopColor: 'rgba(212,175,55,0.1)', paddingBottom: 16 },
+  historyCountText: { color: '#FFD700', fontSize: 12, fontWeight: '900' },
+  historyContent: { borderTopWidth: 1, borderTopColor: 'rgba(255,215,0,0.1)', paddingBottom: 16 },
   multiRadarWrap: { alignItems: 'center', paddingVertical: 16 },
-  timelineWrap: { paddingHorizontal: 16, gap: 0 },
+  timelineWrap: { paddingHorizontal: 24, gap: 0 },
   timelineRow: { flexDirection: 'row', gap: 12, paddingVertical: 8 },
   timelineDotCol: { alignItems: 'center', width: 10 },
   timelineDot: { width: 10, height: 10, borderRadius: 5, marginTop: 4 },
@@ -716,25 +716,25 @@ const styles = StyleSheet.create({
   timelineTypeBadge: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1 },
   timelineTypeText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   timelineAvg: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '700', letterSpacing: 1 },
-  timelineAvgVal: { color: 'rgba(255,255,255,0.65)', fontWeight: '900' },
+  timelineAvgVal: { color: '#AAAAAA', fontWeight: '900' },
 });
 
 const ins$ = StyleSheet.create({
-  card: { marginHorizontal: 16, marginBottom: 12, backgroundColor: 'rgba(212,175,55,0.05)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(212,175,55,0.18)' },
+  card: { marginHorizontal: 24, marginBottom: 12, backgroundColor: 'rgba(255,215,0,0.05)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,215,0,0.18)' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  title: { color: '#D4AF37', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
   insightText: { color: '#FFFFFF', fontSize: 14, fontWeight: '400', lineHeight: 20, marginBottom: 6 },
-  tipText: { color: 'rgba(255,255,255,0.60)', fontSize: 13, fontWeight: '400', lineHeight: 20, marginBottom: 10 },
+  tipText: { color: '#AAAAAA', fontSize: 13, fontWeight: '400', lineHeight: 20, marginBottom: 10 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  statChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,69,58,0.3)', gap: 2 },
-  statLabel: { color: 'rgba(255,255,255,0.50)', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
-  statVal: { color: '#FF453A', fontSize: 13, fontWeight: '900' },
-  templateBtn: { flex: 1, backgroundColor: '#D4AF37', borderRadius: 8, paddingVertical: 9, alignItems: 'center' },
-  templateText: { color: '#050505', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  statChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)', gap: 2 },
+  statLabel: { color: '#AAAAAA', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
+  statVal: { color: '#FF3B30', fontSize: 13, fontWeight: '900' },
+  templateBtn: { flex: 1, backgroundColor: '#FFD700', borderRadius: 8, paddingVertical: 9, alignItems: 'center' },
+  templateText: { color: '#000000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
 });
 
 const pvp$ = StyleSheet.create({
-  btn: { marginHorizontal: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#00F2FF', borderRadius: 10, paddingVertical: 13 },
-  text: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  btn: { marginHorizontal: 24, marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#00E5FF', borderRadius: 10, paddingVertical: 13 },
+  text: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
 });
 

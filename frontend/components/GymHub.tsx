@@ -19,7 +19,7 @@ import { api } from '../utils/api';
 // DIFFICULTY & EXERCISE CONFIG
 // ============================
 const DIFF_CFG: Record<string, { label: string; color: string; icon: keyof typeof Ionicons.glyphMap }> = {
-  easy:    { label: 'EASY',    color: '#34C759', icon: 'star-outline' },
+  easy:    { label: 'EASY',    color: '#00FF87', icon: 'star-outline' },
   medium:  { label: 'MEDIUM',  color: '#FF9500', icon: 'star-half' },
   hard:    { label: 'HARD',    color: '#FF3B30', icon: 'star' },
   extreme: { label: 'EXTREME', color: '#AF52DE', icon: 'flame' },
@@ -31,9 +31,9 @@ const EX_CFG: Record<string, { label: string; icon: keyof typeof Ionicons.glyphM
 };
 
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string }> = {
-  upcoming:  { label: 'PROSSIMO', color: '#D4AF37', bg: 'rgba(212,175,55,0.15)' },
+  upcoming:  { label: 'PROSSIMO', color: '#FFD700', bg: 'rgba(255,215,0,0.15)' },
   live:      { label: 'LIVE',     color: '#FF3B30', bg: 'rgba(255,59,48,0.15)' },
-  completed: { label: 'CONCLUSO', color: 'rgba(255,255,255,0.45)', bg: 'rgba(255,255,255,0.45)' },
+  completed: { label: 'CONCLUSO', color: '#AAAAAA', bg: 'rgba(255,255,255,0.45)' },
 };
 
 // ============================
@@ -44,7 +44,7 @@ function CoachCard({ coach, onRemove }: { coach: any; onRemove: (id: string) => 
     <Animated.View entering={FadeInDown.delay(50)}>
       <View style={cc$.cardOuter}>
         <LinearGradient
-          colors={['rgba(0,242,255,0.65)', 'rgba(5,5,5,0.95)', 'rgba(5,5,5,0.99)']}
+          colors={['rgba(0,229,255,0.65)', 'rgba(5,5,5,0.95)', 'rgba(5,5,5,0.99)']}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
           style={cc$.card}
         >
@@ -54,11 +54,11 @@ function CoachCard({ coach, onRemove }: { coach: any; onRemove: (id: string) => 
           <View style={cc$.info}>
             <Text style={cc$.name}>{(coach.username || '').toUpperCase()}</Text>
             <View style={cc$.metaRow}>
-              <Ionicons name="barbell" size={10} color="#00F2FF" />
+              <Ionicons name="barbell" size={10} color="#00E5FF" />
               <Text style={cc$.meta}>{coach.sport || '\u2014'} {'\u00b7'} LVL {coach.level}</Text>
             </View>
             <View style={cc$.metaRow}>
-              <Ionicons name="document-text" size={10} color="#D4AF37" />
+              <Ionicons name="document-text" size={10} color="#FFD700" />
               <Text style={cc$.meta}>{coach.templates_count || 0} TEMPLATE</Text>
             </View>
           </View>
@@ -77,24 +77,24 @@ function CoachCard({ coach, onRemove }: { coach: any; onRemove: (id: string) => 
 const cc$ = StyleSheet.create({
   cardOuter: {
     borderRadius: 14, overflow: 'hidden', marginBottom: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   card: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 14,
   },
   avatar: {
-    width: 48, height: 48, borderRadius: 24, backgroundColor: '#00F2FF',
+    width: 48, height: 48, borderRadius: 24, backgroundColor: '#00E5FF',
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: 'rgba(255,255,255,0.4)',
   },
-  avatarText: { color: '#050505', fontSize: 18, fontWeight: '900' },
+  avatarText: { color: '#000000', fontSize: 18, fontWeight: '900' },
   info: { flex: 1, gap: 3 },
   name: { color: '#FFFFFF', fontSize: 17, fontWeight: '900', letterSpacing: 1.5 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   meta: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '400', letterSpacing: 0.5 },
   right: { alignItems: 'flex-end', gap: 8 },
-  xp: { color: '#D4AF37', fontSize: 17, fontWeight: '900' },
+  xp: { color: '#FFD700', fontSize: 17, fontWeight: '900' },
   removeBtn: { padding: 2 },
 });
 
@@ -113,8 +113,8 @@ function EventCard({
       <TouchableOpacity style={ev$.cardOuter} onPress={() => onShowDetail(event)} activeOpacity={0.85}>
         <LinearGradient
           colors={event.status === 'live'
-            ? ['rgba(255,59,48,0.08)', 'rgba(10,10,10,0.98)', '#050505']
-            : ['rgba(0,242,255,0.65)', 'rgba(10,10,10,0.96)', '#050505']}
+            ? ['rgba(255,59,48,0.08)', 'rgba(10,10,10,0.98)', '#000000']
+            : ['rgba(0,229,255,0.65)', 'rgba(10,10,10,0.96)', '#000000']}
           start={{ x: 0, y: 0 }} end={{ x: 0.3, y: 1 }}
           style={ev$.card}
         >
@@ -136,15 +136,15 @@ function EventCard({
 
           <View style={ev$.infoRow}>
             <View style={ev$.infoItem}>
-              <Ionicons name="calendar" size={12} color="#00F2FF" />
+              <Ionicons name="calendar" size={12} color="#00E5FF" />
               <Text style={ev$.infoText}>{event.event_date}</Text>
             </View>
             <View style={ev$.infoItem}>
-              <Ionicons name="time" size={12} color="#00F2FF" />
+              <Ionicons name="time" size={12} color="#00E5FF" />
               <Text style={ev$.infoText}>{event.event_time}</Text>
             </View>
             <View style={ev$.infoItem}>
-              <Ionicons name={exCfg.icon} size={12} color="#00F2FF" />
+              <Ionicons name={exCfg.icon} size={12} color="#00E5FF" />
               <Text style={ev$.infoText}>{exCfg.label}</Text>
             </View>
           </View>
@@ -155,7 +155,7 @@ function EventCard({
               <Text style={ev$.statLabel}>/{event.max_participants} ATLETI</Text>
             </View>
             <View style={ev$.statBlock}>
-              <Text style={[ev$.statVal, { color: '#D4AF37' }]}>+{event.xp_reward}</Text>
+              <Text style={[ev$.statVal, { color: '#FFD700' }]}>+{event.xp_reward}</Text>
               <Text style={ev$.statLabel}>XP REWARD</Text>
             </View>
           </View>
@@ -163,7 +163,7 @@ function EventCard({
           {/* Action Buttons */}
           <View style={ev$.actions}>
             <TouchableOpacity style={ev$.qrBtn} onPress={() => onShowQR(event)}>
-              <Ionicons name="qr-code" size={16} color="#00F2FF" />
+              <Ionicons name="qr-code" size={16} color="#00E5FF" />
               <Text style={ev$.qrBtnText}>QR CODE</Text>
             </TouchableOpacity>
             {event.status === 'upcoming' && (
@@ -188,7 +188,7 @@ function EventCard({
 const ev$ = StyleSheet.create({
   cardOuter: {
     borderRadius: 16, overflow: 'hidden', marginBottom: 12,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   card: {
     padding: 16, gap: 10,
@@ -207,14 +207,14 @@ const ev$ = StyleSheet.create({
   statsRow: { flexDirection: 'row', gap: 20 },
   statBlock: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
   statVal: { color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
-  statLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
+  statLabel: { color: '#AAAAAA', fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   actions: { flexDirection: 'row', gap: 8, marginTop: 4 },
   qrBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 10, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
-  qrBtnText: { color: '#00F2FF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+  qrBtnText: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
   liveBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: 'rgba(255,59,48,0.1)', borderRadius: 10, paddingVertical: 10,
@@ -224,7 +224,7 @@ const ev$ = StyleSheet.create({
   endBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   endBtnText: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
 });
@@ -249,7 +249,7 @@ function QRModal({ event, visible, onClose }: { event: any; visible: boolean; on
         <View style={qr$.card}>
           {/* Header */}
           <View style={qr$.header}>
-            <Ionicons name="qr-code" size={18} color="#00F2FF" />
+            <Ionicons name="qr-code" size={18} color="#00E5FF" />
             <Text style={qr$.title}>QR-CORE EVENT</Text>
           </View>
 
@@ -260,7 +260,7 @@ function QRModal({ event, visible, onClose }: { event: any; visible: boolean; on
             <Text style={qr$.metaText}>{event.event_date} {'\u00b7'} {event.event_time}</Text>
           </View>
           <View style={qr$.metaRow}>
-            <Ionicons name="business" size={12} color="#D4AF37" />
+            <Ionicons name="business" size={12} color="#FFD700" />
             <Text style={qr$.metaText}>{event.gym_name}</Text>
           </View>
 
@@ -276,7 +276,7 @@ function QRModal({ event, visible, onClose }: { event: any; visible: boolean; on
             </View>
           ) : (
             <View style={qr$.qrPlaceholder}>
-              <ActivityIndicator color="#00F2FF" />
+              <ActivityIndicator color="#00E5FF" />
             </View>
           )}
 
@@ -294,7 +294,7 @@ function QRModal({ event, visible, onClose }: { event: any; visible: boolean; on
           {/* Actions */}
           <View style={qr$.actionsRow}>
             <TouchableOpacity style={qr$.shareBtn} onPress={handleShare} activeOpacity={0.8}>
-              <Ionicons name="share-outline" size={16} color="#D4AF37" />
+              <Ionicons name="share-outline" size={16} color="#FFD700" />
               <Text style={qr$.shareBtnText}>CONDIVIDI</Text>
             </TouchableOpacity>
           </View>
@@ -312,17 +312,17 @@ const qr$ = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   card: {
     width: '100%', maxWidth: 340, backgroundColor: '#0A0A0A', borderRadius: 24, padding: 24,
-    alignItems: 'center', gap: 10, borderWidth: 1.5, borderColor: 'rgba(0,242,255,0.65)',
+    alignItems: 'center', gap: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { color: '#00F2FF', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#00E5FF', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
   eventTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', textAlign: 'center', letterSpacing: 0.5 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  metaText: { color: 'rgba(255,255,255,0.55)', fontSize: 15, fontWeight: '600' },
+  metaText: { color: '#AAAAAA', fontSize: 15, fontWeight: '600' },
   qrContainer: {
     width: 220, height: 220, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: 'rgba(0,242,255,0.65)', borderRadius: 16, padding: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', marginVertical: 8,
+    backgroundColor: 'rgba(0,229,255,0.65)', borderRadius: 16, padding: 8,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginVertical: 8,
   },
   qrImage: { width: 200, height: 200, borderRadius: 8 },
   qrGlow: {
@@ -331,16 +331,16 @@ const qr$ = StyleSheet.create({
   },
   qrPlaceholder: { width: 220, height: 220, alignItems: 'center', justifyContent: 'center' },
   codeContainer: { alignItems: 'center', gap: 3 },
-  codeLabel: { color: 'rgba(255,255,255,0.72)', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
-  codeValue: { color: '#00F2FF', fontSize: 24, fontWeight: '900', letterSpacing: 6 },
+  codeLabel: { color: '#AAAAAA', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
+  codeValue: { color: '#00E5FF', fontSize: 24, fontWeight: '900', letterSpacing: 6 },
   instructions: { color: 'rgba(255,255,255,0.4)', fontSize: 14, textAlign: 'center', lineHeight: 16, paddingHorizontal: 8 },
   actionsRow: { flexDirection: 'row', gap: 10, width: '100%', marginTop: 4 },
   shareBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    backgroundColor: 'rgba(212,175,55,0.12)', borderRadius: 12, paddingVertical: 12,
-    borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)',
+    backgroundColor: 'rgba(255,215,0,0.12)', borderRadius: 12, paddingVertical: 12,
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
   },
-  shareBtnText: { color: '#D4AF37', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  shareBtnText: { color: '#FFD700', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
   closeBtn: { paddingVertical: 8, marginTop: 4 },
   closeBtnText: { color: 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: '700' },
 });
@@ -411,8 +411,8 @@ function CreateEventModal({ visible, onClose, onCreated, token }: any) {
             <View style={ce$.exRow}>
               {Object.entries(EX_CFG).map(([key, cfg]) => (
                 <TouchableOpacity key={key} style={[ce$.exBtn, exercise === key && ce$.exBtnActive]} onPress={() => setExercise(key)}>
-                  <Ionicons name={cfg.icon} size={22} color={exercise === key ? '#00F2FF' : 'rgba(255,255,255,0.3)'} />
-                  <Text style={[ce$.exLabel, exercise === key && { color: '#00F2FF' }]}>{cfg.label}</Text>
+                  <Ionicons name={cfg.icon} size={22} color={exercise === key ? '#00E5FF' : 'rgba(255,255,255,0.3)'} />
+                  <Text style={[ce$.exLabel, exercise === key && { color: '#00E5FF' }]}>{cfg.label}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -480,22 +480,22 @@ const ce$ = StyleSheet.create({
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   title: { color: '#FF3B30', fontSize: 18, fontWeight: '900', letterSpacing: 3 },
   subtitle: { color: 'rgba(255,255,255,0.4)', fontSize: 14, textAlign: 'center', marginBottom: 8 },
-  label: { color: '#00F2FF', fontSize: 12, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
+  label: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12,
-    color: '#FFF', fontSize: 17, fontWeight: '400', borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)',
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 12,
+    color: '#FFF', fontSize: 17, fontWeight: '400', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   exRow: { flexDirection: 'row', gap: 10 },
   exBtn: {
     flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', gap: 4,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.05)', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)',
   },
-  exBtnActive: { borderColor: '#00F2FF', backgroundColor: 'rgba(0,242,255,0.65)' },
+  exBtnActive: { borderColor: '#00E5FF', backgroundColor: 'rgba(0,229,255,0.65)' },
   exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   diffRow: { flexDirection: 'row', gap: 6 },
   diffBtn: {
     flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', gap: 2,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.05)', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)',
   },
   diffLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
   dateRow: { flexDirection: 'row', gap: 10 },
@@ -534,14 +534,14 @@ function AddCoachModal({ visible, onClose, onAdded, token }: any) {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.7)' }}>
         <View style={{ backgroundColor: '#111', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, gap: 12 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <Ionicons name="person-add" size={18} color="#00F2FF" />
+            <Ionicons name="person-add" size={18} color="#00E5FF" />
             <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1 }}>ASSOCIA COACH</Text>
           </View>
-          <Text style={{ color: 'rgba(255,255,255,0.45)', fontSize: 15, textAlign: 'center' }}>Inserisci lo username del coach da associare</Text>
+          <Text style={{ color: '#AAAAAA', fontSize: 15, textAlign: 'center' }}>Inserisci lo username del coach da associare</Text>
           <TextInput
             style={{
-              backgroundColor: '#1A1A1A', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-              color: '#FFF', fontSize: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+              backgroundColor: '#1A1A1A', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14,
+              color: '#FFF', fontSize: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
             }}
             value={username}
             onChangeText={setUsername}
@@ -550,11 +550,11 @@ function AddCoachModal({ visible, onClose, onAdded, token }: any) {
             autoCapitalize="none"
           />
           <TouchableOpacity
-            style={[{ backgroundColor: '#00F2FF', borderRadius: 12, paddingVertical: 16, alignItems: 'center' }, !username.trim() && { opacity: 0.3 }]}
+            style={[{ backgroundColor: '#00E5FF', borderRadius: 12, paddingVertical: 16, alignItems: 'center' }, !username.trim() && { opacity: 0.3 }]}
             onPress={handleAdd}
             disabled={!username.trim() || loading}
           >
-            {loading ? <ActivityIndicator color="#050505" /> : <Text style={{ color: '#050505', fontSize: 17, fontWeight: '900', letterSpacing: 2 }}>ASSOCIA</Text>}
+            {loading ? <ActivityIndicator color="#050505" /> : <Text style={{ color: '#000000', fontSize: 17, fontWeight: '900', letterSpacing: 2 }}>ASSOCIA</Text>}
           </TouchableOpacity>
           <TouchableOpacity onPress={onClose} style={{ alignItems: 'center', paddingVertical: 8 }}>
             <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '600' }}>Annulla</Text>
@@ -619,7 +619,7 @@ export function GymHub() {
   if (loading) {
     return (
       <View style={hub$.center}>
-        <ActivityIndicator color="#D4AF37" size="large" />
+        <ActivityIndicator color="#FFD700" size="large" />
         <Text style={hub$.loadingText}>Caricamento Gym Hub...</Text>
       </View>
     );
@@ -633,14 +633,14 @@ export function GymHub() {
     <View style={hub$.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} tintColor="#D4AF37" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} tintColor="#FFD700" />}
         contentContainerStyle={{ paddingBottom: 120 }}
       >
         {/* GYM PROFILE HERO */}
-        <LinearGradient colors={['rgba(212,175,55,0.08)', '#050505']} style={hub$.heroGrad}>
+        <LinearGradient colors={['rgba(255,215,0,0.08)', '#000000']} style={hub$.heroGrad}>
           <View style={hub$.heroContent}>
             <View style={hub$.gymIconWrap}>
-              <Ionicons name="business" size={32} color="#D4AF37" />
+              <Ionicons name="business" size={32} color="#FFD700" />
             </View>
             <Text style={hub$.gymName}>{gym?.name || 'LA TUA PALESTRA'}</Text>
             {gym?.address ? <Text style={hub$.gymAddress}>{gym.address}</Text> : null}
@@ -656,7 +656,7 @@ export function GymHub() {
               </View>
               <View style={hub$.gymStatDivider} />
               <View style={hub$.gymStat}>
-                <Text style={[hub$.gymStatVal, { color: '#00F2FF' }]}>{gym?.members_count || 1}</Text>
+                <Text style={[hub$.gymStatVal, { color: '#00E5FF' }]}>{gym?.members_count || 1}</Text>
                 <Text style={hub$.gymStatLabel}>MEMBRI</Text>
               </View>
             </View>
@@ -676,8 +676,8 @@ export function GymHub() {
             style={[hub$.tab, activeSection === 'coaches' && hub$.tabActive]}
             onPress={() => setActiveSection('coaches')}
           >
-            <Ionicons name="people" size={14} color={activeSection === 'coaches' ? '#00F2FF' : 'rgba(255,255,255,0.72)'} />
-            <Text style={[hub$.tabText, activeSection === 'coaches' && { color: '#00F2FF' }]}>I MIEI COACH</Text>
+            <Ionicons name="people" size={14} color={activeSection === 'coaches' ? '#00E5FF' : 'rgba(255,255,255,0.72)'} />
+            <Text style={[hub$.tabText, activeSection === 'coaches' && { color: '#00E5FF' }]}>I MIEI COACH</Text>
           </TouchableOpacity>
         </View>
 
@@ -712,7 +712,7 @@ export function GymHub() {
             {upcomingEvents.length > 0 && (
               <>
                 <View style={hub$.sectionRow}>
-                  <Ionicons name="calendar" size={14} color="#D4AF37" />
+                  <Ionicons name="calendar" size={14} color="#FFD700" />
                   <Text style={hub$.sectionTitle}>PROSSIMI EVENTI</Text>
                 </View>
                 {upcomingEvents.map(e => (
@@ -748,8 +748,8 @@ export function GymHub() {
         {activeSection === 'coaches' && (
           <View style={hub$.section}>
             <TouchableOpacity style={hub$.addCoachBtn} onPress={() => setShowAddCoach(true)} activeOpacity={0.85}>
-              <LinearGradient colors={['rgba(0,242,255,0.65)', 'rgba(0,242,255,0.65)']} style={hub$.addCoachGrad}>
-                <Ionicons name="person-add" size={18} color="#00F2FF" />
+              <LinearGradient colors={['rgba(0,229,255,0.65)', 'rgba(0,229,255,0.65)']} style={hub$.addCoachGrad}>
+                <Ionicons name="person-add" size={18} color="#00E5FF" />
                 <Text style={hub$.addCoachText}>ASSOCIA NUOVO COACH</Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -757,7 +757,7 @@ export function GymHub() {
             {coaches.length > 0 ? (
               <>
                 <View style={hub$.sectionRow}>
-                  <Ionicons name="fitness" size={14} color="#00F2FF" />
+                  <Ionicons name="fitness" size={14} color="#00E5FF" />
                   <Text style={hub$.sectionTitle}>COACH ASSOCIATI ({coaches.length})</Text>
                 </View>
                 {coaches.map(c => <CoachCard key={c.id} coach={c} onRemove={handleRemoveCoach} />)}
@@ -789,18 +789,18 @@ const hub$ = StyleSheet.create({
   heroContent: { alignItems: 'center', gap: 8 },
   gymIconWrap: {
     width: 64, height: 64, borderRadius: 32,
-    backgroundColor: 'rgba(212,175,55,0.12)', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: 'rgba(212,175,55,0.3)',
+    backgroundColor: 'rgba(255,215,0,0.12)', alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: 'rgba(255,215,0,0.3)',
   },
   gymName: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 2 },
   gymAddress: { color: 'rgba(255,255,255,0.5)', fontSize: 15, fontWeight: '600' },
   gymStats: { flexDirection: 'row', alignItems: 'center', gap: 20, marginTop: 8 },
   gymStat: { alignItems: 'center', gap: 2 },
-  gymStatVal: { color: '#D4AF37', fontSize: 22, fontWeight: '900' },
+  gymStatVal: { color: '#FFD700', fontSize: 22, fontWeight: '900' },
   gymStatLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
   gymStatDivider: { width: 1, height: 24, backgroundColor: 'rgba(255,255,255,0.05)' },
   tabRow: {
-    flexDirection: 'row', marginHorizontal: 16, gap: 4,
+    flexDirection: 'row', marginHorizontal: 24, gap: 4,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 3, marginBottom: 12,
   },
   tab: {
@@ -808,9 +808,9 @@ const hub$ = StyleSheet.create({
     paddingVertical: 10, borderRadius: 10,
   },
   tabActive: { backgroundColor: 'rgba(255,255,255,0.05)' },
-  tabText: { color: 'rgba(255,255,255,0.72)', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
+  tabText: { color: '#AAAAAA', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   tabTextActive: { color: '#FF3B30' },
-  section: { paddingHorizontal: 16 },
+  section: { paddingHorizontal: 24 },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingTop: 16, paddingBottom: 10,
@@ -818,13 +818,13 @@ const hub$ = StyleSheet.create({
   sectionTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   livePulse: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF3B30' },
   createEventBtn: { borderRadius: 14, overflow: 'hidden', marginBottom: 8, borderWidth: 1, borderColor: 'rgba(255,59,48,0.15)' },
-  createEventGrad: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16 },
+  createEventGrad: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 24, paddingVertical: 16 },
   createEventTitle: { color: '#FF3B30', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
   createEventSub: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '400' },
-  addCoachBtn: { borderRadius: 14, overflow: 'hidden', marginBottom: 8, borderWidth: 1, borderColor: 'rgba(0,242,255,0.65)' },
+  addCoachBtn: { borderRadius: 14, overflow: 'hidden', marginBottom: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   addCoachGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 14 },
-  addCoachText: { color: '#00F2FF', fontSize: 15, fontWeight: '900', letterSpacing: 1.5 },
+  addCoachText: { color: '#00E5FF', fontSize: 15, fontWeight: '900', letterSpacing: 1.5 },
   emptyState: { alignItems: 'center', paddingTop: 60, gap: 8 },
-  emptyTitle: { color: 'rgba(255,255,255,0.72)', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
-  emptySub: { color: 'rgba(255,255,255,0.60)', fontSize: 15, fontWeight: '400', textAlign: 'center' },
+  emptyTitle: { color: '#AAAAAA', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
+  emptySub: { color: '#AAAAAA', fontSize: 15, fontWeight: '400', textAlign: 'center' },
 });

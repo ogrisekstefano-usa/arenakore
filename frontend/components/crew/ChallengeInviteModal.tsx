@@ -38,9 +38,9 @@ function DnaBar({ label, mine, theirs }: { label: string; mine: number; theirs: 
         <View style={dna$.barWrap}>
           <View style={[dna$.bar, dna$.barMine, { width: `${mineW}%` as any }, mineWins && dna$.barWin]} />
         </View>
-        <Text style={[dna$.val, mineWins && { color: '#00F2FF' }]}>{mine}</Text>
+        <Text style={[dna$.val, mineWins && { color: '#00E5FF' }]}>{mine}</Text>
         <Text style={dna$.sep}>·</Text>
-        <Text style={[dna$.val, !mineWins && { color: '#FF453A' }]}>{theirs}</Text>
+        <Text style={[dna$.val, !mineWins && { color: '#FF3B30' }]}>{theirs}</Text>
         <View style={dna$.barWrap}>
           <View style={[dna$.bar, dna$.barTheir, { width: `${theirW}%` as any }, !mineWins && dna$.barWin]} />
         </View>
@@ -51,14 +51,14 @@ function DnaBar({ label, mine, theirs }: { label: string; mine: number; theirs: 
 
 const dna$ = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  label: { color: 'rgba(255,255,255,0.65)', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, width: 32 },
+  label: { color: '#AAAAAA', fontSize: 11, fontWeight: '700', letterSpacing: 1.5, width: 32 },
   bars: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 },
   barWrap: { flex: 1, height: 5, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' },
   bar: { height: 5, borderRadius: 3, position: 'absolute', top: 0 },
-  barMine: { backgroundColor: '#00F2FF', right: 0 },
-  barTheir: { backgroundColor: '#FF453A', left: 0 },
+  barMine: { backgroundColor: '#00E5FF', right: 0 },
+  barTheir: { backgroundColor: '#FF3B30', left: 0 },
   barWin: { opacity: 1 },
-  val: { color: 'rgba(255,255,255,0.65)', fontSize: 12, fontWeight: '900', width: 26, textAlign: 'center' },
+  val: { color: '#AAAAAA', fontSize: 12, fontWeight: '900', width: 26, textAlign: 'center' },
   sep: { color: 'rgba(255,255,255,0.3)', fontSize: 10 },
 });
 
@@ -108,7 +108,7 @@ export function ChallengeInviteModal({ crew, onClose, visible }: Props) {
             {/* Header */}
             <View style={m$.header}>
               <View style={m$.headerLeft}>
-                <Ionicons name="flash" size={18} color="#D4AF37" />
+                <Ionicons name="flash" size={18} color="#FFD700" />
                 <Text style={m$.title}>SFIDA CREW</Text>
               </View>
               <TouchableOpacity onPress={onClose}>
@@ -154,9 +154,9 @@ export function ChallengeInviteModal({ crew, onClose, visible }: Props) {
               <Ionicons
                 name={myWins ? 'trending-up' : 'alert-circle'}
                 size={16}
-                color={myWins ? '#00F2FF' : '#FF9500'}
+                color={myWins ? '#00E5FF' : '#FF9500'}
               />
-              <Text style={[m$.verdictText, { color: myWins ? '#00F2FF' : '#FF9500' }]}>
+              <Text style={[m$.verdictText, { color: myWins ? '#00E5FF' : '#FF9500' }]}>
                 {myWins
                   ? `LA TUA MEDIA (+${myAvg - theirAvg}) SUPERA ${crew.name}`
                   : `${crew.name} HA +${theirAvg - myAvg} DI VANTAGGIO — SFIDA CORAGGIOSA`
@@ -167,7 +167,7 @@ export function ChallengeInviteModal({ crew, onClose, visible }: Props) {
             {/* CTA */}
             {sent ? (
               <View style={m$.sentRow}>
-                <Ionicons name="checkmark-circle" size={20} color="#34C759" />
+                <Ionicons name="checkmark-circle" size={20} color="#00FF87" />
                 <Text style={m$.sentText}>SFIDA INVIATA A {crew.name?.toUpperCase()}!</Text>
               </View>
             ) : (
@@ -198,32 +198,32 @@ const m$ = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: '#0A0A0A', borderTopLeftRadius: 20, borderTopRightRadius: 20,
-    padding: 20, borderWidth: 1, borderColor: 'rgba(212,175,55,0.2)',
+    padding: 20, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  title: { color: '#D4AF37', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+  title: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   vsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
   side: { flex: 1, alignItems: 'flex-start', gap: 2 },
   sideName: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   sideAvg: { color: 'rgba(255,255,255,0.6)', fontSize: 28, fontWeight: '900' },
-  sideWin: { color: '#00F2FF' },
+  sideWin: { color: '#00E5FF' },
   sideLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '700', letterSpacing: 2 },
   vsCenter: { alignItems: 'center', paddingHorizontal: 12, gap: 4 },
-  vs: { color: '#D4AF37', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
-  vsLine: { width: 1, height: 30, backgroundColor: 'rgba(212,175,55,0.3)' },
+  vs: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
+  vsLine: { width: 1, height: 30, backgroundColor: 'rgba(255,215,0,0.3)' },
   dnaSection: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 12, marginBottom: 12 },
-  dnaSectionTitle: { color: 'rgba(0,242,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 3, marginBottom: 10 },
+  dnaSectionTitle: { color: 'rgba(0,229,255,0.5)', fontSize: 9, fontWeight: '900', letterSpacing: 3, marginBottom: 10 },
   verdict: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 8, marginBottom: 14 },
   verdictWin: { backgroundColor: 'rgba(255,255,255,0.06)' },
   verdictLoss: { backgroundColor: 'rgba(255,149,0,0.06)' },
   verdictText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, flex: 1 },
   cta: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#D4AF37', borderRadius: 10, paddingVertical: 16,
-    shadowColor: '#D4AF37', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 12,
+    backgroundColor: '#FFD700', borderRadius: 10, paddingVertical: 16,
+    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 12,
   },
-  ctaText: { color: '#050505', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
+  ctaText: { color: '#000000', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   sentRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 16 },
-  sentText: { color: '#34C759', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  sentText: { color: '#00FF87', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
 });

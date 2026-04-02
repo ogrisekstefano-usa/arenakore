@@ -29,8 +29,8 @@ function EventRow({ event, idx }: { event: LiveEvent & { isNew?: boolean }; idx:
     }
   }, [event.isNew]);
   const glowStyle = useAnimatedStyle(() => ({
-    backgroundColor: `rgba(0,242,255,${glow.value * 0.08})`,
-    borderLeftColor: `rgba(0,242,255,${0.2 + glow.value * 0.7})`,
+    backgroundColor: `rgba(0,229,255,${glow.value * 0.08})`,
+    borderLeftColor: `rgba(0,229,255,${0.2 + glow.value * 0.7})`,
   }));
 
   const age = event.age_secs ?? 0;
@@ -41,7 +41,7 @@ function EventRow({ event, idx }: { event: LiveEvent & { isNew?: boolean }; idx:
       entering={FadeInDown.delay(idx * 30).duration(200)}
       style={[e$.row, glowStyle]}
     >
-      <View style={[e$.avatar, { backgroundColor: event.avatar_color || '#00F2FF' }]}>
+      <View style={[e$.avatar, { backgroundColor: event.avatar_color || '#00E5FF' }]}>
         <Text style={e$.avatarLetter}>{(event.athlete || '?')[0].toUpperCase()}</Text>
       </View>
       <View style={e$.info}>
@@ -65,9 +65,9 @@ const e$ = StyleSheet.create({
   avatarLetter: { color: '#000', fontSize: 12, fontWeight: '900' },
   info: { flex: 1, gap: 1 },
   name: { color: '#FFF', fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
-  detail: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '300' },
+  detail: { color: 'rgba(255,255,255,0.30)', fontSize: 10, fontWeight: '300' },
   right: { alignItems: 'flex-end', gap: 1 },
-  xp: { color: '#D4AF37', fontSize: 11, fontWeight: '900' },
+  xp: { color: '#FFD700', fontSize: 11, fontWeight: '900' },
   age: { color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '300' },
 });
 
@@ -103,7 +103,7 @@ export function LiveMonitorPanel({ gymId }: { gymId: string | null | undefined }
 
     // Try WebSocket
     try {
-      const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://voice-coach-40.preview.emergentagent.com';
+      const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://arena-scan-lab.preview.emergentagent.com';
       const wsUrl = baseUrl.replace('https://', 'wss://').replace('http://', 'ws://');
       const ws = new WebSocket(`${wsUrl}/api/ws/live-monitor/${gymId}?token=${token}`);
       wsRef.current = ws;
@@ -144,7 +144,7 @@ export function LiveMonitorPanel({ gymId }: { gymId: string | null | undefined }
     <View style={lm$.card}>
       <View style={lm$.header}>
         <View style={lm$.headerLeft}>
-          <View style={[lm$.statusDot, { backgroundColor: connected ? '#34C759' : '#FF9500' }]} />
+          <View style={[lm$.statusDot, { backgroundColor: connected ? '#00FF87' : '#FF9500' }]} />
           <Text style={lm$.title}>LIVE NOW</Text>
         </View>
         <Text style={lm$.sub}>{connected ? 'WebSocket · Real-time' : 'Polling · 8s'}</Text>
