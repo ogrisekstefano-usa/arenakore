@@ -184,7 +184,7 @@ export const api = {
 
   getActionCenter: (token: string) => request('/kore/action-center', {}, token),
 
-  // ========== AK DROPS ENGINE ==========
+  // ========== FLUX ENGINE ==========
   getAKBalance: (token: string) => request('/ak/balance', {}, token),
   getAKTools: (token: string) => request('/ak/tools', {}, token),
   unlockTool: (toolId: string, token: string) =>
