@@ -71,7 +71,7 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
   const menuItems: { icon: keyof typeof Ionicons.glyphMap; label: string; sub: string; color: string }[] = [
     { icon: 'scan',                label: 'BIO-SCAN',      sub: 'Ricalibra sensori',        color: CYAN },
     { icon: 'settings-sharp',      label: 'SETTINGS',      sub: 'Configurazione NEXUS',     color: WHITE },
-    { icon: 'trophy',              label: 'FOUNDERS CLUB', sub: isFounder ? `Founder #${user?.founder_number || '—'}` : 'Non membro', color: GOLD },
+    { icon: 'trophy',              label: 'FOUNDERS CLUB', sub: isFounder ? `Founder #${user?.founder_number || '—'}` : 'Non Founder', color: GOLD },
     { icon: 'chatbubble-ellipses', label: 'SUPPORTO',      sub: 'Contatta il team',         color: WHITE },
   ];
 

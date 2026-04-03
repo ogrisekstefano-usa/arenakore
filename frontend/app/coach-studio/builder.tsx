@@ -40,7 +40,7 @@ const ACTION_META = [
   { key: 'assign_power',     label: 'Assegna Power Protocol', icon: 'barbell',           color: '#FF3B30' },
   { key: 'reduce_intensity', label: 'Riduci Intensità 20%',   icon: 'trending-down',    color: '#FF9500' },
   { key: 'notify_coach',     label: 'Notifica Coach',         icon: 'notifications',    color: '#00E5FF' },
-  { key: 'send_alert',       label: 'Alert all\'Atleta',      icon: 'warning',          color: '#FFD700' },
+  { key: 'send_alert',       label: 'Alert al Kore',         icon: 'warning',          color: '#FFD700' },
 ];
 
 // ── Visual Timeline ───────────────────────────────────────────────────────────
@@ -324,7 +324,7 @@ function AutomationEngine({ challenge, onRulesChange, theme }: {
           <Ionicons name="hardware-chip-outline" size={32} color={theme.textTer} />
           <Text style={[ae$.emptyTitle, MONT('700'), { color: theme.text }]}>Nessuna regola attiva</Text>
           <Text style={[ae$.emptyText, MONT('300'), { color: theme.textTer }]}>
-            Le regole si attivano automaticamente basandosi sui dati biometrici degli atleti.
+            Le regole si attivano automaticamente basandosi sui dati biometrici dei Kore.
           </Text>
         </View>
       )}
@@ -411,7 +411,7 @@ function AutomationEngine({ challenge, onRulesChange, theme }: {
         <View style={[ae$.aiNote, { backgroundColor: theme.accent + '08', borderColor: theme.accent + '20' }]}>
           <Ionicons name="hardware-chip" size={13} color={theme.accent} />
           <Text style={[ae$.aiNoteText, MONT('300'), { color: theme.accent + 'CC' }]}>
-            Il motore AI valuta queste regole ogni volta che un atleta completa uno scan NÈXUS. Le azioni si attivano entro 60 secondi dal trigger.
+            Il motore AI valuta queste regole ogni volta che un Kore completa uno scan NÈXUS. Le azioni si attivano entro 60 secondi dal trigger.
           </Text>
         </View>
       )}

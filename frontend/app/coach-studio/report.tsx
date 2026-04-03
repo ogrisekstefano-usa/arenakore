@@ -325,7 +325,7 @@ export default function TalentReportPage() {
               style={[rp$.noteInput, { backgroundColor: '#0A0A0A', color: '#FFFFFF', borderColor: 'rgba(255,255,255,0.07)' }]}
               value={coachNote}
               onChangeText={setCoachNote}
-              placeholder="Inserisci note private su questo atleta..."
+              placeholder="Inserisci note private su questo Kore..."
               placeholderTextColor="rgba(255,255,255,0.25)"
               multiline
               numberOfLines={3}

@@ -166,7 +166,7 @@ export default function CrewsTab() {
                           <View style={s.crewStats}>
                             <View style={s.crewStatItem}>
                               <Ionicons name="people" size={12} color="rgba(255,255,255,0.7)" />
-                              <Text style={s.crewStatText}>{crew.members_count} MEMBRI</Text>
+                              <Text style={s.crewStatText}>{crew.members_count} KORE</Text>
                             </View>
                             <View style={s.crewStatItem}>
                               <Ionicons name="flash" size={12} color="#FFD700" />

@@ -294,7 +294,7 @@ function MyStatusBar({ rankData }: { rankData: any }) {
           </View>
           <View style={status$.textCol}>
             <Text style={status$.motiv} numberOfLines={1}>{motivText}</Text>
-            <Text style={status$.sub}>{rankData.total} atleti in classifica</Text>
+            <Text style={status$.sub}>{rankData.total} Kore in classifica</Text>
           </View>
           {isTop10 && (
             <View style={status$.topBadge}>
@@ -453,7 +453,7 @@ export function HallOfKore() {
         ) : leaderboard.length === 0 ? (
           <View style={gl$.center}>
             <Ionicons name="podium" size={40} color="rgba(255,255,255,0.3)" />
-            <Text style={gl$.emptyTitle}>Nessun atleta in classifica</Text>
+            <Text style={gl$.emptyTitle}>Nessun Kore in classifica</Text>
             <Text style={gl$.emptySub}>Completa l'onboarding per entrare nel KORE</Text>
           </View>
         ) : (

@@ -152,7 +152,7 @@ function EventCard({
           <View style={ev$.statsRow}>
             <View style={ev$.statBlock}>
               <Text style={ev$.statVal}>{event.participants_count}</Text>
-              <Text style={ev$.statLabel}>/{event.max_participants} ATLETI</Text>
+              <Text style={ev$.statLabel}>/{event.max_participants} KORE</Text>
             </View>
             <View style={ev$.statBlock}>
               <Text style={[ev$.statVal, { color: '#FFD700' }]}>+{event.xp_reward}</Text>
@@ -657,7 +657,7 @@ export function GymHub() {
               <View style={hub$.gymStatDivider} />
               <View style={hub$.gymStat}>
                 <Text style={[hub$.gymStatVal, { color: '#00E5FF' }]}>{gym?.members_count || 1}</Text>
-                <Text style={hub$.gymStatLabel}>MEMBRI</Text>
+                <Text style={hub$.gymStatLabel}>KORE</Text>
               </View>
             </View>
           </View>

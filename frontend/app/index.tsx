@@ -266,7 +266,7 @@ export default function HeroIndex() {
               </View>
 
               <Text style={s.partnerCopy}>
-                Certifica i tuoi atleti.{'\n'}
+                Certifica i tuoi Kore.{'\n'}
                 Domina i ranking di squadra.{'\n'}
                 Accedi ai dati biometrici del tuo roster.
               </Text>

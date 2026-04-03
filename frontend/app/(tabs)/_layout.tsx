@@ -21,7 +21,7 @@ function getTabConfig(activeRole: UserRole) {
     { name: 'dna', icon: 'analytics', iconBold: 'analytics-sharp', label: 'DNA' },
     { name: 'hall', icon: 'trophy', iconBold: 'trophy-sharp', label: 'RANK' },
     // COACH role: add extra tab
-    ...(isCoach ? [{ name: 'my-athletes', icon: 'people-outline', iconBold: 'people', label: 'ATLETI' }] : []),
+    ...(isCoach ? [{ name: 'my-athletes', icon: 'people-outline', iconBold: 'people', label: 'KORE' }] : []),
   ];
   return tabs;
 }

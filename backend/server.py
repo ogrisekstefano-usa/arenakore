@@ -2068,13 +2068,13 @@ async def invite_to_crew(crew_id: str, data: CrewInvite, current_user: dict = De
     if not crew:
         raise HTTPException(status_code=404, detail="Crew non trovata")
     if current_user["_id"] not in crew["members"]:
-        raise HTTPException(status_code=403, detail="Non sei membro di questa Crew")
+        raise HTTPException(status_code=403, detail="Non fai parte di questa Crew")
 
     target = await db.users.find_one({"username": data.username})
     if not target:
         raise HTTPException(status_code=404, detail="Utente non trovato")
     if target["_id"] in crew["members"]:
-        raise HTTPException(status_code=400, detail="Utente già membro")
+        raise HTTPException(status_code=400, detail="Utente già presente")
 
     existing = await db.crew_invites.find_one({
         "crew_id": ObjectId(crew_id),
@@ -2098,8 +2098,8 @@ async def invite_to_crew(crew_id: str, data: CrewInvite, current_user: dict = De
         asyncio.create_task(
             email_service.send_crew_invite_email(
                 to_email=target_email,
-                to_name=target.get("username", "ATLETA"),
-                from_name=current_user.get("username", "ATLETA"),
+                to_name=target.get("username", "KORE"),
+                from_name=current_user.get("username", "KORE"),
                 crew_name=crew.get("name", "CREW"),
                 invite_id=crew_id,
             )
@@ -2978,9 +2978,9 @@ async def get_talent_report(athlete_id: str, coach_note: str = "", current_user:
     try:
         user = await db.users.find_one({"_id": ObjectId(athlete_id)})
     except Exception:
-        raise HTTPException(status_code=404, detail="Atleta non trovato")
+        raise HTTPException(status_code=404, detail="Kore non trovato")
     if not user:
-        raise HTTPException(status_code=404, detail="Atleta non trovato")
+        raise HTTPException(status_code=404, detail="Kore non trovato")
 
     dna = user.get("dna") or {}
     dna_vals = [dna.get(k, 50) for k in DNA_KEYS]
@@ -3122,16 +3122,16 @@ async def draft_athlete(athlete_id: str, data: dict = {}, current_user: dict = D
     try:
         athlete = await db.users.find_one({"_id": ObjectId(athlete_id)})
     except Exception:
-        raise HTTPException(status_code=404, detail="Atleta non trovato")
+        raise HTTPException(status_code=404, detail="Kore non trovato")
     if not athlete:
-        raise HTTPException(status_code=404, detail="Atleta non trovato")
+        raise HTTPException(status_code=404, detail="Kore non trovato")
     if athlete.get("ghost_mode"):
-        raise HTTPException(status_code=403, detail="Questo atleta ha attivato il Ghost Mode")
+        raise HTTPException(status_code=403, detail="Questo Kore ha attivato il Ghost Mode")
 
     # Check already drafted
     existing = await db.talent_drafts.find_one({"coach_id": current_user["_id"], "athlete_id": athlete["_id"]})
     if existing:
-        raise HTTPException(status_code=400, detail="Hai già draftato questo atleta")
+        raise HTTPException(status_code=400, detail="Hai già draftato questo Kore")
 
     now = datetime.utcnow()
     await db.talent_drafts.insert_one({
@@ -3160,7 +3160,7 @@ async def draft_athlete(athlete_id: str, data: dict = {}, current_user: dict = D
     return {
         "status": "drafted",
         "athlete": athlete.get("username"),
-        "message": "Richiesta inviata. L'atleta riceverà una notifica.",
+        "message": "Richiesta inviata. Il Kore riceverà una notifica.",
     }
 
 
@@ -3213,7 +3213,7 @@ AUTOMATION_TRIGGERS = {
     "recovery_low":      {"label": "Recovery bassa",          "axis": "recovery",  "op": "lt"},
     "power_drop":        {"label": "Calo di forza",           "axis": "power",     "op": "lt"},
     "pvp_win_streak":    {"label": "Streak vittorie PvP",     "axis": None,        "op": "gte"},
-    "days_inactive":     {"label": "Atleta inattivo (giorni)","axis": None,        "op": "gte"},
+    "days_inactive":     {"label": "Kore inattivo (giorni)","axis": None,        "op": "gte"},
 }
 
 
@@ -3787,9 +3787,9 @@ async def get_athlete_historical(athlete_id: str, current_user: dict = Depends(r
     try:
         user = await db.users.find_one({"_id": ObjectId(athlete_id)})
     except Exception:
-        raise HTTPException(status_code=404, detail="Atleta non trovato")
+        raise HTTPException(status_code=404, detail="Kore non trovato")
     if not user:
-        raise HTTPException(status_code=404, detail="Atleta non trovato")
+        raise HTTPException(status_code=404, detail="Kore non trovato")
     dna = user.get("dna") or {k: 50 for k in DNA_KEYS}
     import random; random.seed(int(user.get("xp", 0)) + int(user.get("level", 1)) * 100)
     now = datetime.utcnow()
@@ -4047,7 +4047,7 @@ async def join_gym(data: GymJoin, current_user: dict = Depends(get_current_user)
     if not gym:
         raise HTTPException(status_code=404, detail=f"Codice palestra non valido: {data.gym_code}")
     if current_user.get("gym_id") == gym["_id"]:
-        raise HTTPException(status_code=400, detail="Sei già membro di questa palestra")
+        raise HTTPException(status_code=400, detail="Sei già parte di questa palestra")
     # Assign role (can only join as ATHLETE or COACH if gym_owner approves)
     join_role = "ATHLETE" if data.role not in ("ATHLETE", "COACH") else data.role
     await db.users.update_one({"_id": current_user["_id"]}, {"$set": {"gym_id": gym["_id"], "role": join_role}})
@@ -4260,9 +4260,9 @@ async def get_kore_score_breakdown(athlete_id: str, current_user: dict = Depends
     try:
         user = await db.users.find_one({"_id": ObjectId(athlete_id)})
     except Exception:
-        raise HTTPException(status_code=404, detail="Atleta non trovato")
+        raise HTTPException(status_code=404, detail="Kore non trovato")
     if not user:
-        raise HTTPException(status_code=404, detail="Atleta non trovato")
+        raise HTTPException(status_code=404, detail="Kore non trovato")
     # Get last 6 scans
     scans = await db.scan_results.find({"user_id": user["_id"]}).sort("scanned_at", -1).limit(6).to_list(6)
     scan_trend = [{"quality": s.get("quality_score", 50), "date": s["scanned_at"].strftime("%d/%m") if s.get("scanned_at") else "?"} for s in reversed(scans)]
@@ -4337,9 +4337,9 @@ async def get_athlete_full_profile(athlete_id: str, current_user: dict = Depends
     try:
         user = await db.users.find_one({"_id": ObjectId(athlete_id)})
     except Exception:
-        raise HTTPException(status_code=404, detail="Atleta non trovato")
+        raise HTTPException(status_code=404, detail="Kore non trovato")
     if not user:
-        raise HTTPException(status_code=404, detail="Atleta non trovato")
+        raise HTTPException(status_code=404, detail="Kore non trovato")
 
     six_axis  = compute_six_axis(user)
     injury    = compute_injury_risk_detail(six_axis)
@@ -5178,7 +5178,7 @@ async def send_pvp_challenge(data: PvPChallengeRequest, current_user: dict = Dep
         "status": {"$in": ["pending", "accepted", "challenger_done"]},
     })
     if existing:
-        raise HTTPException(status_code=400, detail="Sfida già attiva con questo atleta")
+        raise HTTPException(status_code=400, detail="Sfida già attiva con questo Kore")
 
     now = datetime.utcnow()
     challenge_doc = {
@@ -6537,9 +6537,9 @@ async def generate_athlete_pdf(athlete_id: str, current_user: dict = Depends(req
     try:
         athlete = await db.users.find_one({"_id": ObjectId(athlete_id)})
     except Exception:
-        raise HTTPException(status_code=400, detail="ID atleta non valido")
+        raise HTTPException(status_code=400, detail="ID Kore non valido")
     if not athlete:
-        raise HTTPException(status_code=404, detail="Atleta non trovato")
+        raise HTTPException(status_code=404, detail="Kore non trovato")
 
     dna = athlete.get("dna", {})
     six_axis = compute_six_axis(athlete)
@@ -6806,7 +6806,7 @@ async def notify_bioscan_confirm(current_user: dict = Depends(get_current_user))
     asyncio.create_task(
         email_service.send_bioscan_confirm_email(
             to_email=to_email,
-            to_name=current_user.get("username", "ATLETA"),
+            to_name=current_user.get("username", "KORE"),
             kore_number=kore_number,
             dna=dna,
         )
@@ -8271,7 +8271,7 @@ async def generate_apple_pass(current_user: dict = Depends(get_current_user)):
         "labelColor": "rgb(212, 175, 55)",
         "generic": {
             "primaryFields": [
-                {"key": "athlete", "label": "ATLETA", "value": username}
+                {"key": "athlete", "label": "KORE", "value": username}
             ],
             "secondaryFields": [
                 {"key": "sport", "label": "SPORT", "value": sport},
@@ -8673,7 +8673,7 @@ async def get_city_ranking(
         kore_number_str = str(founder_number).zfill(5) if founder_number else str(abs(int(str(u["_id"])[-5:], 16)) % 99999).zfill(5)
 
         # Ghost Mode: replace username with KORE ID in public rankings
-        display_name = f"KORE #{kore_number_str}" if u.get("ghost_mode") else u.get("username", "ATLETA")
+        display_name = f"KORE #{kore_number_str}" if u.get("ghost_mode") else u.get("username", "KORE")
 
         scored.append({
             "user_id": uid,

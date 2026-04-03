@@ -116,7 +116,7 @@ export default function KoreHubRegistration() {
           <Text style={s.titleBig}>NETWORK</Text>
           <View style={s.accentLine} />
           <Text style={s.subtitle}>
-            Certifica i tuoi atleti. Domina i ranking di squadra.{' '}\nUnisciti al protocollo Nexus per palestre di élite.
+            Certifica i tuoi Kore. Domina i ranking di squadra.{' '}\nUnisciti al protocollo Nexus per palestre di élite.
           </Text>
         </Animated.View>
 

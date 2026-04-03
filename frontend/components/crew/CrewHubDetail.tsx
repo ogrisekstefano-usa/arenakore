@@ -80,7 +80,7 @@ export function CrewHubDetail({ crew, onClose, token }: { crew: any; onClose: ()
             <Text style={hub$.crewName}>{crew.name}</Text>
             {crew.tagline ? <Text style={hub$.crewTagline}>{crew.tagline}</Text> : null}
             <View style={hub$.statsRow}>
-              <View style={hub$.stat}><Text style={hub$.statVal}>{crew.members_count}</Text><Text style={hub$.statLabel}>MEMBRI</Text></View>
+              <View style={hub$.stat}><Text style={hub$.statVal}>{crew.members_count}</Text><Text style={hub$.statLabel}>KORE</Text></View>
               <View style={hub$.stat}><Text style={[hub$.statVal, { color: '#FFD700' }]}>{crew.xp_total}</Text><Text style={hub$.statLabel}>XP TOTALI</Text></View>
             </View>
           </View>
@@ -104,7 +104,7 @@ export function CrewHubDetail({ crew, onClose, token }: { crew: any; onClose: ()
               </>
             )}
 
-            <Text style={hub$.sectionTitle}>MEMBRI</Text>
+            <Text style={hub$.sectionTitle}>KORE</Text>
             {detail?.members?.map((m: any, i: number) => (
               <Animated.View key={m.id} entering={FadeInDown.delay(i * 60)}>
                 <View style={hub$.memberRow}>

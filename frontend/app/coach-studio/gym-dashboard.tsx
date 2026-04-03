@@ -77,7 +77,7 @@ export default function GymDashboard() {
 
       {/* Business KPIs */}
       <View style={g$.kpiRow}>
-        <KPICard icon="👥" label="MEMBRI TOTALI" value={stats.total_members || 0} sub={`${stats.total_coaches || 0} coach`} color="#00E5FF" />
+        <KPICard icon="👥" label="KORE TOTALI" value={stats.total_members || 0} sub={`${stats.total_coaches || 0} coach`} color="#00E5FF" />
         <KPICard icon="⚡" label="FLUX GENERATI" value={(stats.total_xp_generated || 0).toLocaleString()} sub="della palestra" color="#FFD700" />
         <KPICard icon="📊" label="LIVELLO MEDIO" value={stats.avg_level || 1} sub="kore" color="#00FF87" />
         <KPICard icon="🛡" label="BATTLE" value={stats.battles_count || 0} sub="totali" color="#AF52DE" />

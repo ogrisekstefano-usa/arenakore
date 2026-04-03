@@ -179,7 +179,7 @@ export default function GlobalDashboard() {
             </View>
           )}
           <Text style={[pg$.gymName, MONT('300'), { color: theme.textTer }]}>
-            {gymData?.name || 'NÈXUS GYM'} · {athletes?.total || 0} atleti
+            {gymData?.name || 'NÈXUS GYM'} · {athletes?.total || 0} Kore
           </Text>
         </View>
       </Animated.View>

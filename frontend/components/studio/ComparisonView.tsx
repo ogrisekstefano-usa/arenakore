@@ -192,7 +192,7 @@ export function ComparisonView({ athletes: allAthletes, token }: ComparisonViewP
         <View style={cs.header}>
           <Text style={[cs.title, JAKARTA('800'), { color: theme.text }]}>TEAM COMPARISON</Text>
           <Text style={[cs.sub, MONT('400'), { color: theme.textTer }]}>
-            Seleziona da 2 a 3 atleti per confrontare i profili DNA
+            Seleziona da 2 a 3 Kore per confrontare i profili DNA
           </Text>
         </View>
 

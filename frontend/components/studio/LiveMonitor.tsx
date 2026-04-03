@@ -153,7 +153,7 @@ export function LiveMonitorPanel({ gymId }: { gymId: string | null | undefined }
       {events.length === 0 ? (
         <View style={lm$.empty}>
           <Ionicons name="scan-outline" size={22} color="rgba(255,255,255,0.1)" />
-          <Text style={lm$.emptyText}>In attesa degli atleti...{'\n'}Quando un atleta completa uno scan, apparirà qui.</Text>
+          <Text style={lm$.emptyText}>In attesa dei Kore...{'\n'}Quando un Kore completa uno scan, apparirà qui.</Text>
         </View>
       ) : (
         events.map((evt, i) => <EventRow key={`${evt.athlete}-${evt.timestamp}-${i}`} event={evt} idx={i} />)

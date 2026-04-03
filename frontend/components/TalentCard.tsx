@@ -82,7 +82,7 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
 
     try {
       await Share.share({
-        message: `ARENAKORE TALENT CARD\n${'━'.repeat(15)}\n${user.username?.toUpperCase()}\nLVL ${user.level} | ${user.xp} FLUX\n${user.sport?.toUpperCase() || 'ATLETA'}${xpText}${recordText}\n\n${statsText}\n\nOVR: ${avgStat}/100\n${'━'.repeat(15)}\n#ArenaKore #${user.sport} #Performance`,
+        message: `ARENAKORE TALENT CARD\n${'━'.repeat(15)}\n${user.username?.toUpperCase()}\nLVL ${user.level} | ${user.xp} FLUX\n${user.sport?.toUpperCase() || 'KORE'}${xpText}${recordText}\n\n${statsText}\n\nOVR: ${avgStat}/100\n${'━'.repeat(15)}\n#ArenaKore #${user.sport} #Performance`,
         title: `${user.username} - ArenaKore Talent Card`,
       });
     } catch (e) {
@@ -118,7 +118,7 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
               </View>
             )}
           </View>
-          <Text style={styles.sport}>{user.sport?.toUpperCase() || 'ATLETA'}</Text>
+          <Text style={styles.sport}>{user.sport?.toUpperCase() || 'KORE'}</Text>
           <View style={styles.levelRow}>
             <Text style={styles.levelBadge}>LVL {user.level}</Text>
             <Text style={styles.xpBadge}>{user.xp} FLUX</Text>

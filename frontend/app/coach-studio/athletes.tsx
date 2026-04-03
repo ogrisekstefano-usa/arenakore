@@ -506,7 +506,7 @@ function CrewPanel() {
             <View style={cp$.crewName}>
               <Text style={[cp$.crewTitle, MONT(), { color: theme.text }]}>{crew.name}</Text>
               <Text style={[cp$.crewMeta, MONT('300'), { color: theme.textTer }]}>
-                {crew.members_count} membri · DNA {crew.weighted_dna} (pesato) · {crew.battle_wins}V/{crew.battle_total - crew.battle_wins}S
+                {crew.members_count} Kore · DNA {crew.weighted_dna} (pesato) · {crew.battle_wins}V/{crew.battle_total - crew.battle_wins}S
               </Text>
             </View>
             <View style={cp$.crewStats}>
@@ -568,7 +568,7 @@ function CrewPanel() {
             <Text style={[cp$.inviteTitle, MONT('900'), { color: theme.textSec }]}>INVIA INVITO (stile Apple Calendar)</Text>
             <TextInput
               style={[cp$.inviteInput, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
-              placeholder="email@atleta.com"
+              placeholder="email@kore.com"
               placeholderTextColor={theme.textTer}
               value={inviteCrewId === crew.id ? inviteEmail : ''}
               onFocus={() => setInviteCrewId(crew.id)}
@@ -751,7 +751,7 @@ export default function AthletesModule() {
             >
               <Ionicons name={v === 'table' ? 'people' : v === 'compare' ? 'git-compare' : 'shield'} size={14} color={view === v ? theme.accent : theme.textTer} />
               <Text style={[am$.viewBtnTxt, MONT('900'), { color: view === v ? theme.accent : theme.textTer }]}>
-                {v === 'table' ? 'ATLETI CRM' : v === 'compare' ? 'CONFRONTO' : 'CREW PANEL'}
+                {v === 'table' ? 'KORE CRM' : v === 'compare' ? 'CONFRONTO' : 'CREW PANEL'}
               </Text>
             </TouchableOpacity>
           ))}
@@ -764,7 +764,7 @@ export default function AthletesModule() {
               <Ionicons name="search" size={13} color={theme.textTer} />
               <TextInput
                 style={[am$.searchInput, MONT('400'), { color: theme.text }]}
-                placeholder="Cerca atleta..."
+                placeholder="Cerca Kore..."
                 placeholderTextColor={theme.textTer}
                 value={search}
                 onChangeText={setSearch}

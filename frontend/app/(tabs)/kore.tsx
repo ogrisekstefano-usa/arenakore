@@ -355,7 +355,7 @@ function Affiliations({ affiliData, token, onRefresh }: { affiliData: any; token
             <View key={crew.id} style={af$.crewRow}>
               <View style={[af$.crewDot, crew.is_owner && { backgroundColor: '#FFD700' }]} />
               <Text style={af$.crewName}>{crew.name.toUpperCase()}</Text>
-              <Text style={af$.crewMeta}>{crew.members_count} MEMBRI</Text>
+              <Text style={af$.crewMeta}>{crew.members_count} KORE</Text>
               {crew.is_owner && (
                 <View style={af$.ownerBadge}>
                   <Text style={af$.ownerText}>OWNER</Text>
@@ -679,7 +679,7 @@ function KoreCard({ user, rankData }: { user: any; rankData: any }) {
                 <>
                   <View style={wm$.divider} />
                   <View style={wm$.infoRow}>
-                    <Text style={wm$.infoLabel}>ATLETA</Text>
+                    <Text style={wm$.infoLabel}>KORE</Text>
                     <Text style={wm$.infoVal}>{walletInfo.athlete}</Text>
                   </View>
                   <View style={wm$.infoRow}>
@@ -857,7 +857,7 @@ function CityRanking({
             /* ── Empty: first athlete detected — motivate to dominate ── */
             <View style={cr$.empty}>
               <Ionicons name="flame" size={28} color="#FFD700" />
-              <Text style={cr$.emptyTitleFirst}>PRIMO ATLETA{'\n'}RILEVATO A</Text>
+              <Text style={cr$.emptyTitleFirst}>PRIMO KORE{'\n'}RILEVATO A</Text>
               <Text style={cr$.emptyCity}>{city}</Text>
               <Text style={cr$.emptyDominate}>DOMINA IL RANKING</Text>
             </View>
@@ -866,7 +866,7 @@ function CityRanking({
               {/* Meta row */}
               <View style={cr$.metaRow}>
                 <Text style={cr$.metaCity}>{city}</Text>
-                <Text style={cr$.metaCount}>{data.total_athletes} ATLETI</Text>
+                <Text style={cr$.metaCount}>{data.total_athletes} KORE</Text>
               </View>
 
               {/* Top 10 athletes */}

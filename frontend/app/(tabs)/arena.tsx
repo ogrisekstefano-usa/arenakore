@@ -66,7 +66,7 @@ function HeroBanner() {
 
         <View style={hero$.statsRow}>
           {[
-            { label: 'ATLETI ATTIVI', val: '1,240', icon: 'people' as const },
+            { label: 'KORE ATTIVI', val: '1,240', icon: 'people' as const },
             { label: 'SESSIONI OGGI', val: '384', icon: 'flash' as const },
             { label: 'RECORD BATTUTI', val: '23', icon: 'trophy' as const },
           ].map((s, i) => (
@@ -537,7 +537,7 @@ function MatchmakingPanel() {
               </View>
               <View style={mp$.metaRow}>
                 <Ionicons name="people" size={10} color="rgba(255,255,255,0.3)" />
-                <Text style={mp$.meta}>{opp.members_count} membri</Text>
+                <Text style={mp$.meta}>{opp.members_count} Kore</Text>
                 <Text style={mp$.meta}>·</Text>
                 <Text style={mp$.meta}>KORE {opp.kore_battle_score}</Text>
                 {opp.is_stronger && <Text style={[mp$.meta, { color: '#FF9500' }]}>· +{diff} più forti</Text>}

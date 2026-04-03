@@ -58,7 +58,7 @@ export function BurgerMenu({ visible, onClose, user, onLogout, deviceTier, activ
   const items: { iconName: keyof typeof Ionicons.glyphMap; iconColor: string; label: string; sub: string }[] = [
     { iconName: 'scan', iconColor: '#00E5FF', label: 'Bio-Signature Scan', sub: 'Ricalibra i sensori' },
     { iconName: 'settings-sharp', iconColor: '#FFFFFF', label: 'Settings', sub: 'Configurazione NEXUS' },
-    { iconName: 'trophy', iconColor: '#FFD700', label: 'Founders Club', sub: isFounder ? `Founder #${user?.founder_number || '?'}` : 'Non ancora membro' },
+    { iconName: 'trophy', iconColor: '#FFD700', label: 'Founders Club', sub: isFounder ? `Founder #${user?.founder_number || '?'}` : 'Non ancora Founder' },
     { iconName: 'chatbubble-ellipses', iconColor: '#FFFFFF', label: 'Supporto', sub: 'Contatta il team KORE' },
   ];
 

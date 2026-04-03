@@ -81,7 +81,7 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
     try {
       const result = await api.pushTemplateToCrew(pushTargetTemplate.id, crewId, token);
       playAcceptPing();
-      Alert.alert('Sfida Lanciata!', `"${result.template}" inviata a ${result.crew}\n${result.members_reached} atleti raggiunti`);
+      Alert.alert('Sfida Lanciata!', `"${result.template}" inviata a ${result.crew}\n${result.members_reached} Kore raggiunti`);
       setShowPushModal(false);
       setPushTargetTemplate(null);
       loadTemplates();
@@ -215,7 +215,7 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
               </View>
 
               <Text style={ct$.label}>DESCRIZIONE (OPZIONALE)</Text>
-              <TextInput style={[ct$.input, { height: 60, textAlignVertical: 'top' }]} value={description} onChangeText={setDescription} placeholder="Istruzioni per gli atleti..." placeholderTextColor="#555" multiline />
+              <TextInput style={[ct$.input, { height: 60, textAlignVertical: 'top' }]} value={description} onChangeText={setDescription} placeholder="Istruzioni per i Kore..." placeholderTextColor="#555" multiline />
 
               <TouchableOpacity style={ct$.saveBtn} onPress={handleCreate} disabled={saving} activeOpacity={0.8}>
                 <LinearGradient colors={['#FFD700', '#B8962E']} style={ct$.saveGrad}>
@@ -247,7 +247,7 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
                   <TouchableOpacity key={crew.id} style={cs$.pushCrewItem} onPress={() => handlePush(crew.id)} disabled={pushing === crew.id} activeOpacity={0.8}>
                     <View style={{ flex: 1, gap: 2 }}>
                       <Text style={{ color: '#FFF', fontSize: 19, fontWeight: '900' }}>{crew.name}</Text>
-                      <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: '600' }}>{crew.members_count} membri {'\u00b7'} {crew.xp_total} FLUX</Text>
+                      <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: '600' }}>{crew.members_count} Kore {'\u00b7'} {crew.xp_total} FLUX</Text>
                     </View>
                     {pushing === crew.id ? (
                       <ActivityIndicator color="#FFD700" size="small" />
