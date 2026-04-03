@@ -12,6 +12,7 @@ import { useTheme, PJS, MONT, fz } from '../../contexts/ThemeContext';
 import { api } from '../../utils/api';
 import { ActivityHeatmap, AlertRow } from '../../components/studio/StudioComponents';
 import { LiveMonitorPanel } from '../../components/studio/LiveMonitor';
+import { NexusSimulatorModal } from '../../components/studio/NexusSimulatorModal';
 
 // ── Widget Shell ──────────────────────────────────────────────────────────────
 function Widget({ title, subtitle, icon, iconColor, children, onExpand, span = 1 }: {
@@ -119,6 +120,7 @@ export default function GlobalDashboard() {
   const [battles, setBattles] = useState<any>(null);
   const [gymData, setGymData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showSimulator, setShowSimulator] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -151,6 +153,7 @@ export default function GlobalDashboard() {
   );
 
   return (
+    <>
     <ScrollView
       style={[pg$.root, { backgroundColor: theme.bg }]}
       contentContainerStyle={pg$.content}
@@ -253,6 +256,7 @@ export default function GlobalDashboard() {
       <Animated.View entering={FadeInDown.delay(240).duration(300)}>
         <Widget title="AZIONI RAPIDE" icon="flash" iconColor={theme.accentGold}>
           <View style={pg$.actionRow}>
+            <QuickAction label="SIMULATE NEXUS" icon="body" color="#FF2D55" onPress={() => setShowSimulator(true)} />
             <QuickAction label="NUOVO TEMPLATE" icon="add-circle" color={theme.accent} onPress={() => router.push('/coach-studio/builder' as any)} />
             <QuickAction label="SCOUT KORE" icon="star" color={theme.accentGold} onPress={() => router.push('/coach-studio/talent' as any)} />
             <QuickAction label="AI ANALYSIS" icon="hardware-chip" color="#AF52DE" onPress={() => router.push('/coach-studio/ai' as any)} />
@@ -291,6 +295,13 @@ export default function GlobalDashboard() {
         </Animated.View>
       )}
     </ScrollView>
+
+    {/* ═══ NEXUS SIMULATOR MODAL ═══ */}
+    <NexusSimulatorModal
+      visible={showSimulator}
+      onClose={() => setShowSimulator(false)}
+    />
+    </>
   );
 }
 

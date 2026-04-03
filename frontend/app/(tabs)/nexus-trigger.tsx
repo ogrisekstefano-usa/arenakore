@@ -1532,6 +1532,7 @@ export default function NexusTriggerScreen() {
   // ═══ VOICE COMMAND ENGINE ═══
   const isVoiceActive = ['body_lock', 'countdown', 'scanning', 'tilt_setup', 'bioscan'].includes(phase);
   const bodyLockedRef = useRef(false); // Track body lock state for voice "VIA"
+  const [bodyLockedUI, setBodyLockedUI] = useState(false); // Re-render trigger for "Dì VIA" prompt
 
   const handleVoiceCommand = useCallback((cmd: 'PRONTO' | 'VIA' | 'ESCI' | null) => {
     if (!cmd) return;
@@ -1577,6 +1578,7 @@ export default function NexusTriggerScreen() {
     setShowDropsRain(false);
     setIsVictory(false);
     bodyLockedRef.current = false;
+    setBodyLockedUI(false);
   }, []);
 
   useEffect(() => { const dp = profileDevice(); setDeviceTier(dp.tier); }, []);
@@ -1917,9 +1919,9 @@ export default function NexusTriggerScreen() {
         <BodyLockOverlay
           onBodyLocked={() => {
             bodyLockedRef.current = true;
-            speakCoach("Pronto. Dì VIA per iniziare.", 'it-IT');
-            // Auto-start countdown after TTS (voice "VIA" also works)
-            setTimeout(() => setPhase('countdown'), 2000);
+            setBodyLockedUI(true);
+            speakCoach("Pronto. Dì VIA per iniziare la sfida.", 'it-IT');
+            // ═══ HARD-LOCK: NO auto-start. Countdown ONLY via voice "VIA" or manual tap ═══
           }}
           onGuidance={(msg: string) => {
             // TTS Coach guidance during calibration
@@ -1929,6 +1931,21 @@ export default function NexusTriggerScreen() {
           }}
         />
         <ExitButton onExit={handleEmergencyExit} />
+
+        {/* ═══ "Dì VIA" prompt — appears ONLY after biometric lock ═══ */}
+        {bodyLockedUI && (
+          <View style={main$.voicePrompt}>
+            <TouchableOpacity
+              style={main$.voicePromptBox}
+              onPress={() => setPhase('countdown')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="mic" size={20} color="#00FF87" />
+              <Text style={main$.voicePromptText}>DÌ "VIA" O TOCCA</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Voice indicator */}
         {isListening && (
           <View style={main$.voiceIndicator}>
@@ -2128,6 +2145,55 @@ const main$ = StyleSheet.create({
   },
   cancelWrap: { alignItems: 'center', marginTop: 20 },
   cancelText: { color: '#555', fontSize: 17, fontWeight: '700', letterSpacing: 1 },
+  // Voice-Command indicator (bottom-left during body_lock / scanning)
+  voiceIndicator: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 56 : 24,
+    left: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(0,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,255,255,0.25)',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    zIndex: 999,
+  },
+  voiceText: {
+    color: '#00FFFF',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  // "Dì VIA" prompt after body lock
+  voicePrompt: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 100 : 72,
+    alignSelf: 'center',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  voicePromptBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(0,255,135,0.10)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(0,255,135,0.35)',
+    borderRadius: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  voicePromptText: {
+    color: '#00FF87',
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: 3,
+  },
 });
 
 // SPRINT 5: Military/Tech Corner HUD
