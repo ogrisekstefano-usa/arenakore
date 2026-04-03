@@ -1335,6 +1335,16 @@ export default function KoreTab() {
             {/* 6.5 TRUST BREAKDOWN — Validation Methods */}
             <ValidationBreakdown />
 
+            {/* 6.7 HEALTH HUB — External Connectivity */}
+            <Animated.View entering={FadeInDown.delay(450)} style={ps$.wrap}>
+              <TouchableOpacity style={[ps$.btn, { borderColor: 'rgba(255,149,0,0.15)' }]} onPress={() => router.push('/settings/health-hub')} activeOpacity={0.8}>
+                <Ionicons name="pulse" size={14} color="#FF9500" />
+                <Text style={[ps$.txt, { color: '#FF9500' }]}>HEALTH HUB</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '600', flex: 1 }}>Dispositivi e servizi</Text>
+                <Ionicons name="chevron-forward" size={12} color="rgba(255,149,0,0.4)" />
+              </TouchableOpacity>
+            </Animated.View>
+
             {/* 7. PRIVACY SHIELD */}
             <Animated.View entering={FadeInDown.delay(500)} style={ps$.wrap}>
               <TouchableOpacity style={ps$.btn} onPress={() => router.push('/settings/shield')} activeOpacity={0.8}>

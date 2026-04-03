@@ -128,6 +128,18 @@ export const api = {
   sanityCheck: (data: { exercise_type: string; reps?: number; seconds?: number; kg?: number }, token: string) =>
     request('/challenge/sanity-check', { method: 'POST', body: JSON.stringify(data) }, token),
   getValidationBreakdown: (token: string) => request('/validation/breakdown', {}, token),
+
+  // ═══ HEALTH AGGREGATOR ═══
+  getHealthConnections: (token: string) => request('/health/connections', {}, token),
+  connectHealthService: (source: string, token: string) =>
+    request('/health/connect', { method: 'POST', body: JSON.stringify({ source }) }, token),
+  ingestHealthData: (data: any, token: string) =>
+    request('/health/ingest', { method: 'POST', body: JSON.stringify(data) }, token),
+  stravaDemoSync: (token: string) =>
+    request('/health/strava-demo-sync', { method: 'POST' }, token),
+  getRecentHealthData: (source: string | null, token: string) =>
+    request(`/health/recent${source ? `?source=${source}` : ''}`, {}, token),
+  getSourceMeta: () => request('/health/source-meta', {}),
   peerConfirm: (data: { challenge_id: string; confirmed: boolean }, token: string) =>
     request('/challenge/peer-confirm', { method: 'POST', body: JSON.stringify(data) }, token),
 

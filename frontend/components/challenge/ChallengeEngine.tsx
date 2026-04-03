@@ -20,6 +20,7 @@ import * as Haptics from 'expo-haptics';
 import { api } from '../../utils/api';
 import { FluxIcon } from '../FluxIcon';
 import { EL, FONT_MONT, FONT_JAKARTA } from '../../utils/eliteTheme';
+import { DataOriginLine } from './DataOriginBadge';
 
 const { width: SW } = Dimensions.get('window');
 
@@ -972,6 +973,15 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
                  '50% FLUX · Nessuna prova'}
               </Text>
             </View>
+
+            {/* DATA ORIGIN — Proof of Origin badges */}
+            <DataOriginLine sources={
+              verdict.proof_type === 'GPS_IMPORT' ? ['STRAVA', 'NEXUS_VISION'] :
+              verdict.bpm_correlation?.status === 'BPM_CORRELATED' ? ['BLE_SENSOR', 'NEXUS_VISION'] :
+              verdict.proximity_witness?.witness_found ? ['NEXUS_VISION'] :
+              verdict.validation_mode === 'MANUAL_ENTRY' ? ['MANUAL'] :
+              ['NEXUS_VISION']
+            } />
 
             {/* SUSPICIOUS alert — yellow not red */}
             {verificationStatus === 'SUSPICIOUS' && (

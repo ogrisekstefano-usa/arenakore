@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, WebSocket, WebSocketDisconnect, Body, Request, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -1484,6 +1484,320 @@ async def get_validation_breakdown(current_user: dict = Depends(get_current_user
         "trust_score": min(100, trust_score),
         "primary_method": primary,
     }
+
+
+
+# =====================================================================
+# UNIVERSAL DATA AGGREGATOR — Health Stack, Strava, BLE Sensors
+# =====================================================================
+
+# Data source trust levels (higher = more trusted)
+SOURCE_TRUST = {
+    "NEXUS_VISION": 1.0,
+    "BLE_SENSOR": 0.92,
+    "STRAVA": 0.88,
+    "APPLE_HEALTH": 0.85,
+    "GOOGLE_HEALTH": 0.85,
+    "MANUAL": 0.3,
+}
+
+# Source display metadata
+SOURCE_META = {
+    "NEXUS_VISION":  {"icon": "eye",        "label": "NÈXUS Vision",     "color": "#00E5FF"},
+    "BLE_SENSOR":    {"icon": "watch",       "label": "Sensore Diretto",  "color": "#FF9500"},
+    "STRAVA":        {"icon": "bicycle",     "label": "Strava",           "color": "#FC4C02"},
+    "APPLE_HEALTH":  {"icon": "heart",       "label": "Apple Health",     "color": "#FF2D55"},
+    "GOOGLE_HEALTH": {"icon": "fitness",     "label": "Google Health",    "color": "#4285F4"},
+    "MANUAL":        {"icon": "create",      "label": "Manuale",          "color": "#8E8E93"},
+}
+
+
+class HealthIngestPayload(BaseModel):
+    source: str  # APPLE_HEALTH | GOOGLE_HEALTH | STRAVA | BLE_SENSOR
+    data_type: str  # BPM | GPS_TRACK | WATTS | REP_COUNT | ACTIVITY_SUMMARY
+    values: list  # Array of data points
+    timestamp_start: Optional[str] = None  # ISO timestamp
+    timestamp_end: Optional[str] = None
+    challenge_id: Optional[str] = None  # Explicit match
+    metadata: Optional[dict] = None  # Source-specific extra data
+
+
+@api_router.post("/health/ingest")
+async def ingest_health_data(data: HealthIngestPayload, current_user: dict = Depends(get_current_user)):
+    """Universal data ingestion endpoint. Accepts data from any health source."""
+    user_id = current_user["_id"]
+
+    if data.source not in SOURCE_TRUST:
+        raise HTTPException(400, f"Fonte non supportata: {data.source}")
+
+    valid_types = {"BPM", "GPS_TRACK", "WATTS", "REP_COUNT", "ACTIVITY_SUMMARY", "STEPS", "CALORIES"}
+    if data.data_type not in valid_types:
+        raise HTTPException(400, f"Tipo dati non supportato: {data.data_type}")
+
+    now = datetime.utcnow()
+
+    # Parse timestamps
+    ts_start = None
+    ts_end = None
+    try:
+        if data.timestamp_start:
+            ts_start = datetime.fromisoformat(data.timestamp_start.replace("Z", "+00:00")).replace(tzinfo=None)
+        if data.timestamp_end:
+            ts_end = datetime.fromisoformat(data.timestamp_end.replace("Z", "+00:00")).replace(tzinfo=None)
+    except Exception:
+        ts_start = now - timedelta(minutes=5)
+        ts_end = now
+
+    # Store the raw health data
+    health_doc = {
+        "user_id": user_id,
+        "source": data.source,
+        "data_type": data.data_type,
+        "values": data.values,
+        "timestamp_start": ts_start or now,
+        "timestamp_end": ts_end or now,
+        "metadata": data.metadata or {},
+        "ingested_at": now,
+        "correlated_challenge_id": None,
+    }
+
+    # ═══ AUTO-CORRELATION: Match with active challenges ═══
+    correlated_challenge = None
+    tolerance = timedelta(minutes=2)
+
+    if data.challenge_id:
+        # Explicit match
+        try:
+            ch = await db.challenges_engine.find_one({"_id": ObjectId(data.challenge_id), "user_id": user_id})
+            if ch:
+                correlated_challenge = ch
+                health_doc["correlated_challenge_id"] = str(ch["_id"])
+        except Exception:
+            pass
+    elif ts_start:
+        # Auto-match by time window: find challenges that overlap with the health data window
+        candidates = await db.challenges_engine.find({
+            "user_id": user_id,
+            "status": {"$in": ["active", "in_progress", "completed"]},
+            "$or": [
+                {"created_at": {"$gte": ts_start - tolerance, "$lte": (ts_end or ts_start) + tolerance}},
+                {"completed_at": {"$gte": ts_start - tolerance, "$lte": (ts_end or ts_start) + tolerance}},
+            ]
+        }).sort("created_at", -1).to_list(5)
+
+        if candidates:
+            correlated_challenge = candidates[0]
+            health_doc["correlated_challenge_id"] = str(candidates[0]["_id"])
+
+    result = await db.health_data.insert_one(health_doc)
+
+    # If correlated with a challenge, update the challenge with source data
+    if correlated_challenge:
+        update_fields = {"data_sources": correlated_challenge.get("data_sources", []) + [data.source]}
+        # Remove duplicates
+        update_fields["data_sources"] = list(set(update_fields["data_sources"]))
+
+        # Auto-upgrade verification based on source trust
+        current_vs = correlated_challenge.get("verification_status", "UNVERIFIED")
+        source_trust = SOURCE_TRUST.get(data.source, 0.3)
+        if source_trust >= 0.85 and current_vs in ("UNVERIFIED", "PROOF_PENDING"):
+            if data.data_type == "GPS_TRACK":
+                update_fields["verification_status"] = "AI_VERIFIED"
+                update_fields["proof_type"] = "GPS_IMPORT"
+            elif data.data_type == "BPM" and data.source == "BLE_SENSOR":
+                # Inject BPM data into challenge for biometric correlation
+                if data.values:
+                    bpm_vals = [v.get("bpm", v) if isinstance(v, dict) else v for v in data.values if v]
+                    if bpm_vals:
+                        avg_bpm = sum(float(b) for b in bpm_vals) / len(bpm_vals)
+                        peak_bpm = max(float(b) for b in bpm_vals)
+                        update_fields["bpm_avg_external"] = round(avg_bpm, 1)
+                        update_fields["bpm_peak_external"] = round(peak_bpm, 1)
+
+        await db.challenges_engine.update_one(
+            {"_id": correlated_challenge["_id"]},
+            {"$set": update_fields}
+        )
+
+    return {
+        "status": "ingested",
+        "health_data_id": str(result.inserted_id),
+        "source": data.source,
+        "data_type": data.data_type,
+        "data_points": len(data.values),
+        "correlated_challenge_id": health_doc["correlated_challenge_id"],
+        "source_trust": SOURCE_TRUST.get(data.source, 0.3),
+    }
+
+
+@api_router.get("/health/connections")
+async def get_health_connections(current_user: dict = Depends(get_current_user)):
+    """Get user's connected health services status."""
+    user_id = current_user["_id"]
+    user = await db.users.find_one({"_id": user_id})
+    connections = user.get("health_connections", {})
+
+    # Get last sync times per source
+    sources = ["APPLE_HEALTH", "GOOGLE_HEALTH", "STRAVA", "BLE_SENSOR"]
+    result = []
+    for src in sources:
+        conn = connections.get(src, {})
+        last_sync = await db.health_data.find_one(
+            {"user_id": user_id, "source": src},
+            sort=[("ingested_at", -1)]
+        )
+        result.append({
+            "source": src,
+            "connected": conn.get("connected", False),
+            "display_name": SOURCE_META[src]["label"],
+            "icon": SOURCE_META[src]["icon"],
+            "color": SOURCE_META[src]["color"],
+            "last_sync": last_sync["ingested_at"].isoformat() if last_sync else None,
+            "total_syncs": await db.health_data.count_documents({"user_id": user_id, "source": src}),
+            "metadata": conn.get("metadata", {}),
+        })
+    return {"connections": result}
+
+
+@api_router.post("/health/connect")
+async def connect_health_service(source: str = Body(...), metadata: dict = Body(default={}), current_user: dict = Depends(get_current_user)):
+    """Connect or disconnect a health service."""
+    user_id = current_user["_id"]
+    if source not in SOURCE_TRUST or source == "MANUAL":
+        raise HTTPException(400, "Fonte non supportata")
+
+    user = await db.users.find_one({"_id": user_id})
+    connections = user.get("health_connections", {})
+    is_connected = connections.get(source, {}).get("connected", False)
+
+    connections[source] = {
+        "connected": not is_connected,
+        "connected_at": datetime.utcnow() if not is_connected else None,
+        "metadata": metadata if not is_connected else {},
+    }
+
+    await db.users.update_one({"_id": user_id}, {"$set": {"health_connections": connections}})
+    return {"source": source, "connected": not is_connected}
+
+
+# ═══ STRAVA WEBHOOK (DEMO MODE) ═══
+@api_router.get("/webhooks/strava")
+async def strava_webhook_verify(hub_mode: str = Query(None, alias="hub.mode"),
+                                hub_challenge: str = Query(None, alias="hub.challenge"),
+                                hub_verify_token: str = Query(None, alias="hub.verify_token")):
+    """Strava webhook subscription verification (GET)."""
+    if hub_mode == "subscribe" and hub_verify_token == "ARENAKORE_STRAVA_VERIFY":
+        return {"hub.challenge": hub_challenge}
+    raise HTTPException(403, "Token di verifica non valido")
+
+
+@api_router.post("/webhooks/strava")
+async def strava_webhook_event(request: Request):
+    """Receive Strava activity events. In demo mode, log and acknowledge."""
+    body = await request.json()
+    event_type = body.get("aspect_type", "")
+    object_type = body.get("object_type", "")
+    owner_id = body.get("owner_id")
+
+    if object_type == "activity" and event_type == "create":
+        # In production: fetch activity details from Strava API
+        # In demo mode: just acknowledge
+        await db.strava_events.insert_one({
+            "strava_owner_id": owner_id,
+            "event_type": event_type,
+            "object_type": object_type,
+            "raw_event": body,
+            "received_at": datetime.utcnow(),
+            "processed": False,
+        })
+    return {"status": "ok"}
+
+
+@api_router.post("/health/strava-demo-sync")
+async def strava_demo_sync(current_user: dict = Depends(get_current_user)):
+    """Simulate a Strava sync with realistic demo data."""
+    user_id = current_user["_id"]
+
+    demo_activities = [
+        {
+            "source": "STRAVA", "data_type": "ACTIVITY_SUMMARY",
+            "values": [{
+                "activity_name": "Morning Run - Parco Sempione",
+                "distance_km": 8.4, "elevation_m": 45, "avg_speed_kmh": 12.6,
+                "avg_bpm": 152, "max_bpm": 178, "calories": 520,
+                "duration_seconds": 2400, "type": "Run",
+                "segment_efforts": 3, "kudos": 12,
+            }],
+            "metadata": {"strava_id": f"demo_{random.randint(100000,999999)}"},
+        },
+        {
+            "source": "STRAVA", "data_type": "GPS_TRACK",
+            "values": [
+                {"lat": 45.4747, "lng": 9.1794, "t": 0, "speed": 11.2},
+                {"lat": 45.4752, "lng": 9.1801, "t": 120, "speed": 12.8},
+                {"lat": 45.4768, "lng": 9.1815, "t": 240, "speed": 13.1},
+                {"lat": 45.4780, "lng": 9.1808, "t": 360, "speed": 12.5},
+                {"lat": 45.4791, "lng": 9.1795, "t": 480, "speed": 11.9},
+            ],
+            "metadata": {"city": "Milano", "segment": "Parco Sempione Loop"},
+        },
+        {
+            "source": "STRAVA", "data_type": "BPM",
+            "values": [
+                {"t": 0, "bpm": 85}, {"t": 60, "bpm": 120}, {"t": 180, "bpm": 148},
+                {"t": 300, "bpm": 155}, {"t": 600, "bpm": 162}, {"t": 900, "bpm": 158},
+                {"t": 1200, "bpm": 165}, {"t": 1500, "bpm": 170}, {"t": 1800, "bpm": 175},
+                {"t": 2100, "bpm": 168}, {"t": 2400, "bpm": 145},
+            ],
+            "metadata": {"device": "Garmin HRM-Pro Plus"},
+        },
+    ]
+
+    results = []
+    for act in demo_activities:
+        doc = {
+            "user_id": user_id, "source": act["source"], "data_type": act["data_type"],
+            "values": act["values"], "metadata": act.get("metadata", {}),
+            "timestamp_start": datetime.utcnow() - timedelta(hours=2),
+            "timestamp_end": datetime.utcnow() - timedelta(hours=1, minutes=20),
+            "ingested_at": datetime.utcnow(), "correlated_challenge_id": None,
+        }
+        r = await db.health_data.insert_one(doc)
+        results.append({"id": str(r.inserted_id), "type": act["data_type"]})
+
+    # Mark Strava as connected
+    await db.users.update_one({"_id": user_id}, {"$set": {
+        "health_connections.STRAVA": {"connected": True, "connected_at": datetime.utcnow(), "metadata": {"demo": True}},
+    }})
+
+    return {"status": "synced", "activities": results, "demo_mode": True}
+
+
+@api_router.get("/health/recent")
+async def get_recent_health_data(source: str = None, limit: int = 20, current_user: dict = Depends(get_current_user)):
+    """Get recent health data for the user, optionally filtered by source."""
+    user_id = current_user["_id"]
+    query = {"user_id": user_id}
+    if source:
+        query["source"] = source
+
+    docs = await db.health_data.find(query).sort("ingested_at", -1).limit(limit).to_list(limit)
+    return [{
+        "id": str(d["_id"]),
+        "source": d["source"],
+        "data_type": d["data_type"],
+        "values": d["values"],
+        "metadata": d.get("metadata", {}),
+        "ingested_at": d["ingested_at"].isoformat(),
+        "correlated_challenge_id": d.get("correlated_challenge_id"),
+        "source_meta": SOURCE_META.get(d["source"], {}),
+    } for d in docs]
+
+
+@api_router.get("/health/source-meta")
+async def get_source_metadata():
+    """Get display metadata for all data sources."""
+    return {"sources": SOURCE_META, "trust_levels": SOURCE_TRUST}
 
 
 
