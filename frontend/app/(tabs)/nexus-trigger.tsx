@@ -28,6 +28,7 @@ import { profileDevice, DeviceProfile, DeviceTier, getTierLabel, getTrackingMode
 import { RemoteUXEngine } from '../../utils/RemoteUXEngine';
 import { FluxIcon } from '../../components/FluxIcon';
 import { Header } from '../../components/Header';
+import { BodyLockOverlay } from '../../components/nexus/BodyLockOverlay';
 
 // Extracted sub-components
 import { CyberGrid, DigitalShadow, ScanLine } from '../../components/nexus/NexusVisuals';
@@ -1470,7 +1471,7 @@ export default function NexusTriggerScreen() {
   const { user, token, logout, activeRole, setActiveRole, updateUser } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'challenge_engine' | 'tilt_setup' | 'countdown' | 'stabilizing' | 'scanning' | 'results' | 'live_queue' | 'qr_validation'>('console');
+  const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'challenge_engine' | 'tilt_setup' | 'body_lock' | 'countdown' | 'stabilizing' | 'scanning' | 'results' | 'live_queue' | 'qr_validation'>('console');
   const [exercise, setExercise] = useState<ExerciseType>('squat');
   const [forgeMode, setForgeMode] = useState<ForgeMode>('personal');
   const [sessionMode, setSessionMode] = useState<'scan' | 'practice' | 'ranked'>('scan');
@@ -1840,9 +1841,25 @@ export default function NexusTriggerScreen() {
     return (
       <TiltGuideOverlay
         lang="it"
-        onReady={() => setPhase('countdown')}
-        onSkip={() => setPhase('countdown')}
+        onReady={() => setPhase('body_lock')}
+        onSkip={() => setPhase('body_lock')}
       />
+    );
+  }
+
+  if (phase === 'body_lock') {
+    return (
+      <View style={main$.container}>
+        <StatusBar barStyle="light-content" />
+        <View style={main$.cameraOverlay} />
+        <CyberGrid intensity={0.3} />
+        <BodyLockOverlay onBodyLocked={() => setPhase('countdown')} />
+        <SafeAreaView style={{ position: 'absolute', bottom: 40, alignSelf: 'center' }}>
+          <TouchableOpacity onPress={() => setPhase('console')} style={main$.cancelWrap}>
+            <Text style={main$.cancelText}>{'\u2190'} ANNULLA</Text>
+          </TouchableOpacity>
+        </SafeAreaView>
+      </View>
     );
   }
 
