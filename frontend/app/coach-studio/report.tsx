@@ -113,25 +113,37 @@ export default function TalentReportPage() {
   const [coachNote, setCoachNote] = useState('');
   const [noteEditMode, setNoteEditMode] = useState(false);
 
-  const handlePrintPDF = () => {
-    if (typeof window === 'undefined') return;
-    const styleId = 'nexus-print-style';
-    let existing = document.getElementById(styleId);
-    if (existing) existing.remove();
-    const style = document.createElement('style');
-    style.id = styleId;
-    style.textContent = `
-      @media print {
-        @page { margin: 0; size: A4 portrait; }
-        body > * { display: none !important; }
-        body { background: #000 !important; margin: 0; padding: 0; }
-        #nexus-report-card { display: block !important; position: fixed !important; top: 0; left: 0; width: 100% !important; }
-        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  const handlePrintPDF = async () => {
+    if (!token || !athleteId) return;
+    try {
+      // Call real backend PDF endpoint
+      const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+      const response = await fetch(`${backendUrl}/api/report/athlete-pdf/${athleteId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('PDF generation failed');
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      // Open in new tab for download/print
+      if (typeof window !== 'undefined') {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `KORE_PASSPORT_${report?.username || 'EXPORT'}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
       }
-    `;
-    document.head.appendChild(style);
-    document.getElementById('nexus-report-card')?.setAttribute('style', 'display:block');
-    setTimeout(() => { window.print(); setTimeout(() => style.remove(), 1000); }, 200);
+    } catch (err) {
+      console.warn('[PDF]', err);
+      // Fallback to browser print if backend fails
+      if (typeof window !== 'undefined') {
+        const style = document.createElement('style');
+        style.textContent = `@media print { @page { margin: 0; size: A4; } body > * { display: none !important; } body { background: #000 !important; } #nexus-report-card { display: block !important; position: fixed !important; top: 0; left: 0; width: 100% !important; } * { -webkit-print-color-adjust: exact !important; } }`;
+        document.head.appendChild(style);
+        setTimeout(() => { window.print(); setTimeout(() => style.remove(), 1000); }, 200);
+      }
+    }
   };
 
   useEffect(() => {

@@ -6641,6 +6641,60 @@ async def generate_athlete_pdf(athlete_id: str, current_user: dict = Depends(req
         c.drawString(bar_x + bar_w + 10, y, str(val))
         y -= 20
 
+    # ── FLUX MONTHLY PROGRESSION ──
+    y -= 15
+    c.setFillColor(HexColor("#FFFFFF"))
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(30, y, "FLUX PROGRESSION (ULTIMI 6 MESI)")
+    y -= 18
+
+    # Aggregate FLUX data from challenges completed by this athlete
+    from_date = datetime.now(timezone.utc) - timedelta(days=180)
+    monthly_flux = {}
+    flux_cursor = db.challenges.find({
+        "user_id": athlete["_id"],
+        "completed_at": {"$gte": from_date},
+    }).sort("completed_at", 1)
+    async for ch in flux_cursor:
+        m_key = ch["completed_at"].strftime("%Y-%m")
+        flux_earned = ch.get("flux_earned", ch.get("xp_earned", 0))
+        monthly_flux[m_key] = monthly_flux.get(m_key, 0) + flux_earned
+
+    # If no challenge data, show current balance breakdown
+    if not monthly_flux:
+        # Fallback: show total balance as single entry
+        current_month = datetime.now(timezone.utc).strftime("%Y-%m")
+        monthly_flux[current_month] = ak_credits
+
+    months_sorted = sorted(monthly_flux.keys())[-6:]  # Last 6 months
+    max_flux = max(monthly_flux.values()) if monthly_flux else 1
+
+    for mk in months_sorted:
+        flux_val = monthly_flux[mk]
+        # Month label
+        c.setFillColor(HexColor("#888888"))
+        c.setFont("Helvetica", 9)
+        c.drawString(50, y, mk)
+        # Bar
+        bar_x = 120
+        bar_w = 200
+        c.setFillColor(HexColor("#1A1A1A"))
+        c.rect(bar_x, y - 2, bar_w, 10, stroke=0, fill=1)
+        fill_w = (flux_val / max(max_flux, 1)) * bar_w
+        c.setFillColor(HexColor("#00E5FF"))
+        c.rect(bar_x, y - 2, fill_w, 10, stroke=0, fill=1)
+        # Value
+        c.setFillColor(HexColor("#FFFFFF"))
+        c.setFont("Helvetica-Bold", 9)
+        c.drawString(bar_x + bar_w + 10, y, f"{flux_val} FLUX")
+        y -= 18
+
+    # Total FLUX
+    c.setFillColor(HexColor("#00E5FF"))
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(50, y, f"SALDO TOTALE: {ak_credits} FLUX")
+    y -= 10
+
     # ── BADGES ──
     y -= 15
     c.setFillColor(HexColor("#FFFFFF"))
