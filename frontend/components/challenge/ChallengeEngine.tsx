@@ -729,24 +729,55 @@ function VerificationBadge({ status, style }: { status: VerificationStatus; styl
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// INTEGRITY OK GLOW — Animated pulsing badge
+// INTEGRITY OK GLOW — Cinematic Reveal with Ring Explosion
 // ═══════════════════════════════════════════════════════════════════
 function IntegrityGlowBadge() {
-  const scale = useSharedValue(0.3);
+  const scale = useSharedValue(0.1);
   const opacity = useSharedValue(0);
   const glowOpacity = useSharedValue(0);
+  const ringScale = useSharedValue(0.5);
+  const ringOpacity = useSharedValue(0);
+  const ring2Scale = useSharedValue(0.5);
+  const ring2Opacity = useSharedValue(0);
+  const textOpacity = useSharedValue(0);
+  const shieldScale = useSharedValue(0);
+  const shieldRotate = useSharedValue(-30);
 
   useEffect(() => {
-    // Phase 1: Entrance — fade + scale spring
-    scale.value = withDelay(600, withSpring(1, { damping: 10, stiffness: 150 }));
-    opacity.value = withDelay(600, withTiming(1, { duration: 500 }));
-    // Phase 2: Glow pulse (repeating after entrance)
-    glowOpacity.value = withDelay(1200, withRepeat(
+    // Phase 1 (0ms): Ring burst explosion outward
+    ringScale.value = withDelay(300, withTiming(2.8, { duration: 700, easing: Easing.out(Easing.exp) }));
+    ringOpacity.value = withDelay(300, withSequence(
+      withTiming(0.7, { duration: 200 }),
+      withTiming(0, { duration: 500, easing: Easing.out(Easing.ease) }),
+    ));
+    // Second ring (staggered)
+    ring2Scale.value = withDelay(450, withTiming(2.2, { duration: 600, easing: Easing.out(Easing.exp) }));
+    ring2Opacity.value = withDelay(450, withSequence(
+      withTiming(0.5, { duration: 150 }),
+      withTiming(0, { duration: 450, easing: Easing.out(Easing.ease) }),
+    ));
+
+    // Phase 2 (500ms): Shield icon springs in with rotation
+    shieldScale.value = withDelay(500, withSpring(1, { damping: 8, stiffness: 200 }));
+    shieldRotate.value = withDelay(500, withSpring(0, { damping: 12, stiffness: 180 }));
+
+    // Phase 3 (700ms): Badge container scales in
+    scale.value = withDelay(700, withSpring(1, { damping: 9, stiffness: 130 }));
+    opacity.value = withDelay(700, withTiming(1, { duration: 400 }));
+
+    // Phase 4 (1000ms): Text fades in
+    textOpacity.value = withDelay(1000, withTiming(1, { duration: 400, easing: Easing.out(Easing.ease) }));
+
+    // Phase 5 (1500ms): Eternal glow pulse
+    glowOpacity.value = withDelay(1500, withRepeat(
       withSequence(
-        withTiming(0.6, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0.15, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.55, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.12, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
       ), -1, false
     ));
+
+    // Haptic on reveal
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
   }, []);
 
   const containerStyle = useAnimatedStyle(() => ({
@@ -758,16 +789,48 @@ function IntegrityGlowBadge() {
     opacity: glowOpacity.value,
   }));
 
+  const ringStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: ringScale.value }],
+    opacity: ringOpacity.value,
+  }));
+
+  const ring2Style = useAnimatedStyle(() => ({
+    transform: [{ scale: ring2Scale.value }],
+    opacity: ring2Opacity.value,
+  }));
+
+  const shieldStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: shieldScale.value },
+      { rotate: `${shieldRotate.value}deg` },
+    ],
+  }));
+
+  const textStyle = useAnimatedStyle(() => ({
+    opacity: textOpacity.value,
+  }));
+
   return (
-    <Animated.View style={[ig.container, containerStyle]}>
-      {/* Outer glow ring */}
-      <Animated.View style={[ig.glowRing, glowStyle]} />
-      {/* Inner badge */}
-      <View style={ig.innerBadge}>
-        <Ionicons name="shield-checkmark" size={20} color={EL.CYAN} />
-        <Text style={ig.badgeText}>INTEGRITY OK</Text>
-      </View>
-    </Animated.View>
+    <View style={ig.outerWrap}>
+      {/* Expanding ring burst 1 */}
+      <Animated.View style={[ig.ringBurst, ringStyle]} />
+      {/* Expanding ring burst 2 (staggered) */}
+      <Animated.View style={[ig.ringBurst2, ring2Style]} />
+
+      <Animated.View style={[ig.container, containerStyle]}>
+        {/* Outer glow aura */}
+        <Animated.View style={[ig.glowRing, glowStyle]} />
+        {/* Inner badge */}
+        <View style={ig.innerBadge}>
+          <Animated.View style={shieldStyle}>
+            <Ionicons name="shield-checkmark" size={22} color={EL.CYAN} />
+          </Animated.View>
+          <Animated.View style={textStyle}>
+            <Text style={ig.badgeText}>INTEGRITY OK</Text>
+          </Animated.View>
+        </View>
+      </Animated.View>
+    </View>
   );
 }
 
@@ -1170,24 +1233,37 @@ const vb = StyleSheet.create({
 // STYLES — Integrity Glow Badge
 // ═══════════════════════════════════════════
 const ig = StyleSheet.create({
+  outerWrap: {
+    alignItems: 'center', justifyContent: 'center',
+    marginVertical: 8, height: 60,
+  },
+  ringBurst: {
+    position: 'absolute' as const,
+    width: 60, height: 60, borderRadius: 30,
+    borderWidth: 2, borderColor: EL.CYAN,
+  },
+  ringBurst2: {
+    position: 'absolute' as const,
+    width: 50, height: 50, borderRadius: 25,
+    borderWidth: 1.5, borderColor: EL.CYAN,
+  },
   container: {
     alignItems: 'center', justifyContent: 'center',
-    marginVertical: 8,
   },
   glowRing: {
     position: 'absolute' as const,
-    width: 160, height: 48, borderRadius: 24,
+    width: 170, height: 50, borderRadius: 25,
     backgroundColor: EL.CYAN,
     ...(Platform.OS === 'web' ? {
       // @ts-ignore — Web boxShadow for glow
-      boxShadow: `0 0 20px ${EL.CYAN}66, 0 0 40px ${EL.CYAN}33`,
+      boxShadow: `0 0 24px ${EL.CYAN}55, 0 0 48px ${EL.CYAN}22`,
     } : {}),
   },
   innerBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: '#0A1A1A',
     borderWidth: 1.5, borderColor: EL.CYAN,
-    borderRadius: 22, paddingHorizontal: 18, paddingVertical: 10,
+    borderRadius: 22, paddingHorizontal: 20, paddingVertical: 11,
   },
   badgeText: {
     fontFamily: FONT_MONT, color: EL.CYAN,
