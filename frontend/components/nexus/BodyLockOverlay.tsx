@@ -33,9 +33,10 @@ interface BodySegment {
 
 interface BodyLockOverlayProps {
   onBodyLocked: () => void;
+  onGuidance?: (segment: string) => void;
 }
 
-export function BodyLockOverlay({ onBodyLocked }: BodyLockOverlayProps) {
+export function BodyLockOverlay({ onBodyLocked, onGuidance }: BodyLockOverlayProps) {
   const [segments, setSegments] = useState<BodySegment[]>([
     { key: 'head', label: 'TESTA', detected: false, confidence: 0 },
     { key: 'torso', label: 'TORSO', detected: false, confidence: 0 },
@@ -157,9 +158,10 @@ export function BodyLockOverlay({ onBodyLocked }: BodyLockOverlayProps) {
         }
       }
 
-      // Dynamic RED guidance
+      // Dynamic RED guidance + TTS callback
       if (missingSegments.length > 0) {
         const missing = missingSegments[0];
+        if (onGuidance) onGuidance(missing.key);
         switch (missing.key) {
           case 'feet': setGuidanceText('INQUADRA I PIEDI PER PARTIRE'); break;
           case 'legs': setGuidanceText('INQUADRA LE GAMBE'); break;

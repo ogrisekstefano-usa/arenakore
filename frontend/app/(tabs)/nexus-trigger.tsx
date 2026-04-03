@@ -4,7 +4,7 @@ import { TAB_BACKGROUNDS } from '../../utils/images';
  * Nike Elite Aesthetic — Motion tracking, Bio-scan, Challenge Forge
  * Heavy sub-components extracted to /components/nexus/
  */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, TouchableOpacity,
   Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput,
@@ -29,6 +29,8 @@ import { RemoteUXEngine } from '../../utils/RemoteUXEngine';
 import { FluxIcon } from '../../components/FluxIcon';
 import { Header } from '../../components/Header';
 import { BodyLockOverlay } from '../../components/nexus/BodyLockOverlay';
+import { ExitButton } from '../../components/nexus/ExitButton';
+import { useVoiceCommands, speakCoach, cancelCoachSpeech } from '../../utils/VoiceCommandEngine';
 
 // Extracted sub-components
 import { CyberGrid, DigitalShadow, ScanLine } from '../../components/nexus/NexusVisuals';
@@ -1527,6 +1529,56 @@ export default function NexusTriggerScreen() {
   const accelSubRef = useRef<any>(null);
   const motionTimeoutRef = useRef<any>(null);
 
+  // ═══ VOICE COMMAND ENGINE ═══
+  const isVoiceActive = ['body_lock', 'countdown', 'scanning', 'tilt_setup', 'bioscan'].includes(phase);
+  const bodyLockedRef = useRef(false); // Track body lock state for voice "VIA"
+
+  const handleVoiceCommand = useCallback((cmd: 'PRONTO' | 'VIA' | 'ESCI' | null) => {
+    if (!cmd) return;
+    switch (cmd) {
+      case 'PRONTO':
+        // Activate scanner — if in console, start bioscan
+        if (phase === 'console') {
+          setSessionMode('scan');
+          setPhase('bioscan');
+        }
+        break;
+      case 'VIA':
+        // Start countdown — ONLY if body locked
+        if (phase === 'body_lock' && bodyLockedRef.current) {
+          setPhase('countdown');
+        }
+        break;
+      case 'ESCI':
+        // Emergency exit
+        handleEmergencyExit();
+        break;
+    }
+  }, [phase]);
+
+  const { isListening } = useVoiceCommands({
+    enabled: isVoiceActive,
+    onCommand: handleVoiceCommand,
+  });
+
+  // ═══ EMERGENCY EXIT ═══
+  const handleEmergencyExit = useCallback(() => {
+    cancelCoachSpeech();
+    // Clear all timers
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (motionTimeoutRef.current) clearTimeout(motionTimeoutRef.current);
+    // Reset all challenge state
+    setPhase('console');
+    setMotionState(null);
+    setMotionActive(false);
+    setScanResult(null);
+    setSessionId(null);
+    setChallengeContext(null);
+    setShowDropsRain(false);
+    setIsVictory(false);
+    bodyLockedRef.current = false;
+  }, []);
+
   useEffect(() => { const dp = profileDevice(); setDeviceTier(dp.tier); }, []);
 
   // SPRINT 7: Fetch bio-scan eligibility on mount
@@ -1862,12 +1914,28 @@ export default function NexusTriggerScreen() {
         <StatusBar barStyle="light-content" />
         <View style={main$.cameraOverlay} />
         <CyberGrid intensity={0.3} />
-        <BodyLockOverlay onBodyLocked={() => setPhase('countdown')} />
-        <SafeAreaView style={{ position: 'absolute', bottom: 40, alignSelf: 'center' }}>
-          <TouchableOpacity onPress={() => setPhase('console')} style={main$.cancelWrap}>
-            <Text style={main$.cancelText}>{'\u2190'} ANNULLA</Text>
-          </TouchableOpacity>
-        </SafeAreaView>
+        <BodyLockOverlay
+          onBodyLocked={() => {
+            bodyLockedRef.current = true;
+            speakCoach("Pronto. Dì VIA per iniziare.", 'it-IT');
+            // Auto-start countdown after TTS (voice "VIA" also works)
+            setTimeout(() => setPhase('countdown'), 2000);
+          }}
+          onGuidance={(msg: string) => {
+            // TTS Coach guidance during calibration
+            if (msg === 'feet') speakCoach("Spostati indietro. Inquadra i piedi.", 'it-IT');
+            else if (msg === 'legs') speakCoach("Inquadra le gambe.", 'it-IT');
+            else if (msg === 'torso') speakCoach("Inquadra il busto.", 'it-IT');
+          }}
+        />
+        <ExitButton onExit={handleEmergencyExit} />
+        {/* Voice indicator */}
+        {isListening && (
+          <View style={main$.voiceIndicator}>
+            <Ionicons name="mic" size={14} color="#00FFFF" />
+            <Text style={main$.voiceText}>VOCE ATTIVA</Text>
+          </View>
+        )}
       </View>
     );
   }
