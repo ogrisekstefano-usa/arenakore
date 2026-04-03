@@ -41,6 +41,7 @@ import { AKBadge } from '../../components/KoreVault';
 import { CertifiedByPros } from '../../components/training/CertifiedByPros';
 import { TiltGuideOverlay } from '../../components/TiltGuideOverlay';
 import { ChallengeEngine } from '../../components/challenge/ChallengeEngine';
+import { PostRaceValidation } from '../../components/challenge/PostRaceValidation';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -1458,11 +1459,12 @@ export default function NexusTriggerScreen() {
   const { user, token, logout, activeRole, setActiveRole, updateUser } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'challenge_engine' | 'tilt_setup' | 'countdown' | 'stabilizing' | 'scanning' | 'results' | 'live_queue'>('console');
+  const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'challenge_engine' | 'tilt_setup' | 'countdown' | 'stabilizing' | 'scanning' | 'results' | 'live_queue' | 'qr_validation'>('console');
   const [exercise, setExercise] = useState<ExerciseType>('squat');
   const [forgeMode, setForgeMode] = useState<ForgeMode>('personal');
   const [sessionMode, setSessionMode] = useState<'scan' | 'practice' | 'ranked'>('scan');
   const [challengeContext, setChallengeContext] = useState<{ id: string; tags: string[]; color: string } | null>(null);
+  const [qrContext, setQrContext] = useState<{ challengeId: string; score: { reps: number; seconds: number; kg: number }; totalParticipants: number; tags: string[]; challengeType: 'OPEN_LIVE' | 'CLOSED_LIVE' } | null>(null);
   const [motionState, setMotionState] = useState<MotionState | null>(null);
   const [motionActive, setMotionActive] = useState(false);
   const [goldFlash, setGoldFlash] = useState(false);
@@ -1735,7 +1737,30 @@ export default function NexusTriggerScreen() {
         router.push('/(tabs)/arena');
         break;
       case 'live':
-        setPhase('live_queue');
+        // Create a QR Challenge and enter Post-Race Validation
+        (async () => {
+          try {
+            if (!token) return;
+            const res = await api.qrCreateChallenge({
+              title: 'LIVE ARENA CHALLENGE',
+              exercise_type: exercise,
+              tags: ['POWER'],
+              challenge_type: 'CLOSED_LIVE',
+              total_participants: 3,
+            }, token);
+            setQrContext({
+              challengeId: res.challenge_id,
+              score: { reps: 15, seconds: 45, kg: 0 }, // Default demo score
+              totalParticipants: res.total_participants,
+              tags: ['POWER'],
+              challengeType: 'CLOSED_LIVE',
+            });
+            setPhase('qr_validation');
+          } catch (err) {
+            console.error('QR challenge create failed:', err);
+            setPhase('live_queue'); // fallback
+          }
+        })();
         break;
       default:
         break;
@@ -1781,6 +1806,23 @@ export default function NexusTriggerScreen() {
       // Future: start a live 1v1 scanning session
       setPhase('forge');
     }} />;
+  }
+
+  // ═══ QR KORE CROSS-CHECK VALIDATION PHASE ═══
+  if (phase === 'qr_validation' && qrContext) {
+    return (
+      <PostRaceValidation
+        user={user}
+        token={token}
+        challengeId={qrContext.challengeId}
+        declaredScore={qrContext.score}
+        totalParticipants={qrContext.totalParticipants}
+        challengeType={qrContext.challengeType}
+        tags={qrContext.tags}
+        onComplete={() => { setPhase('console'); setQrContext(null); }}
+        onBack={() => { setPhase('console'); setQrContext(null); }}
+      />
+    );
   }
 
   if (phase === 'tilt_setup') {

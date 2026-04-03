@@ -130,6 +130,20 @@ export const api = {
   peerConfirm: (data: { challenge_id: string; confirmed: boolean }, token: string) =>
     request('/challenge/peer-confirm', { method: 'POST', body: JSON.stringify(data) }, token),
 
+  // ========== QR KORE CROSS-CHECK ENGINE ==========
+  qrCreateChallenge: (data: { title: string; exercise_type: string; tags: string[]; challenge_type: string; total_participants: number }, token: string) =>
+    request('/qr/create-challenge', { method: 'POST', body: JSON.stringify(data) }, token),
+  qrJoinChallenge: (challengeId: string, token: string) =>
+    request(`/qr/join-challenge/${challengeId}`, { method: 'POST' }, token),
+  qrGenerate: (data: { challenge_id: string; declared_reps?: number; declared_seconds?: number; declared_kg?: number; total_participants: number; challenge_type?: string }, token: string) =>
+    request('/qr/generate', { method: 'POST', body: JSON.stringify(data) }, token),
+  qrValidate: (data: { qr_token?: string; pin_code?: string }, token: string) =>
+    request('/qr/validate', { method: 'POST', body: JSON.stringify(data) }, token),
+  qrStatus: (challengeId: string, token: string) =>
+    request(`/qr/status/${challengeId}`, {}, token),
+  qrParticipants: (challengeId: string, token: string) =>
+    request(`/qr/participants/${challengeId}`, {}, token),
+
   // ========== BIO-EVOLUTION ENGINE — SPRINT 7 ==========
   getRescanEligibility: (token: string) => request('/nexus/rescan-eligibility', {}, token),
   completeBioscan: (token: string) => request('/nexus/bioscan', { method: 'POST' }, token),

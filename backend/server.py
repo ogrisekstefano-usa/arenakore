@@ -1249,9 +1249,17 @@ async def seed_data():
         id='duel_timeout_enforcer',
         replace_existing=True,
     )
+    # ═══ QR VALIDATION TIMEOUT — Check every 15min for expired 1h QR validations ═══
+    scheduler.add_job(
+        enforce_qr_timeouts,
+        'interval', minutes=15,
+        id='qr_timeout_enforcer',
+        replace_existing=True,
+    )
     scheduler.start()
     logger.info("[NotifEngine] Scheduler started — running every 6h")
     logger.info("[DuelEnforcer] Scheduler started — running every 1h")
+    logger.info("[QR-Enforcer] Scheduler started — running every 15min")
     # THE FOUNDER PROTOCOL — Retroactive badge for first 100 users
     founder_count = await db.users.count_documents({"is_founder": True})
     if founder_count == 0:
@@ -4144,6 +4152,8 @@ AK_EARN_RULES = {
     "ranked_win": {"amount": 50, "label": "Vittoria Ranked"},
     "ranked_loss": {"amount": -20, "label": "Sconfitta Ranked"},
     "duel_timeout_penalty": {"amount": -50, "label": "Penalità timeout duello 48h"},
+    "qr_scan_reward": {"amount": 5, "label": "Scansione QR Kore (+5 FLUX)"},
+    "qr_validated_challenge": {"amount": 0, "label": "Sfida validata QR Kore"},
     "iap_pack_small": {"amount": 500, "label": "Acquisto Pack S"},
     "iap_pack_medium": {"amount": 1200, "label": "Acquisto Pack M"},
     "iap_pack_large": {"amount": 3000, "label": "Acquisto Pack L"},
@@ -5299,6 +5309,422 @@ async def peer_confirm_challenge(data: PeerConfirmRequest, current_user: dict = 
         "verification_status": new_status,
         "challenge_id": data.challenge_id,
     }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# QR KORE CROSS-CHECK ENGINE — Social Trust & Physical Proximity
+# ═══════════════════════════════════════════════════════════════════
+import math
+
+class QRGenerateRequest(BaseModel):
+    challenge_id: str
+    declared_reps: Optional[int] = 0
+    declared_seconds: Optional[float] = 0.0
+    declared_kg: Optional[float] = 0.0
+    total_participants: int = 3  # including self
+    challenge_type: str = "CLOSED_LIVE"  # "OPEN_LIVE" | "CLOSED_LIVE"
+
+class QRValidateRequest(BaseModel):
+    qr_token: Optional[str] = None
+    pin_code: Optional[str] = None  # 6-digit fallback
+
+class QRChallengeCreateRequest(BaseModel):
+    title: str = "LIVE CHALLENGE"
+    exercise_type: str = "squat"
+    tags: List[str] = ["POWER"]
+    challenge_type: str = "CLOSED_LIVE"  # "OPEN_LIVE" | "CLOSED_LIVE"
+    total_participants: int = 3
+
+
+def _calculate_qr_threshold(total_participants: int) -> int:
+    """50% + 1 of other participants (excluding self)."""
+    others = max(1, total_participants - 1)
+    return math.floor(others * 0.5) + 1
+
+
+def _generate_pin() -> str:
+    """Generate a 6-digit PIN code."""
+    return ''.join(random.choices(string.digits, k=6))
+
+
+def _generate_qr_token(user_id: str, challenge_id: str, score: dict) -> str:
+    """Generate a unique QR token encoding user/challenge/score."""
+    payload = {
+        "uid": user_id,
+        "cid": challenge_id,
+        "s": score,
+        "t": datetime.utcnow().timestamp(),
+        "nonce": ''.join(random.choices(string.ascii_letters + string.digits, k=8)),
+    }
+    raw = stdlib_json.dumps(payload, separators=(',', ':'))
+    return base64.urlsafe_b64encode(raw.encode()).decode()
+
+
+def _decode_qr_token(token: str) -> dict:
+    """Decode a QR token back to payload."""
+    try:
+        raw = base64.urlsafe_b64decode(token.encode()).decode()
+        return stdlib_json.loads(raw)
+    except Exception:
+        return {}
+
+
+@api_router.post("/qr/create-challenge")
+async def create_qr_challenge(data: QRChallengeCreateRequest, current_user: dict = Depends(get_current_user)):
+    """Create a group challenge with QR validation requirement."""
+    if not data.tags or len(data.tags) == 0:
+        raise HTTPException(status_code=400, detail="Almeno un tag obbligatorio")
+    if data.total_participants < 2:
+        raise HTTPException(status_code=400, detail="Minimo 2 partecipanti per una sfida di gruppo")
+
+    now = datetime.utcnow()
+    user_id = current_user["_id"]
+    threshold = _calculate_qr_threshold(data.total_participants)
+
+    # Create group challenge document
+    challenge_doc = {
+        "creator_id": user_id,
+        "title": data.title,
+        "exercise_type": data.exercise_type,
+        "tags": data.tags,
+        "challenge_type": data.challenge_type,
+        "total_participants": data.total_participants,
+        "threshold": threshold,
+        "participants": [{
+            "user_id": user_id,
+            "username": current_user.get("username", "KORE"),
+            "status": "joined",
+            "joined_at": now,
+        }],
+        "status": "waiting",  # waiting → active → completed → expired
+        "created_at": now,
+        "expires_at": now + timedelta(hours=2),  # 2h to start
+    }
+    result = await db.qr_challenges.insert_one(challenge_doc)
+    challenge_id = str(result.inserted_id)
+
+    # Generate a 6-digit join code
+    join_code = _generate_pin()
+    await db.qr_challenges.update_one({"_id": result.inserted_id}, {"$set": {"join_code": join_code}})
+
+    return {
+        "challenge_id": challenge_id,
+        "join_code": join_code,
+        "challenge_type": data.challenge_type,
+        "total_participants": data.total_participants,
+        "threshold": threshold,
+        "status": "waiting",
+    }
+
+
+@api_router.post("/qr/join-challenge/{challenge_id}")
+async def join_qr_challenge(challenge_id: str, current_user: dict = Depends(get_current_user)):
+    """Join an existing group challenge."""
+    try:
+        challenge = await db.qr_challenges.find_one({"_id": ObjectId(challenge_id)})
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID sfida non valido")
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Sfida non trovata")
+    if challenge["status"] not in ("waiting", "active"):
+        raise HTTPException(status_code=400, detail="Sfida non più disponibile")
+
+    user_id = current_user["_id"]
+    # Check if already joined
+    existing = [p for p in challenge.get("participants", []) if p["user_id"] == user_id]
+    if existing:
+        return {"status": "already_joined", "challenge_id": challenge_id}
+
+    if len(challenge.get("participants", [])) >= challenge["total_participants"]:
+        raise HTTPException(status_code=400, detail="Sfida piena")
+
+    now = datetime.utcnow()
+    await db.qr_challenges.update_one(
+        {"_id": ObjectId(challenge_id)},
+        {"$push": {"participants": {
+            "user_id": user_id,
+            "username": current_user.get("username", "KORE"),
+            "status": "joined",
+            "joined_at": now,
+        }}}
+    )
+
+    # Auto-activate if enough participants
+    updated = await db.qr_challenges.find_one({"_id": ObjectId(challenge_id)})
+    if len(updated.get("participants", [])) >= updated["total_participants"]:
+        await db.qr_challenges.update_one(
+            {"_id": ObjectId(challenge_id)},
+            {"$set": {"status": "active"}}
+        )
+
+    return {
+        "status": "joined",
+        "challenge_id": challenge_id,
+        "participants_count": len(updated.get("participants", [])),
+        "total_participants": challenge["total_participants"],
+    }
+
+
+@api_router.post("/qr/generate")
+async def generate_qr_validation(data: QRGenerateRequest, current_user: dict = Depends(get_current_user)):
+    """Generate QR code + PIN for post-race validation."""
+    user_id = current_user["_id"]
+    now = datetime.utcnow()
+
+    # Check if already has a QR for this challenge
+    existing = await db.qr_validations.find_one({
+        "challenge_id": data.challenge_id,
+        "user_id": user_id,
+        "status": {"$in": ["provisional", "official"]},
+    })
+    if existing:
+        return {
+            "qr_token": existing["qr_token"],
+            "pin_code": existing["pin_code"],
+            "status": existing["status"],
+            "confirmations": len(existing.get("confirmations", [])),
+            "threshold": existing["threshold"],
+            "validation_id": str(existing["_id"]),
+            "expires_at": existing["expires_at"].isoformat() if existing.get("expires_at") else None,
+        }
+
+    score = {
+        "reps": data.declared_reps or 0,
+        "seconds": data.declared_seconds or 0,
+        "kg": data.declared_kg or 0,
+    }
+
+    qr_token = _generate_qr_token(str(user_id), data.challenge_id, score)
+    pin_code = _generate_pin()
+    threshold = _calculate_qr_threshold(data.total_participants)
+
+    validation_doc = {
+        "challenge_id": data.challenge_id,
+        "user_id": user_id,
+        "username": current_user.get("username", "KORE"),
+        "declared_score": score,
+        "qr_token": qr_token,
+        "pin_code": pin_code,
+        "challenge_type": data.challenge_type,
+        "total_participants": data.total_participants,
+        "threshold": threshold,
+        "confirmations": [],
+        "status": "provisional",  # provisional → official OR annulled
+        "flux_earned": 0,
+        "flux_awarded": False,
+        "created_at": now,
+        "expires_at": now + timedelta(hours=1),  # 1h timeout
+    }
+    result = await db.qr_validations.insert_one(validation_doc)
+
+    return {
+        "validation_id": str(result.inserted_id),
+        "qr_token": qr_token,
+        "pin_code": pin_code,
+        "status": "provisional",
+        "confirmations": 0,
+        "threshold": threshold,
+        "total_participants": data.total_participants,
+        "expires_at": validation_doc["expires_at"].isoformat(),
+        "declared_score": score,
+    }
+
+
+@api_router.post("/qr/validate")
+async def validate_qr_scan(data: QRValidateRequest, current_user: dict = Depends(get_current_user)):
+    """Scan a peer's QR code or enter their PIN to confirm their result. Awards +5 FLUX."""
+    scanner_id = current_user["_id"]
+    now = datetime.utcnow()
+
+    # Find the target validation by QR token or PIN
+    target = None
+    if data.qr_token:
+        target = await db.qr_validations.find_one({"qr_token": data.qr_token, "status": "provisional"})
+    if not target and data.pin_code:
+        target = await db.qr_validations.find_one({"pin_code": data.pin_code, "status": "provisional"})
+
+    if not target:
+        raise HTTPException(status_code=404, detail="QR/PIN non valido o risultato già ufficiale")
+
+    # Cannot confirm yourself
+    if target["user_id"] == scanner_id:
+        raise HTTPException(status_code=400, detail="Non puoi confermare te stesso, Kore!")
+
+    # Check if already confirmed by this user
+    already = [c for c in target.get("confirmations", []) if c.get("user_id") == scanner_id]
+    if already:
+        raise HTTPException(status_code=400, detail="Hai già confermato questo risultato")
+
+    # Check expiry
+    if target.get("expires_at") and target["expires_at"] < now:
+        await db.qr_validations.update_one({"_id": target["_id"]}, {"$set": {"status": "annulled"}})
+        raise HTTPException(status_code=410, detail="Tempo scaduto per la validazione")
+
+    # Add confirmation
+    confirmation = {
+        "user_id": scanner_id,
+        "username": current_user.get("username", "KORE"),
+        "confirmed_at": now,
+    }
+    await db.qr_validations.update_one(
+        {"_id": target["_id"]},
+        {"$push": {"confirmations": confirmation}}
+    )
+
+    # Award +5 FLUX to the scanner for participating in validation
+    scanner_balance = await award_ak_credits(scanner_id, "qr_scan_reward", 5)
+
+    # Check if threshold reached
+    updated = await db.qr_validations.find_one({"_id": target["_id"]})
+    confirmations_count = len(updated.get("confirmations", []))
+    threshold = updated["threshold"]
+
+    new_status = "provisional"
+    target_flux_awarded = False
+    if confirmations_count >= threshold:
+        new_status = "official"
+        # Award full FLUX to the validated user
+        base_flux = max(10, updated["declared_score"].get("reps", 0) * 2 + 7)
+        earned = int(base_flux * 1.0)  # 100% — QR validated = full trust
+        earned = min(earned, 200)
+        await award_ak_credits(updated["user_id"], "qr_validated_challenge", earned)
+        await db.qr_validations.update_one(
+            {"_id": target["_id"]},
+            {"$set": {
+                "status": "official",
+                "flux_earned": earned,
+                "flux_awarded": True,
+                "verified_at": now,
+            }}
+        )
+        # Also update the linked challenge engine entry if exists
+        try:
+            await db.challenges_engine.update_one(
+                {"_id": ObjectId(updated["challenge_id"])},
+                {"$set": {
+                    "verification_status": "AI_VERIFIED",
+                    "integrity_ok": True,
+                    "qr_validated": True,
+                    "qr_confirmations": confirmations_count,
+                }}
+            )
+        except Exception:
+            pass
+        target_flux_awarded = True
+        new_status = "official"
+
+    return {
+        "status": "confirmed",
+        "target_user": updated["username"],
+        "target_status": new_status,
+        "confirmations": confirmations_count,
+        "threshold": threshold,
+        "scanner_flux_reward": 5,
+        "scanner_balance": scanner_balance,
+        "target_official": new_status == "official",
+        "target_flux_awarded": target_flux_awarded,
+    }
+
+
+@api_router.get("/qr/status/{challenge_id}")
+async def get_qr_validation_status(challenge_id: str, current_user: dict = Depends(get_current_user)):
+    """Get my QR validation status for a challenge."""
+    user_id = current_user["_id"]
+
+    my_validation = await db.qr_validations.find_one({
+        "challenge_id": challenge_id,
+        "user_id": user_id,
+    })
+
+    if not my_validation:
+        return {"status": "not_found", "message": "Nessuna validazione QR per questa sfida"}
+
+    now = datetime.utcnow()
+    # Check expiry
+    if my_validation["status"] == "provisional" and my_validation.get("expires_at") and my_validation["expires_at"] < now:
+        await db.qr_validations.update_one({"_id": my_validation["_id"]}, {"$set": {"status": "annulled"}})
+        my_validation["status"] = "annulled"
+
+    confirmations = my_validation.get("confirmations", [])
+    threshold = my_validation.get("threshold", 2)
+    expires_at = my_validation.get("expires_at")
+    remaining_seconds = max(0, int((expires_at - now).total_seconds())) if expires_at and my_validation["status"] == "provisional" else 0
+
+    return {
+        "validation_id": str(my_validation["_id"]),
+        "challenge_id": challenge_id,
+        "status": my_validation["status"],
+        "qr_token": my_validation.get("qr_token", ""),
+        "pin_code": my_validation.get("pin_code", ""),
+        "declared_score": my_validation.get("declared_score", {}),
+        "confirmations": len(confirmations),
+        "confirmations_detail": [
+            {"username": c.get("username", "?"), "confirmed_at": c.get("confirmed_at", "").isoformat() if hasattr(c.get("confirmed_at", ""), "isoformat") else str(c.get("confirmed_at", ""))}
+            for c in confirmations
+        ],
+        "threshold": threshold,
+        "total_participants": my_validation.get("total_participants", 3),
+        "flux_earned": my_validation.get("flux_earned", 0),
+        "remaining_seconds": remaining_seconds,
+        "expires_at": expires_at.isoformat() if expires_at else None,
+    }
+
+
+@api_router.get("/qr/participants/{challenge_id}")
+async def get_qr_challenge_participants(challenge_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all participants' QR validation statuses for a group challenge."""
+    validations = await db.qr_validations.find({"challenge_id": challenge_id}).to_list(50)
+    now = datetime.utcnow()
+
+    participants = []
+    for v in validations:
+        confirmations = v.get("confirmations", [])
+        threshold = v.get("threshold", 2)
+        status = v["status"]
+        if status == "provisional" and v.get("expires_at") and v["expires_at"] < now:
+            status = "annulled"
+
+        participants.append({
+            "user_id": str(v["user_id"]),
+            "username": v.get("username", "KORE"),
+            "declared_score": v.get("declared_score", {}),
+            "status": status,
+            "confirmations": len(confirmations),
+            "threshold": threshold,
+            "is_me": v["user_id"] == current_user["_id"],
+        })
+
+    return {"challenge_id": challenge_id, "participants": participants}
+
+
+async def enforce_qr_timeouts():
+    """Check all provisional QR validations for 1h expiration. Annul results and warn users."""
+    now = datetime.utcnow()
+    expired = await db.qr_validations.find({
+        "status": "provisional",
+        "expires_at": {"$lte": now},
+    }).to_list(100)
+
+    for v in expired:
+        user_id = v["user_id"]
+        await db.qr_validations.update_one(
+            {"_id": v["_id"]},
+            {"$set": {"status": "annulled", "annulled_at": now}}
+        )
+        # Add integrity warning
+        await db.integrity_warnings.insert_one({
+            "user_id": user_id,
+            "challenge_id": v.get("challenge_id", ""),
+            "reason": "qr_timeout",
+            "message": "Kore, la tua sfida è scaduta senza conferme. Risultato annullato per proteggere l'onestà dell'Arena.",
+            "created_at": now,
+        })
+        # Increment user integrity_warnings count
+        await db.users.update_one({"_id": user_id}, {"$inc": {"integrity_warnings": 1}})
+        logger.info(f"[QR-Timeout] Annulled validation for user {user_id}, challenge {v.get('challenge_id')}")
+
+    if expired:
+        logger.info(f"[QR-Timeout] Processed {len(expired)} expired QR validations")
 
 
 # ====================================

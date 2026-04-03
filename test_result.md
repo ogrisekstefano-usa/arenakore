@@ -1522,3 +1522,82 @@ agent_communication:
       message: "TRUST ENGINE BACKEND + FRONTEND IMPLEMENTED. PLEASE TEST BACKEND FIRST: (1) Login ogrisek.stefano@gmail.com / Founder@KORE2026! (2) POST /api/challenge/create {title: 'SANITY TEST', exercise_type: 'squat', tags: ['POWER'], validation_mode: 'MANUAL_ENTRY', mode: 'personal'} → get challenge_id (3) POST /api/challenge/sanity-check {exercise_type: 'squat', reps: 500, seconds: 0, kg: 0} → should return passed=false, requires_video=true, flags should contain EXCEEDS_WORLD_RECORD_REPS (4) POST /api/challenge/sanity-check {exercise_type: 'squat', reps: 10, seconds: 30, kg: 20} → should return passed=true, requires_video=false (5) POST /api/challenge/complete {challenge_id: <from step 2>, validation_mode: 'MANUAL_ENTRY', reps: 10, seconds: 30, kg: 20, quality_score: 80, has_video_proof: false} → should return verification_status='UNVERIFIED', integrity_ok based on sanity, proof_type='NONE' (6) Create another challenge and complete it with proof_type='VIDEO_TIME_CHECK', has_video_proof=true → verification_status should be 'PROOF_PENDING', flux_multiplier=0.75 (7) POST /api/challenge/peer-confirm {challenge_id: <from step 6>, confirmed: true} → verification_status should become 'AI_VERIFIED'. BASE URL: https://arena-scan-lab.preview.emergentagent.com"
     - agent: "testing"
       message: "TRUST ENGINE BACKEND TESTING COMPLETED: ALL 3 SCENARIOS PASSED SUCCESSFULLY (100% SUCCESS RATE). ✅ SCENARIO 1 (Pre-flight Sanity Check): Both excessive reps (500 squats) correctly flagged with EXCEEDS_WORLD_RECORD_REPS + SPIKE_OVER_PB_REPS, and normal values (10 reps, 30s, 20kg) correctly validated. ✅ SCENARIO 2 (Challenge Verification): Manual entry without video → UNVERIFIED (flux_multiplier=0.5), manual entry with video → PROOF_PENDING (flux_multiplier=0.75). All verification statuses, integrity checks, and FLUX calculations working correctly. ✅ SCENARIO 3 (Peer Confirmation): Peer confirm (confirmed=true) correctly updated status to AI_VERIFIED, peer dispute (confirmed=false) correctly updated to UNVERIFIED. Challenge state management functional. Test credentials: Primary user (ogrisek.stefano@gmail.com) and secondary user (d.rose@chicago.kore) both authenticated successfully. Created challenge IDs: 69cf03b96c52f2b306bd892e, 69cf03b96c52f2b306bd8930. All Trust Engine endpoints are production-ready."
+
+
+  - task: "QR KORE Cross-Check - Challenge Creation"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST /api/qr/create-challenge — Creates group challenge with QR validation requirement. Accepts title, exercise_type, tags, challenge_type, total_participants. Returns challenge_id, join_code (6 digits), threshold (50%+1 of others). Threshold calculation: floor((total_participants-1) * 0.5) + 1."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST PASSED: QR challenge creation working correctly. Created 'QR TEST SQUAD' with 3 participants, returned valid challenge_id, 6-digit join_code (945828), threshold=2 (50%+1 of 2 others). Threshold calculation verified: floor(2 * 0.5) + 1 = 2. Challenge status='waiting', expires_at set to 2 hours from creation."
+
+  - task: "QR KORE Cross-Check - Generate QR + PIN"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST /api/qr/generate — Generates QR token (base64 encoded JSON) + 6-digit PIN. Returns validation_id, qr_token, pin_code, status (provisional), confirmations count, threshold, expires_at. Threshold = floor(others * 0.5) + 1."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST PASSED: QR generation working correctly. Generated QR token (base64 string), 6-digit PIN code (572336), status='provisional', confirmations=0, threshold=2. All required fields returned: validation_id, qr_token, pin_code, status, confirmations, threshold, total_participants, expires_at, declared_score."
+
+  - task: "QR KORE Cross-Check - Validate Peer QR/PIN"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST /api/qr/validate — Accepts qr_token or pin_code. Awards +5 FLUX to scanner. Increments confirmation counter. When threshold reached, changes status to 'official' and awards full FLUX to the validated user. Prevents self-confirmation and double-confirmation."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST PASSED: All QR validation scenarios working correctly. First validation: scanner_flux_reward=5, target_status='provisional' (1/2). Second validation: target_status='official' (2/2 reached), target_flux_awarded=true. Edge cases: self-validation correctly blocked with 'Non puoi confermare te stesso', duplicate validation blocked with 'Hai già confermato'. Full peer confirmation flow functional."
+
+  - task: "QR KORE Cross-Check - Status Polling"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET /api/qr/status/{challenge_id} — Returns current user's QR validation status, confirmations count, threshold, remaining_seconds before timeout, confirmations_detail (who confirmed and when)."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST PASSED: QR status polling working correctly. Initial status: status='provisional', confirmations=0, threshold=2, remaining_seconds=3599. Final status after 2 confirmations: status='official', confirmations=2, threshold=2, flux_earned=37. All required fields returned: validation_id, challenge_id, status, qr_token, pin_code, declared_score, confirmations, confirmations_detail, threshold, total_participants, flux_earned, remaining_seconds, expires_at."
+
+  - task: "QR Timeout Penalty Scheduler"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "APScheduler job enforce_qr_timeouts runs every 15 min. Finds provisional QR validations with expires_at < now. Annuls the result. Creates integrity_warning in DB with message: 'Kore, la tua sfida è scaduta senza conferme. Risultato annullato per proteggere l'onestà dell'Arena.' Increments user integrity_warnings counter."
+
+agent_communication:
+    - agent: "main"
+      message: "QR KORE CROSS-CHECK ENGINE — BACKEND + FRONTEND COMPLETE. PLEASE TEST BACKEND: (1) Login ogrisek.stefano@gmail.com / Founder@KORE2026! (2) POST /api/qr/create-challenge {title: 'QR TEST', exercise_type: 'squat', tags: ['POWER'], challenge_type: 'CLOSED_LIVE', total_participants: 3} → get challenge_id (3) POST /api/qr/generate {challenge_id: <from step 2>, declared_reps: 15, declared_seconds: 45, declared_kg: 0, total_participants: 3, challenge_type: 'CLOSED_LIVE'} → should return qr_token, pin_code, status='provisional', threshold=2 (4) GET /api/qr/status/<challenge_id> → should return confirmations=0, threshold=2, status='provisional' (5) Login d.rose@chicago.kore / Seed@Chicago1 (6) POST /api/qr/validate {pin_code: <from step 3>} → should return confirmed, scanner_flux_reward=5, target_status='provisional' because only 1/2 confirmations (7) Login demo.owner@arenakore.app / Demo@GymOwner2026! (8) POST /api/qr/validate {pin_code: <from step 3>} → should return confirmed, target_status='official' because 2/2 confirmations reached. BASE URL: https://arena-scan-lab.preview.emergentagent.com"
+    - agent: "testing"
+      message: "QR KORE CROSS-CHECK ENGINE TESTING COMPLETED: ALL 5 SCENARIOS PASSED SUCCESSFULLY (100% SUCCESS RATE). ✅ SCENARIO 1 (Create QR Challenge + Generate QR): Challenge creation working correctly with challenge_id, 6-digit join_code (945828), threshold=2 (50%+1 of 2 others). QR generation returned qr_token (base64), PIN code (572336), status='provisional', confirmations=0. Initial status check confirmed provisional state with remaining_seconds=3599. ✅ SCENARIO 2 (First Peer Validation): User B validation successful with scanner_flux_reward=5, target_status='provisional' (only 1/2 confirmations). ✅ SCENARIO 3 (Second Peer Validation): User C validation reached threshold (2/2), target_status='official', target_flux_awarded=true. ✅ SCENARIO 4 (Status Check After Official): Final status confirmed as 'official', confirmations=2, flux_earned=37. ✅ SCENARIO 5 (Edge Cases): Self-validation correctly blocked with 'Non puoi confermare te stesso', duplicate validation blocked with 'Hai già confermato'. All QR KORE Cross-Check Engine endpoints are production-ready. Test credentials: ogrisek.stefano@gmail.com (Creator), d.rose@chicago.kore (Validator 1), demo.owner@arenakore.app (Validator 2) all authenticated successfully."

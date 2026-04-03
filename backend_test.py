@@ -1,471 +1,463 @@
 #!/usr/bin/env python3
 """
-ARENAKORE Trust Engine Backend Testing
-Testing the 3 specific scenarios as requested:
-1. Pre-flight Sanity Check
-2. Complete Challenge with Verification Status  
-3. Peer Confirmation
-
-Test credentials:
-- Primary: ogrisek.stefano@gmail.com / Founder@KORE2026!
-- Secondary: d.rose@chicago.kore / Seed@Chicago1
+QR KORE CROSS-CHECK ENGINE Testing
+Testing the QR challenge creation, validation, and peer confirmation system
 """
 
 import requests
 import json
-import sys
-from typing import Dict, Any
+import time
+from datetime import datetime
 
-# Backend URL from frontend/.env
+# Base URL from frontend .env
 BASE_URL = "https://arena-scan-lab.preview.emergentagent.com/api"
 
-# Test credentials
-PRIMARY_USER = {
-    "email": "ogrisek.stefano@gmail.com", 
-    "password": "Founder@KORE2026!"
+# Test credentials from review request
+TEST_USERS = {
+    "user_a": {
+        "email": "ogrisek.stefano@gmail.com",
+        "password": "Founder@KORE2026!",
+        "role": "Creator"
+    },
+    "user_b": {
+        "email": "d.rose@chicago.kore", 
+        "password": "Seed@Chicago1",
+        "role": "Validator 1"
+    },
+    "user_c": {
+        "email": "demo.owner@arenakore.app",
+        "password": "Demo@GymOwner2026!",
+        "role": "Validator 2"
+    }
 }
 
-SECONDARY_USER = {
-    "email": "d.rose@chicago.kore",
-    "password": "Seed@Chicago1"
-}
-
-class TrustEngineTest:
+class QRTestEngine:
     def __init__(self):
+        self.tokens = {}
+        self.challenge_data = {}
         self.session = requests.Session()
-        self.primary_token = None
-        self.secondary_token = None
-        self.challenge_ids = []
         
-    def log(self, message: str, level: str = "INFO"):
-        """Log test messages"""
-        print(f"[{level}] {message}")
+    def log(self, message):
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        print(f"[{timestamp}] {message}")
         
-    def login_user(self, credentials: Dict[str, str], user_type: str = "primary") -> str:
-        """Login user and return token"""
-        self.log(f"🔐 Logging in {user_type} user: {credentials['email']}")
+    def login_user(self, user_key):
+        """Login a user and store their token"""
+        user = TEST_USERS[user_key]
+        self.log(f"🔐 Logging in {user['role']} ({user['email']})")
+        
+        response = self.session.post(f"{BASE_URL}/auth/login", json={
+            "email": user["email"],
+            "password": user["password"]
+        })
+        
+        if response.status_code == 200:
+            data = response.json()
+            self.tokens[user_key] = data["token"]
+            self.log(f"✅ Login successful for {user['role']}")
+            return True
+        else:
+            self.log(f"❌ Login failed for {user['role']}: {response.status_code} - {response.text}")
+            return False
+            
+    def get_headers(self, user_key):
+        """Get authorization headers for a user"""
+        return {"Authorization": f"Bearer {self.tokens[user_key]}"}
+        
+    def scenario_1_create_qr_challenge(self):
+        """SCENARIO 1: Create QR Challenge + Generate QR"""
+        self.log("\n🎯 SCENARIO 1: Create QR Challenge + Generate QR")
+        
+        # Step 1: Login as User A
+        if not self.login_user("user_a"):
+            return False
+            
+        # Step 2: Create QR Challenge
+        self.log("📝 Creating QR Challenge...")
+        challenge_data = {
+            "title": "QR TEST SQUAD",
+            "exercise_type": "squat",
+            "tags": ["POWER"],
+            "challenge_type": "CLOSED_LIVE",
+            "total_participants": 3
+        }
         
         response = self.session.post(
-            f"{BASE_URL}/auth/login",
-            json=credentials,
-            headers={"Content-Type": "application/json"}
+            f"{BASE_URL}/qr/create-challenge",
+            json=challenge_data,
+            headers=self.get_headers("user_a")
         )
         
         if response.status_code != 200:
-            self.log(f"❌ Login failed for {user_type} user: {response.status_code} - {response.text}", "ERROR")
-            return None
-            
-        data = response.json()
-        token = data.get("token")
-        user_info = data.get("user", {})
-        
-        self.log(f"✅ Login successful for {user_type} user")
-        self.log(f"   User ID: {user_info.get('id', 'N/A')}")
-        self.log(f"   Username: {user_info.get('username', 'N/A')}")
-        self.log(f"   Is Admin: {user_info.get('is_admin', False)}")
-        self.log(f"   Is Founder: {user_info.get('is_founder', False)}")
-        
-        return token
-        
-    def make_authenticated_request(self, method: str, endpoint: str, token: str, data: Dict = None) -> requests.Response:
-        """Make authenticated request"""
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json"
-        }
-        
-        url = f"{BASE_URL}{endpoint}"
-        
-        if method.upper() == "GET":
-            return self.session.get(url, headers=headers)
-        elif method.upper() == "POST":
-            return self.session.post(url, json=data, headers=headers)
-        elif method.upper() == "PUT":
-            return self.session.put(url, json=data, headers=headers)
-        else:
-            raise ValueError(f"Unsupported method: {method}")
-    
-    def test_scenario_1_sanity_check(self):
-        """SCENARIO 1: Pre-flight Sanity Check"""
-        self.log("\n" + "="*60)
-        self.log("🧪 SCENARIO 1: Pre-flight Sanity Check")
-        self.log("="*60)
-        
-        if not self.primary_token:
-            self.log("❌ No primary token available", "ERROR")
+            self.log(f"❌ Challenge creation failed: {response.status_code} - {response.text}")
             return False
             
-        # Test 1: Exceeds world record (should fail)
-        self.log("\n📋 Test 1.1: Sanity check with excessive reps (500 squats)")
-        test_data = {
-            "exercise_type": "squat",
-            "reps": 500,
-            "seconds": 0,
-            "kg": 0
+        challenge_result = response.json()
+        self.challenge_data["challenge_id"] = challenge_result["challenge_id"]
+        self.challenge_data["join_code"] = challenge_result["join_code"]
+        self.challenge_data["threshold"] = challenge_result["threshold"]
+        
+        self.log(f"✅ Challenge created:")
+        self.log(f"   - Challenge ID: {challenge_result['challenge_id']}")
+        self.log(f"   - Join Code: {challenge_result['join_code']} (6 digits)")
+        self.log(f"   - Threshold: {challenge_result['threshold']} (50%+1 of 2 others)")
+        
+        # Verify threshold calculation (50%+1 of 2 others = 2)
+        expected_threshold = 2  # floor(2 * 0.5) + 1 = 2
+        if challenge_result["threshold"] != expected_threshold:
+            self.log(f"❌ Threshold mismatch: expected {expected_threshold}, got {challenge_result['threshold']}")
+            return False
+            
+        # Step 3: Generate QR
+        self.log("🔗 Generating QR validation...")
+        qr_data = {
+            "challenge_id": self.challenge_data["challenge_id"],
+            "declared_reps": 15,
+            "declared_seconds": 45,
+            "declared_kg": 20,
+            "total_participants": 3,
+            "challenge_type": "CLOSED_LIVE"
         }
         
-        response = self.make_authenticated_request("POST", "/challenge/sanity-check", self.primary_token, test_data)
+        response = self.session.post(
+            f"{BASE_URL}/qr/generate",
+            json=qr_data,
+            headers=self.get_headers("user_a")
+        )
         
         if response.status_code != 200:
-            self.log(f"❌ Sanity check failed: {response.status_code} - {response.text}", "ERROR")
+            self.log(f"❌ QR generation failed: {response.status_code} - {response.text}")
             return False
             
-        result = response.json()
-        self.log(f"📊 Response: {json.dumps(result, indent=2)}")
+        qr_result = response.json()
+        self.challenge_data["qr_token"] = qr_result["qr_token"]
+        self.challenge_data["pin_code"] = qr_result["pin_code"]
         
-        # Verify expected results
-        expected_passed = False
-        expected_requires_video = True
-        expected_flag = "EXCEEDS_WORLD_RECORD_REPS"
+        self.log(f"✅ QR generated:")
+        self.log(f"   - QR Token: {qr_result['qr_token'][:20]}... (base64 string)")
+        self.log(f"   - PIN Code: {qr_result['pin_code']} (6 digits)")
+        self.log(f"   - Status: {qr_result['status']}")
+        self.log(f"   - Confirmations: {qr_result['confirmations']}")
+        self.log(f"   - Threshold: {qr_result['threshold']}")
         
-        if result.get("passed") != expected_passed:
-            self.log(f"❌ Expected passed={expected_passed}, got {result.get('passed')}", "ERROR")
-            return False
-            
-        if result.get("requires_video") != expected_requires_video:
-            self.log(f"❌ Expected requires_video={expected_requires_video}, got {result.get('requires_video')}", "ERROR")
-            return False
-            
-        if expected_flag not in result.get("flags", []):
-            self.log(f"❌ Expected flag '{expected_flag}' not found in {result.get('flags')}", "ERROR")
-            return False
-            
-        self.log("✅ Test 1.1 PASSED: Excessive reps correctly flagged")
-        
-        # Test 2: Normal values (should pass)
-        self.log("\n📋 Test 1.2: Sanity check with normal values")
-        test_data = {
-            "exercise_type": "squat",
-            "reps": 10,
-            "seconds": 30,
-            "kg": 20
-        }
-        
-        response = self.make_authenticated_request("POST", "/challenge/sanity-check", self.primary_token, test_data)
+        # Step 4: Check initial status
+        self.log("📊 Checking initial QR status...")
+        response = self.session.get(
+            f"{BASE_URL}/qr/status/{self.challenge_data['challenge_id']}",
+            headers=self.get_headers("user_a")
+        )
         
         if response.status_code != 200:
-            self.log(f"❌ Sanity check failed: {response.status_code} - {response.text}", "ERROR")
+            self.log(f"❌ Status check failed: {response.status_code} - {response.text}")
             return False
             
-        result = response.json()
-        self.log(f"📊 Response: {json.dumps(result, indent=2)}")
+        status_result = response.json()
+        self.log(f"✅ Initial status:")
+        self.log(f"   - Status: {status_result['status']}")
+        self.log(f"   - Confirmations: {status_result['confirmations']}")
+        self.log(f"   - Threshold: {status_result['threshold']}")
+        self.log(f"   - Remaining seconds: {status_result['remaining_seconds']}")
         
-        # Verify expected results
-        expected_passed = True
-        expected_requires_video = False
-        
-        if result.get("passed") != expected_passed:
-            self.log(f"❌ Expected passed={expected_passed}, got {result.get('passed')}", "ERROR")
-            return False
-            
-        if result.get("requires_video") != expected_requires_video:
-            self.log(f"❌ Expected requires_video={expected_requires_video}, got {result.get('requires_video')}", "ERROR")
-            return False
-            
-        if result.get("flags"):
-            self.log(f"❌ Expected empty flags, got {result.get('flags')}", "ERROR")
-            return False
-            
-        self.log("✅ Test 1.2 PASSED: Normal values correctly validated")
-        self.log("✅ SCENARIO 1 COMPLETED SUCCESSFULLY")
         return True
         
-    def test_scenario_2_challenge_verification(self):
-        """SCENARIO 2: Complete Challenge with Verification Status"""
-        self.log("\n" + "="*60)
-        self.log("🧪 SCENARIO 2: Complete Challenge with Verification Status")
-        self.log("="*60)
+    def scenario_2_first_peer_validation(self):
+        """SCENARIO 2: First Peer Validation (+5 FLUX reward)"""
+        self.log("\n🎯 SCENARIO 2: First Peer Validation (+5 FLUX reward)")
         
-        if not self.primary_token:
-            self.log("❌ No primary token available", "ERROR")
+        # Step 1: Login as User B
+        if not self.login_user("user_b"):
             return False
             
-        # Test 1: Create and complete challenge with MANUAL_ENTRY (no video)
-        self.log("\n📋 Test 2.1: Create TRUST TEST MANUAL challenge")
+        # Step 2: Validate QR using PIN code
+        self.log("🔍 User B validating QR...")
+        validate_data = {
+            "pin_code": self.challenge_data["pin_code"]
+        }
+        
+        response = self.session.post(
+            f"{BASE_URL}/qr/validate",
+            json=validate_data,
+            headers=self.get_headers("user_b")
+        )
+        
+        if response.status_code != 200:
+            self.log(f"❌ Validation failed: {response.status_code} - {response.text}")
+            return False
+            
+        validation_result = response.json()
+        self.log(f"✅ First validation completed:")
+        self.log(f"   - Status: {validation_result['status']}")
+        self.log(f"   - Scanner FLUX reward: {validation_result['scanner_flux_reward']}")
+        self.log(f"   - Target status: {validation_result['target_status']}")
+        self.log(f"   - Confirmations: {validation_result['confirmations']}")
+        self.log(f"   - Target official: {validation_result['target_official']}")
+        
+        # Verify expected results
+        if validation_result["scanner_flux_reward"] != 5:
+            self.log(f"❌ Scanner FLUX reward mismatch: expected 5, got {validation_result['scanner_flux_reward']}")
+            return False
+            
+        if validation_result["target_status"] != "provisional":
+            self.log(f"❌ Target status should still be 'provisional' (only 1/2), got {validation_result['target_status']}")
+            return False
+            
+        # Step 3: Verify User B got +5 FLUX
+        self.log("💰 Checking User B's FLUX balance...")
+        response = self.session.get(
+            f"{BASE_URL}/auth/me",
+            headers=self.get_headers("user_b")
+        )
+        
+        if response.status_code == 200:
+            user_data = response.json()
+            scanner_balance = user_data.get("scanner_balance", 0)
+            self.log(f"✅ User B scanner balance: {scanner_balance} FLUX")
+        else:
+            self.log(f"⚠️ Could not verify User B balance: {response.status_code}")
+            
+        return True
+        
+    def scenario_3_second_peer_validation(self):
+        """SCENARIO 3: Second Peer Validation → OFFICIAL status"""
+        self.log("\n🎯 SCENARIO 3: Second Peer Validation → OFFICIAL status")
+        
+        # Step 1: Login as User C
+        if not self.login_user("user_c"):
+            return False
+            
+        # Step 2: Validate QR using same PIN code
+        self.log("🔍 User C validating QR (reaching threshold)...")
+        validate_data = {
+            "pin_code": self.challenge_data["pin_code"]
+        }
+        
+        response = self.session.post(
+            f"{BASE_URL}/qr/validate",
+            json=validate_data,
+            headers=self.get_headers("user_c")
+        )
+        
+        if response.status_code != 200:
+            self.log(f"❌ Second validation failed: {response.status_code} - {response.text}")
+            return False
+            
+        validation_result = response.json()
+        self.log(f"✅ Second validation completed:")
+        self.log(f"   - Status: {validation_result['status']}")
+        self.log(f"   - Target status: {validation_result['target_status']}")
+        self.log(f"   - Confirmations: {validation_result['confirmations']}")
+        self.log(f"   - Target official: {validation_result['target_official']}")
+        self.log(f"   - Target FLUX awarded: {validation_result['target_flux_awarded']}")
+        
+        # Verify expected results (2/2 reached!)
+        if validation_result["target_status"] != "official":
+            self.log(f"❌ Target status should be 'official' (2/2 reached), got {validation_result['target_status']}")
+            return False
+            
+        if not validation_result["target_official"]:
+            self.log(f"❌ Target should be official now")
+            return False
+            
+        if not validation_result["target_flux_awarded"]:
+            self.log(f"❌ Target FLUX should be awarded now")
+            return False
+            
+        return True
+        
+    def scenario_4_status_check_after_official(self):
+        """SCENARIO 4: Status Check After Official"""
+        self.log("\n🎯 SCENARIO 4: Status Check After Official")
+        
+        # Step 1: Login as User A again
+        self.log("🔐 User A checking final status...")
+        
+        response = self.session.get(
+            f"{BASE_URL}/qr/status/{self.challenge_data['challenge_id']}",
+            headers=self.get_headers("user_a")
+        )
+        
+        if response.status_code != 200:
+            self.log(f"❌ Final status check failed: {response.status_code} - {response.text}")
+            return False
+            
+        status_result = response.json()
+        self.log(f"✅ Final status:")
+        self.log(f"   - Status: {status_result['status']}")
+        self.log(f"   - Confirmations: {status_result['confirmations']}")
+        self.log(f"   - Threshold: {status_result['threshold']}")
+        self.log(f"   - FLUX earned: {status_result['flux_earned']}")
+        
+        # Verify expected results
+        if status_result["status"] != "official":
+            self.log(f"❌ Status should be 'official', got {status_result['status']}")
+            return False
+            
+        if status_result["confirmations"] != 2:
+            self.log(f"❌ Confirmations should be 2, got {status_result['confirmations']}")
+            return False
+            
+        if status_result["flux_earned"] <= 0:
+            self.log(f"❌ FLUX earned should be > 0, got {status_result['flux_earned']}")
+            return False
+            
+        return True
+        
+    def scenario_5_edge_cases(self):
+        """SCENARIO 5: Edge Cases"""
+        self.log("\n🎯 SCENARIO 5: Edge Cases")
+        
+        # Create a new QR challenge for edge case testing since the previous one is now official
+        self.log("📝 Creating new QR Challenge for edge case testing...")
         challenge_data = {
-            "title": "TRUST TEST MANUAL",
+            "title": "QR EDGE CASE TEST",
             "exercise_type": "squat",
             "tags": ["POWER"],
-            "validation_mode": "MANUAL_ENTRY",
-            "mode": "personal"
+            "challenge_type": "CLOSED_LIVE",
+            "total_participants": 3
         }
         
-        response = self.make_authenticated_request("POST", "/challenge/create", self.primary_token, challenge_data)
+        response = self.session.post(
+            f"{BASE_URL}/qr/create-challenge",
+            json=challenge_data,
+            headers=self.get_headers("user_a")
+        )
         
         if response.status_code != 200:
-            self.log(f"❌ Challenge creation failed: {response.status_code} - {response.text}", "ERROR")
+            self.log(f"❌ Edge case challenge creation failed: {response.status_code} - {response.text}")
             return False
             
-        result = response.json()
-        challenge_id_1 = result.get("challenge_id")
-        self.log(f"✅ Challenge created with ID: {challenge_id_1}")
-        self.challenge_ids.append(challenge_id_1)
+        edge_challenge = response.json()
+        edge_challenge_id = edge_challenge["challenge_id"]
         
-        # Complete the challenge
-        self.log("\n📋 Test 2.2: Complete challenge without video proof")
-        complete_data = {
-            "challenge_id": challenge_id_1,
-            "validation_mode": "MANUAL_ENTRY",
-            "reps": 10,
-            "seconds": 30,
-            "kg": 20,
-            "quality_score": 80,
-            "has_video_proof": False,
-            "proof_type": "NONE"
+        # Generate QR for edge case testing
+        qr_data = {
+            "challenge_id": edge_challenge_id,
+            "declared_reps": 10,
+            "declared_seconds": 30,
+            "declared_kg": 15,
+            "total_participants": 3,
+            "challenge_type": "CLOSED_LIVE"
         }
         
-        response = self.make_authenticated_request("POST", "/challenge/complete", self.primary_token, complete_data)
+        response = self.session.post(
+            f"{BASE_URL}/qr/generate",
+            json=qr_data,
+            headers=self.get_headers("user_a")
+        )
         
         if response.status_code != 200:
-            self.log(f"❌ Challenge completion failed: {response.status_code} - {response.text}", "ERROR")
+            self.log(f"❌ Edge case QR generation failed: {response.status_code} - {response.text}")
             return False
             
-        result = response.json()
-        self.log(f"📊 Completion Response: {json.dumps(result, indent=2)}")
+        edge_qr = response.json()
+        edge_pin_code = edge_qr["pin_code"]
         
-        # Verify expected results
-        verdict = result.get("verdict", {})
-        expected_verification_status = "UNVERIFIED"
-        expected_proof_type = "NONE"
-        expected_flux_multiplier = 0.5
-        
-        if verdict.get("verification_status") != expected_verification_status:
-            self.log(f"❌ Expected verification_status={expected_verification_status}, got {verdict.get('verification_status')}", "ERROR")
-            return False
-            
-        if verdict.get("proof_type") != expected_proof_type:
-            self.log(f"❌ Expected proof_type={expected_proof_type}, got {verdict.get('proof_type')}", "ERROR")
-            return False
-            
-        if "integrity_ok" not in verdict:
-            self.log("❌ Expected integrity_ok field in verdict", "ERROR")
-            return False
-            
-        if "sanity_check" not in verdict:
-            self.log("❌ Expected sanity_check field in verdict", "ERROR")
-            return False
-            
-        # Check flux_multiplier in verdict
-        actual_flux_multiplier = verdict.get("flux_multiplier")
-        if actual_flux_multiplier != expected_flux_multiplier:
-            self.log(f"❌ Expected flux_multiplier={expected_flux_multiplier}, got {actual_flux_multiplier}", "ERROR")
-            return False
-            
-        self.log("✅ Test 2.2 PASSED: Manual entry without video correctly marked as UNVERIFIED")
-        
-        # Test 3: Create and complete challenge with video proof
-        self.log("\n📋 Test 2.3: Create TRUST TEST VIDEO challenge")
-        challenge_data = {
-            "title": "TRUST TEST VIDEO",
-            "exercise_type": "squat",
-            "tags": ["FLOW"],
-            "validation_mode": "MANUAL_ENTRY",
-            "mode": "personal"
+        # Test 1: User A tries to validate own PIN
+        self.log("🚫 Testing self-validation (should fail)...")
+        validate_data = {
+            "pin_code": edge_pin_code
         }
         
-        response = self.make_authenticated_request("POST", "/challenge/create", self.primary_token, challenge_data)
+        response = self.session.post(
+            f"{BASE_URL}/qr/validate",
+            json=validate_data,
+            headers=self.get_headers("user_a")
+        )
+        
+        if response.status_code == 400:
+            error_msg = response.json().get("detail", "")
+            if "Non puoi confermare te stesso" in error_msg:
+                self.log("✅ Self-validation correctly blocked")
+            else:
+                self.log(f"❌ Wrong error message: {error_msg}")
+                return False
+        else:
+            self.log(f"❌ Self-validation should return 400, got {response.status_code} - {response.text}")
+            return False
+            
+        # Test 2: User B validates the new PIN first
+        self.log("🔍 User B validating new QR first...")
+        response = self.session.post(
+            f"{BASE_URL}/qr/validate",
+            json=validate_data,
+            headers=self.get_headers("user_b")
+        )
         
         if response.status_code != 200:
-            self.log(f"❌ Challenge creation failed: {response.status_code} - {response.text}", "ERROR")
+            self.log(f"❌ User B validation failed: {response.status_code} - {response.text}")
             return False
             
-        result = response.json()
-        challenge_id_2 = result.get("challenge_id")
-        self.log(f"✅ Challenge created with ID: {challenge_id_2}")
-        self.challenge_ids.append(challenge_id_2)
+        # Test 3: User B tries to validate same PIN again (duplicate validation)
+        self.log("🚫 Testing duplicate validation (should fail)...")
         
-        # Complete the challenge with video proof
-        self.log("\n📋 Test 2.4: Complete challenge with video proof")
-        complete_data = {
-            "challenge_id": challenge_id_2,
-            "validation_mode": "MANUAL_ENTRY",
-            "reps": 15,
-            "seconds": 45,
-            "kg": 0,
-            "quality_score": 85,
-            "has_video_proof": True,
-            "proof_type": "VIDEO_TIME_CHECK"
-        }
+        response = self.session.post(
+            f"{BASE_URL}/qr/validate",
+            json=validate_data,
+            headers=self.get_headers("user_b")
+        )
         
-        response = self.make_authenticated_request("POST", "/challenge/complete", self.primary_token, complete_data)
-        
-        if response.status_code != 200:
-            self.log(f"❌ Challenge completion failed: {response.status_code} - {response.text}", "ERROR")
+        if response.status_code == 400:
+            error_msg = response.json().get("detail", "")
+            if "Hai già confermato" in error_msg:
+                self.log("✅ Duplicate validation correctly blocked")
+            else:
+                self.log(f"❌ Wrong error message: {error_msg}")
+                return False
+        else:
+            self.log(f"❌ Duplicate validation should return 400, got {response.status_code} - {response.text}")
             return False
             
-        result = response.json()
-        self.log(f"📊 Completion Response: {json.dumps(result, indent=2)}")
-        
-        # Verify expected results
-        verdict = result.get("verdict", {})
-        expected_verification_status = "PROOF_PENDING"
-        expected_flux_multiplier = 0.75
-        
-        if verdict.get("verification_status") != expected_verification_status:
-            self.log(f"❌ Expected verification_status={expected_verification_status}, got {verdict.get('verification_status')}", "ERROR")
-            return False
-            
-        # Check flux_multiplier in verdict
-        actual_flux_multiplier = verdict.get("flux_multiplier")
-        if actual_flux_multiplier != expected_flux_multiplier:
-            self.log(f"❌ Expected flux_multiplier={expected_flux_multiplier}, got {actual_flux_multiplier}", "ERROR")
-            return False
-            
-        self.log("✅ Test 2.4 PASSED: Manual entry with video correctly marked as PROOF_PENDING")
-        self.log("✅ SCENARIO 2 COMPLETED SUCCESSFULLY")
-        
-        # Store challenge_id_2 for scenario 3
-        self.video_challenge_id = challenge_id_2
         return True
         
-    def test_scenario_3_peer_confirmation(self):
-        """SCENARIO 3: Peer Confirmation"""
-        self.log("\n" + "="*60)
-        self.log("🧪 SCENARIO 3: Peer Confirmation")
-        self.log("="*60)
+    def run_all_scenarios(self):
+        """Run all QR KORE CROSS-CHECK ENGINE test scenarios"""
+        self.log("🚀 Starting QR KORE CROSS-CHECK ENGINE Testing")
+        self.log("=" * 60)
         
-        if not self.primary_token or not hasattr(self, 'video_challenge_id'):
-            self.log("❌ Missing prerequisites for scenario 3", "ERROR")
-            return False
+        scenarios = [
+            ("SCENARIO 1", self.scenario_1_create_qr_challenge),
+            ("SCENARIO 2", self.scenario_2_first_peer_validation),
+            ("SCENARIO 3", self.scenario_3_second_peer_validation),
+            ("SCENARIO 4", self.scenario_4_status_check_after_official),
+            ("SCENARIO 5", self.scenario_5_edge_cases),
+        ]
+        
+        results = {}
+        
+        for scenario_name, scenario_func in scenarios:
+            try:
+                result = scenario_func()
+                results[scenario_name] = result
+                if result:
+                    self.log(f"✅ {scenario_name} PASSED")
+                else:
+                    self.log(f"❌ {scenario_name} FAILED")
+            except Exception as e:
+                self.log(f"💥 {scenario_name} ERROR: {str(e)}")
+                results[scenario_name] = False
+                
+            self.log("-" * 40)
             
-        # Test 1: Confirm the video challenge from scenario 2
-        self.log("\n📋 Test 3.1: Peer confirm video challenge (confirmed=true)")
-        confirm_data = {
-            "challenge_id": self.video_challenge_id,
-            "confirmed": True
-        }
-        
-        response = self.make_authenticated_request("POST", "/challenge/peer-confirm", self.primary_token, confirm_data)
-        
-        if response.status_code != 200:
-            self.log(f"❌ Peer confirmation failed: {response.status_code} - {response.text}", "ERROR")
-            return False
-            
-        result = response.json()
-        self.log(f"📊 Confirmation Response: {json.dumps(result, indent=2)}")
-        
-        # Verify expected results
-        expected_verification_status = "AI_VERIFIED"
-        
-        if result.get("verification_status") != expected_verification_status:
-            self.log(f"❌ Expected verification_status={expected_verification_status}, got {result.get('verification_status')}", "ERROR")
-            return False
-            
-        self.log("✅ Test 3.1 PASSED: Peer confirmation correctly updated status to AI_VERIFIED")
-        
-        # Test 2: Create another challenge and dispute it
-        self.log("\n📋 Test 3.2: Create challenge for dispute test")
-        challenge_data = {
-            "title": "TRUST TEST DISPUTE",
-            "exercise_type": "squat",
-            "tags": ["PULSE"],
-            "validation_mode": "MANUAL_ENTRY",
-            "mode": "personal"
-        }
-        
-        response = self.make_authenticated_request("POST", "/challenge/create", self.primary_token, challenge_data)
-        
-        if response.status_code != 200:
-            self.log(f"❌ Challenge creation failed: {response.status_code} - {response.text}", "ERROR")
-            return False
-            
-        result = response.json()
-        dispute_challenge_id = result.get("challenge_id")
-        self.log(f"✅ Challenge created with ID: {dispute_challenge_id}")
-        
-        # Complete with peer confirmation proof type
-        self.log("\n📋 Test 3.3: Complete challenge with PEER_CONFIRMATION proof")
-        complete_data = {
-            "challenge_id": dispute_challenge_id,
-            "validation_mode": "MANUAL_ENTRY",
-            "reps": 20,
-            "seconds": 60,
-            "kg": 25,
-            "quality_score": 90,
-            "has_video_proof": False,
-            "proof_type": "PEER_CONFIRMATION"
-        }
-        
-        response = self.make_authenticated_request("POST", "/challenge/complete", self.primary_token, complete_data)
-        
-        if response.status_code != 200:
-            self.log(f"❌ Challenge completion failed: {response.status_code} - {response.text}", "ERROR")
-            return False
-            
-        result = response.json()
-        self.log(f"📊 Completion Response: {json.dumps(result, indent=2)}")
-        
-        # Verify it's PROOF_PENDING
-        verdict = result.get("verdict", {})
-        if verdict.get("verification_status") != "PROOF_PENDING":
-            self.log(f"❌ Expected PROOF_PENDING, got {verdict.get('verification_status')}", "ERROR")
-            return False
-            
-        # Test 4: Dispute the challenge
-        self.log("\n📋 Test 3.4: Peer dispute challenge (confirmed=false)")
-        dispute_data = {
-            "challenge_id": dispute_challenge_id,
-            "confirmed": False
-        }
-        
-        response = self.make_authenticated_request("POST", "/challenge/peer-confirm", self.primary_token, dispute_data)
-        
-        if response.status_code != 200:
-            self.log(f"❌ Peer dispute failed: {response.status_code} - {response.text}", "ERROR")
-            return False
-            
-        result = response.json()
-        self.log(f"📊 Dispute Response: {json.dumps(result, indent=2)}")
-        
-        # Verify expected results
-        expected_verification_status = "UNVERIFIED"
-        
-        if result.get("verification_status") != expected_verification_status:
-            self.log(f"❌ Expected verification_status={expected_verification_status}, got {result.get('verification_status')}", "ERROR")
-            return False
-            
-        self.log("✅ Test 3.4 PASSED: Peer dispute correctly updated status to UNVERIFIED")
-        self.log("✅ SCENARIO 3 COMPLETED SUCCESSFULLY")
-        return True
-        
-    def run_all_tests(self):
-        """Run all test scenarios"""
-        self.log("🚀 Starting ARENAKORE Trust Engine Backend Testing")
-        self.log(f"🌐 Backend URL: {BASE_URL}")
-        
-        # Login primary user
-        self.primary_token = self.login_user(PRIMARY_USER, "primary")
-        if not self.primary_token:
-            self.log("❌ Failed to login primary user - aborting tests", "ERROR")
-            return False
-            
-        # Try to login secondary user (may not exist)
-        self.secondary_token = self.login_user(SECONDARY_USER, "secondary")
-        if not self.secondary_token:
-            self.log("⚠️ Secondary user login failed - continuing with primary user only", "WARN")
-            
-        # Run test scenarios
-        scenario_1_passed = self.test_scenario_1_sanity_check()
-        scenario_2_passed = self.test_scenario_2_challenge_verification()
-        scenario_3_passed = self.test_scenario_3_peer_confirmation()
-        
         # Summary
-        self.log("\n" + "="*60)
-        self.log("📊 TRUST ENGINE TEST SUMMARY")
-        self.log("="*60)
-        self.log(f"✅ Scenario 1 (Sanity Check): {'PASSED' if scenario_1_passed else 'FAILED'}")
-        self.log(f"✅ Scenario 2 (Challenge Verification): {'PASSED' if scenario_2_passed else 'FAILED'}")
-        self.log(f"✅ Scenario 3 (Peer Confirmation): {'PASSED' if scenario_3_passed else 'FAILED'}")
+        self.log("\n📊 TEST SUMMARY")
+        self.log("=" * 60)
+        passed = sum(1 for r in results.values() if r)
+        total = len(results)
         
-        all_passed = scenario_1_passed and scenario_2_passed and scenario_3_passed
-        self.log(f"\n🎯 OVERALL RESULT: {'ALL TESTS PASSED' if all_passed else 'SOME TESTS FAILED'}")
-        
-        if self.challenge_ids:
-            self.log(f"\n📝 Created Challenge IDs: {', '.join(self.challenge_ids)}")
+        for scenario, result in results.items():
+            status = "✅ PASS" if result else "❌ FAIL"
+            self.log(f"{scenario}: {status}")
             
-        return all_passed
+        self.log(f"\nOVERALL: {passed}/{total} scenarios passed")
+        
+        if passed == total:
+            self.log("🎉 ALL QR KORE CROSS-CHECK ENGINE TESTS PASSED!")
+            return True
+        else:
+            self.log("⚠️ Some tests failed - see details above")
+            return False
 
 if __name__ == "__main__":
-    tester = TrustEngineTest()
-    success = tester.run_all_tests()
-    sys.exit(0 if success else 1)
+    engine = QRTestEngine()
+    success = engine.run_all_scenarios()
+    exit(0 if success else 1)
