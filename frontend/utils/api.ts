@@ -127,6 +127,7 @@ export const api = {
   getActiveChallenges: (token: string) => request('/challenge/user/active', {}, token),
   sanityCheck: (data: { exercise_type: string; reps?: number; seconds?: number; kg?: number }, token: string) =>
     request('/challenge/sanity-check', { method: 'POST', body: JSON.stringify(data) }, token),
+  getValidationBreakdown: (token: string) => request('/validation/breakdown', {}, token),
   peerConfirm: (data: { challenge_id: string; confirmed: boolean }, token: string) =>
     request('/challenge/peer-confirm', { method: 'POST', body: JSON.stringify(data) }, token),
 

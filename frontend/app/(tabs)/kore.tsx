@@ -21,6 +21,7 @@ import { api } from '../../utils/api';
 import { Header } from '../../components/Header';
 import { KoreVault, AKBadge } from '../../components/KoreVault';
 import { AKDropsWallet, CertBadge } from '../../components/CertBadge';
+import { ValidationBreakdown } from '../../components/challenge/ValidationBreakdown';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { ImageBackground } from 'react-native';
@@ -1330,6 +1331,9 @@ export default function KoreTab() {
 
             {/* 6. KORE CARD + WALLET */}
             <KoreCard user={user} rankData={rankData} />
+
+            {/* 6.5 TRUST BREAKDOWN — Validation Methods */}
+            <ValidationBreakdown />
 
             {/* 7. PRIVACY SHIELD */}
             <Animated.View entering={FadeInDown.delay(500)} style={ps$.wrap}>

@@ -27,7 +27,7 @@ const { width: SW } = Dimensions.get('window');
 type ChallengeTag = 'POWER' | 'FLOW' | 'PULSE';
 type ValidationMode = 'AUTO_COUNT' | 'MANUAL_ENTRY' | 'SENSOR_IMPORT';
 type ProofType = 'NONE' | 'VIDEO_TIME_CHECK' | 'GPS_IMPORT' | 'PEER_CONFIRMATION';
-type VerificationStatus = 'UNVERIFIED' | 'AI_VERIFIED' | 'PROOF_PENDING';
+type VerificationStatus = 'UNVERIFIED' | 'AI_VERIFIED' | 'PROOF_PENDING' | 'SUSPICIOUS';
 
 const TAG_CONFIG: Record<ChallengeTag, { color: string; icon: string; label: string; desc: string }> = {
   POWER: { color: '#FF3B30', icon: 'flame', label: 'POWER', desc: 'Forza · Potenza · Esplosività' },
@@ -51,6 +51,7 @@ const VERIFICATION_BADGE_CONFIG: Record<VerificationStatus, { color: string; ico
   UNVERIFIED:    { color: '#8E8E93', icon: 'shield-outline',    label: 'UNVERIFIED' },
   AI_VERIFIED:   { color: EL.CYAN,   icon: 'shield-checkmark',  label: 'AI VERIFIED' },
   PROOF_PENDING: { color: '#FFD700', icon: 'shield-half',       label: 'PROOF PENDING' },
+  SUSPICIOUS:    { color: '#FF9500', icon: 'warning',           label: 'REVISIONE RICHIESTA' },
 };
 
 // ═══ MAIN ENGINE PHASES ═══
@@ -967,9 +968,30 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
               <Text style={v.verificationMult}>
                 {verificationStatus === 'AI_VERIFIED' ? '100% FLUX' :
                  verificationStatus === 'PROOF_PENDING' ? '75% FLUX · In attesa verifica' :
+                 verificationStatus === 'SUSPICIOUS' ? '25% FLUX · Revisione richiesta' :
                  '50% FLUX · Nessuna prova'}
               </Text>
             </View>
+
+            {/* SUSPICIOUS alert — yellow not red */}
+            {verificationStatus === 'SUSPICIOUS' && (
+              <View style={[v.upsell, { borderColor: 'rgba(255,149,0,0.2)', backgroundColor: 'rgba(255,149,0,0.06)' }]}>
+                <Ionicons name="warning" size={14} color="#FF9500" />
+                <Text style={[v.upsellText, { color: '#FF9500' }]}>
+                  {verdict.bpm_correlation?.message || 'Dati biometrici anomali. Un coach effettuerà la revisione manuale. Ti diamo il beneficio del dubbio.'}
+                </Text>
+              </View>
+            )}
+
+            {/* Proximity Witness badge */}
+            {verdict.proximity_witness?.witness_found && (
+              <View style={[v.upsell, { borderColor: 'rgba(175,82,222,0.2)', backgroundColor: 'rgba(175,82,222,0.06)' }]}>
+                <Ionicons name="people" size={14} color="#AF52DE" />
+                <Text style={[v.upsellText, { color: '#AF52DE' }]}>
+                  PROXIMITY WITNESS: {verdict.proximity_witness.witness_username} era a {verdict.proximity_witness.distance_m}m da te. Validazione automatica reciproca.
+                </Text>
+              </View>
+            )}
 
             {/* Upsell for manual */}
             {verificationStatus === 'UNVERIFIED' && (

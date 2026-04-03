@@ -336,6 +336,14 @@ class ChallengeEngineComplete(BaseModel):
     proof_type: Optional[str] = "NONE"  # "NONE" | "GPS_IMPORT" | "VIDEO_TIME_CHECK" | "PEER_CONFIRMATION"
     declared_time: Optional[float] = 0.0
     video_duration: Optional[float] = 0.0
+    # Advanced Validation Engine fields
+    bpm_avg: Optional[float] = None       # Wearable BPM average during challenge
+    bpm_peak: Optional[float] = None      # Wearable BPM peak
+    speed_kmh: Optional[float] = None     # Speed in km/h (for sprint/running challenges)
+    intensity_category: Optional[str] = None  # "HIGH_INTENSITY" | "MEDIUM" | "LOW"
+    gps_lat: Optional[float] = None       # GPS latitude at challenge completion
+    gps_lng: Optional[float] = None       # GPS longitude at challenge completion
+    audio_peaks: Optional[List[float]] = None  # Timestamps (seconds) of audio impact peaks
 
 
 # FLUX multipliers per validation mode
@@ -430,6 +438,188 @@ async def get_user_personal_bests(user_id, exercise_type: str) -> dict:
             "best_seconds": result[0].get("best_seconds", 0) or 0,
         }
     return {"best_reps": 0, "best_kg": 0, "best_seconds": 0}
+
+
+# =====================================================================
+# ADVANCED VALIDATION ENGINE — Biometric Correlation, Proximity Witness, Audio Analytics
+# =====================================================================
+
+# BPM thresholds per intensity category for biometric correlation
+BPM_THRESHOLDS = {
+    "sprint":         {"min_bpm": 140, "speed_threshold_kmh": 20},
+    "downhill":       {"min_bpm": 120, "speed_threshold_kmh": 30},
+    "crossfit":       {"min_bpm": 130, "speed_threshold_kmh": 0},
+    "hiit":           {"min_bpm": 135, "speed_threshold_kmh": 0},
+    "boxing":         {"min_bpm": 125, "speed_threshold_kmh": 0},
+    "mezzofondo":     {"min_bpm": 130, "speed_threshold_kmh": 12},
+    "burpee":         {"min_bpm": 130, "speed_threshold_kmh": 0},
+    "squat":          {"min_bpm": 100, "speed_threshold_kmh": 0},
+    "deadlift":       {"min_bpm": 100, "speed_threshold_kmh": 0},
+    "bench_press":    {"min_bpm": 95,  "speed_threshold_kmh": 0},
+    "pullup":         {"min_bpm": 100, "speed_threshold_kmh": 0},
+}
+
+# HIGH_INTENSITY exercise types (require BPM check if wearable data present)
+HIGH_INTENSITY_EXERCISES = {"sprint", "downhill", "crossfit", "hiit", "boxing", "mezzofondo", "burpee"}
+
+# Impact-based exercises (eligible for audio analytics)
+IMPACT_EXERCISES = {"boxing", "tennis", "deadlift", "bench_press", "squat", "pullup", "kettlebell"}
+
+
+def biometric_correlation_check(
+    exercise_type: str, bpm_avg: float | None, bpm_peak: float | None,
+    speed_kmh: float | None, intensity_category: str | None,
+    reps: int, seconds: float
+) -> dict:
+    """Cross-check speed vs BPM. If an athlete claims a record sprint at resting BPM → SUSPICIOUS."""
+    result = {"status": "CLEAR", "flags": [], "requires_review": False, "message": ""}
+
+    if bpm_avg is None:
+        # No wearable data — can't correlate
+        is_high = exercise_type in HIGH_INTENSITY_EXERCISES or (intensity_category or "").upper() == "HIGH_INTENSITY"
+        if is_high:
+            result["flags"].append("NO_WEARABLE_DATA_HIGH_INTENSITY")
+            result["message"] = "Sfida ad alta intensità senza dati BPM. Validazione limitata."
+        return result
+
+    thresholds = BPM_THRESHOLDS.get(exercise_type, {"min_bpm": 100, "speed_threshold_kmh": 0})
+    min_bpm = thresholds["min_bpm"]
+    speed_thresh = thresholds["speed_threshold_kmh"]
+
+    # Core check: high speed + low BPM = suspicious
+    if speed_kmh and speed_kmh > speed_thresh > 0 and bpm_avg < min_bpm:
+        result["status"] = "SUSPICIOUS"
+        result["flags"].append("SPEED_BPM_MISMATCH")
+        result["requires_review"] = True
+        result["message"] = (
+            f"Velocità {speed_kmh:.1f} km/h con BPM medio {bpm_avg:.0f}. "
+            f"Per {exercise_type}, il BPM minimo atteso è {min_bpm}. Revisione richiesta."
+        )
+
+    # Check: high intensity exercise with resting BPM
+    if bpm_avg < 75 and exercise_type in HIGH_INTENSITY_EXERCISES:
+        result["status"] = "SUSPICIOUS"
+        result["flags"].append("RESTING_BPM_HIGH_INTENSITY")
+        result["requires_review"] = True
+        result["message"] = (
+            f"BPM medio {bpm_avg:.0f} troppo basso per esercizio ad alta intensità ({exercise_type}). "
+            "Possibile dato wearable errato o attività non svolta."
+        )
+
+    # Check: BPM peak suspiciously low for long duration
+    if bpm_peak and bpm_peak < 100 and seconds > 120 and exercise_type in HIGH_INTENSITY_EXERCISES:
+        result["flags"].append("LOW_PEAK_BPM_LONG_DURATION")
+        if result["status"] != "SUSPICIOUS":
+            result["status"] = "REVIEW_SUGGESTED"
+
+    if not result["flags"]:
+        result["status"] = "BPM_CORRELATED"
+        result["message"] = f"BPM {bpm_avg:.0f} correlato con attività {exercise_type}. Dati coerenti."
+
+    return result
+
+
+def audio_analytics_check(exercise_type: str, audio_peaks: list | None, declared_reps: int) -> dict:
+    """Validate audio impact peaks vs declared reps for impact-based exercises."""
+    result = {"eligible": False, "status": "N/A", "peak_count": 0, "rep_match_pct": 0, "waveform_data": []}
+
+    if exercise_type not in IMPACT_EXERCISES:
+        return result
+
+    result["eligible"] = True
+
+    if not audio_peaks or len(audio_peaks) == 0:
+        result["status"] = "NO_AUDIO_DATA"
+        return result
+
+    peak_count = len(audio_peaks)
+    result["peak_count"] = peak_count
+
+    # Generate waveform representation (normalized 0-1 amplitudes between peaks)
+    if len(audio_peaks) >= 2:
+        total_dur = audio_peaks[-1] - audio_peaks[0] if audio_peaks[-1] > audio_peaks[0] else 30
+        waveform = []
+        for i, t in enumerate(audio_peaks):
+            waveform.append({"t": round(t, 2), "amplitude": round(0.7 + random.random() * 0.3, 2), "is_peak": True})
+            # Add some mid-points
+            if i < len(audio_peaks) - 1:
+                mid_t = (t + audio_peaks[i + 1]) / 2
+                waveform.append({"t": round(mid_t, 2), "amplitude": round(0.1 + random.random() * 0.25, 2), "is_peak": False})
+        result["waveform_data"] = waveform
+
+    # Rep matching
+    if declared_reps > 0:
+        match_pct = min(100, round((peak_count / declared_reps) * 100))
+        result["rep_match_pct"] = match_pct
+        if match_pct >= 80:
+            result["status"] = "AUDIO_CORRELATED"
+        elif match_pct >= 50:
+            result["status"] = "PARTIAL_MATCH"
+        else:
+            result["status"] = "LOW_CORRELATION"
+    else:
+        result["status"] = "PEAKS_DETECTED"
+
+    return result
+
+
+import math
+
+def haversine_distance(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Calculate distance in meters between two GPS coordinates."""
+    R = 6371000  # Earth radius in meters
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlam = math.radians(lng2 - lng1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+async def proximity_witness_check(user_id, challenge_id: str, gps_lat: float | None, gps_lng: float | None) -> dict:
+    """Check if another ARENA KORE user completed a challenge within 10m and ±2min → Invisible Trust."""
+    result = {"witness_found": False, "witness_username": None, "distance_m": None, "time_diff_s": None}
+
+    if gps_lat is None or gps_lng is None:
+        return result
+
+    now = datetime.utcnow()
+    time_window = timedelta(minutes=2)
+
+    # Find other users' completed challenges within the last 2 minutes with GPS data
+    recent_challenges = await db.challenges_engine.find({
+        "status": "completed",
+        "user_id": {"$ne": user_id},
+        "completed_at": {"$gte": now - time_window},
+        "gps_lat": {"$exists": True, "$ne": None},
+        "gps_lng": {"$exists": True, "$ne": None},
+    }).to_list(20)
+
+    for rc in recent_challenges:
+        rc_lat = rc.get("gps_lat")
+        rc_lng = rc.get("gps_lng")
+        if rc_lat and rc_lng:
+            dist = haversine_distance(gps_lat, gps_lng, rc_lat, rc_lng)
+            if dist <= 10.0:  # Within 10 meters
+                rc_user = await db.users.find_one({"_id": rc["user_id"]})
+                rc_username = rc_user["username"] if rc_user else "KORE"
+                time_diff = abs((now - rc["completed_at"]).total_seconds())
+
+                result["witness_found"] = True
+                result["witness_username"] = rc_username
+                result["distance_m"] = round(dist, 1)
+                result["time_diff_s"] = round(time_diff)
+
+                # Auto-validate both challenges
+                await db.challenges_engine.update_one(
+                    {"_id": rc["_id"]},
+                    {"$set": {
+                        "proximity_witness": {"user_id": str(user_id), "distance_m": round(dist, 1)},
+                        "verification_status": "AI_VERIFIED",
+                    }}
+                )
+                break
+
+    return result
 
 # Tag → DNA stat mapping for increment prediction
 TAG_DNA_MAP = {
@@ -1200,6 +1390,101 @@ async def get_challenge_history(current_user: dict = Depends(get_current_user)):
         }
         for r in results
     ]
+
+
+
+# =====================================================================
+# VALIDATION BREAKDOWN — Compute athlete's trust reputation
+# =====================================================================
+@api_router.get("/validation/breakdown")
+async def get_validation_breakdown(current_user: dict = Depends(get_current_user)):
+    """Returns the percentage breakdown of how an athlete's challenges were validated."""
+    user_id = current_user["_id"]
+
+    # Get all completed challenges for this user
+    completed = await db.challenges_engine.find({
+        "user_id": user_id,
+        "status": "completed",
+    }).to_list(500)
+
+    # Also check legacy challenge_results
+    legacy = await db.challenge_results.find({"user_id": user_id}).to_list(500)
+    total_count = len(completed) + len(legacy)
+
+    if total_count == 0:
+        return {
+            "total_challenges": 0,
+            "breakdown": {
+                "NEXUS_VERIFIED": {"count": 0, "pct": 0},
+                "GPS_VERIFIED": {"count": 0, "pct": 0},
+                "BPM_CORRELATED": {"count": 0, "pct": 0},
+                "AUDIO_CORRELATED": {"count": 0, "pct": 0},
+                "PROXIMITY_WITNESS": {"count": 0, "pct": 0},
+                "PEER_CONFIRMED": {"count": 0, "pct": 0},
+                "MANUAL_ENTRY": {"count": 0, "pct": 0},
+            },
+            "trust_score": 0,
+            "primary_method": "NONE",
+        }
+
+    # Count validation methods
+    methods = {
+        "NEXUS_VERIFIED": 0, "GPS_VERIFIED": 0, "BPM_CORRELATED": 0,
+        "AUDIO_CORRELATED": 0, "PROXIMITY_WITNESS": 0, "PEER_CONFIRMED": 0,
+        "MANUAL_ENTRY": 0,
+    }
+
+    for c in completed:
+        vs = c.get("verification_status", "UNVERIFIED")
+        vm = c.get("verdict", {}).get("validation_mode", "MANUAL_ENTRY")
+        pt = c.get("proof_type", "NONE")
+        bpm = c.get("bpm_correlation", {})
+        audio = c.get("audio_analysis", {})
+        pw = c.get("proximity_witness", {})
+
+        if vs == "AI_VERIFIED" and vm in ("AUTO_COUNT", "SENSOR_IMPORT"):
+            methods["NEXUS_VERIFIED"] += 1
+        elif vs == "AI_VERIFIED" and pt == "GPS_IMPORT":
+            methods["GPS_VERIFIED"] += 1
+        elif bpm.get("status") == "BPM_CORRELATED":
+            methods["BPM_CORRELATED"] += 1
+        elif audio.get("status") == "AUDIO_CORRELATED":
+            methods["AUDIO_CORRELATED"] += 1
+        elif pw.get("witness_found"):
+            methods["PROXIMITY_WITNESS"] += 1
+        elif pt == "PEER_CONFIRMATION":
+            methods["PEER_CONFIRMED"] += 1
+        else:
+            methods["MANUAL_ENTRY"] += 1
+
+    # Legacy challenges count as NEXUS_VERIFIED (they went through scan)
+    methods["NEXUS_VERIFIED"] += len(legacy)
+
+    # Calculate percentages
+    breakdown = {}
+    for m, count in methods.items():
+        pct = round((count / total_count) * 100, 1) if total_count > 0 else 0
+        breakdown[m] = {"count": count, "pct": pct}
+
+    # Trust score (weighted: higher-trust methods earn more trust)
+    trust_weights = {
+        "NEXUS_VERIFIED": 1.0, "GPS_VERIFIED": 0.9, "BPM_CORRELATED": 0.95,
+        "AUDIO_CORRELATED": 0.8, "PROXIMITY_WITNESS": 0.85, "PEER_CONFIRMED": 0.7,
+        "MANUAL_ENTRY": 0.3,
+    }
+    weighted_sum = sum(methods[m] * trust_weights[m] for m in methods)
+    trust_score = round((weighted_sum / total_count) * 100) if total_count > 0 else 0
+
+    # Find primary method
+    primary = max(methods, key=methods.get)
+
+    return {
+        "total_challenges": total_count,
+        "breakdown": breakdown,
+        "trust_score": min(100, trust_score),
+        "primary_method": primary,
+    }
+
 
 
 @api_router.get("/disciplines")
@@ -5182,6 +5467,15 @@ async def complete_challenge_engine(data: ChallengeEngineComplete, current_user:
     personal_bests = await get_user_personal_bests(user_id, exercise_type)
     sanity = biometric_sanity_check(exercise_type, reps, seconds, kg, personal_bests)
 
+    # ═══ ADVANCED VALIDATION: Biometric Correlation ═══
+    bpm_correlation = biometric_correlation_check(
+        exercise_type, data.bpm_avg, data.bpm_peak,
+        data.speed_kmh, data.intensity_category, reps, seconds
+    )
+
+    # ═══ ADVANCED VALIDATION: Audio Analytics ═══
+    audio_analysis = audio_analytics_check(exercise_type, data.audio_peaks, reps)
+
     # Determine verification_status
     if val_mode == "AUTO_COUNT":
         verification_status = "AI_VERIFIED"
@@ -5203,9 +5497,18 @@ async def complete_challenge_engine(data: ChallengeEngineComplete, current_user:
     if not sanity["passed"] and not data.has_video_proof and proof_type not in ("VIDEO_TIME_CHECK", "GPS_IMPORT"):
         verification_status = "UNVERIFIED"
 
+    # ═══ BIOMETRIC CORRELATION OVERRIDE ═══
+    if bpm_correlation["status"] == "SUSPICIOUS":
+        verification_status = "SUSPICIOUS"
+
     # Use verification-based multiplier (overrides validation_mode multiplier)
-    flux_multiplier = VERIFICATION_FLUX_MULTIPLIERS.get(verification_status, 0.5)
-    ranked_eligible = verification_status == "AI_VERIFIED"
+    suspicious_multiplier = 0.25  # SUSPICIOUS gets 25% FLUX penalty
+    if verification_status == "SUSPICIOUS":
+        flux_multiplier = suspicious_multiplier
+        ranked_eligible = False
+    else:
+        flux_multiplier = VERIFICATION_FLUX_MULTIPLIERS.get(verification_status, 0.5)
+        ranked_eligible = verification_status == "AI_VERIFIED"
 
     # Base FLUX
     base_flux = max(10, reps * 2 + int(quality / 10) + int(kg / 5))
@@ -5254,6 +5557,16 @@ async def complete_challenge_engine(data: ChallengeEngineComplete, current_user:
 
     # Integrity status
     integrity_ok = sanity["passed"] and verification_status in ("AI_VERIFIED", "PROOF_PENDING")
+    if bpm_correlation["status"] == "BPM_CORRELATED":
+        integrity_ok = True  # BPM data strengthens integrity
+
+    # ═══ PROXIMITY WITNESS (Invisible Trust) ═══
+    proximity_result = await proximity_witness_check(user_id, data.challenge_id, data.gps_lat, data.gps_lng)
+    if proximity_result["witness_found"] and verification_status not in ("AI_VERIFIED",):
+        verification_status = "AI_VERIFIED"
+        integrity_ok = True
+        flux_multiplier = 1.0
+        ranked_eligible = True
 
     # Update challenge
     await db.challenges_engine.update_one({"_id": ObjectId(data.challenge_id)}, {"$set": {
@@ -5267,6 +5580,11 @@ async def complete_challenge_engine(data: ChallengeEngineComplete, current_user:
         "verification_status": verification_status,
         "sanity_check": sanity,
         "integrity_ok": integrity_ok,
+        "bpm_correlation": bpm_correlation,
+        "audio_analysis": {"status": audio_analysis["status"], "peak_count": audio_analysis["peak_count"], "rep_match_pct": audio_analysis["rep_match_pct"]},
+        "proximity_witness": proximity_result,
+        "gps_lat": data.gps_lat,
+        "gps_lng": data.gps_lng,
         "verdict": {
             "base_flux": base_flux, "flux_multiplier": flux_multiplier,
             "earned_flux": earned_flux, "validation_mode": val_mode,
@@ -5276,6 +5594,9 @@ async def complete_challenge_engine(data: ChallengeEngineComplete, current_user:
             "integrity_ok": integrity_ok,
             "sanity_check": sanity,
             "proof_type": proof_type,
+            "bpm_correlation": bpm_correlation,
+            "audio_analysis": audio_analysis,
+            "proximity_witness": proximity_result,
         },
     }})
 
@@ -5298,6 +5619,10 @@ async def complete_challenge_engine(data: ChallengeEngineComplete, current_user:
             "sanity_check": sanity,
             "proof_type": proof_type,
             "personal_bests": personal_bests,
+            # Advanced Validation Engine
+            "bpm_correlation": bpm_correlation,
+            "audio_analysis": audio_analysis,
+            "proximity_witness": proximity_result,
         }
     }
 

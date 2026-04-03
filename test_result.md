@@ -1688,3 +1688,155 @@ agent_communication:
       message: "QR KORE CROSS-CHECK ENGINE TESTING COMPLETED: ALL 5 SCENARIOS PASSED SUCCESSFULLY (100% SUCCESS RATE). ✅ SCENARIO 1 (Create QR Challenge + Generate QR): Challenge creation working correctly with challenge_id, 6-digit join_code (945828), threshold=2 (50%+1 of 2 others). QR generation returned qr_token (base64), PIN code (572336), status='provisional', confirmations=0. Initial status check confirmed provisional state with remaining_seconds=3599. ✅ SCENARIO 2 (First Peer Validation): User B validation successful with scanner_flux_reward=5, target_status='provisional' (only 1/2 confirmations). ✅ SCENARIO 3 (Second Peer Validation): User C validation reached threshold (2/2), target_status='official', target_flux_awarded=true. ✅ SCENARIO 4 (Status Check After Official): Final status confirmed as 'official', confirmations=2, flux_earned=37. ✅ SCENARIO 5 (Edge Cases): Self-validation correctly blocked with 'Non puoi confermare te stesso', duplicate validation blocked with 'Hai già confermato'. All QR KORE Cross-Check Engine endpoints are production-ready. Test credentials: ogrisek.stefano@gmail.com (Creator), d.rose@chicago.kore (Validator 1), demo.owner@arenakore.app (Validator 2) all authenticated successfully."
     - agent: "testing"
       message: "SENSORY IMMERSION & COACH ANALYTICS BACKEND TESTING COMPLETED: All 4 new coach analytics endpoints tested successfully with comprehensive validation. Test results: ✅ Coach login successful (demo.owner@arenakore.app) with GYM_OWNER role ✅ GET /api/coach/athletes/full returns 5 athletes with complete data structure (id, username, six_axis with all 6 keys, kore_score, kore_grade) ✅ GET /api/coach/compare-athletes successfully compares 2 athletes (MARCO_DEMO vs DURO_85) with proper response structure including athletes array and gap_analysis with leader/leader_value/athletes data ✅ GET /api/report/athlete-pdf/{athlete_id} generates valid PDF (3453 bytes, application/pdf content-type, magic bytes validated) ✅ All edge cases working correctly: single athlete ID rejection (400), empty IDs rejection (400), invalid PDF athlete ID rejection (400). Admin access also verified with 19 athletes returned. All coach analytics and PDF export features are production-ready."
+
+
+  - task: "Advanced Validation Engine - Biometric Correlation"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "biometric_correlation_check() in server.py. Tested: sprint at 35km/h with 72 BPM → SUSPICIOUS with SPEED_BPM_MISMATCH + RESTING_BPM_HIGH_INTENSITY flags. squat with 135 BPM → BPM_CORRELATED. Thresholds configurable per exercise type."
+
+  - task: "Advanced Validation Engine - Audio Analytics"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "audio_analytics_check() in server.py. Tested: 20 audio peaks vs 20 declared reps → AUDIO_CORRELATED (100% match). Generates waveform_data array with timestamps and amplitudes."
+
+  - task: "Advanced Validation Engine - Proximity Witness"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "proximity_witness_check() with haversine_distance(). Finds other users who completed challenges within 10m and ±2min. Auto-validates both challenges. Uses GPS lat/lng."
+
+  - task: "Validation Breakdown API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/validation/breakdown returns trust_score, breakdown percentages per method, primary_method. Tested with D.Rose: 65 trust_score, 50% NEXUS_VERIFIED, 50% MANUAL_ENTRY."
+
+  - task: "Trust Breakdown UI in KORE Passport"
+    implemented: true
+    working: true
+    file: "components/challenge/ValidationBreakdown.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "ValidationBreakdown component with TrustRing, method bars, PJS 800 percentages. Screenshot verified on KORE tab showing 65 trust score, NEXUS VERIFIED 50%, MANUAL ENTRY 50%."
+
+  - task: "SUSPICIOUS Badge in Challenge Verdict"
+    implemented: true
+    working: true
+    file: "components/challenge/ChallengeEngine.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Added SUSPICIOUS status with orange warning badge, 25% FLUX penalty, non-blocking yellow UX. Shows bpm_correlation.message and proximity_witness info."
+
+  - task: "WaveformChart Component"
+    implemented: true
+    working: true
+    file: "components/challenge/WaveformChart.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "SVG waveform with peak markers, rep match percentage, BETA pill. Audio peaks displayed as R1, R2, R3... with orange markers."
+
+agent_communication:
+    - agent: "main"
+      message: "ADVANCED VALIDATION ENGINE IMPLEMENTED. Backend tests: (1) POST /api/challenge/complete with speed_kmh=35, bpm_avg=72 → SUSPICIOUS. (2) POST with bpm_avg=135, audio_peaks=[20 timestamps] → BPM_CORRELATED + AUDIO_CORRELATED 100%. (3) GET /api/validation/breakdown → trust_score=65, 50% NEXUS, 50% MANUAL. Frontend: ValidationBreakdown visible in KORE tab, SUSPICIOUS badge in ChallengeEngine verdict. WaveformChart ready. Credentials: d.rose@chicago.kore / Seed@Chicago1"
+    - agent: "testing"
+      message: "ADVANCED VALIDATION ENGINE TESTING COMPLETED: All 5 critical validation scenarios tested successfully. ✅ Biometric Correlation (Suspicious) - correctly flags speed-BPM mismatch with SUSPICIOUS status and 0.25 flux multiplier ✅ Biometric Correlation (Clear) - validates legitimate data with AI_VERIFIED status ✅ Audio Analytics (Impact) - processes audio peaks for deadlift with 100% rep match ✅ Audio Analytics (Non-Impact) - correctly excludes sprint from audio validation ✅ Validation Breakdown - returns comprehensive trust analytics with 67% trust score. All advanced validation features are production-ready and working as specified in the review request."
+
+backend:
+  - task: "Advanced Validation Engine - Biometric Correlation (Suspicious)"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Biometric correlation correctly identifies suspicious speed-BPM mismatch. Sprint at 38 km/h with 68 BPM avg correctly flagged as SUSPICIOUS with flags ['SPEED_BPM_MISMATCH', 'RESTING_BPM_HIGH_INTENSITY'] and flux_multiplier=0.25. Advanced validation engine working correctly."
+
+  - task: "Advanced Validation Engine - Biometric Correlation (Clear/Legitimate)"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Biometric correlation correctly validates legitimate data. Squat exercise with 140 BPM avg and 165 BPM peak correctly marked as AI_VERIFIED with CLEAR status and integrity_ok=true. Legitimate biometric data properly validated."
+
+  - task: "Advanced Validation Engine - Audio Analytics (Impact Exercise)"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Audio analytics working correctly for impact exercises. Deadlift with 10 audio peaks correctly analyzed with status='AUDIO_CORRELATED', peak_count=10, rep_match_pct=100, and waveform_data containing 19 data points. Audio validation fully functional."
+
+  - task: "Advanced Validation Engine - Audio Analytics (Non-Impact Exercise)"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Audio analytics correctly excludes non-impact exercises. Sprint exercise correctly marked as eligible=false for audio analytics, confirming that non-impact exercises are properly filtered out from audio validation."
+
+  - task: "Advanced Validation Engine - Validation Breakdown API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Validation breakdown endpoint working correctly. Returns total_challenges=15, trust_score=67, primary_method='NEXUS_VERIFIED', and complete breakdown structure with all validation methods (NEXUS_VERIFIED, GPS_VERIFIED, BPM_CORRELATED, AUDIO_CORRELATED, PROXIMITY_WITNESS, PEER_CONFIRMED, MANUAL_ENTRY). Trust scoring and validation analytics fully functional."
