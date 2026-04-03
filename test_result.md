@@ -748,6 +748,66 @@ backend:
           agent: "testing"
           comment: "COMPREHENSIVE TEST PASSED: Google Wallet JWT generation working correctly. Returns all required fields: wallet_url (valid Google Pay URL starting with https://pay.google.com/gp/v/save/), kore_number (00001), status (generated). JWT generation functional."
 
+  - task: "Trust Engine - Sanity Check Pre-flight API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "POST /api/challenge/sanity-check — biometric sanity check with world record validation, personal best spike detection, returns passed/flags/requires_video/message + personal_bests"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: All sanity check scenarios working correctly. Test 1: 500 squats correctly flagged with passed=false, requires_video=true, flags=['EXCEEDS_WORLD_RECORD_REPS', 'SPIKE_OVER_PB_REPS']. Test 2: Normal values (10 reps, 30s, 20kg) correctly validated with passed=true, requires_video=false, empty flags. Personal bests tracking functional."
+
+  - task: "Trust Engine - Challenge Create API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "POST /api/challenge/create — creates tagged challenge with validation mode (AUTO_COUNT/MANUAL_ENTRY/SENSOR_IMPORT), supports POWER/FLOW/PULSE tags, returns challenge_id + flux_multiplier"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Challenge creation working correctly for all test scenarios. Created 'TRUST TEST MANUAL' with POWER tag, 'TRUST TEST VIDEO' with FLOW tag, and 'TRUST TEST DISPUTE' with PULSE tag. All returned valid challenge_ids and proper tag/validation_mode configuration."
+
+  - task: "Trust Engine - Complete Challenge with Verification Status"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "POST /api/challenge/complete — comprehensive completion with biometric sanity check, verification status logic (UNVERIFIED/PROOF_PENDING/AI_VERIFIED), FLUX calculation with multipliers, DNA predictions, verdict structure"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: All verification scenarios working correctly. Test 1: Manual entry without video → verification_status='UNVERIFIED', flux_multiplier=0.5, integrity_ok=false, proof_type='NONE'. Test 2: Manual entry with video → verification_status='PROOF_PENDING', flux_multiplier=0.75, integrity_ok=true, proof_type='VIDEO_TIME_CHECK'. Sanity check integration, DNA predictions, and FLUX calculations all functional."
+
+  - task: "Trust Engine - Peer Confirmation API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "POST /api/challenge/peer-confirm — crew battle peer confirmation/dispute system, updates verification_status from PROOF_PENDING to AI_VERIFIED (confirmed=true) or UNVERIFIED (confirmed=false)"
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: All peer confirmation scenarios working correctly. Test 1: Peer confirm (confirmed=true) correctly updated verification_status from PROOF_PENDING to AI_VERIFIED. Test 2: Peer dispute (confirmed=false) correctly updated verification_status from PROOF_PENDING to UNVERIFIED. Challenge state management and peer tracking functional."
+
 frontend:
   - task: "KORE Card Wallet Integration (Apple + Google)"
     implemented: true
@@ -1376,3 +1436,89 @@ backend:
   - agent: "testing"
     message: "CHALLENGE ENGINE BACKEND TESTING COMPLETED: ALL 6 REQUESTED ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Test results: ✅ POST /api/challenge/create (POWER tag + MANUAL_ENTRY) - Challenge creation working correctly, returns challenge_id, dominant_tag=POWER, dominant_color=#FF3B30, ranked_eligible=false, flux_multiplier=0.5 ✅ POST /api/challenge/complete - Challenge completion working correctly, earned FLUX=31 (50% reduction due to MANUAL_ENTRY), DNA predictions for forza/potenza, anti_cheat_note present, hero_data included ✅ POST /api/challenge/create (FLOW tag + AUTO_COUNT) - Challenge creation working correctly, ranked_eligible=true, flux_multiplier=1.0, dominant_color=#00FF87 ✅ Validation: Empty tags - Correctly rejected with 'Almeno un tag obbligatorio' error (400) ✅ Validation: Invalid challenge_id - Correctly rejected with 'Sfida non trovata' error (404) ✅ GET /api/challenge/user/active - Active challenges retrieval working correctly, returned 2 challenges. Challenge Engine is production-ready with proper FLUX calculation, DNA predictions, validation modes, and anti-cheat measures. Authentication with founder credentials (ogrisek.stefano@gmail.com / Founder@KORE2026!) successful."
 
+
+
+  - task: "Trust Engine - Sanity Check Pre-flight API"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST /api/challenge/sanity-check — Pre-flight biometric sanity check. Accepts exercise_type, reps, seconds, kg. Returns {passed, flags, requires_video, message, personal_bests}. Flags include SPIKE_OVER_PB_REPS, SPIKE_OVER_PB_KG, EXCEEDS_WORLD_RECORD_REPS, etc."
+
+  - task: "Trust Engine - Peer Confirmation API"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST /api/challenge/peer-confirm — Crew member validation. Accepts challenge_id, confirmed (bool). Updates verification_status to AI_VERIFIED (if confirmed) or UNVERIFIED (if disputed). Sets integrity_ok accordingly."
+
+  - task: "Trust Engine - Complete Challenge with Verification Status"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST /api/challenge/complete now returns verification_status (UNVERIFIED/AI_VERIFIED/PROOF_PENDING), integrity_ok (bool), sanity_check result, and proof_type. Verdict includes these new fields for frontend consumption. FLUX multiplier is 50% for UNVERIFIED, 75% for PROOF_PENDING, 100% for AI_VERIFIED."
+
+frontend:
+  - task: "Trust Engine - Sanity Warning UX"
+    implemented: true
+    working: "NA"
+    file: "frontend/components/challenge/ChallengeEngine.tsx"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW sanity_warning phase in ChallengeEngine. When manual entry triggers sanity check failure (reps/kg +50% over PB), shows motivational warning with rocket emoji: 'Kore, hai superato i tuoi limiti! Questo risultato è incredibile.' Shows biometric analysis flags. Offers 3 proof options: VIDEO_TIME_CHECK (75% FLUX), GPS_IMPORT (100% FLUX), PEER_CONFIRMATION (75% FLUX). User can also skip and continue at 50% FLUX."
+
+  - task: "Trust Engine - Verification Badges on Verdict Screen"
+    implemented: true
+    working: "NA"
+    file: "frontend/components/challenge/ChallengeEngine.tsx"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "VerificationBadge component renders based on verdict.verification_status: UNVERIFIED=Grey, AI_VERIFIED=Cyan, PROOF_PENDING=Yellow. Shown in verdict header and inside FLUX calculation card. Uses shield icons from Ionicons."
+
+  - task: "Trust Engine - Integrity OK Glow Badge"
+    implemented: true
+    working: "NA"
+    file: "frontend/components/challenge/ChallengeEngine.tsx"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "IntegrityGlowBadge component with: (1) fade+scale spring entrance animation delayed 600ms, (2) repeating cyan glow pulse on outer ring (opacity oscillation 0.15-0.6), (3) inner badge with shield-checkmark icon + 'INTEGRITY OK' text in Montserrat 900. Only renders when verdict.integrity_ok === true. Web uses boxShadow for glow effect."
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: "TRUST ENGINE BACKEND + FRONTEND IMPLEMENTED. PLEASE TEST BACKEND FIRST: (1) Login ogrisek.stefano@gmail.com / Founder@KORE2026! (2) POST /api/challenge/create {title: 'SANITY TEST', exercise_type: 'squat', tags: ['POWER'], validation_mode: 'MANUAL_ENTRY', mode: 'personal'} → get challenge_id (3) POST /api/challenge/sanity-check {exercise_type: 'squat', reps: 500, seconds: 0, kg: 0} → should return passed=false, requires_video=true, flags should contain EXCEEDS_WORLD_RECORD_REPS (4) POST /api/challenge/sanity-check {exercise_type: 'squat', reps: 10, seconds: 30, kg: 20} → should return passed=true, requires_video=false (5) POST /api/challenge/complete {challenge_id: <from step 2>, validation_mode: 'MANUAL_ENTRY', reps: 10, seconds: 30, kg: 20, quality_score: 80, has_video_proof: false} → should return verification_status='UNVERIFIED', integrity_ok based on sanity, proof_type='NONE' (6) Create another challenge and complete it with proof_type='VIDEO_TIME_CHECK', has_video_proof=true → verification_status should be 'PROOF_PENDING', flux_multiplier=0.75 (7) POST /api/challenge/peer-confirm {challenge_id: <from step 6>, confirmed: true} → verification_status should become 'AI_VERIFIED'. BASE URL: https://arena-scan-lab.preview.emergentagent.com"
+    - agent: "testing"
+      message: "TRUST ENGINE BACKEND TESTING COMPLETED: ALL 3 SCENARIOS PASSED SUCCESSFULLY (100% SUCCESS RATE). ✅ SCENARIO 1 (Pre-flight Sanity Check): Both excessive reps (500 squats) correctly flagged with EXCEEDS_WORLD_RECORD_REPS + SPIKE_OVER_PB_REPS, and normal values (10 reps, 30s, 20kg) correctly validated. ✅ SCENARIO 2 (Challenge Verification): Manual entry without video → UNVERIFIED (flux_multiplier=0.5), manual entry with video → PROOF_PENDING (flux_multiplier=0.75). All verification statuses, integrity checks, and FLUX calculations working correctly. ✅ SCENARIO 3 (Peer Confirmation): Peer confirm (confirmed=true) correctly updated status to AI_VERIFIED, peer dispute (confirmed=false) correctly updated to UNVERIFIED. Challenge state management functional. Test credentials: Primary user (ogrisek.stefano@gmail.com) and secondary user (d.rose@chicago.kore) both authenticated successfully. Created challenge IDs: 69cf03b96c52f2b306bd892e, 69cf03b96c52f2b306bd8930. All Trust Engine endpoints are production-ready."

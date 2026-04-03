@@ -1,29 +1,33 @@
 /**
- * ARENAKORE — CHALLENGE ENGINE
- * Tag Selection → Validation Mode → Manual Entry / Auto / Sensor → THE VERDICT
- * "Estetica del Potere" — Total color immersion based on dominant tag
+ * ARENAKORE — CHALLENGE ENGINE v2.0
+ * Tag Selection → Validation Mode → Manual Entry / Auto / Sensor → Sanity Check → THE VERDICT
+ * "Trust Engine" — Biometric Sanity + Verification Badges + Integrity Glow
  */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView,
-  Dimensions, Platform, KeyboardAvoidingView,
+  Dimensions, Platform, KeyboardAvoidingView, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
-  useSharedValue, withRepeat, withSequence, withTiming, withSpring,
-  useAnimatedStyle, FadeIn, FadeInDown, interpolate, Easing,
+  useSharedValue, withRepeat, withSequence, withTiming, withSpring, withDelay,
+  useAnimatedStyle, FadeIn, FadeInDown, FadeInUp, Easing, interpolate,
+  runOnJS,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, Polygon, Text as SvgText } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { api } from '../../utils/api';
 import { FluxIcon } from '../FluxIcon';
+import { EL, FONT_MONT, FONT_JAKARTA } from '../../utils/eliteTheme';
 
 const { width: SW } = Dimensions.get('window');
 
 // ═══ TAG DEFINITIONS ═══
 type ChallengeTag = 'POWER' | 'FLOW' | 'PULSE';
 type ValidationMode = 'AUTO_COUNT' | 'MANUAL_ENTRY' | 'SENSOR_IMPORT';
+type ProofType = 'NONE' | 'VIDEO_TIME_CHECK' | 'GPS_IMPORT' | 'PEER_CONFIRMATION';
+type VerificationStatus = 'UNVERIFIED' | 'AI_VERIFIED' | 'PROOF_PENDING';
 
 const TAG_CONFIG: Record<ChallengeTag, { color: string; icon: string; label: string; desc: string }> = {
   POWER: { color: '#FF3B30', icon: 'flame', label: 'POWER', desc: 'Forza · Potenza · Esplosività' },
@@ -37,8 +41,20 @@ const MODE_CONFIG: Record<ValidationMode, { icon: string; title: string; sub: st
   SENSOR_IMPORT: { icon: 'watch-outline',  title: 'SENSOR IMPORT',   sub: 'Importa da Apple Health / Garmin',          badge: '75% FLUX' },
 };
 
+const PROOF_OPTIONS: { type: ProofType; icon: string; title: string; sub: string; fluxBoost: string }[] = [
+  { type: 'VIDEO_TIME_CHECK', icon: 'videocam', title: 'PROVA VIDEO', sub: 'Registra o carica un video della performance', fluxBoost: '→ 75% FLUX' },
+  { type: 'GPS_IMPORT', icon: 'navigate', title: 'GPS IMPORT', sub: 'Importa traccia GPS da Strava / Garmin', fluxBoost: '→ 100% FLUX' },
+  { type: 'PEER_CONFIRMATION', icon: 'people', title: 'CONFERMA PEER', sub: 'Un compagno di Crew certifica il tuo risultato', fluxBoost: '→ 75% FLUX' },
+];
+
+const VERIFICATION_BADGE_CONFIG: Record<VerificationStatus, { color: string; icon: string; label: string }> = {
+  UNVERIFIED:    { color: '#8E8E93', icon: 'shield-outline',    label: 'UNVERIFIED' },
+  AI_VERIFIED:   { color: EL.CYAN,   icon: 'shield-checkmark',  label: 'AI VERIFIED' },
+  PROOF_PENDING: { color: '#FFD700', icon: 'shield-half',       label: 'PROOF PENDING' },
+};
+
 // ═══ MAIN ENGINE PHASES ═══
-type EnginePhase = 'tags' | 'validation' | 'manual_entry' | 'sensor_mock' | 'submitting' | 'verdict';
+type EnginePhase = 'tags' | 'validation' | 'manual_entry' | 'sensor_mock' | 'sanity_warning' | 'submitting' | 'verdict';
 
 interface ChallengeEngineProps {
   user: any;
@@ -64,22 +80,22 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
   const [hasVideoProof, setHasVideoProof] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Trust Engine state
+  const [sanityResult, setSanityResult] = useState<any>(null);
+  const [selectedProofType, setSelectedProofType] = useState<ProofType>('NONE');
+  const [isSanityChecking, setIsSanityChecking] = useState(false);
+
   // Dominant color for immersive theming
   const dominantTag = selectedTags[0] || 'PULSE';
   const dominantColor = TAG_CONFIG[dominantTag]?.color || '#00E5FF';
 
   // Animations
   const bgPulse = useSharedValue(0.03);
-  const headerGlow = useSharedValue(0.4);
 
   useEffect(() => {
     bgPulse.value = withRepeat(withSequence(
       withTiming(0.08, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
       withTiming(0.03, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
-    ), -1, false);
-    headerGlow.value = withRepeat(withSequence(
-      withTiming(0.8, { duration: 1000 }),
-      withTiming(0.3, { duration: 1000 }),
     ), -1, false);
   }, []);
 
@@ -97,7 +113,7 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
     </View>
   );
 
-  // ═══ TAG SELECTION PHASE ═══
+  // ═══ TAG SELECTION ═══
   const toggleTag = (tag: ChallengeTag) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     setSelectedTags(prev => {
@@ -119,7 +135,6 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     setValidationMode(mode);
 
-    // Create challenge on backend
     try {
       const res = await api.createChallenge({
         title: `${selectedTags.join(' · ')} ${exerciseType.toUpperCase()}`,
@@ -131,7 +146,6 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
       setChallengeId(res.challenge_id);
 
       if (mode === 'AUTO_COUNT') {
-        // Route to NEXUS scan — pass challenge context
         onAutoScan(res.challenge_id, selectedTags, dominantColor);
       } else if (mode === 'MANUAL_ENTRY') {
         setPhase('manual_entry');
@@ -143,8 +157,37 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
     }
   };
 
+  // ═══ PRE-FLIGHT SANITY CHECK ═══
+  const handlePreFlightCheck = useCallback(async () => {
+    if (!token) return;
+    setIsSanityChecking(true);
+    try {
+      const result = await api.sanityCheck({
+        exercise_type: exerciseType,
+        reps: parseInt(manualReps) || 0,
+        seconds: parseFloat(manualSeconds) || 0,
+        kg: parseFloat(manualKg) || 0,
+      }, token);
+      setSanityResult(result);
+
+      if (result.requires_video) {
+        // Show motivational warning
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+        setPhase('sanity_warning');
+      } else {
+        // Sanity passed — submit directly
+        doManualSubmit('NONE', false);
+      }
+    } catch (err) {
+      console.error('Sanity check failed, submitting anyway:', err);
+      doManualSubmit('NONE', false);
+    } finally {
+      setIsSanityChecking(false);
+    }
+  }, [token, exerciseType, manualReps, manualSeconds, manualKg]);
+
   // ═══ SUBMIT MANUAL ENTRY ═══
-  const handleManualSubmit = async () => {
+  const doManualSubmit = async (proofType: ProofType = 'NONE', withVideo: boolean = false) => {
     if (!token || !challengeId) return;
     setIsSubmitting(true);
     setPhase('submitting');
@@ -157,7 +200,8 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
         seconds: parseFloat(manualSeconds) || 0,
         kg: parseFloat(manualKg) || 0,
         quality_score: 75,
-        has_video_proof: hasVideoProof,
+        has_video_proof: withVideo || hasVideoProof,
+        proof_type: proofType,
       }, token);
       setVerdict(res.verdict);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -197,7 +241,9 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
     }
   };
 
-  // ═══ RENDER PHASES ═══
+  // ═══════════════════════════════════════════
+  // RENDER PHASES
+  // ═══════════════════════════════════════════
 
   // PHASE 1: TAG SELECTION
   if (phase === 'tags') {
@@ -272,7 +318,6 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
               <Text style={s.phaseSub}>Come vuoi certificare i tuoi risultati?</Text>
             </View>
 
-            {/* Selected tags display */}
             <View style={s.tagsRow}>
               {selectedTags.map(tag => (
                 <View key={tag} style={[s.tagPill, { borderColor: TAG_CONFIG[tag].color }]}>
@@ -422,13 +467,19 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
                 </View>
 
                 <TouchableOpacity
-                  style={[s.primaryBtn, { backgroundColor: dominantColor }]}
-                  onPress={handleManualSubmit}
+                  style={[s.primaryBtn, { backgroundColor: dominantColor, opacity: isSanityChecking ? 0.6 : 1 }]}
+                  onPress={handlePreFlightCheck}
                   activeOpacity={0.85}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isSanityChecking}
                 >
-                  <Ionicons name="checkmark-circle" size={18} color="#000" />
-                  <Text style={s.primaryBtnText}>CHIUDI SFIDA</Text>
+                  {isSanityChecking ? (
+                    <ActivityIndicator size="small" color="#000" />
+                  ) : (
+                    <Ionicons name="checkmark-circle" size={18} color="#000" />
+                  )}
+                  <Text style={s.primaryBtnText}>
+                    {isSanityChecking ? 'ANALISI BIOMETRICA...' : 'CHIUDI SFIDA'}
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => setPhase('validation')} style={s.backBtn}>
@@ -438,6 +489,139 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
               </Animated.View>
             </ScrollView>
           </KeyboardAvoidingView>
+        </SafeAreaView>
+      </DarkBase>
+    );
+  }
+
+  // ═══════════════════════════════════════════
+  // PHASE 3.5: SANITY WARNING (Trust Engine)
+  // ═══════════════════════════════════════════
+  if (phase === 'sanity_warning') {
+    return (
+      <DarkBase>
+        <SafeAreaView style={s.safe}>
+          <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
+            <Animated.View entering={FadeIn.duration(500)}>
+              {/* Hero Icon + Motivational Message */}
+              <View style={sw.heroSection}>
+                <Animated.View entering={FadeInDown.delay(100).springify().damping(12)}>
+                  <View style={[sw.rocketWrap, { backgroundColor: dominantColor + '15' }]}>
+                    <Text style={sw.rocketEmoji}>🚀</Text>
+                  </View>
+                </Animated.View>
+
+                <Animated.View entering={FadeInDown.delay(250).duration(500)}>
+                  <Text style={[sw.heroTitle, { color: dominantColor }]}>
+                    HAI SUPERATO I TUOI LIMITI!
+                  </Text>
+                </Animated.View>
+
+                <Animated.View entering={FadeInDown.delay(400).duration(500)}>
+                  <Text style={sw.heroBody}>
+                    Kore, questo risultato è incredibile. Registra una prova video per incidere il tuo nome nella classifica Ranked e sbloccare il 100% dei FLUX.
+                  </Text>
+                </Animated.View>
+              </View>
+
+              {/* Flags Detail */}
+              {sanityResult?.flags && sanityResult.flags.length > 0 && (
+                <Animated.View entering={FadeInDown.delay(500).duration(400)} style={sw.flagsCard}>
+                  <View style={sw.flagsHeader}>
+                    <Ionicons name="analytics" size={16} color={EL.CYAN} />
+                    <Text style={sw.flagsTitle}>ANALISI BIOMETRICA</Text>
+                  </View>
+                  {sanityResult.flags.map((flag: string, idx: number) => {
+                    const flagLabels: Record<string, string> = {
+                      'SPIKE_OVER_PB_REPS': 'Ripetizioni +50% sopra il tuo record personale',
+                      'SPIKE_OVER_PB_KG': 'Peso +50% sopra il tuo record personale',
+                      'EXCEEDS_WORLD_RECORD_REPS': 'Supera il record mondiale di ripetizioni',
+                      'EXCEEDS_WORLD_RECORD_KG': 'Supera il record mondiale di peso',
+                      'EXCEEDS_WORLD_RECORD_TIME': 'Supera il record mondiale di durata',
+                    };
+                    return (
+                      <View key={idx} style={sw.flagRow}>
+                        <Ionicons name="trending-up" size={14} color="#FFD700" />
+                        <Text style={sw.flagText}>{flagLabels[flag] || flag}</Text>
+                      </View>
+                    );
+                  })}
+                </Animated.View>
+              )}
+
+              {/* Proof Options */}
+              <Animated.View entering={FadeInDown.delay(650).duration(400)}>
+                <Text style={sw.proofSectionTitle}>SCEGLI COME CERTIFICARTI</Text>
+                <View style={sw.proofOptions}>
+                  {PROOF_OPTIONS.map((opt) => {
+                    const isSelected = selectedProofType === opt.type;
+                    return (
+                      <TouchableOpacity
+                        key={opt.type}
+                        style={[
+                          sw.proofCard,
+                          isSelected && { borderColor: dominantColor, backgroundColor: dominantColor + '08' },
+                        ]}
+                        onPress={() => {
+                          setSelectedProofType(opt.type);
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                        }}
+                        activeOpacity={0.82}
+                      >
+                        <View style={[sw.proofIconWrap, { backgroundColor: (isSelected ? dominantColor : '#555') + '15' }]}>
+                          <Ionicons name={opt.icon as any} size={22} color={isSelected ? dominantColor : '#666'} />
+                        </View>
+                        <View style={sw.proofContent}>
+                          <Text style={[sw.proofTitle, isSelected && { color: dominantColor }]}>{opt.title}</Text>
+                          <Text style={sw.proofSub}>{opt.sub}</Text>
+                        </View>
+                        <View style={[sw.proofBadge, { borderColor: isSelected ? dominantColor : '#333' }]}>
+                          <Text style={[sw.proofBadgeText, { color: isSelected ? dominantColor : '#666' }]}>{opt.fluxBoost}</Text>
+                        </View>
+                        {isSelected && (
+                          <View style={[sw.proofCheck, { backgroundColor: dominantColor }]}>
+                            <Ionicons name="checkmark" size={12} color="#000" />
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </Animated.View>
+
+              {/* Submit with Proof */}
+              <Animated.View entering={FadeInUp.delay(800).duration(400)}>
+                {selectedProofType !== 'NONE' && (
+                  <TouchableOpacity
+                    style={[s.primaryBtn, { backgroundColor: dominantColor }]}
+                    onPress={() => doManualSubmit(selectedProofType, selectedProofType === 'VIDEO_TIME_CHECK')}
+                    activeOpacity={0.85}
+                    disabled={isSubmitting}
+                  >
+                    <Ionicons name="shield-checkmark" size={18} color="#000" />
+                    <Text style={s.primaryBtnText}>INVIA CON PROVA</Text>
+                  </TouchableOpacity>
+                )}
+
+                {/* Skip without proof */}
+                <TouchableOpacity
+                  style={[sw.skipBtn, { borderColor: '#333' }]}
+                  onPress={() => doManualSubmit('NONE', false)}
+                  activeOpacity={0.75}
+                >
+                  <Text style={sw.skipBtnText}>CONTINUA SENZA PROVA</Text>
+                  <Text style={sw.skipBtnSub}>50% FLUX · Non valido per Ranked</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => setPhase('manual_entry')} style={s.backBtn}>
+                  <Ionicons name="arrow-back" size={14} color="#555" />
+                  <Text style={s.backText}>MODIFICA DATI</Text>
+                </TouchableOpacity>
+              </Animated.View>
+
+              <View style={{ height: 40 }} />
+            </Animated.View>
+          </ScrollView>
         </SafeAreaView>
       </DarkBase>
     );
@@ -475,7 +659,6 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
               <View style={s.sensorRow}><Text style={s.sensorKey}>QUALITÀ</Text><Text style={[s.sensorVal, { color: dominantColor }]}>82%</Text></View>
             </View>
 
-            {/* FLUX Preview */}
             <View style={[s.fluxPreview, { borderColor: dominantColor + '33' }]}>
               <Text style={s.fluxPreviewLabel}>FLUX STIMATI</Text>
               <View style={s.fluxCalcRow}>
@@ -530,20 +713,77 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
   return null;
 }
 
+
 // ═══════════════════════════════════════════════════════════════════
-// THE VERDICT — Post-Challenge Summary Screen
+// VERIFICATION BADGE — Corner badge component
+// ═══════════════════════════════════════════════════════════════════
+function VerificationBadge({ status, style }: { status: VerificationStatus; style?: any }) {
+  const cfg = VERIFICATION_BADGE_CONFIG[status] || VERIFICATION_BADGE_CONFIG.UNVERIFIED;
+
+  return (
+    <Animated.View entering={FadeIn.delay(300).duration(400)} style={[vb.badge, { borderColor: cfg.color + '55' }, style]}>
+      <Ionicons name={cfg.icon as any} size={12} color={cfg.color} />
+      <Text style={[vb.badgeText, { color: cfg.color }]}>{cfg.label}</Text>
+    </Animated.View>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INTEGRITY OK GLOW — Animated pulsing badge
+// ═══════════════════════════════════════════════════════════════════
+function IntegrityGlowBadge() {
+  const scale = useSharedValue(0.3);
+  const opacity = useSharedValue(0);
+  const glowOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    // Phase 1: Entrance — fade + scale spring
+    scale.value = withDelay(600, withSpring(1, { damping: 10, stiffness: 150 }));
+    opacity.value = withDelay(600, withTiming(1, { duration: 500 }));
+    // Phase 2: Glow pulse (repeating after entrance)
+    glowOpacity.value = withDelay(1200, withRepeat(
+      withSequence(
+        withTiming(0.6, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.15, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+      ), -1, false
+    ));
+  }, []);
+
+  const containerStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
+
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: glowOpacity.value,
+  }));
+
+  return (
+    <Animated.View style={[ig.container, containerStyle]}>
+      {/* Outer glow ring */}
+      <Animated.View style={[ig.glowRing, glowStyle]} />
+      {/* Inner badge */}
+      <View style={ig.innerBadge}>
+        <Ionicons name="shield-checkmark" size={20} color={EL.CYAN} />
+        <Text style={ig.badgeText}>INTEGRITY OK</Text>
+      </View>
+    </Animated.View>
+  );
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// THE VERDICT — Post-Challenge Summary Screen (v2.0 with Trust Engine)
 // ═══════════════════════════════════════════════════════════════════
 
 function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; dominantColor: string; onClose: () => void }) {
   const heroScale = useSharedValue(0.3);
   const heroOpacity = useSharedValue(0);
-  const fluxCount = useSharedValue(0);
   const radarPulse = useSharedValue(1);
 
   useEffect(() => {
     heroScale.value = withSpring(1, { damping: 8, stiffness: 120 });
     heroOpacity.value = withTiming(1, { duration: 600 });
-    fluxCount.value = withTiming(verdict.earned_flux, { duration: 1500, easing: Easing.out(Easing.cubic) });
     radarPulse.value = withRepeat(withSequence(
       withTiming(1.05, { duration: 1200 }),
       withTiming(1, { duration: 1200 }),
@@ -563,9 +803,12 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
   const hero = verdict.hero_data || {};
   const dna = verdict.dna_predictions || {};
   const tags = verdict.tags || [];
+  const verificationStatus: VerificationStatus = verdict.verification_status || 'UNVERIFIED';
+  const integrityOk: boolean = verdict.integrity_ok === true;
+  const sanityCheck = verdict.sanity_check || {};
+  const proofType = verdict.proof_type || 'NONE';
   const isManual = verdict.validation_mode === 'MANUAL_ENTRY';
   const isSensor = verdict.validation_mode === 'SENSOR_IMPORT';
-  const multiplierLabel = isManual ? '50%' : isSensor ? '75%' : '100%';
 
   // Mini DNA Radar for predictions
   const stats = ['velocita', 'forza', 'resistenza', 'agilita', 'tecnica', 'potenza'];
@@ -575,7 +818,8 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
     <View style={v.container}>
       <SafeAreaView style={v.safe}>
         <ScrollView contentContainerStyle={v.scroll} showsVerticalScrollIndicator={false}>
-          {/* Header */}
+
+          {/* ═══ HEADER with Verification Badge ═══ */}
           <Animated.View entering={FadeInDown.delay(100).duration(500)} style={v.header}>
             <Text style={[v.verdictLabel, { color: dominantColor }]}>THE VERDICT</Text>
             <View style={v.tagsRow}>
@@ -585,16 +829,44 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
                 </View>
               ))}
             </View>
+            {/* Corner Verification Badge */}
+            <VerificationBadge status={verificationStatus} style={{ marginTop: 8 }} />
           </Animated.View>
 
-          {/* Hero Data */}
+          {/* ═══ HERO DATA ═══ */}
           <Animated.View style={[v.heroWrap, heroStyle]}>
             <Text style={[v.heroValue, { color: dominantColor }]}>{hero.value || '—'}</Text>
             <Text style={v.heroUnit}>{hero.unit || ''}</Text>
             <Text style={v.heroLabel}>{hero.label || ''}</Text>
           </Animated.View>
 
-          {/* FLUX Calculation — Transparent */}
+          {/* ═══ INTEGRITY OK GLOW (only if integrity passed) ═══ */}
+          {integrityOk && (
+            <View style={v.integrityWrap}>
+              <IntegrityGlowBadge />
+            </View>
+          )}
+
+          {/* ═══ SANITY CHECK FEEDBACK (if flags exist) ═══ */}
+          {sanityCheck.flags && sanityCheck.flags.length > 0 && !integrityOk && (
+            <Animated.View entering={FadeInDown.delay(350).duration(400)} style={v.sanityCard}>
+              <View style={v.sanityHeader}>
+                <Ionicons name="alert-circle" size={16} color="#FFD700" />
+                <Text style={v.sanityTitle}>ANALISI INTEGRITÀ</Text>
+              </View>
+              <Text style={v.sanityMsg}>
+                {sanityCheck.message || 'Risultati richiedono verifica aggiuntiva'}
+              </Text>
+              {proofType !== 'NONE' && (
+                <View style={v.proofTypeBadge}>
+                  <Ionicons name="document-attach" size={12} color={EL.CYAN} />
+                  <Text style={v.proofTypeText}>Prova: {proofType.replace(/_/g, ' ')}</Text>
+                </View>
+              )}
+            </Animated.View>
+          )}
+
+          {/* ═══ FLUX Calculation — Transparent ═══ */}
           <Animated.View entering={FadeInDown.delay(400).duration(500)} style={[v.fluxCard, { borderColor: dominantColor + '44' }]}>
             <View style={v.fluxHeader}>
               <FluxIcon size={20} color={dominantColor} />
@@ -626,8 +898,18 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
               )}
             </View>
 
+            {/* Verification-based multiplier explanation */}
+            <View style={v.verificationInfo}>
+              <VerificationBadge status={verificationStatus} />
+              <Text style={v.verificationMult}>
+                {verificationStatus === 'AI_VERIFIED' ? '100% FLUX' :
+                 verificationStatus === 'PROOF_PENDING' ? '75% FLUX · In attesa verifica' :
+                 '50% FLUX · Nessuna prova'}
+              </Text>
+            </View>
+
             {/* Upsell for manual */}
-            {(isManual || isSensor) && (
+            {verificationStatus === 'UNVERIFIED' && (
               <View style={v.upsell}>
                 <Ionicons name="information-circle" size={14} color="#FFD700" />
                 <Text style={v.upsellText}>
@@ -650,7 +932,7 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
             )}
           </Animated.View>
 
-          {/* DNA Radar Increment Preview */}
+          {/* ═══ DNA Radar Increment Preview ═══ */}
           <Animated.View entering={FadeInDown.delay(600).duration(500)} style={[v.dnaCard, { borderColor: dominantColor + '33' }]}>
             <Text style={v.dnaTitle}>INCREMENTO DNA PREVISTO</Text>
 
@@ -675,7 +957,6 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
               </Svg>
             </Animated.View>
 
-            {/* Stats list */}
             <View style={v.dnaStats}>
               {Object.entries(dna).map(([stat, data]: [string, any]) => (
                 <View key={stat} style={v.dnaRow}>
@@ -702,8 +983,9 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
 }
 
 
-// ═══ STYLES ═══
-
+// ═══════════════════════════════════════════
+// STYLES — Main Engine
+// ═══════════════════════════════════════════
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
   colorOverlay: {
@@ -714,153 +996,274 @@ const s = StyleSheet.create({
   content: { flex: 1, paddingHorizontal: 24, paddingTop: 16, zIndex: 1 },
   scrollContent: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 40, zIndex: 1 },
 
-  // Phase header
   phaseHeader: { alignItems: 'center', gap: 4, marginBottom: 24 },
-  phaseLabel: { fontSize: 13, fontWeight: '900', letterSpacing: 4 },
-  phaseTitle: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: 5 },
-  phaseSub: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '400', textAlign: 'center' },
+  phaseLabel: { fontFamily: FONT_MONT, fontSize: 13, fontWeight: '900', letterSpacing: 4 },
+  phaseTitle: { fontFamily: FONT_MONT, color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: 5 },
+  phaseSub: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '400', textAlign: 'center' },
 
-  // Tags grid
   tagsGrid: { gap: 12, marginBottom: 24 },
   tagCard: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
-    padding: 16, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-    backgroundColor: '#121212',
+    padding: 16, borderRadius: 16, borderWidth: 1, borderColor: EL.BORDER,
+    backgroundColor: EL.CARD_BG,
   },
   tagIconWrap: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  tagLabel: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 3, flex: 0 },
-  tagDesc: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '400', flex: 1 },
+  tagLabel: { fontFamily: FONT_MONT, color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 3, flex: 0 },
+  tagDesc: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '400', flex: 1 },
   tagCheck: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
 
-  // Tags row (selected)
   tagsRow: { flexDirection: 'row', gap: 8, justifyContent: 'center', marginBottom: 20 },
   tagPill: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
-  tagPillText: { fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  tagPillText: { fontFamily: FONT_MONT, fontSize: 11, fontWeight: '900', letterSpacing: 2 },
 
-  // Validation modes
   modesCol: { gap: 12, marginBottom: 24 },
   modeCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-    backgroundColor: '#121212', position: 'relative',
+    padding: 16, borderRadius: 16, borderWidth: 1, borderColor: EL.BORDER,
+    backgroundColor: EL.CARD_BG, position: 'relative' as const,
   },
   modeIconWrap: { width: 48, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   modeContent: { flex: 1, gap: 2 },
-  modeTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
-  modeSub: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '400' },
+  modeTitle: { fontFamily: FONT_MONT, color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
+  modeSub: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '400' },
   modeBadge: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  modeBadgeText: { fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-  recommended: { position: 'absolute', top: -8, right: 12, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2 },
-  recommendedText: { color: '#000', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  modeBadgeText: { fontFamily: FONT_MONT, fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  recommended: { position: 'absolute' as const, top: -8, right: 12, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2 },
+  recommendedText: { fontFamily: FONT_MONT, color: '#000', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
 
-  // Input fields
   inputGroup: { gap: 16, marginBottom: 20 },
   inputRow: { flexDirection: 'row', gap: 12 },
   inputWrap: { flex: 1, gap: 6 },
-  inputLabel: { color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 0.3 },
+  inputLabel: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 0.3 },
   input: {
-    backgroundColor: '#121212', borderWidth: 1, borderRadius: 12,
-    color: '#FFFFFF', fontSize: 28, fontWeight: '800', textAlign: 'center',
+    backgroundColor: EL.CARD_BG, borderWidth: 1, borderRadius: 12,
+    color: '#FFFFFF', fontSize: 28, fontWeight: '800', textAlign: 'center' as const,
     paddingVertical: 14, letterSpacing: 1,
-    fontFamily: Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined }),
+    fontFamily: FONT_JAKARTA,
   },
-  inputUnit: { color: '#8E8E93', fontSize: 11, fontWeight: '500', letterSpacing: 1, textAlign: 'center' },
+  inputUnit: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 11, fontWeight: '500', letterSpacing: 1, textAlign: 'center' as const },
 
-  // Proof button
   proofBtn: {
     flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6,
     borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
     backgroundColor: 'rgba(255,255,255,0.02)', paddingVertical: 14,
   },
-  proofText: { color: '#555', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  proofText: { fontFamily: FONT_MONT, color: '#555', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
 
-  // Disclaimer
   disclaimer: {
     flexDirection: 'row', gap: 12, padding: 14, borderRadius: 12, borderWidth: 1,
     backgroundColor: 'rgba(255,215,0,0.04)', marginBottom: 20,
   },
   disclaimerContent: { flex: 1, gap: 4 },
-  disclaimerTitle: { color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
-  disclaimerText: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '400', lineHeight: 17 },
-  disclaimerCta: { fontSize: 11, fontWeight: '800', marginTop: 4 },
+  disclaimerTitle: { fontFamily: FONT_MONT, color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  disclaimerText: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '400', lineHeight: 17 },
+  disclaimerCta: { fontFamily: FONT_MONT, fontSize: 11, fontWeight: '800', marginTop: 4 },
 
-  // FLUX preview
   fluxPreview: { borderWidth: 1, borderRadius: 12, padding: 14, marginBottom: 20, alignItems: 'center', gap: 6 },
-  fluxPreviewLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  fluxPreviewLabel: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   fluxCalcRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  fluxBase: { fontSize: 24, fontWeight: '900' },
-  fluxFinal: { fontSize: 32, fontWeight: '900' },
-  fluxUnit: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
-  fluxNote: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '400' },
+  fluxBase: { fontFamily: FONT_JAKARTA, fontSize: 24, fontWeight: '900' },
+  fluxFinal: { fontFamily: FONT_JAKARTA, fontSize: 32, fontWeight: '900' },
+  fluxUnit: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
+  fluxNote: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '400' },
 
-  // Sensor mock
   sensorMock: { flexDirection: 'row', gap: 12, marginBottom: 20 },
   sensorDevice: {
     flex: 1, alignItems: 'center', gap: 8, padding: 20, borderRadius: 16,
     borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.02)',
   },
-  sensorName: { fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  sensorStatus: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '400' },
+  sensorName: { fontFamily: FONT_MONT, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  sensorStatus: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '400' },
   sensorData: { borderWidth: 1, borderRadius: 12, padding: 14, marginBottom: 20, gap: 8 },
-  sensorDataTitle: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  sensorDataTitle: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   sensorRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  sensorKey: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '800', letterSpacing: 1 },
-  sensorVal: { fontSize: 16, fontWeight: '900' },
+  sensorKey: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '800', letterSpacing: 1 },
+  sensorVal: { fontFamily: FONT_JAKARTA, fontSize: 16, fontWeight: '900' },
 
-  // Buttons
   primaryBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     borderRadius: 12, paddingVertical: 16, marginBottom: 12,
   },
-  primaryBtnText: { color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
+  primaryBtnText: { fontFamily: FONT_MONT, color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
   backBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12 },
-  backText: { color: '#555', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
+  backText: { fontFamily: FONT_MONT, color: '#555', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
 });
 
+
+// ═══════════════════════════════════════════
+// STYLES — Sanity Warning Phase
+// ═══════════════════════════════════════════
+const sw = StyleSheet.create({
+  heroSection: { alignItems: 'center', gap: 12, marginBottom: 28, paddingTop: 20 },
+  rocketWrap: {
+    width: 80, height: 80, borderRadius: 40,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 8,
+  },
+  rocketEmoji: { fontSize: 40 },
+  heroTitle: {
+    fontFamily: FONT_MONT, fontSize: 22, fontWeight: '900',
+    letterSpacing: 3, textAlign: 'center',
+  },
+  heroBody: {
+    fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.65)',
+    fontSize: 15, fontWeight: '400', lineHeight: 22,
+    textAlign: 'center', paddingHorizontal: 12,
+  },
+
+  flagsCard: {
+    backgroundColor: EL.CARD_BG, borderRadius: 14,
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)',
+    padding: 14, gap: 10, marginBottom: 24,
+  },
+  flagsHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  flagsTitle: { fontFamily: FONT_MONT, color: EL.CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  flagRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 4 },
+  flagText: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '400', flex: 1 },
+
+  proofSectionTitle: {
+    fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 12,
+    fontWeight: '700', letterSpacing: 2, marginBottom: 12, textAlign: 'center',
+  },
+  proofOptions: { gap: 10, marginBottom: 20 },
+  proofCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    padding: 14, borderRadius: 14, borderWidth: 1, borderColor: EL.BORDER,
+    backgroundColor: EL.CARD_BG, position: 'relative' as const,
+  },
+  proofIconWrap: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  proofContent: { flex: 1, gap: 2 },
+  proofTitle: { fontFamily: FONT_MONT, color: '#FFFFFF', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
+  proofSub: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '400' },
+  proofBadge: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
+  proofBadgeText: { fontFamily: FONT_MONT, fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  proofCheck: {
+    position: 'absolute' as const, top: -6, right: -6,
+    width: 22, height: 22, borderRadius: 11,
+    alignItems: 'center', justifyContent: 'center',
+  },
+
+  skipBtn: {
+    borderWidth: 1, borderRadius: 12, paddingVertical: 14,
+    alignItems: 'center', marginBottom: 8, gap: 4,
+  },
+  skipBtnText: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 14, fontWeight: '700', letterSpacing: 1 },
+  skipBtnSub: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '400' },
+});
+
+
+// ═══════════════════════════════════════════
+// STYLES — Verification Badge
+// ═══════════════════════════════════════════
+const vb = StyleSheet.create({
+  badge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderWidth: 1, borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 5,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  badgeText: { fontFamily: FONT_MONT, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+});
+
+
+// ═══════════════════════════════════════════
+// STYLES — Integrity Glow Badge
+// ═══════════════════════════════════════════
+const ig = StyleSheet.create({
+  container: {
+    alignItems: 'center', justifyContent: 'center',
+    marginVertical: 8,
+  },
+  glowRing: {
+    position: 'absolute' as const,
+    width: 160, height: 48, borderRadius: 24,
+    backgroundColor: EL.CYAN,
+    ...(Platform.OS === 'web' ? {
+      // @ts-ignore — Web boxShadow for glow
+      boxShadow: `0 0 20px ${EL.CYAN}66, 0 0 40px ${EL.CYAN}33`,
+    } : {}),
+  },
+  innerBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#0A1A1A',
+    borderWidth: 1.5, borderColor: EL.CYAN,
+    borderRadius: 22, paddingHorizontal: 18, paddingVertical: 10,
+  },
+  badgeText: {
+    fontFamily: FONT_MONT, color: EL.CYAN,
+    fontSize: 13, fontWeight: '900', letterSpacing: 3,
+  },
+});
+
+
+// ═══════════════════════════════════════════
+// STYLES — Verdict Screen
+// ═══════════════════════════════════════════
 const v = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
   safe: { flex: 1 },
   scroll: { paddingHorizontal: 24, paddingTop: 20 },
 
   header: { alignItems: 'center', gap: 8, marginBottom: 20 },
-  verdictLabel: { fontSize: 14, fontWeight: '900', letterSpacing: 6 },
+  verdictLabel: { fontFamily: FONT_MONT, fontSize: 14, fontWeight: '900', letterSpacing: 6 },
   tagsRow: { flexDirection: 'row', gap: 8 },
   tagPill: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 3 },
-  tagPillText: { fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  tagPillText: { fontFamily: FONT_MONT, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
 
-  // Hero
-  heroWrap: { alignItems: 'center', marginBottom: 28, gap: 4 },
-  heroValue: { fontFamily: Platform.select({ web: "'Plus Jakarta Sans', Montserrat, sans-serif", default: undefined }), fontSize: 72, fontWeight: '800', letterSpacing: 2 },
-  heroUnit: { color: '#8E8E93', fontSize: 14, fontWeight: '500', letterSpacing: 3, marginTop: -8 },
-  heroLabel: { color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 2 },
+  heroWrap: { alignItems: 'center', marginBottom: 12, gap: 4 },
+  heroValue: { fontFamily: FONT_JAKARTA, fontSize: 72, fontWeight: '800', letterSpacing: 2 },
+  heroUnit: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 14, fontWeight: '500', letterSpacing: 3, marginTop: -8 },
+  heroLabel: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 2 },
 
-  // FLUX card
-  fluxCard: { borderWidth: 1, borderRadius: 16, padding: 18, marginBottom: 16, gap: 10, backgroundColor: '#121212' },
+  integrityWrap: { alignItems: 'center', marginBottom: 20 },
+
+  // Sanity feedback card (when integrity NOT ok)
+  sanityCard: {
+    backgroundColor: EL.CARD_BG, borderRadius: 14,
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)',
+    padding: 14, gap: 8, marginBottom: 16,
+  },
+  sanityHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  sanityTitle: { fontFamily: FONT_MONT, color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  sanityMsg: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '400', lineHeight: 17 },
+  proofTypeBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderWidth: 1, borderColor: EL.CYAN + '33', borderRadius: 6,
+    paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start',
+  },
+  proofTypeText: { fontFamily: FONT_MONT, color: EL.CYAN, fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+
+  fluxCard: { borderWidth: 1, borderRadius: 16, padding: 18, marginBottom: 16, gap: 10, backgroundColor: EL.CARD_BG },
   fluxHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  fluxTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  fluxTitle: { fontFamily: FONT_MONT, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   fluxCalcBlock: { gap: 6 },
   fluxLine: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  fluxCalcLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '600' },
-  fluxCalcVal: { fontSize: 16, fontWeight: '900' },
+  fluxCalcLabel: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '600' },
+  fluxCalcVal: { fontFamily: FONT_JAKARTA, fontSize: 16, fontWeight: '900' },
   fluxDivider: { height: 1, marginVertical: 4 },
-  fluxFinal: { fontSize: 28, fontWeight: '900' },
-  upsell: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginTop: 4 },
-  upsellText: { color: '#FFD700', fontSize: 11, fontWeight: '600', flex: 1, lineHeight: 16 },
-  rankBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
-  rankBadgeText: { color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  fluxFinal: { fontFamily: FONT_JAKARTA, fontSize: 28, fontWeight: '900' },
 
-  // DNA card
-  dnaCard: { borderWidth: 1, borderRadius: 16, padding: 18, marginBottom: 20, alignItems: 'center', gap: 12, backgroundColor: '#121212' },
-  dnaTitle: { color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 2, alignSelf: 'flex-start' },
+  verificationInfo: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginTop: 4,
+  },
+  verificationMult: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 11, fontWeight: '600' },
+
+  upsell: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginTop: 4 },
+  upsellText: { fontFamily: FONT_MONT, color: '#FFD700', fontSize: 11, fontWeight: '600', flex: 1, lineHeight: 16 },
+  rankBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
+  rankBadgeText: { fontFamily: FONT_MONT, color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+
+  dnaCard: { borderWidth: 1, borderRadius: 16, padding: 18, marginBottom: 20, alignItems: 'center', gap: 12, backgroundColor: EL.CARD_BG },
+  dnaTitle: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 2, alignSelf: 'flex-start' },
   radarWrap: { marginVertical: 8 },
   dnaStats: { width: '100%', gap: 6 },
   dnaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dnaStatName: { color: '#8E8E93', fontSize: 11, fontWeight: '500', letterSpacing: 1, width: 90 },
-  dnaStatCurrent: { fontFamily: Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined }), color: '#555', fontSize: 14, fontWeight: '800', width: 35, textAlign: 'right' },
-  dnaStatPredicted: { fontFamily: Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined }), fontSize: 14, fontWeight: '800', width: 35, textAlign: 'right' },
-  dnaStatIncrement: { fontFamily: Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined }), fontSize: 12, fontWeight: '800', letterSpacing: 1 },
+  dnaStatName: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 11, fontWeight: '500', letterSpacing: 1, width: 90 },
+  dnaStatCurrent: { fontFamily: FONT_JAKARTA, color: '#555', fontSize: 14, fontWeight: '800', width: 35, textAlign: 'right' as const },
+  dnaStatPredicted: { fontFamily: FONT_JAKARTA, fontSize: 14, fontWeight: '800', width: 35, textAlign: 'right' as const },
+  dnaStatIncrement: { fontFamily: FONT_JAKARTA, fontSize: 12, fontWeight: '800', letterSpacing: 1 },
 
-  // Close
   closeBtn: { borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 8 },
-  closeBtnText: { color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
+  closeBtnText: { fontFamily: FONT_MONT, color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
 });
