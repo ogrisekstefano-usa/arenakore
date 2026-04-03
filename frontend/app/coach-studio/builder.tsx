@@ -57,9 +57,9 @@ function DayColumn({ day, date, onAdd, onRemove, theme }: {
     <View style={[dc$.col, { borderColor: theme.border }]}>
       {/* Date header */}
       <View style={[dc$.header, { backgroundColor: theme.surface2 }]}>
-        <Text style={[dc$.dayLabel('300'), { color: theme.textTer }]}>{dayLabel}</Text>
+        <Text style={[dc$.dayLabel, MONT('300'), { color: theme.textTer }]}>{dayLabel}</Text>
         <Text style={[dc$.dayNum, MONT('900'), { color: theme.text }]}>{dayNum}</Text>
-        <Text style={[dc$.dayN('300'), { color: theme.textTer }]}>G{day.day}</Text>
+        <Text style={[dc$.dayN, MONT('300'), { color: theme.textTer }]}>G{day.day}</Text>
       </View>
 
       {/* Event card or add button */}
@@ -72,15 +72,15 @@ function DayColumn({ day, date, onAdd, onRemove, theme }: {
             </TouchableOpacity>
           </View>
           <Text style={[dc$.eventDisc, MONT('900'), { color: discMeta.color }]}>{discMeta.label.toUpperCase()}</Text>
-          <Text style={[dc$.eventExercise('300'), { color: theme.textSec }]}>{day.exercise || discMeta.exercise}</Text>
+          <Text style={[dc$.eventExercise, MONT('300'), { color: theme.textSec }]}>{day.exercise || discMeta.exercise}</Text>
           {day.target_reps && <Text style={[dc$.eventTarget, MONT('700'), { color: theme.text }]}>{day.target_reps} rep</Text>}
           {day.target_time && <Text style={[dc$.eventTarget, MONT('700'), { color: theme.text }]}>{day.target_time}s</Text>}
-          {day.notes ? <Text style={[dc$.eventNotes('300'), { color: theme.textTer }]} numberOfLines={2}>{day.notes}</Text> : null}
+          {day.notes ? <Text style={[dc$.eventNotes, MONT('300'), { color: theme.textTer }]} numberOfLines={2}>{day.notes}</Text> : null}
         </View>
       ) : (
         <TouchableOpacity style={[dc$.addBtn, { borderColor: theme.border }]} onPress={onAdd} activeOpacity={0.7}>
           <Ionicons name="add" size={18} color={theme.textTer} />
-          <Text style={[dc$.addLabel('300'), { color: theme.textTer }]}>Aggiungi</Text>
+          <Text style={[dc$.addLabel, MONT('300'), { color: theme.textTer }]}>Aggiungi</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -120,7 +120,7 @@ function DayEventEditor({ day, onSave, onClose, theme }: {
         <TouchableOpacity onPress={onClose}><Ionicons name="close" size={16} color={theme.textTer} /></TouchableOpacity>
       </View>
       {/* Discipline selector */}
-      <Text style={[de$.label('300'), { color: theme.textTer }]}>DISCIPLINA</Text>
+      <Text style={[de$.label, MONT('300'), { color: theme.textTer }]}>DISCIPLINA</Text>
       <View style={de$.discGrid}>
         {Object.entries(DISC_META).map(([k, m]) => (
           <TouchableOpacity key={k}
@@ -135,16 +135,16 @@ function DayEventEditor({ day, onSave, onClose, theme }: {
       {/* Targets row */}
       <View style={de$.targetsRow}>
         <View style={de$.targetField}>
-          <Text style={[de$.label('300'), { color: theme.textTer }]}>REP TARGET</Text>
+          <Text style={[de$.label, MONT('300'), { color: theme.textTer }]}>REP TARGET</Text>
           <TextInput style={[de$.input, { backgroundColor: theme.surface2, color: theme.text, borderColor: theme.border }]} value={reps} onChangeText={setReps} keyboardType="numeric" placeholder="es. 20" placeholderTextColor={theme.textTer} />
         </View>
         <View style={de$.targetField}>
-          <Text style={[de$.label('300'), { color: theme.textTer }]}>DURATA (sec)</Text>
+          <Text style={[de$.label, MONT('300'), { color: theme.textTer }]}>DURATA (sec)</Text>
           <TextInput style={[de$.input, { backgroundColor: theme.surface2, color: theme.text, borderColor: theme.border }]} value={time} onChangeText={setTime} keyboardType="numeric" placeholder="es. 60" placeholderTextColor={theme.textTer} />
         </View>
       </View>
       {/* Notes */}
-      <Text style={[de$.label('300'), { color: theme.textTer }]}>NOTE COACH</Text>
+      <Text style={[de$.label, MONT('300'), { color: theme.textTer }]}>NOTE COACH</Text>
       <TextInput style={[de$.notesInput, { backgroundColor: theme.surface2, color: theme.text, borderColor: theme.border }]} value={notes} onChangeText={setNotes} placeholder="Istruzione specifica per questo giorno..." placeholderTextColor={theme.textTer} multiline numberOfLines={2} />
       <TouchableOpacity style={[de$.saveBtn, { backgroundColor: disc ? theme.accent : theme.surface2 }]} onPress={() => { if (!disc) return; onSave({ discipline: disc, exercise: DISC_META[disc]?.exercise, target_reps: reps ? parseInt(reps) : null, target_time: time ? parseInt(time) : null, notes }); }} activeOpacity={0.85}>
         <Text style={[de$.saveBtnText, MONT('900'), { color: disc ? '#000' : theme.textTer }]}>SALVA GIORNO</Text>
@@ -190,7 +190,7 @@ function GlobalLeaderboardChart({ token }: { token: string }) {
     <View style={[lb$.empty, { backgroundColor: theme.surface }]}>
       <Ionicons name="trophy-outline" size={36} color={theme.textTer} />
       <Text style={[lb$.emptyTitle, MONT(), { color: theme.text }]}>NESSUNA SFIDA ATTIVA</Text>
-      <Text style={[lb$.emptyText('300'), { color: theme.textTer }]}>
+      <Text style={[lb$.emptyText, MONT('300'), { color: theme.textTer }]}>
         Crea e pubblica una sfida per vedere il leaderboard globale in tempo reale.
       </Text>
     </View>
@@ -205,7 +205,7 @@ function GlobalLeaderboardChart({ token }: { token: string }) {
     <ScrollView style={lb$.scroll} contentContainerStyle={lb$.content}>
       <View style={[lb$.header, { borderBottomColor: theme.border }]}>
         <Text style={[lb$.headerTitle, MONT(), { color: theme.text }]}>GLOBAL CHALLENGE LEADERBOARD</Text>
-        <Text style={[lb$.headerSub('300'), { color: theme.textTer }]}>
+        <Text style={[lb$.headerSub, MONT('300'), { color: theme.textTer }]}>
           {data?.total_active_challenges} sfide attive · Aggiornamento live
         </Text>
       </View>
@@ -256,7 +256,7 @@ function GlobalLeaderboardChart({ token }: { token: string }) {
         {[{ c: '#00FF87', l: 'Eccellente (75+)' }, { c: '#FF9500', l: 'In progressione (45-74)' }, { c: '#FF3B30', l: 'Da migliorare (<45)' }].map(({ c, l }) => (
           <View key={l} style={lb$.legendItem}>
             <View style={[lb$.legendDot, { backgroundColor: c }]} />
-            <Text style={[lb$.legendText('300'), { color: theme.textSec }]}>{l}</Text>
+            <Text style={[lb$.legendText, MONT('300'), { color: theme.textSec }]}>{l}</Text>
           </View>
         ))}
       </View>
@@ -309,7 +309,7 @@ function AutomationEngine({ challenge, onRulesChange, theme }: {
       <View style={ae$.pageHeader}>
         <View>
           <Text style={[ae$.title, MONT(), { color: theme.text }]}>AUTOMATION ENGINE</Text>
-          <Text style={[ae$.sub('300'), { color: theme.textTer }]}>
+          <Text style={[ae$.sub, MONT('300'), { color: theme.textTer }]}>
             Regole automatiche: se [condizione] → allora [azione]
           </Text>
         </View>
@@ -323,7 +323,7 @@ function AutomationEngine({ challenge, onRulesChange, theme }: {
         <View style={[ae$.empty, { backgroundColor: theme.surface }]}>
           <Ionicons name="hardware-chip-outline" size={32} color={theme.textTer} />
           <Text style={[ae$.emptyTitle, MONT('700'), { color: theme.text }]}>Nessuna regola attiva</Text>
-          <Text style={[ae$.emptyText('300'), { color: theme.textTer }]}>
+          <Text style={[ae$.emptyText, MONT('300'), { color: theme.textTer }]}>
             Le regole si attivano automaticamente basandosi sui dati biometrici degli atleti.
           </Text>
         </View>
@@ -351,7 +351,7 @@ function AutomationEngine({ challenge, onRulesChange, theme }: {
                 <Text style={[ae$.condBadgeText, MONT('900'), { color: '#FF9500' }]}>SE</Text>
               </View>
               <View style={ae$.condContent}>
-                <Text style={[ae$.condLabel('300'), { color: theme.textSec }]}>Trigger:</Text>
+                <Text style={[ae$.condLabel, MONT('300'), { color: theme.textSec }]}>Trigger:</Text>
                 <View style={ae$.selectRow}>
                   {Object.entries(TRIGGER_META).map(([k, m]) => (
                     <TouchableOpacity key={k}
@@ -364,14 +364,14 @@ function AutomationEngine({ challenge, onRulesChange, theme }: {
                   ))}
                 </View>
                 <View style={ae$.threshRow}>
-                  <Text style={[ae$.threshLabel('300'), { color: theme.textSec }]}>Soglia:</Text>
+                  <Text style={[ae$.threshLabel, MONT('300'), { color: theme.textSec }]}>Soglia:</Text>
                   <TextInput
                     style={[ae$.threshInput, { backgroundColor: theme.surface2, color: '#FF9500', borderColor: '#FF950040' }]}
                     value={String(rule.threshold || '')}
                     onChangeText={v => updateRule(idx, 'threshold', parseInt(v) || 0)}
                     keyboardType="numeric"
                   />
-                  <Text style={[ae$.threshUnit('300'), { color: theme.textTer }]}>{trigMeta?.unit || '%'}</Text>
+                  <Text style={[ae$.threshUnit, MONT('300'), { color: theme.textTer }]}>{trigMeta?.unit || '%'}</Text>
                 </View>
               </View>
             </View>
@@ -389,7 +389,7 @@ function AutomationEngine({ challenge, onRulesChange, theme }: {
                 <Text style={[ae$.condBadgeText, MONT('900'), { color: theme.accent }]}>ALLORA</Text>
               </View>
               <View style={ae$.condContent}>
-                <Text style={[ae$.condLabel('300'), { color: theme.textSec }]}>Azione:</Text>
+                <Text style={[ae$.condLabel, MONT('300'), { color: theme.textSec }]}>Azione:</Text>
                 <View style={ae$.selectRow}>
                   {ACTION_META.map(a => (
                     <TouchableOpacity key={a.key}
@@ -410,7 +410,7 @@ function AutomationEngine({ challenge, onRulesChange, theme }: {
       {rules.length > 0 && (
         <View style={[ae$.aiNote, { backgroundColor: theme.accent + '08', borderColor: theme.accent + '20' }]}>
           <Ionicons name="hardware-chip" size={13} color={theme.accent} />
-          <Text style={[ae$.aiNoteText('300'), { color: theme.accent + 'CC' }]}>
+          <Text style={[ae$.aiNoteText, MONT('300'), { color: theme.accent + 'CC' }]}>
             Il motore AI valuta queste regole ogni volta che un atleta completa uno scan NÈXUS. Le azioni si attivano entro 60 secondi dal trigger.
           </Text>
         </View>
@@ -612,7 +612,7 @@ export default function TemplateBuilder() {
               {challenges.length === 0 && (
                 <View style={mb$.emptySide}>
                   <Ionicons name="calendar-outline" size={24} color={theme.textTer} />
-                  <Text style={[mb$.emptySideText('300'), { color: theme.textTer }]}>Nessuna sfida creata</Text>
+                  <Text style={[mb$.emptySideText, MONT('300'), { color: theme.textTer }]}>Nessuna sfida creata</Text>
                 </View>
               )}
               {challenges.map(c => (
@@ -626,7 +626,7 @@ export default function TemplateBuilder() {
                     </Text>
                   </View>
                   <Text style={[mb$.challengeName, MONT('700'), { color: theme.text }]} numberOfLines={1}>{c.name}</Text>
-                  <Text style={[mb$.challengeMeta('300'), { color: theme.textTer }]}>{c.duration_days} giorni · {c.days?.filter((d: any) => d.discipline).length || 0} eventi</Text>
+                  <Text style={[mb$.challengeMeta, MONT('300'), { color: theme.textTer }]}>{c.duration_days} giorni · {c.days?.filter((d: any) => d.discipline).length || 0} eventi</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -638,7 +638,7 @@ export default function TemplateBuilder() {
               <View style={mb$.noSelection}>
                 <Ionicons name="calendar-outline" size={36} color={theme.textTer} />
                 <Text style={[mb$.noSelectionText, MONT('700'), { color: theme.text }]}>Seleziona o crea una sfida</Text>
-                <Text style={[mb$.noSelectionSub('300'), { color: theme.textTer }]}>Il tuo challenge builder multidisciplina</Text>
+                <Text style={[mb$.noSelectionSub, MONT('300'), { color: theme.textTer }]}>Il tuo challenge builder multidisciplina</Text>
               </View>
             ) : tab === 'automation' ? (
               <AutomationEngine challenge={{ ...selectedChallenge, automation_rules: localRules }} onRulesChange={setLocalRules} theme={theme} />
@@ -648,13 +648,13 @@ export default function TemplateBuilder() {
                 <View style={mb$.challengeHeader}>
                   <View>
                     <Text style={[mb$.challengeTitle, MONT(), { color: theme.text }]}>{selectedChallenge.name}</Text>
-                    <Text style={[mb$.challengeSubtitle('300'), { color: theme.textTer }]}>
+                    <Text style={[mb$.challengeSubtitle, MONT('300'), { color: theme.textTer }]}>
                       {selectedChallenge.duration_days} giorni · {selectedChallenge.start_date?.slice(0, 10) || 'Data da definire'}
                     </Text>
                   </View>
                   {/* Crew selector */}
                   <View style={mb$.crewSelector}>
-                    <Text style={[mb$.crewSelectorLabel('300'), { color: theme.textTer }]}>INVIA A CREW:</Text>
+                    <Text style={[mb$.crewSelectorLabel, MONT('300'), { color: theme.textTer }]}>INVIA A CREW:</Text>
                     {crews.map(c => (
                       <TouchableOpacity key={c.id}
                         style={[mb$.crewOpt, selectedCrewIds.includes(c.id) && { borderColor: theme.accent, backgroundColor: theme.accent + '10' }]}

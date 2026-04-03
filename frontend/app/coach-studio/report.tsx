@@ -146,7 +146,7 @@ export default function TalentReportPage() {
     return (
       <View style={[rp$.loading, { backgroundColor: theme.bg }]}>
         <ActivityIndicator color="#00E5FF" size="large" />
-        <Text style={[rp$.loadingText('300'), { color: theme.textTer }]}>Generando il Talent Report...</Text>
+        <Text style={[rp$.loadingText, MONT('300'), { color: theme.textTer }]}>Generando il Talent Report...</Text>
       </View>
     );
   }
@@ -161,7 +161,7 @@ export default function TalentReportPage() {
       <View style={rp$.topActions}>
         <TouchableOpacity style={rp$.back} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={16} color={theme.textTer} />
-          <Text style={[rp$.backText('400'), { color: theme.textTer }]}>Talent Scout</Text>
+          <Text style={[rp$.backText, MONT('400'), { color: theme.textTer }]}>Talent Scout</Text>
         </TouchableOpacity>
         {Platform.OS === 'web' && (
           <TouchableOpacity style={rp$.exportBtn} onPress={handlePrintPDF} activeOpacity={0.85}>
@@ -185,7 +185,7 @@ export default function TalentReportPage() {
             <View style={[rp$.stripDot, { backgroundColor: '#00E5FF' }]} />
             <Text style={[rp$.stripTitle, MONT('800')]}>NÈXUS TALENT REPORT</Text>
           </View>
-          <Text style={[rp$.stripDate('300')]}>{new Date(report.generated_at).toLocaleDateString('it-IT')}</Text>
+          <Text style={[rp$.stripDate, MONT('300')]}>{new Date(report.generated_at).toLocaleDateString('it-IT')}</Text>
         </View>
 
         {/* ── ATHLETE IDENTITY ── */}
@@ -205,7 +205,7 @@ export default function TalentReportPage() {
               >{athlete.username?.toUpperCase()}</Text>
               <CertBadge certified={athlete.is_nexus_certified} size="sm" />
             </View>
-            <Text style={[rp$.athleteMeta('300'), { color: 'rgba(255,255,255,0.5)' }]}>
+            <Text style={[rp$.athleteMeta, MONT('300'), { color: 'rgba(255,255,255,0.5)' }]}>
               {athlete.city} · LVL {athlete.level} · {athlete.xp?.toLocaleString()} FLUX
             </Text>
             <View style={rp$.statusRow}>
@@ -243,8 +243,8 @@ export default function TalentReportPage() {
             <Text style={[rp$.sectionTitle, MONT('700'), { color: 'rgba(255,255,255,0.30)' }]}>DNA SIGNATURE</Text>
             <ReportRadar dna={dna} worldAvg={world_avg_dna} size={200} />
             <View style={rp$.legend}>
-              <View style={rp$.legendItem}><View style={[rp$.legendDot, { backgroundColor: '#00E5FF' }]} /><Text style={[rp$.legendText('300')]}>Atleta</Text></View>
-              <View style={rp$.legendItem}><View style={[rp$.legendDot, { backgroundColor: '#FFD700' }]} /><Text style={[rp$.legendText('300')]}>Media Mondiale</Text></View>
+              <View style={rp$.legendItem}><View style={[rp$.legendDot, { backgroundColor: '#00E5FF' }]} /><Text style={[rp$.legendText, MONT('300')]}>Atleta</Text></View>
+              <View style={rp$.legendItem}><View style={[rp$.legendDot, { backgroundColor: '#FFD700' }]} /><Text style={[rp$.legendText, MONT('300')]}>Media Mondiale</Text></View>
             </View>
           </View>
 
@@ -265,7 +265,7 @@ export default function TalentReportPage() {
                     <View style={[rp$.axisBarFill, { width: `${val}%` as any, backgroundColor: AXIS_COLORS[i % AXIS_COLORS.length] }]} />
                   </View>
                   <Text style={[rp$.axisVal, MONT('700'), { color: AXIS_COLORS[i % AXIS_COLORS.length] }]}>{val}</Text>
-                  <Text style={[rp$.axisDiff('300'), { color: diff >= 0 ? '#00FF87' : '#FF3B30' }]}>
+                  <Text style={[rp$.axisDiff, MONT('300'), { color: diff >= 0 ? '#00FF87' : '#FF3B30' }]}>
                     {diff >= 0 ? '+' : ''}{diff.toFixed(0)}
                   </Text>
                 </View>
@@ -306,7 +306,7 @@ export default function TalentReportPage() {
               </View>
               <Text style={[MONT('800'), { color: injury_risk.color, fontSize: 24 }]}>{injury_risk.risk_pct}%</Text>
               <Text style={[MONT('600'), { color: injury_risk.color, fontSize: 13, letterSpacing: 2 }]}>{injury_risk.level}</Text>
-              <Text style={[rp$.injuryRec('300')]}>{injury_risk.recommendation}</Text>
+              <Text style={[rp$.injuryRec, MONT('300')]}>{injury_risk.recommendation}</Text>
             </View>
           )}
         </View>
@@ -332,7 +332,7 @@ export default function TalentReportPage() {
               {...(Platform.OS === 'web' ? { style: [rp$.noteInput, { backgroundColor: '#0A0A0A', color: '#FFFFFF', borderColor: 'rgba(255,255,255,0.07)', outlineStyle: 'none' } as any] } : {})}
             />
           ) : (
-            <Text style={[rp$.noteText('300'), { color: coachNote ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)' }]}>
+            <Text style={[rp$.noteText, MONT('300'), { color: coachNote ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)' }]}>
               {coachNote || 'Nessuna nota ancora. Premi il tasto matita per aggiungere una nota privata.'}
             </Text>
           )}
@@ -340,10 +340,10 @@ export default function TalentReportPage() {
 
         {/* Card footer */}
         <View style={rp$.cardFooter}>
-          <Text style={[rp$.footerText('300')]}>
+          <Text style={[rp$.footerText, MONT('300')]}>
             Generato da {report.generated_by?.toUpperCase()} · NÈXUS Intelligence Platform
           </Text>
-          <Text style={[rp$.footerText('300')]}>ID #{athlete.id?.slice(-8).toUpperCase()}</Text>
+          <Text style={[rp$.footerText, MONT('300')]}>ID #{athlete.id?.slice(-8).toUpperCase()}</Text>
         </View>
       </Animated.View>
     </ScrollView>
