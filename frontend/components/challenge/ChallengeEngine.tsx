@@ -64,12 +64,19 @@ interface ChallengeEngineProps {
   token: string | null;
   exerciseType?: string;
   sessionMode?: string;
+  coachTemplate?: {
+    id: string;
+    tags: ChallengeTag[];
+    validation_mode: ValidationMode;
+    exercise: string;
+    target_reps?: number;
+  } | null;
   onBack: () => void;
   onAutoScan: (challengeId: string, tags: string[], dominantColor: string) => void;
   onComplete: () => void;
 }
 
-export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMode = 'personal', onBack, onAutoScan, onComplete }: ChallengeEngineProps) {
+export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMode = 'personal', coachTemplate = null, onBack, onAutoScan, onComplete }: ChallengeEngineProps) {
   const [phase, setPhase] = useState<EnginePhase>('tags');
   const [selectedTags, setSelectedTags] = useState<ChallengeTag[]>([]);
   const [validationMode, setValidationMode] = useState<ValidationMode | null>(null);
@@ -87,6 +94,31 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
   const [sanityResult, setSanityResult] = useState<any>(null);
   const [selectedProofType, setSelectedProofType] = useState<ProofType>('NONE');
   const [isSanityChecking, setIsSanityChecking] = useState(false);
+
+  // ═══ TEMPLATE AUTHORITY ═══
+  // If a coach template exists, auto-inherit tags + validation mode and skip all menus
+  useEffect(() => {
+    if (!coachTemplate) return;
+    // Inherit template settings
+    setSelectedTags(coachTemplate.tags || ['POWER']);
+    setValidationMode(coachTemplate.validation_mode || 'AUTO_COUNT');
+    
+    // If template requires NEXUS VISION → skip ALL menus, go straight to camera
+    if (coachTemplate.validation_mode === 'AUTO_COUNT') {
+      // Auto-trigger NEXUS scan with inherited template data
+      const dominantColor = TAG_CONFIG[coachTemplate.tags?.[0] || 'POWER']?.color || '#FF3B30';
+      setTimeout(() => {
+        onAutoScan(coachTemplate.id, coachTemplate.tags || ['POWER'], dominantColor);
+      }, 300);
+    } else {
+      // For MANUAL or SENSOR modes, skip to the appropriate entry phase
+      if (coachTemplate.validation_mode === 'MANUAL_ENTRY') {
+        setPhase('manual_entry');
+      } else if (coachTemplate.validation_mode === 'SENSOR_IMPORT') {
+        setPhase('sensor_mock');
+      }
+    }
+  }, [coachTemplate]);
 
   // Dominant color for immersive theming
   const dominantTag = selectedTags[0] || 'PULSE';

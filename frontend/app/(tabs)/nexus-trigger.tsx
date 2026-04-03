@@ -69,6 +69,7 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
   const [scanPhase, setScanPhase] = useState(0);
   const [matchText, setMatchText] = useState('');
   const [showMatch, setShowMatch] = useState(false);
+  const [readyToStart, setReadyToStart] = useState(false);
   const matchTimerRef = useRef<any>(null);
 
   const PHASES = ['SCANNING BIOMETRICS', 'DETECTING BIO-SIGNATURE', 'MAPPING KORE POINTS', 'CALIBRATING SENSORS'];
@@ -105,7 +106,8 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
         setMatchText(fullMatch);
         playBioMatchPing();
         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-        matchTimerRef.current = setTimeout(onComplete, 1200);
+        // NO AUTO-START — show explicit "AVVIA ORA" button
+        setReadyToStart(true);
       }
     }, 45);
   };
@@ -140,6 +142,11 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
             <Text style={bio$.matchLabel}>BIO-SIGNATURE MATCHED</Text>
             <Text style={bio$.matchText}>{matchText}</Text>
             {isFounder && <Text style={bio$.founderGlow}><Ionicons name="star" size={12} color="#FFD700" /> FOUNDER #{user?.founder_number || '?'}</Text>}
+            {readyToStart && (
+              <TouchableOpacity style={bio$.avviaBtn} onPress={onComplete} activeOpacity={0.7}>
+                <Text style={bio$.avviaBtnText}>AVVIA ORA</Text>
+              </TouchableOpacity>
+            )}
           </>
         )}
       </View>
@@ -170,6 +177,8 @@ const bio$ = StyleSheet.create({
   matchLabel: { color: '#00E5FF', fontSize: 16, fontWeight: '400', letterSpacing: 4 },
   matchText: { color: '#FFD700', fontSize: 20, fontWeight: '900', letterSpacing: 2, fontVariant: ['tabular-nums'], textAlign: 'center' },
   founderGlow: { color: '#FFD700', fontSize: 17, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
+  avviaBtn: { marginTop: 20, paddingHorizontal: 40, paddingVertical: 14, backgroundColor: '#00E5FF', borderRadius: 12 },
+  avviaBtnText: { color: '#000', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   bracket: { position: 'absolute' },
   bH: { width: 30, height: 2, backgroundColor: '#00E5FF', opacity: 0.5 },
   bV: { width: 2, height: 30, backgroundColor: '#00E5FF', opacity: 0.5 },
@@ -1783,7 +1792,7 @@ export default function NexusTriggerScreen() {
     return (
       <NexusConsole
         user={user}
-        onScan={() => router.push({ pathname: '/onboarding/step2', params: { mode: 'rescan' } })}
+        onScan={() => { setSessionMode('scan'); setPhase('bioscan'); }}
         onForge={() => { setSessionMode('scan'); setPhase('challenge_engine'); }}
         onPillarAction={handlePillarAction}
         deviceTier={deviceTier}
