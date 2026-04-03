@@ -172,7 +172,7 @@ function NavItem({ item, isActive, theme, onPress }: any) {
         <Text style={[ni$.label, MONT('900'), { color: isActive ? theme.text : theme.textSec }]}>
           {item.label}
         </Text>
-        <Text style={[ni$.sub('300'), { color: theme.textTer }]}>
+        <Text style={[ni$.sub, MONT('300'), { color: theme.textTer }]}>
           {item.sub}
         </Text>
       </View>
@@ -203,7 +203,7 @@ function CommandCenterInner() {
       <View style={[mob$.root, { backgroundColor: theme.bg }]}>
         <Ionicons name="desktop-outline" size={36} color={theme.textTer} />
         <Text style={[mob$.title, MONT(), { color: theme.text }]}>NÈXUS COMMAND CENTER</Text>
-        <Text style={[mob$.sub('300'), { color: theme.textSec }]}>
+        <Text style={[mob$.sub, MONT('300'), { color: theme.textSec }]}>
           {'Disponibile solo su desktop.\nAccedi da browser per il Command Center.'}
         </Text>
         <TouchableOpacity style={[mob$.btn, { borderColor: theme.accent }]} onPress={() => router.push('/')}>
@@ -233,7 +233,7 @@ function CommandCenterInner() {
       <View style={[mob$.root, { backgroundColor: theme.bg }]}>
         <Ionicons name="lock-closed" size={28} color={theme.accentRed} />
         <Text style={[mob$.title, MONT(), { color: theme.accentRed }]}>ACCESSO LIMITATO</Text>
-        <Text style={[mob$.sub('300'), { color: theme.textSec }]}>
+        <Text style={[mob$.sub, MONT('300'), { color: theme.textSec }]}>
           {'Il Command Center è riservato a Coach e GYM Owner.'}
         </Text>
         <TouchableOpacity style={[mob$.btn, { borderColor: theme.accent }]} onPress={() => router.push('/')}>
@@ -259,7 +259,7 @@ function CommandCenterInner() {
           <View style={[l$.brandAccent, { backgroundColor: theme.accent }]} />
           <View>
             <Text style={[l$.brandName, MONT(), { color: theme.text }]}>NÈXUS</Text>
-            <Text style={[l$.brandSub('300'), { color: theme.textTer }]}>COMMAND CENTER</Text>
+            <Text style={[l$.brandSub, MONT('300'), { color: theme.textTer }]}>COMMAND CENTER</Text>
           </View>
         </View>
 

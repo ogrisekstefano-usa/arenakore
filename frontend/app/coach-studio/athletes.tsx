@@ -141,12 +141,12 @@ function KoreScoreGauge({ kore, size = 160 }: { kore: any; size?: number }) {
         <View style={kg$.bars}>
           {Object.values(breakdown as Record<string, any>).map((b: any) => (
             <View key={b.label} style={kg$.barRow}>
-              <Text style={[kg$.barLabel('300')]}>{b.label}</Text>
+              <Text style={[kg$.barLabel, MONT('300')]}>{b.label}</Text>
               <View style={kg$.barTrack}>
                 <View style={[kg$.barFill, { width: `${b.value}%` as any, backgroundColor: b.color }]} />
               </View>
               <Text style={[kg$.barVal, MONT('900'), { color: b.color }]}>{b.value}</Text>
-              <Text style={[kg$.barContrib('300')]}>{b.weight * 100}%→{b.contribution}</Text>
+              <Text style={[kg$.barContrib, MONT('300')]}>{b.weight * 100}%→{b.contribution}</Text>
             </View>
           ))}
         </View>
@@ -277,7 +277,7 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
         </View>
         <View style={dp$.headerInfo}>
           <Text style={[dp$.name, MONT(), { color: theme.text }]}>{profile.username}</Text>
-          <Text style={[dp$.meta('300'), { color: theme.textSec }]}>
+          <Text style={[dp$.meta, MONT('300'), { color: theme.textSec }]}>
             LVL {profile.level} · #{profile.global_rank} Global · {profile.city}
           </Text>
           {profile.crews?.length > 0 && (
@@ -336,7 +336,7 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
           <View style={dp$.axisGrid}>
             {SIX_AXES.map((k, i) => (
               <View key={k} style={[dp$.axisItem, { backgroundColor: theme.surface2 }]}>
-                <Text style={[dp$.axisLabel('300'), { color: theme.textTer }]}>{SIX_LABELS[i]}</Text>
+                <Text style={[dp$.axisLabel, MONT('300'), { color: theme.textTer }]}>{SIX_LABELS[i]}</Text>
                 <Text style={[dp$.axisVal, MONT('900'), { color: SIX_COLORS[i % SIX_COLORS.length] }]}>
                   {profile.six_axis?.[k] ?? '—'}
                 </Text>
@@ -355,10 +355,10 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
           <View style={[dp$.riskBar, { backgroundColor: theme.surface2 }]}>
             <View style={[dp$.riskFill, { width: `${ir.risk_pct}%` as any, backgroundColor: ir.color }]} />
           </View>
-          <Text style={[dp$.riskRec('300'), { color: theme.textSec }]}>{ir.recommendation}</Text>
+          <Text style={[dp$.riskRec, MONT('300'), { color: theme.textSec }]}>{ir.recommendation}</Text>
           <View style={dp$.riskDetail}>
             <Text style={[MONT('400'), { color: theme.textTer, fontSize: 12 }]}>⬆ {ir.dominant} · ⬇ {ir.weak}</Text>
-            {ir.low_recovery && <View style={[dp$.recovWarn, { borderColor: '#AF52DE40' }]}><Text style={[{ color: '#AF52DE', fontSize: 12 }('300')]}>⚠ Recovery bassa</Text></View>}
+            {ir.low_recovery && <View style={[dp$.recovWarn, { borderColor: '#AF52DE40' }]}><Text style={[MONT('300'), { color: '#AF52DE', fontSize: 12 }]}>⚠ Recovery bassa</Text></View>}
           </View>
         </View>
 
@@ -763,7 +763,7 @@ export default function AthletesModule() {
             <View style={[am$.searchBox, { backgroundColor: theme.inputBg, borderColor: theme.border }]}>
               <Ionicons name="search" size={13} color={theme.textTer} />
               <TextInput
-                style={[am$.searchInput, { color: theme.text }('300')]}
+                style={[am$.searchInput, MONT('400'), { color: theme.text }]}
                 placeholder="Cerca atleta..."
                 placeholderTextColor={theme.textTer}
                 value={search}
