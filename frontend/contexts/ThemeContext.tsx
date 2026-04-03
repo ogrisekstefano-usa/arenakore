@@ -103,6 +103,18 @@ export const MONT = (weight: '300' | '400' | '500' | '600' | '700' | '800' | '90
     default: { fontWeight: weight },
   });
 
+/**
+ * JAKARTA — Plus Jakarta Sans 800 per titoli numerici e dati hero
+ */
+export const JAKARTA = (weight: '600' | '700' | '800' = '800'): any =>
+  Platform.select({
+    web: {
+      fontFamily: `'Plus Jakarta Sans', 'Montserrat', -apple-system, sans-serif`,
+      fontWeight: weight,
+    },
+    default: { fontWeight: weight },
+  });
+
 // ── Context ───────────────────────────────────────────────────────────────────
 interface ThemeCtx {
   theme: Theme;

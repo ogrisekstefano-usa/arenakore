@@ -1007,6 +1007,7 @@ const smv$ = StyleSheet.create({
 // ========== COUNTDOWN ==========
 // ========== BATTLE INTRO OVERLAY (Cinematic Countdown) ==========
 import { Animated as RNAnimated } from 'react-native';
+import { playChargingSound, playStartBeep, playCountTick } from '../../utils/ChargingAudio';
 
 function BattleIntroOverlay({ user, pvpChallenge, onComplete }: {
   user: any;
@@ -1020,6 +1021,7 @@ function BattleIntroOverlay({ user, pvpChallenge, onComplete }: {
   const flashOpacity = useSharedValue(0);
   const countScale = useSharedValue(0.2);
   const countOpacity = useSharedValue(0);
+  const chargingCleanupRef = useRef<(() => void) | null>(null);
 
   const opponent = pvpChallenge?.ghost
     ? { username: pvpChallenge.challenger_username || 'AVVERSARIO', color: '#FF3B30' }
@@ -1030,10 +1032,15 @@ function BattleIntroOverlay({ user, pvpChallenge, onComplete }: {
     leftX.value = withSpring(0, { damping: 14, stiffness: 100 });
     rightX.value = withSpring(0, { damping: 14, stiffness: 100 });
 
+    // ═══ START CHARGING AUDIO (Rising Pitch 200Hz→800Hz, 3 seconds) ═══
+    const chargingCleanup = playChargingSound(3.0);
+    chargingCleanupRef.current = chargingCleanup;
+
     let cnt = 3;
     const tick = () => {
       Haptics.impactAsync(cnt === 1 ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-      RemoteUXEngine.ping.playPing(520 + (3 - cnt) * 280, 0.08, 0.18);
+      // ═══ COUNT TICK AUDIO (rising pitch per tick) ═══
+      playCountTick(cnt);
       // Cyan flash
       flashOpacity.value = withSequence(withTiming(0.6, { duration: 60 }), withTiming(0, { duration: 220 }));
       // Count animation
@@ -1046,10 +1053,10 @@ function BattleIntroOverlay({ user, pvpChallenge, onComplete }: {
       setCount(cnt);
 
       if (cnt <= 0) {
-        // GO!
+        // GO! — ═══ FINAL START BEEP (sharp, metallic, 1000Hz) ═══
         setShowGo(true);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-        RemoteUXEngine.ping.playPing(880, 0.15, 0.25);
+        playStartBeep();
         flashOpacity.value = withSequence(withTiming(0.9, { duration: 50 }), withTiming(0, { duration: 400 }));
         setTimeout(() => { setShowGo(false); onComplete(); }, 600);
         return;
@@ -1057,7 +1064,13 @@ function BattleIntroOverlay({ user, pvpChallenge, onComplete }: {
       setTimeout(tick, 1000);
     };
     const startTimer = setTimeout(tick, 600); // brief pause for avatars to slide in
-    return () => clearTimeout(startTimer);
+    return () => {
+      clearTimeout(startTimer);
+      // Cleanup charging sound if component unmounts early
+      if (chargingCleanupRef.current) {
+        chargingCleanupRef.current();
+      }
+    };
   }, []);
 
   const leftStyle = useAnimatedStyle(() => ({ transform: [{ translateX: leftX.value }] }));

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -3888,6 +3888,89 @@ async def get_athletes_full_table(
     return {"athletes": enriched, "total": len(enriched)}
 
 
+# ── Team Comparison Mode — Compare up to 3 Athletes ──────────────────────────
+
+@api_router.get("/coach/compare-athletes")
+async def compare_athletes(
+    ids: str = "",  # comma-separated athlete IDs
+    current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))
+):
+    """Compare up to 3 athletes side-by-side: DNA radar + gap analysis."""
+    if not ids:
+        raise HTTPException(status_code=400, detail="Specifica almeno 2 ID atleti separati da virgola")
+
+    id_list = [i.strip() for i in ids.split(",") if i.strip()]
+    if len(id_list) < 2 or len(id_list) > 3:
+        raise HTTPException(status_code=400, detail="Seleziona da 2 a 3 atleti per il confronto")
+
+    athletes = []
+    for aid in id_list:
+        try:
+            user = await db.users.find_one({"_id": ObjectId(aid)})
+        except Exception:
+            continue
+        if not user:
+            continue
+
+        dna = user.get("dna") or {}
+        six_axis = compute_six_axis(user)
+        dna_avg = round(sum(dna.get(k, 50) for k in DNA_KEYS) / len(DNA_KEYS), 1) if dna else 50
+        kore = compute_kore_score(user, [])
+
+        athletes.append({
+            "id": str(user["_id"]),
+            "username": user.get("username", "KORE"),
+            "avatar_color": user.get("avatar_color", "#00E5FF"),
+            "sport": user.get("sport", "—"),
+            "level": user.get("level", 1),
+            "dna_avg": dna_avg,
+            "kore_score": kore["score"],
+            "kore_grade": kore["grade"],
+            "six_axis": six_axis,
+            "dna": {k: dna.get(k, 50) for k in DNA_KEYS},
+            "ak_credits": user.get("ak_credits", 0),
+        })
+
+    if len(athletes) < 2:
+        raise HTTPException(status_code=404, detail="Atleti non trovati")
+
+    # ── GAP ANALYSIS ──
+    # For each stat, compute the leader and each athlete's gap from the leader
+    stats = ['endurance', 'power', 'mobility', 'technique', 'recovery', 'agility']
+    stat_labels = {
+        'endurance': 'RESISTENZA', 'power': 'POTENZA', 'mobility': 'AGILITÀ',
+        'technique': 'TECNICA', 'recovery': 'RECUPERO', 'agility': 'VELOCITÀ',
+    }
+    gap_analysis = []
+    for stat in stats:
+        values = [(a["username"], a["six_axis"].get(stat, 50)) for a in athletes]
+        leader = max(values, key=lambda x: x[1])
+        gaps = []
+        for username, val in values:
+            diff = round(val - leader[1], 1)
+            diff_pct = round((diff / max(leader[1], 1)) * 100, 1) if leader[1] > 0 else 0
+            gaps.append({
+                "username": username,
+                "value": round(val, 1),
+                "diff": diff,
+                "diff_pct": diff_pct,
+                "is_leader": username == leader[0],
+            })
+        gap_analysis.append({
+            "stat": stat,
+            "label": stat_labels.get(stat, stat.upper()),
+            "leader": leader[0],
+            "leader_value": round(leader[1], 1),
+            "athletes": gaps,
+        })
+
+    return {
+        "athletes": athletes,
+        "gap_analysis": gap_analysis,
+        "stats": stats,
+    }
+
+
 # ── Crew CRM ──────────────────────────────────────────────────────────────────
 
 @api_router.get("/crew/manage")
@@ -5725,6 +5808,238 @@ async def enforce_qr_timeouts():
 
     if expired:
         logger.info(f"[QR-Timeout] Processed {len(expired)} expired QR validations")
+
+
+
+# ═══════════════════════════════════════════════════════════════════
+# PDF EXPORT ENGINE — "KORE PASSPORT" (Athlete Talent Card)
+# ═══════════════════════════════════════════════════════════════════
+from io import BytesIO
+try:
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.units import mm, cm
+    from reportlab.lib.colors import HexColor, white, black
+    from reportlab.pdfgen import canvas as pdf_canvas
+    from reportlab.platypus import Table, TableStyle
+    PDF_AVAILABLE = True
+except ImportError:
+    PDF_AVAILABLE = False
+    logger.warning("[PDF] reportlab not available")
+
+
+def _draw_radar_on_pdf(c, cx, cy, r, six_axis, color_hex="#00E5FF"):
+    """Draw a hexagonal DNA radar on the PDF canvas."""
+    stats = ['endurance', 'power', 'mobility', 'technique', 'recovery', 'agility']
+    labels = ['RESISTENZA', 'POTENZA', 'AGILITÀ', 'TECNICA', 'RECUPERO', 'VELOCITÀ']
+    n = len(stats)
+
+    # Grid rings
+    for lv in [1.0, 0.75, 0.5, 0.25]:
+        points = []
+        for i in range(n):
+            angle = (3.14159 * 2 * i) / n - 3.14159 / 2
+            px = cx + r * lv * math.cos(angle)
+            py = cy + r * lv * math.sin(angle)
+            points.append((px, py))
+        c.setStrokeColor(HexColor("#333333"))
+        c.setLineWidth(0.3)
+        path = c.beginPath()
+        path.moveTo(points[0][0], points[0][1])
+        for p in points[1:]:
+            path.lineTo(p[0], p[1])
+        path.close()
+        c.drawPath(path, stroke=1, fill=0)
+
+    # Data polygon
+    color = HexColor(color_hex)
+    data_points = []
+    for i, stat in enumerate(stats):
+        angle = (3.14159 * 2 * i) / n - 3.14159 / 2
+        val = min((six_axis.get(stat, 50)) / 100, 1.0)
+        px = cx + r * val * math.cos(angle)
+        py = cy + r * val * math.sin(angle)
+        data_points.append((px, py))
+
+    # Fill
+    c.setFillColor(HexColor(color_hex + "33") if len(color_hex) <= 7 else color)
+    c.setStrokeColor(color)
+    c.setLineWidth(1.5)
+    path = c.beginPath()
+    path.moveTo(data_points[0][0], data_points[0][1])
+    for p in data_points[1:]:
+        path.lineTo(p[0], p[1])
+    path.close()
+    c.drawPath(path, stroke=1, fill=1)
+
+    # Vertex dots
+    for dp in data_points:
+        c.setFillColor(color)
+        c.circle(dp[0], dp[1], 2, stroke=0, fill=1)
+
+    # Labels
+    c.setFillColor(HexColor("#AAAAAA"))
+    c.setFont("Helvetica-Bold", 7)
+    for i, label in enumerate(labels):
+        angle = (3.14159 * 2 * i) / n - 3.14159 / 2
+        lx = cx + (r + 18) * math.cos(angle)
+        ly = cy + (r + 18) * math.sin(angle)
+        c.drawCentredString(lx, ly - 3, label)
+
+
+@api_router.get("/report/athlete-pdf/{athlete_id}")
+async def generate_athlete_pdf(athlete_id: str, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
+    """Generate a professional PDF 'Kore Passport' for an athlete."""
+    if not PDF_AVAILABLE:
+        raise HTTPException(status_code=500, detail="PDF generation non disponibile")
+
+    try:
+        athlete = await db.users.find_one({"_id": ObjectId(athlete_id)})
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID atleta non valido")
+    if not athlete:
+        raise HTTPException(status_code=404, detail="Atleta non trovato")
+
+    dna = athlete.get("dna", {})
+    six_axis = compute_six_axis(athlete)
+    kore = compute_kore_score(athlete, [])
+    username = athlete.get("username", "KORE")
+    sport = athlete.get("sport", "—")
+    level = athlete.get("level", 1)
+    ak_credits = athlete.get("ak_credits", 0)
+    integrity_warnings = athlete.get("integrity_warnings", 0)
+    is_nexus_certified = athlete.get("is_nexus_certified", False)
+
+    # QR validations count
+    qr_official_count = await db.qr_validations.count_documents({"user_id": athlete["_id"], "status": "official"})
+
+    # Build PDF
+    buffer = BytesIO()
+    w, h = A4
+    c = pdf_canvas.Canvas(buffer, pagesize=A4)
+
+    # ── PAGE BACKGROUND ──
+    c.setFillColor(HexColor("#0A0A0A"))
+    c.rect(0, 0, w, h, stroke=0, fill=1)
+
+    # ── HEADER BAR ──
+    c.setFillColor(HexColor("#121212"))
+    c.rect(0, h - 80, w, 80, stroke=0, fill=1)
+    c.setFillColor(HexColor("#00E5FF"))
+    c.setFont("Helvetica-Bold", 22)
+    c.drawString(30, h - 50, "ARENA KORE")
+    c.setFillColor(HexColor("#888888"))
+    c.setFont("Helvetica", 10)
+    c.drawString(30, h - 68, "KORE PASSPORT — OFFICIAL ATHLETIC REPORT")
+    c.setFillColor(HexColor("#00E5FF"))
+    c.setFont("Helvetica-Bold", 10)
+    c.drawRightString(w - 30, h - 50, f"Generated: {datetime.utcnow().strftime('%Y-%m-%d')}")
+
+    # ── ATHLETE INFO SECTION ──
+    y = h - 120
+    c.setFillColor(HexColor("#FFFFFF"))
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(30, y, username.upper())
+    y -= 22
+    c.setFillColor(HexColor("#888888"))
+    c.setFont("Helvetica", 11)
+    c.drawString(30, y, f"Sport: {sport}  ·  Level: {level}  ·  FLUX Balance: {ak_credits}")
+
+    # ── KORE SCORE ──
+    y -= 14
+    c.setFillColor(HexColor("#121212"))
+    c.roundRect(30, y - 55, w - 60, 50, 8, stroke=0, fill=1)
+    c.setFillColor(HexColor("#00E5FF"))
+    c.setFont("Helvetica-Bold", 32)
+    c.drawString(50, y - 40, str(kore["score"]))
+    c.setFillColor(HexColor("#AAAAAA"))
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(120, y - 32, "KORE SCORE")
+    c.setFont("Helvetica", 10)
+    c.drawString(120, y - 48, f"Grade: {kore['grade']}")
+
+    # ── DNA RADAR ──
+    y -= 85
+    c.setFillColor(HexColor("#FFFFFF"))
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(30, y, "DNA RADAR")
+    y -= 15
+
+    radar_cx = w / 2
+    radar_cy = y - 90
+    _draw_radar_on_pdf(c, radar_cx, radar_cy, 75, six_axis, "#00E5FF")
+
+    # ── DNA VALUES TABLE ──
+    y = radar_cy - 110
+    c.setFillColor(HexColor("#FFFFFF"))
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(30, y, "DNA VALUES")
+    y -= 15
+
+    stats_list = ['endurance', 'power', 'mobility', 'technique', 'recovery', 'agility']
+    stat_labels_it = {
+        'endurance': 'RESISTENZA', 'power': 'POTENZA', 'mobility': 'AGILITÀ',
+        'technique': 'TECNICA', 'recovery': 'RECUPERO', 'agility': 'VELOCITÀ',
+    }
+
+    for stat in stats_list:
+        val = round(six_axis.get(stat, 50), 1)
+        c.setFillColor(HexColor("#888888"))
+        c.setFont("Helvetica", 10)
+        c.drawString(50, y, stat_labels_it.get(stat, stat.upper()))
+        # Progress bar
+        bar_x = 160
+        bar_w = 200
+        c.setFillColor(HexColor("#1A1A1A"))
+        c.rect(bar_x, y - 2, bar_w, 10, stroke=0, fill=1)
+        fill_w = (val / 100) * bar_w
+        c.setFillColor(HexColor("#00E5FF"))
+        c.rect(bar_x, y - 2, fill_w, 10, stroke=0, fill=1)
+        c.setFillColor(HexColor("#FFFFFF"))
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(bar_x + bar_w + 10, y, str(val))
+        y -= 20
+
+    # ── BADGES ──
+    y -= 15
+    c.setFillColor(HexColor("#FFFFFF"))
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(30, y, "VALIDATION BADGES")
+    y -= 22
+
+    badges = []
+    if is_nexus_certified:
+        badges.append(("NÈXUS CERTIFIED", "#00E5FF"))
+    if qr_official_count > 0:
+        badges.append((f"QR VALIDATED ×{qr_official_count}", "#34C759"))
+    if integrity_warnings == 0:
+        badges.append(("INTEGRITY OK", "#34C759"))
+    else:
+        badges.append((f"WARNINGS: {integrity_warnings}", "#FF3B30"))
+
+    bx = 50
+    for badge_text, badge_color in badges:
+        c.setStrokeColor(HexColor(badge_color))
+        c.setFillColor(HexColor("#121212"))
+        c.roundRect(bx, y - 2, 120, 20, 6, stroke=1, fill=1)
+        c.setFillColor(HexColor(badge_color))
+        c.setFont("Helvetica-Bold", 8)
+        c.drawCentredString(bx + 60, y + 3, badge_text)
+        bx += 135
+
+    # ── FOOTER ──
+    c.setFillColor(HexColor("#333333"))
+    c.setFont("Helvetica", 8)
+    c.drawCentredString(w / 2, 25, "ARENA KORE — Confidential Athletic Report · arenakore.app")
+
+    c.showPage()
+    c.save()
+    buffer.seek(0)
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=KORE_PASSPORT_{username}.pdf"},
+    )
 
 
 # ====================================

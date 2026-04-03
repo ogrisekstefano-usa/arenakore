@@ -144,6 +144,14 @@ export const api = {
   qrParticipants: (challengeId: string, token: string) =>
     request(`/qr/participants/${challengeId}`, {}, token),
 
+  // ========== TEAM COMPARISON MODE ==========
+  compareAthletes: (ids: string[], token: string) =>
+    request(`/coach/compare-athletes?ids=${ids.join(',')}`, {}, token),
+
+  // ========== PDF EXPORT ==========
+  getAthletePdfUrl: (athleteId: string) =>
+    `${BASE_URL}/report/athlete-pdf/${athleteId}`,
+
   // ========== BIO-EVOLUTION ENGINE — SPRINT 7 ==========
   getRescanEligibility: (token: string) => request('/nexus/rescan-eligibility', {}, token),
   completeBioscan: (token: string) => request('/nexus/bioscan', { method: 'POST' }, token),

@@ -11,8 +11,9 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path as KPath, Circle as KCircle, Polygon, Line, Text as SvgText, Circle } from 'react-native-svg';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme, PJS, MONT, fz } from '../../contexts/ThemeContext';
+import { useTheme, PJS, MONT, JAKARTA, fz } from '../../contexts/ThemeContext';
 import { api } from '../../utils/api';
+import { ComparisonView } from '../../components/studio/ComparisonView';
 
 // ── 6-Axis Radar ──────────────────────────────────────────────────────────────
 const SIX_AXES = ['endurance', 'power', 'mobility', 'technique', 'recovery', 'agility'];
@@ -290,6 +291,24 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
         </TouchableOpacity>
       </View>
 
+      {/* PDF Export Button */}
+      <TouchableOpacity
+        style={[dp$.pdfBtn, { backgroundColor: theme.accent + '12', borderColor: theme.accent + '44' }]}
+        onPress={() => {
+          const url = api.getAthletePdfUrl(athleteId);
+          if (typeof window !== 'undefined') {
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank';
+            a.click();
+          }
+        }}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="document-text" size={14} color={theme.accent} />
+        <Text style={[{ color: theme.accent, fontSize: 12, letterSpacing: 1.5 }, MONT('800')]}>EXPORT KORE PASSPORT (PDF)</Text>
+      </TouchableOpacity>
+
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         {/* KORE SCORE — Hero metric */}
         {koreData && (
@@ -403,6 +422,11 @@ const dp$ = StyleSheet.create({
   meta: { fontSize: 12, letterSpacing: 0.5 },
   crewBadge: { fontSize: 12, letterSpacing: 1 },
   closeBtn: { padding: 4 },
+  pdfBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    marginHorizontal: 24, marginTop: 10, marginBottom: 6,
+    borderWidth: 1, borderRadius: 8, paddingVertical: 8,
+  },
   section: { paddingHorizontal: 24, paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   sectionTitle: { fontSize: 11, letterSpacing: 3 },
   radarWrap: { alignItems: 'center' },
@@ -697,7 +721,8 @@ export default function AthletesModule() {
   const [injuryFilter, setInjuryFilter] = useState('ALL');
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [view, setView] = useState<'table' | 'crew'>('table');
+  const [view, setView] = useState<'table' | 'crew' | 'compare'>('table');
+  const [compareIds, setCompareIds] = useState<string[]>([]);
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -719,14 +744,14 @@ export default function AthletesModule() {
       <View style={[am$.topBar, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
         {/* View switcher */}
         <View style={am$.viewSwitch}>
-          {(['table', 'crew'] as const).map(v => (
+          {(['table', 'compare', 'crew'] as const).map(v => (
             <TouchableOpacity key={v}
               style={[am$.viewBtn, view === v && { backgroundColor: theme.accent + '18', borderColor: theme.accent + '50' }]}
               onPress={() => setView(v)}
             >
-              <Ionicons name={v === 'table' ? 'people' : 'shield'} size={14} color={view === v ? theme.accent : theme.textTer} />
+              <Ionicons name={v === 'table' ? 'people' : v === 'compare' ? 'git-compare' : 'shield'} size={14} color={view === v ? theme.accent : theme.textTer} />
               <Text style={[am$.viewBtnTxt, MONT('900'), { color: view === v ? theme.accent : theme.textTer }]}>
-                {v === 'table' ? 'ATLETI CRM' : 'CREW PANEL'}
+                {v === 'table' ? 'ATLETI CRM' : v === 'compare' ? 'CONFRONTO' : 'CREW PANEL'}
               </Text>
             </TouchableOpacity>
           ))}
@@ -772,6 +797,8 @@ export default function AthletesModule() {
       {/* CONTENT AREA */}
       {view === 'crew' ? (
         <CrewPanel />
+      ) : view === 'compare' ? (
+        <ComparisonView athletes={athletes} token={token} />
       ) : (
         <View style={am$.splitView}>
           {/* TABLE */}

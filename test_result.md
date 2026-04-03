@@ -933,11 +933,7 @@ frontend:
         comment: "Both index.tsx START LEGACY button and login.tsx 'Non hai un account? START LEGACY' link now route to /onboarding/step1."
 
 test_plan:
-  current_focus:
-    - "KORE #00001 Founder Profile"
-    - "Extended Register Endpoint"
-    - "Legacy Onboarding Step 1-4"
-    - "START LEGACY routing"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -1053,6 +1049,54 @@ frontend:
         comment: "ADDED: Two-state positioning footer. When !isScanning: shows 'NEXUS IS SEARCHING FOR ATHLETE...' prominently + 'POSIZIONATI DAVANTI ALLA CAMERA' + 'IN ATTESA RILEVAMENTO UMANO'. When isScanning: shows detection progress bar + 'NEXUS IS SEARCHING FOR ATHLETE...' during point detection + '17/17 RILEVATI' when complete."
 
 backend:
+  - task: "Coach Athletes Full Table API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST PASSED: GET /api/coach/athletes/full working correctly. Coach login successful (demo.owner@arenakore.app), returned 5 athletes with complete data structure including id, username, six_axis (endurance/power/mobility/technique/recovery/agility), kore_score, kore_grade. Admin access also verified with 19 athletes returned."
+
+  - task: "Team Comparison Mode API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST PASSED: GET /api/coach/compare-athletes working correctly. Successfully compared 2 athletes (MARCO_DEMO vs DURO_85) with complete response structure: athletes array with username/six_axis/kore_score/kore_grade, gap_analysis array with 6 stats showing leader/leader_value/athletes data with value/diff/diff_pct/is_leader fields. All required fields present and validated."
+
+  - task: "PDF Export - Kore Passport API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST PASSED: GET /api/report/athlete-pdf/{athlete_id} working correctly. Generated valid PDF (3453 bytes) with Content-Type: application/pdf, magic bytes validation passed (%PDF header confirmed). PDF generation functional for athlete reports."
+
+  - task: "Coach Analytics Edge Cases Validation"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST PASSED: All edge cases working correctly. (1) Single athlete ID for comparison correctly rejected with 400 error, (2) Empty IDs parameter correctly rejected with 400 error, (3) Invalid athlete ID for PDF correctly rejected with 400 error. Error handling and validation working as expected."
+
   - task: "5-Beat DNA Sync Endpoint (POST /api/nexus/5beat-dna)"
     implemented: true
     working: "NA"
@@ -1588,6 +1632,47 @@ agent_communication:
     implemented: true
     working: "NA"
     file: "server.py"
+
+  - task: "Team Comparison Mode - Compare Athletes API"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET /api/coach/compare-athletes?ids=id1,id2,id3 — Returns athletes with six_axis radar data + gap_analysis table (per stat: leader, diff_pct, is_leader flag). Colors highlight: Red for -15%+ deficit, Green for leader."
+
+  - task: "PDF Export - Athlete Kore Passport"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET /api/report/athlete-pdf/{athlete_id} — Generates real PDF via reportlab. Contains: ARENA KORE header, athlete info, KORE Score, DNA Radar (hexagonal SVG-like), DNA values with progress bars, Validation Badges (NEXUS CERTIFIED, QR VALIDATED, INTEGRITY OK). Returns application/pdf StreamingResponse."
+
+  - task: "Audio Charging Synthesizer"
+    implemented: true
+    working: "NA"
+    file: "frontend/utils/ChargingAudio.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Web Audio API synthesizer. playChargingSound(3) = sawtooth oscillator 200Hz→800Hz + gain 0.03→0.25 over 3 seconds. playStartBeep() = square wave 1000Hz + harmonic at 2500Hz, 120ms duration, sharp metallic. playCountTick(n) = sine wave with rising pitch per count."
+
+agent_communication:
+    - agent: "main"
+      message: "SENSORY IMMERSION + COACH ANALYTICS IMPLEMENTED. TEST BACKEND: (1) Login demo.owner@arenakore.app / Demo@GymOwner2026! (2) GET /api/coach/athletes/full → get at least 2 athlete IDs (3) GET /api/coach/compare-athletes?ids=<id1>,<id2> → should return athletes array with six_axis and gap_analysis with per-stat leader/diff_pct (4) GET /api/report/athlete-pdf/<id1> → should return PDF file (Content-Type: application/pdf). BASE URL: https://arena-scan-lab.preview.emergentagent.com"
+
     stuck_count: 0
     priority: "high"
     needs_retesting: false
@@ -1601,3 +1686,5 @@ agent_communication:
       message: "QR KORE CROSS-CHECK ENGINE — BACKEND + FRONTEND COMPLETE. PLEASE TEST BACKEND: (1) Login ogrisek.stefano@gmail.com / Founder@KORE2026! (2) POST /api/qr/create-challenge {title: 'QR TEST', exercise_type: 'squat', tags: ['POWER'], challenge_type: 'CLOSED_LIVE', total_participants: 3} → get challenge_id (3) POST /api/qr/generate {challenge_id: <from step 2>, declared_reps: 15, declared_seconds: 45, declared_kg: 0, total_participants: 3, challenge_type: 'CLOSED_LIVE'} → should return qr_token, pin_code, status='provisional', threshold=2 (4) GET /api/qr/status/<challenge_id> → should return confirmations=0, threshold=2, status='provisional' (5) Login d.rose@chicago.kore / Seed@Chicago1 (6) POST /api/qr/validate {pin_code: <from step 3>} → should return confirmed, scanner_flux_reward=5, target_status='provisional' because only 1/2 confirmations (7) Login demo.owner@arenakore.app / Demo@GymOwner2026! (8) POST /api/qr/validate {pin_code: <from step 3>} → should return confirmed, target_status='official' because 2/2 confirmations reached. BASE URL: https://arena-scan-lab.preview.emergentagent.com"
     - agent: "testing"
       message: "QR KORE CROSS-CHECK ENGINE TESTING COMPLETED: ALL 5 SCENARIOS PASSED SUCCESSFULLY (100% SUCCESS RATE). ✅ SCENARIO 1 (Create QR Challenge + Generate QR): Challenge creation working correctly with challenge_id, 6-digit join_code (945828), threshold=2 (50%+1 of 2 others). QR generation returned qr_token (base64), PIN code (572336), status='provisional', confirmations=0. Initial status check confirmed provisional state with remaining_seconds=3599. ✅ SCENARIO 2 (First Peer Validation): User B validation successful with scanner_flux_reward=5, target_status='provisional' (only 1/2 confirmations). ✅ SCENARIO 3 (Second Peer Validation): User C validation reached threshold (2/2), target_status='official', target_flux_awarded=true. ✅ SCENARIO 4 (Status Check After Official): Final status confirmed as 'official', confirmations=2, flux_earned=37. ✅ SCENARIO 5 (Edge Cases): Self-validation correctly blocked with 'Non puoi confermare te stesso', duplicate validation blocked with 'Hai già confermato'. All QR KORE Cross-Check Engine endpoints are production-ready. Test credentials: ogrisek.stefano@gmail.com (Creator), d.rose@chicago.kore (Validator 1), demo.owner@arenakore.app (Validator 2) all authenticated successfully."
+    - agent: "testing"
+      message: "SENSORY IMMERSION & COACH ANALYTICS BACKEND TESTING COMPLETED: All 4 new coach analytics endpoints tested successfully with comprehensive validation. Test results: ✅ Coach login successful (demo.owner@arenakore.app) with GYM_OWNER role ✅ GET /api/coach/athletes/full returns 5 athletes with complete data structure (id, username, six_axis with all 6 keys, kore_score, kore_grade) ✅ GET /api/coach/compare-athletes successfully compares 2 athletes (MARCO_DEMO vs DURO_85) with proper response structure including athletes array and gap_analysis with leader/leader_value/athletes data ✅ GET /api/report/athlete-pdf/{athlete_id} generates valid PDF (3453 bytes, application/pdf content-type, magic bytes validated) ✅ All edge cases working correctly: single athlete ID rejection (400), empty IDs rejection (400), invalid PDF athlete ID rejection (400). Admin access also verified with 19 athletes returned. All coach analytics and PDF export features are production-ready."
