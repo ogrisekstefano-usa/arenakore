@@ -122,7 +122,7 @@ export function CrewHubDetail({ crew, onClose, token }: { crew: any; onClose: ()
                   </View>
                   <View style={hub$.memberXP}>
                     <Text style={hub$.memberXPVal}>{m.xp}</Text>
-                    <Text style={hub$.memberXPLabel}>XP</Text>
+                    <Text style={hub$.memberXPLabel}>FLUX</Text>
                   </View>
                 </View>
               </Animated.View>

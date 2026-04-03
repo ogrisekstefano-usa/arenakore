@@ -27,6 +27,7 @@ import { MotionAnalyzer, MotionState, ExerciseType, SkeletonPose } from '../../u
 import { profileDevice, DeviceProfile, DeviceTier, getTierLabel, getTrackingMode } from '../../utils/DeviceIntelligence';
 import { RemoteUXEngine } from '../../utils/RemoteUXEngine';
 import { FluxIcon } from '../../components/FluxIcon';
+import { Header } from '../../components/Header';
 
 // Extracted sub-components
 import { CyberGrid, DigitalShadow, ScanLine } from '../../components/nexus/NexusVisuals';
@@ -197,7 +198,7 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
     cards.push({
       id: 'rival', icon: 'flash-sharp', iconColor: '#FFD700', borderColor: '#FFD700',
       title: 'SFIDA IL RIVALE',
-      subtitle: `${myRank.next_username.toUpperCase()} · ${myRank.xp_gap || '?'} XP sopra di te`,
+      subtitle: `${myRank.next_username.toUpperCase()} · ${myRank.xp_gap || '?'} FLUX sopra di te`,
       cta: 'SFIDA ORA', ctaColor: '#FFD700',
       action: () => onNavigate('/(tabs)/arena'),
     });
@@ -232,7 +233,7 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
     cards.push({
       id: 'sync', icon: 'trending-up', iconColor: '#00E5FF', borderColor: '#00E5FF',
       title: 'SCALA LA CLASSIFICA',
-      subtitle: `Rank #${myRank.rank} · ${myRank.xp_gap || '?'} XP alla vetta della Hall`,
+      subtitle: `Rank #${myRank.rank} · ${myRank.xp_gap || '?'} FLUX alla vetta della Hall`,
       cta: 'GUADAGNA FLUX', ctaColor: '#00E5FF',
       action: () => onNavigate('/(tabs)/hall'),
     });
@@ -467,21 +468,17 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
 
   return (
     <View style={cn$.container} testID="nexus-console">
-      <SafeAreaView style={cn$.safe}>
-        <View style={cn$.header}>
-          {/* Left: Title Stack */}
-          <View style={{ gap: 2 }}>
-            <Text style={cn$.title}>Nexus</Text>
-            <View style={cn$.tierRow}><View style={cn$.tierDot} /><Text style={cn$.tierText}>{getTierLabel(deviceTier)}</Text></View>
-          </View>
-          {/* Right: Badges */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            {isFounder && (
-              <Animated.View style={[cn$.founderBadge, shimmerStyle]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}><Ionicons name="star" size={9} color="#FFD700" /><Text style={cn$.founderText}>FOUNDER</Text></View>
-              </Animated.View>
-            )}
-          </View>
+      <Header title="NEXUS" rightAction={
+        isFounder ? (
+          <Animated.View style={[cn$.founderBadge, shimmerStyle]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}><Ionicons name="star" size={9} color="#FFD700" /><Text style={cn$.founderText}>FOUNDER</Text></View>
+          </Animated.View>
+        ) : undefined
+      } />
+      <SafeAreaView style={cn$.safe} edges={['left', 'right', 'bottom']}>
+        {/* Tier indicator below header */}
+        <View style={cn$.tierBar}>
+          <View style={cn$.tierDot} /><Text style={cn$.tierText}>{getTierLabel(deviceTier)}</Text>
         </View>
         <ScrollView style={cn$.scroll} contentContainerStyle={cn$.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Bio-Scan Eligibility Status */}
@@ -560,6 +557,7 @@ const cn$ = StyleSheet.create({
   founderBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.08)' },
   founderText: { color: '#FFD700', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   tierRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  tierBar: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 20, paddingVertical: 4 },
   tierDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#007AFF' },
   tierText: { color: '#8E8E93', fontSize: 11, fontWeight: '500', letterSpacing: 1 },
   scroll: { flex: 1 },
@@ -684,7 +682,7 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
       <Animated.View entering={FadeIn.duration(300)} style={fg$.selectWrap}>
         <Text style={fg$.selectTitle}>SELEZIONA SFIDA</Text>
         <Text style={fg$.selectSub}>
-          {mode === 'personal' ? 'Focus DNA \u2014 Migliora le tue stats' : mode === 'battle' ? 'XP Massimo \u2014 Scala il Rank' : 'Combatti in tempo reale'}
+          {mode === 'personal' ? 'Focus DNA \u2014 Migliora le tue stats' : mode === 'battle' ? 'FLUX Massimo \u2014 Scala il Rank' : 'Combatti in tempo reale'}
         </Text>
         <View style={fg$.exRow}>
           <TouchableOpacity style={fg$.exCard} onPress={() => onSelect(mode, 'squat')} activeOpacity={0.8}>
@@ -1501,7 +1499,7 @@ export default function NexusTriggerScreen() {
   const params = useLocalSearchParams<{
     trainingPushId?: string; trainingExercise?: string;
     trainingTargetReps?: string; trainingTargetTime?: string;
-    trainingName?: string; trainingXp?: string; dnaPotential?: string;
+    trainingName?: string; trainingFlux?: string; dnaPotential?: string;
   }>();
   const isTrainingMode = !!params.trainingPushId;
   const trainingTargetReps = parseInt(params.trainingTargetReps || '20', 10);

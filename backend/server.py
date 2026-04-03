@@ -5154,7 +5154,7 @@ async def send_pvp_challenge(data: PvPChallengeRequest, current_user: dict = Dep
     if data.discipline not in DISCIPLINE_CONFIG:
         raise HTTPException(status_code=400, detail=f"Disciplina non valida. Scegli: {list(DISCIPLINE_CONFIG.keys())}")
     if data.xp_stake not in [50, 100, 200, 500]:
-        raise HTTPException(status_code=400, detail="XP stake non valido. Scegli: 50, 100, 200 o 500")
+        raise HTTPException(status_code=400, detail="FLUX stake non valido. Scegli: 50, 100, 200 o 500")
 
     try:
         challenged = await db.users.find_one({"_id": ObjectId(data.challenged_user_id)})
@@ -8278,7 +8278,7 @@ async def generate_apple_pass(current_user: dict = Depends(get_current_user)):
                 {"key": "level", "label": "LIVELLO", "value": str(level)},
             ],
             "auxiliaryFields": [
-                {"key": "xp", "label": "XP TOTALE", "value": f"{xp:,}"},
+                {"key": "xp", "label": "FLUX TOTALE", "value": f"{xp:,}"},
                 {"key": "status", "label": "STATUS", "value": "FOUNDER" if is_founder else "KORE ATHLETE"},
             ],
             "backFields": [
@@ -8375,7 +8375,7 @@ async def generate_google_pass(current_user: dict = Depends(get_current_user)):
                     "textModulesData": [
                         {"id": "sport", "header": "SPORT", "body": sport},
                         {"id": "level", "header": "LIVELLO", "body": str(level)},
-                        {"id": "xp", "header": "XP TOTALE", "body": f"{xp:,}"},
+                        {"id": "xp", "header": "FLUX TOTALE", "body": f"{xp:,}"},
                         {"id": "status", "header": "STATUS", "body": "FOUNDER" if is_founder else "KORE ATHLETE"},
                         {"id": "kore_number", "header": "KORE #", "body": kore_number},
                     ],

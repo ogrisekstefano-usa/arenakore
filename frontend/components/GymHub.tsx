@@ -156,7 +156,7 @@ function EventCard({
             </View>
             <View style={ev$.statBlock}>
               <Text style={[ev$.statVal, { color: '#FFD700' }]}>+{event.xp_reward}</Text>
-              <Text style={ev$.statLabel}>XP REWARD</Text>
+              <Text style={ev$.statLabel}>FLUX REWARD</Text>
             </View>
           </View>
 
@@ -444,7 +444,7 @@ function CreateEventModal({ visible, onClose, onCreated, token }: any) {
                 <TextInput style={ce$.input} value={maxPart} onChangeText={setMaxPart} keyboardType="numeric" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={ce$.label}>XP REWARD</Text>
+                <Text style={ce$.label}>FLUX REWARD</Text>
                 <TextInput style={ce$.input} value={xpReward} onChangeText={setXpReward} keyboardType="numeric" />
               </View>
             </View>

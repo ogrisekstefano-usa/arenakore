@@ -68,7 +68,7 @@ const h = StyleSheet.create({
     fontWeight: '800',
     fontSize: 28,
     color: EL.TEXT,
-    letterSpacing: 0.3,
+    letterSpacing: -0.3,
   },
   rightGroup: {
     flexDirection: 'row',

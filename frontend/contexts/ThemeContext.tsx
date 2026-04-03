@@ -46,7 +46,7 @@ export const THEMES = {
     border:      '#D1D5DB',
     border2:     '#C1C5CB',
     text:        '#000000',        // Nero Assoluto
-    textSec:     '#374151',        // Grigio Antracite Leggibile
+    textSec:     '#1A1A1A',        // Grigio Titanio Scuro (Alta leggibilità)
     textTer:     '#6B7280',
     accent:      '#1D4ED8',
     accentGold:  '#92400E',
@@ -76,13 +76,13 @@ export const fz = (base: number, mode: ThemeMode): number =>
 // ── FONT HELPERS (tutti Montserrat) ───────────────────────────────────────────
 
 /**
- * PJS — Montserrat 800 per TITOLI e KPI
- * geometric, Nike-grade, altamente leggibile
+ * PJS — Plus Jakarta Sans 800 per VALORI NUMERICI e KPI
+ * Clean, geometric, data-centric — separato da Montserrat per gerarchia visiva
  */
 export const PJS = (weight: '600' | '700' | '800' = '800', extra?: object): any =>
   Platform.select({
     web: {
-      fontFamily: `'Montserrat', -apple-system, sans-serif`,
+      fontFamily: `'Plus Jakarta Sans', 'Montserrat', -apple-system, sans-serif`,
       fontWeight: weight,
       letterSpacing: '-0.01em',
       ...extra,

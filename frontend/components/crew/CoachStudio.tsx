@@ -211,7 +211,7 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
               <View style={ct$.numRow}>
                 <View style={ct$.numCol}><Text style={ct$.label}>TEMPO (SEC)</Text><TextInput style={ct$.input} value={targetTime} onChangeText={setTargetTime} keyboardType="numeric" /></View>
                 <View style={ct$.numCol}><Text style={ct$.label}>TARGET REPS</Text><TextInput style={ct$.input} value={targetReps} onChangeText={setTargetReps} keyboardType="numeric" /></View>
-                <View style={ct$.numCol}><Text style={ct$.label}>XP REWARD</Text><TextInput style={ct$.input} value={xpReward} onChangeText={setXpReward} keyboardType="numeric" /></View>
+                <View style={ct$.numCol}><Text style={ct$.label}>FLUX REWARD</Text><TextInput style={ct$.input} value={xpReward} onChangeText={setXpReward} keyboardType="numeric" /></View>
               </View>
 
               <Text style={ct$.label}>DESCRIZIONE (OPZIONALE)</Text>

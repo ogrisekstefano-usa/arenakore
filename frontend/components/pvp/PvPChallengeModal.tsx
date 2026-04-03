@@ -152,7 +152,7 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
             {!canAfford && (
               <View style={m$.warningRow}>
                 <Ionicons name="warning" size={12} color="#FF9500" />
-                <Text style={m$.warningText}>XP insufficienti per questa posta</Text>
+                <Text style={m$.warningText}>FLUX insufficienti per questa posta</Text>
               </View>
             )}
 

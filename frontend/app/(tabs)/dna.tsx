@@ -235,7 +235,7 @@ export default function DNATab() {
             {dna && (
               <Animated.View style={[styles.chartGlass, radarStyle]}>
                 <View style={styles.glassInner}>
-                  <RadarChart stats={dna} size={260} glowing={isGlowing || showEvoGlow} recordsBroken={lastRecords} />
+                  <RadarChart stats={dna} size={320} glowing={isGlowing || showEvoGlow} recordsBroken={lastRecords} />
                 </View>
                 {(isGlowing && lastRecords.length > 0) && (
                   <View style={styles.glowBanner}>
@@ -504,9 +504,9 @@ const styles = StyleSheet.create({
   roleBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, marginTop: 4 },
   roleText: { fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   chartGlass: {
-    alignItems: 'center', marginTop: 8, marginHorizontal: 24,
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: 12,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', overflow: 'hidden',
+    alignItems: 'center', marginTop: 8, marginHorizontal: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: 8,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
   },
   glassInner: { alignItems: 'center' },
   glowBanner: {

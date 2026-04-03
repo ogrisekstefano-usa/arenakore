@@ -249,7 +249,7 @@ function RankInfographic({ rankData, city, onCitySelect }: { rankData: any; city
         <View style={ri$.rivalRow}>
           <Ionicons name="arrow-up" size={10} color="rgba(255,255,255,0.4)" />
           <Text style={ri$.rivalText}>
-            {rankData.global_xp_gap} XP PER SUPERARE {rankData.global_next_username.toUpperCase()}
+            {rankData.global_xp_gap} FLUX PER SUPERARE {rankData.global_next_username.toUpperCase()}
           </Text>
         </View>
       )}
@@ -611,7 +611,7 @@ function KoreCard({ user, rankData }: { user: any; rankData: any }) {
               <QRCode value={`arenakore://athlete/${user?.id || 'x'}`} size={56} color="#00E5FF" backgroundColor="#070707" />
             </View>
             <View style={kc$.rightSide}>
-              <View style={kc$.bStat}><Text style={kc$.bStatLabel}>XP</Text><Text style={kc$.bStatVal}>{((user?.xp || 0) as number).toLocaleString()}</Text></View>
+              <View style={kc$.bStat}><Text style={kc$.bStatLabel}>FLUX</Text><Text style={kc$.bStatVal}>{((user?.xp || 0) as number).toLocaleString()}</Text></View>
               <View style={kc$.bStat}><Text style={kc$.bStatLabel}>RANK</Text><Text style={[kc$.bStatVal, { color: rankData?.global_is_top_10 ? '#FFD700' : '#00E5FF' }]}>{rankData?.global_rank ? `#${rankData.global_rank}` : '---'}</Text></View>
               <Text style={kc$.serial}>KORE #{koreNumber}</Text>
             </View>

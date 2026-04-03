@@ -81,7 +81,7 @@ export function CertifiedByPros() {
         trainingTargetReps: String(t.target_reps),
         trainingTargetTime: String(t.target_time),
         trainingName: t.name,
-        trainingXp: String(t.xp_reward),
+        trainingFlux: String(t.xp_reward),
         dnaPotential: '75',
       },
     });
@@ -137,7 +137,7 @@ export function CertifiedByPros() {
               </View>
               <View style={cp$.stat}>
                 <Text style={[cp$.statVal, { color: '#FFD700' }]}>+{t.xp_reward}</Text>
-                <Text style={cp$.statLabel}>XP</Text>
+                <Text style={cp$.statLabel}>FLUX</Text>
               </View>
               <View style={cp$.stat}>
                 <Text style={[cp$.statVal, { color: '#00E5FF' }]}>{DISC_LABELS[t.discipline] || t.discipline}</Text>

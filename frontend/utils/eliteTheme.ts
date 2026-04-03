@@ -78,7 +78,7 @@ export const T_SCREEN_TITLE: TextStyle = {
   fontFamily: FONT_MONT,
   fontWeight: '800',
   fontSize: 28,
-  letterSpacing: 0.5,
+  letterSpacing: -0.3,
   color: EL.TEXT,
 };
 
@@ -87,7 +87,7 @@ export const T_SECTION: TextStyle = {
   fontFamily: FONT_MONT,
   fontWeight: '700',
   fontSize: 18,
-  letterSpacing: 0.3,
+  letterSpacing: -0.2,
   color: EL.TEXT,
 };
 
