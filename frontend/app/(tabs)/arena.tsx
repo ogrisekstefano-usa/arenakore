@@ -94,7 +94,7 @@ const hero$ = StyleSheet.create({
   brBracket: { position: 'absolute', bottom: 44, right: 12, width: 20, height: 20, borderBottomWidth: 2, borderRightWidth: 2, borderColor: '#00E5FF', opacity: 0.25 },
   inner: { paddingHorizontal: 24, paddingTop: 28, paddingBottom: 20, alignItems: 'center', gap: 8 },
   brandLine: { color: '#AAAAAA', fontSize: 13, fontWeight: '900', letterSpacing: 6 },
-  titleLine: { color: '#FFFFFF', fontSize: 42, fontWeight: '900', letterSpacing: 4, textAlign: 'center', lineHeight: 48 },
+  titleLine: { color: '#FFFFFF', fontSize: 34, fontWeight: '800', letterSpacing: -0.5, textAlign: 'center', lineHeight: 41 },
   cyanLine: { width: 60, height: 2, backgroundColor: '#00E5FF', borderRadius: 1, shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8 },
   tagLine: { color: 'rgba(255,255,255,0.30)', fontSize: 14, fontWeight: '700', letterSpacing: 3, textAlign: 'center' },
   statsRow: {
@@ -240,7 +240,7 @@ function EliteActivityFeed() {
 
 const ef$ = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 24, paddingBottom: 12, paddingTop: 4 },
-  title: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
+  title: { color: '#FFFFFF', fontSize: 16, fontWeight: '800', letterSpacing: -0.5, lineHeight: 19 },
   liveLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.06)' },
   card: { marginHorizontal: 24, marginBottom: 10, height: 130, borderRadius: 16, overflow: 'hidden' },
   cardImage: { borderRadius: 16, opacity: 0.55 },
@@ -444,7 +444,7 @@ function LiveBattleDashboard() {
 const lbd$ = StyleSheet.create({
   section: { marginBottom: 4 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, paddingBottom: 10, paddingTop: 4 },
-  sectionTitle: { flex: 1, color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 4 },
+  sectionTitle: { flex: 1, color: '#FFFFFF', fontSize: 16, fontWeight: '800', letterSpacing: -0.5, lineHeight: 19 },
   countBadge: { backgroundColor: 'rgba(255,59,48,0.15)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)' },
   countText: { color: '#FF3B30', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
   loadWrap: { height: 60, alignItems: 'center', justifyContent: 'center' },

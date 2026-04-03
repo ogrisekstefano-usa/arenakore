@@ -202,6 +202,8 @@ export default function Recover() {
                   maxLength={1}
                   selectTextOnFocus
                   textAlign="center"
+                  selectionColor="#00E5FF"
+                  cursorColor="#00E5FF"
                 />
               ))}
             </View>
@@ -392,13 +394,12 @@ const s = StyleSheet.create({
   otpRow: { flexDirection: 'row', justifyContent: 'space-between' },
   otpBox: {
     borderRadius: 8,
-    backgroundColor: '#00E5FF', borderWidth: 2, borderColor: '#1A1A1A',
-    color: '#00E5FF', fontSize: 28, fontWeight: '900', textAlign: 'center',
+    backgroundColor: '#1C1C1E', borderWidth: 2, borderColor: '#2A2A2A',
+    color: '#FFFFFF', fontSize: 28, fontWeight: '900', textAlign: 'center',
   },
   otpBoxFilled: {
     borderColor: '#00E5FF',
-    shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6, shadowRadius: 8,
+    backgroundColor: '#1C1C1E',
   },
 
   devBanner: {

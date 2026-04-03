@@ -262,7 +262,7 @@ const s = StyleSheet.create({
   crewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   crewCatBadge: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   crewBottom: { gap: 4 },
-  crewName: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 1 },
+  crewName: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', letterSpacing: -0.5, lineHeight: 22 },
   crewTagline: { color: 'rgba(255,255,255,0.6)', fontSize: 17, fontStyle: 'italic' },
   ownerBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,

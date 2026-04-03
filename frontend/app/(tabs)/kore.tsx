@@ -159,7 +159,7 @@ const ph$ = StyleSheet.create({
   avatarLetter: { color: '#000000', fontSize: 22, fontWeight: '900' },
   identInfo: { flex: 1, gap: 4 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  username: { color: '#FFFFFF', fontSize: 32, fontWeight: '900', letterSpacing: 1, flexShrink: 1 },
+  username: { color: '#FFFFFF', fontSize: 26, fontWeight: '800', letterSpacing: -0.5, flexShrink: 1, lineHeight: 31 },
   founderBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)', flexShrink: 0 },
   founderText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   sport: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '800', letterSpacing: 2 },
@@ -260,7 +260,7 @@ const ri$ = StyleSheet.create({
   container: { marginHorizontal: 24, marginBottom: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF' },
-  title: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
+  title: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
   cardsRow: { flexDirection: 'row', gap: 10, marginBottom: 12 },
   rankCard: { flex: 1, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   rankInner: { padding: 14, alignItems: 'center', gap: 6 },
@@ -378,7 +378,7 @@ function Affiliations({ affiliData, token, onRefresh }: { affiliData: any; token
 const af$ = StyleSheet.create({
   container: { marginHorizontal: 24, marginBottom: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  title: { flex: 1, color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
+  title: { flex: 1, color: '#FFFFFF', fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
   editBtn: { padding: 8, backgroundColor: 'transparent', borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   infoRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   infoCard: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
@@ -474,7 +474,7 @@ function ActionCenter({ actionData }: { actionData: any }) {
 const ac$ = StyleSheet.create({
   container: { marginHorizontal: 24, marginBottom: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  title: { flex: 1, color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
+  title: { flex: 1, color: '#FFFFFF', fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
   tabs: { flexDirection: 'row', gap: 8, marginBottom: 10 },
   tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   tabActive: { backgroundColor: 'rgba(255,59,48,0.08)', borderColor: 'rgba(255,59,48,0.25)' },
@@ -709,7 +709,7 @@ function KoreCard({ user, rankData }: { user: any; rankData: any }) {
 const kc$ = StyleSheet.create({
   container: { marginBottom: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, paddingBottom: 10 },
-  sectionTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
+  sectionTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '800', letterSpacing: -0.5, lineHeight: 18 },
   card: { marginHorizontal: 24, borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   cardInner: { padding: 14, gap: 10 },
   scanLayer: { borderRadius: 20, backgroundColor: '#0a0a0a', zIndex: 0 },
@@ -749,8 +749,8 @@ const wm$ = StyleSheet.create({
   cardInner: { padding: 24, alignItems: 'center', gap: 12 },
   topGlow: { height: 2, width: '110%', backgroundColor: '#00E5FF', opacity: 0.6, marginHorizontal: -24, marginTop: -24, marginBottom: 8 },
   iconCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: 'transparent', borderWidth: 2, borderColor: '#00E5FF', alignItems: 'center', justifyContent: 'center' },
-  title: { color: '#00E5FF', fontSize: 26, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
-  subtitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '900', letterSpacing: 3, textAlign: 'center', marginTop: -4 },
+  title: { color: '#00E5FF', fontSize: 21, fontWeight: '800', letterSpacing: -0.5, textAlign: 'center', lineHeight: 25 },
+  subtitle: { color: '#FFFFFF', fontSize: 14, fontWeight: '800', letterSpacing: -0.5, textAlign: 'center', marginTop: -4 },
   divider: { height: 1, width: '100%', backgroundColor: 'rgba(255,255,255,0.06)' },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', paddingHorizontal: 4 },
   infoLabel: { color: 'rgba(255,255,255,0.70)', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
@@ -948,7 +948,7 @@ function CityRanking({
 const cr$ = StyleSheet.create({
   container: { marginHorizontal: 24, marginBottom: 12 },
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  title: { flex: 1, color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
+  title: { flex: 1, color: '#FFFFFF', fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
   cityBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: 'transparent', borderRadius: 8,
@@ -1044,7 +1044,7 @@ function XpProgress({ user }: { user: any }) {
 const xp$ = StyleSheet.create({
   container: { marginHorizontal: 24, marginBottom: 16 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  title: { flex: 1, color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
+  title: { flex: 1, color: '#FFFFFF', fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
   lvl: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
   barBg: { height: 6, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 3, overflow: 'hidden', marginBottom: 8 },
   barFill: { height: '100%', backgroundColor: '#FFD700', borderRadius: 3 },

@@ -214,7 +214,7 @@ export default function DNATab() {
       <Header title="DNA" />
       <GlitchOverlay active={showGlitch} />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* HERO SECTION */}
         <ImageBackground source={{ uri: DNA_HERO_IMAGE }} style={styles.heroImage} imageStyle={styles.heroImageStyle}>
           <LinearGradient
@@ -499,8 +499,8 @@ const styles = StyleSheet.create({
   heroImageStyle: { opacity: 0.35 },
   heroGradient: { flex: 1, paddingTop: 16 },
   dnaHeader: { paddingHorizontal: 24, paddingBottom: 8, gap: 4 },
-  dnaLabel: { color: '#00E5FF', fontSize: 16, fontWeight: '900', letterSpacing: 4 },
-  dnaSport: { color: '#FFFFFF', fontSize: 32, fontWeight: '900', letterSpacing: 2, textTransform: 'uppercase' },
+  dnaLabel: { color: '#00E5FF', fontSize: 13, fontWeight: '800', letterSpacing: -0.5, lineHeight: 16 },
+  dnaSport: { color: '#FFFFFF', fontSize: 26, fontWeight: '800', letterSpacing: -0.5, textTransform: 'uppercase', lineHeight: 31 },
   roleBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, marginTop: 4 },
   roleText: { fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   chartGlass: {
@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
     alignItems: 'center', justifyContent: 'center',
   },
-  noDataTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '900', letterSpacing: 3 },
+  noDataTitle: { color: '#FFFFFF', fontSize: 14, fontWeight: '800', letterSpacing: -0.5, lineHeight: 17 },
   noDataText: { color: '#AAAAAA', fontSize: 18, textAlign: 'center', lineHeight: 22 },
   firstScanCta: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -596,8 +596,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24, paddingBottom: 12,
   },
   sectionTitle: {
-    color: '#FFFFFF', fontSize: 20, fontWeight: '900',
-    letterSpacing: 3, textTransform: 'uppercase',
+    color: '#FFFFFF', fontSize: 16, fontWeight: '800',
+    letterSpacing: -0.5, textTransform: 'uppercase', lineHeight: 19,
   },
   // ===== TALOSFIT PARTNER BANNER — SPRINT 10 =====
   talosBannerWrap: {
@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
   },
   talosPartnerText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   talosBannerTitle: {
-    color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 1,
+    color: '#FFFFFF', fontSize: 18, fontWeight: '800', letterSpacing: -0.5,
     lineHeight: 22,
   },
   talosBannerBody: {
