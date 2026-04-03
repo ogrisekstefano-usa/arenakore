@@ -32,7 +32,7 @@ const TRIGGER_META: Record<string, { label: string; icon: string; unit: string }
   recovery_low:     { label: 'Recovery bassa (<)',       icon: 'moon',           unit: '/100' },
   power_drop:       { label: 'Calo forza (<)',           icon: 'trending-down',  unit: '/100' },
   pvp_win_streak:   { label: 'Streak vittorie PvP (≥)',  icon: 'flame',          unit: 'wins' },
-  days_inactive:    { label: 'Atleta inattivo (≥)',      icon: 'time',           unit: 'days' },
+  days_inactive:    { label: 'Kore inattivo (≥)',      icon: 'time',           unit: 'days' },
 };
 
 const ACTION_META = [

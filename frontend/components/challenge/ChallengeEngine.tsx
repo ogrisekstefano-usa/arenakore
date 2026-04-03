@@ -28,7 +28,7 @@ const { width: SW } = Dimensions.get('window');
 type ChallengeTag = 'POWER' | 'FLOW' | 'PULSE';
 type ValidationMode = 'AUTO_COUNT' | 'MANUAL_ENTRY' | 'SENSOR_IMPORT';
 type ProofType = 'NONE' | 'VIDEO_TIME_CHECK' | 'GPS_IMPORT' | 'PEER_CONFIRMATION';
-type VerificationStatus = 'UNVERIFIED' | 'AI_VERIFIED' | 'PROOF_PENDING' | 'SUSPICIOUS';
+type VerificationStatus = 'UNVERIFIED' | 'AI_VERIFIED' | 'PROOF_PENDING' | 'SUSPICIOUS' | 'TECH_VERIFIED';
 
 const TAG_CONFIG: Record<ChallengeTag, { color: string; icon: string; label: string; desc: string }> = {
   POWER: { color: '#FF3B30', icon: 'flame', label: 'POWER', desc: 'Forza · Potenza · Esplosività' },
@@ -53,6 +53,7 @@ const VERIFICATION_BADGE_CONFIG: Record<VerificationStatus, { color: string; ico
   AI_VERIFIED:   { color: EL.CYAN,   icon: 'shield-checkmark',  label: 'AI VERIFIED' },
   PROOF_PENDING: { color: '#FFD700', icon: 'shield-half',       label: 'PROOF PENDING' },
   SUSPICIOUS:    { color: '#FF9500', icon: 'warning',           label: 'REVISIONE RICHIESTA' },
+  TECH_VERIFIED: { color: '#007AFF', icon: 'hardware-chip',     label: 'TECH VERIFIED' },
 };
 
 // ═══ MAIN ENGINE PHASES ═══
@@ -967,7 +968,8 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
             <View style={v.verificationInfo}>
               <VerificationBadge status={verificationStatus} />
               <Text style={v.verificationMult}>
-                {verificationStatus === 'AI_VERIFIED' ? '100% FLUX' :
+                {verificationStatus === 'AI_VERIFIED' ? '100% FLUX · Full Rank' :
+                 verificationStatus === 'TECH_VERIFIED' ? '90% FLUX · Standard Rank' :
                  verificationStatus === 'PROOF_PENDING' ? '75% FLUX · In attesa verifica' :
                  verificationStatus === 'SUSPICIOUS' ? '25% FLUX · Revisione richiesta' :
                  '50% FLUX · Nessuna prova'}

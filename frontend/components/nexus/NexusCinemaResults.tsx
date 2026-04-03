@@ -52,7 +52,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
               </View>
               {isFounder && <Animated.View style={[cin$.founderBadge, ss]}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Ionicons name="star" size={10} color="#FFD700" /><Text style={cin$.founderText}>FOUNDER</Text></View></Animated.View>}
             </View>
-            <Text style={cin$.username}>{user?.username || 'Atleta'}</Text>
+            <Text style={cin$.username}>{user?.username || 'Kore'}</Text>
             <View style={cin$.scoreCircle}><Text style={cin$.scoreVal}>{result.quality_score || '\u2014'}</Text><Text style={cin$.scoreLabel}>QUALIT{'\u00c0'}</Text></View>
             <View style={cin$.xpWrap}><Text style={cin$.xpPlus}>+</Text><Text style={cin$.xpVal}>{displayXP}</Text><Text style={cin$.xpUnit}>XP</Text></View>
             <View style={cin$.statsRow}>

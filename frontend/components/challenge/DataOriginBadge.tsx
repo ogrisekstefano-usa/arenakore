@@ -5,16 +5,16 @@
  * NEXUS (Max Trust) > Sensor/Strava (High) > Manual (Low)
  */
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const SOURCE_CONFIG: Record<string, { icon: string; label: string; color: string; trust: number }> = {
-  NEXUS_VISION:  { icon: 'eye',        label: 'NÈXUS',         color: '#00E5FF', trust: 100 },
-  BLE_SENSOR:    { icon: 'watch',       label: 'SENSORE',       color: '#FF9500', trust: 92 },
-  STRAVA:        { icon: 'bicycle',     label: 'STRAVA',        color: '#FC4C02', trust: 88 },
-  APPLE_HEALTH:  { icon: 'heart',       label: 'APPLE HEALTH',  color: '#FF2D55', trust: 85 },
-  GOOGLE_HEALTH: { icon: 'fitness',     label: 'GOOGLE FIT',    color: '#4285F4', trust: 85 },
-  MANUAL:        { icon: 'create',      label: 'MANUALE',       color: '#8E8E93', trust: 30 },
+const SOURCE_CONFIG: Record<string, { icon: string; emoji: string; label: string; color: string; trust: number; glow: boolean }> = {
+  NEXUS_VISION:  { icon: 'eye',        emoji: '👁️', label: 'NÈXUS',         color: '#00E5FF', trust: 100, glow: true },
+  BLE_SENSOR:    { icon: 'watch',       emoji: '⌚', label: 'SENSORE',       color: '#FF9500', trust: 92,  glow: false },
+  STRAVA:        { icon: 'bicycle',     emoji: '🏃‍♂️', label: 'STRAVA',        color: '#FC4C02', trust: 88,  glow: false },
+  APPLE_HEALTH:  { icon: 'heart',       emoji: '🍎', label: 'HEALTHKIT',     color: '#FF2D55', trust: 85,  glow: false },
+  GOOGLE_HEALTH: { icon: 'fitness',     emoji: '🤖', label: 'HEALTH CONNECT', color: '#4285F4', trust: 85, glow: false },
+  MANUAL:        { icon: 'create',      emoji: '⚠️', label: 'MANUALE',       color: '#8E8E93', trust: 30,  glow: false },
 };
 
 interface Props {
@@ -31,7 +31,6 @@ export function DataOriginBadge({ sources = ['MANUAL'], size = 'md', showLabel =
 
   if (sorted.length === 0) sorted.push('MANUAL');
 
-  const primary = SOURCE_CONFIG[sorted[0]];
   const iconSize = size === 'sm' ? 10 : size === 'lg' ? 16 : 13;
   const fontSize = size === 'sm' ? 7 : size === 'lg' ? 10 : 8;
 
@@ -49,9 +48,13 @@ export function DataOriginBadge({ sources = ['MANUAL'], size = 'md', showLabel =
                 backgroundColor: cfg.color + (isFirst ? '18' : '0A'),
                 borderColor: cfg.color + (isFirst ? '40' : '20'),
               },
+              cfg.glow && isFirst && Platform.OS === 'web' ? {
+                // @ts-ignore — Web boxShadow for NEXUS glow
+                boxShadow: `0 0 8px ${cfg.color}44, 0 0 16px ${cfg.color}22`,
+              } : {},
             ]}
           >
-            <Ionicons name={cfg.icon as any} size={iconSize} color={cfg.color} />
+            <Text style={{ fontSize: iconSize + 2 }}>{cfg.emoji}</Text>
             {showLabel && (
               <Text style={[db.label, { color: cfg.color, fontSize, opacity: isFirst ? 1 : 0.6 }]}>
                 {cfg.label}
@@ -80,7 +83,7 @@ export function DataOriginLine({ sources = ['MANUAL'] }: { sources?: string[] })
         const cfg = SOURCE_CONFIG[src];
         return (
           <View key={src} style={db.lineItem}>
-            <Ionicons name={cfg.icon as any} size={11} color={cfg.color} />
+            <Text style={{ fontSize: 12 }}>{cfg.emoji}</Text>
             <Text style={[db.lineLabel, { color: cfg.color }]}>{cfg.label}</Text>
             {idx < sorted.length - 1 && <Text style={db.lineSep}>+</Text>}
           </View>

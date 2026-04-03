@@ -1677,7 +1677,7 @@ export default function NexusBioScan() {
               <>
                 <Animated.View style={[s.positioningRow, positionPulseStyle]}>
                   <View style={[s.positioningDot, { backgroundColor: '#00E5FF22' }]} />
-                  <Text style={s.positioningTxt}>NEXUS IS SEARCHING FOR ATHLETE...</Text>
+                  <Text style={s.positioningTxt}>NEXUS IS SEARCHING FOR KORE...</Text>
                 </Animated.View>
                 <Text style={s.statusLabel}>POSIZIONATI DAVANTI ALLA CAMERA</Text>
                 <Text style={s.detectNote}>IN ATTESA RILEVAMENTO UMANO</Text>

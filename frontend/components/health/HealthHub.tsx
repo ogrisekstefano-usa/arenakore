@@ -16,6 +16,7 @@ import Svg, { Circle, Line, Polyline } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { api } from '../../utils/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { BLERadarScanner } from './BLERadarScanner';
 
 // ═══ LIVE BPM DISPLAY — Compact header widget ═══
 export function LiveBPMWidget({ bpm, source }: { bpm: number | null; source?: string }) {
@@ -75,6 +76,7 @@ export default function HealthHub() {
   const [recentData, setRecentData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [showBLEScanner, setShowBLEScanner] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!token) return;
@@ -214,7 +216,7 @@ export default function HealthHub() {
                   ) : conn.source === 'BLE_SENSOR' ? (
                     <TouchableOpacity
                       style={[hh.connectBtn, { backgroundColor: conn.connected ? 'rgba(255,149,0,0.15)' : '#FF950020' }]}
-                      onPress={() => handleConnect(conn.source)}
+                      onPress={() => setShowBLEScanner(!showBLEScanner)}
                       disabled={isConnecting}
                       activeOpacity={0.85}
                     >
@@ -222,7 +224,7 @@ export default function HealthHub() {
                         <>
                           <Ionicons name={conn.connected ? 'bluetooth' : 'search'} size={14} color="#FF9500" />
                           <Text style={[hh.connectBtnText, { color: '#FF9500' }]}>
-                            {conn.connected ? 'SENSORE ACCOPPIATO' : 'CERCA SENSORI'}
+                            {showBLEScanner ? 'CHIUDI SCANNER' : conn.connected ? 'SENSORE ACCOPPIATO' : 'CERCA SENSORI'}
                           </Text>
                         </>
                       )}
@@ -253,6 +255,18 @@ export default function HealthHub() {
             </Animated.View>
           );
         })}
+
+        {/* BLE Radar Scanner (expands when user taps "CERCA SENSORI") */}
+        {showBLEScanner && (
+          <Animated.View entering={FadeInDown.duration(400)}>
+            <View style={[hh.connCard, { borderColor: 'rgba(255,149,0,0.25)' }]}>
+              <BLERadarScanner onDeviceConnected={(device) => {
+                handleConnect('BLE_SENSOR');
+                setShowBLEScanner(false);
+              }} />
+            </View>
+          </Animated.View>
+        )}
 
         {/* Recent Data Feed */}
         {recentData.length > 0 && (

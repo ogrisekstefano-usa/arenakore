@@ -216,7 +216,7 @@ export default function JoinEventScreen() {
               <View style={styles.statsRow}>
                 <View style={styles.statBlock}>
                   <Text style={styles.statVal}>{event.participants_count}</Text>
-                  <Text style={styles.statLabel}>/{event.max_participants} ATLETI</Text>
+                  <Text style={styles.statLabel}>/{event.max_participants} KORE</Text>
                 </View>
                 <View style={styles.statBlock}>
                   <Text style={[styles.statVal, { color: '#FFD700' }]}>+{event.xp_reward}</Text>

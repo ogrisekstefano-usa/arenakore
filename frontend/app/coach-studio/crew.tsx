@@ -104,7 +104,7 @@ export default function CrewStrategist() {
         <View style={c$.rightCol}>
           <SectionHeader title="SIMULATORE" sub="Weighted Average Calculator" />
           <View style={c$.simCard}>
-            <Text style={c$.simDesc}>Seleziona atleti per calcolare il KORE Battle Score della crew simulata.</Text>
+            <Text style={c$.simDesc}>Seleziona Kore per calcolare il KORE Battle Score della crew simulata.</Text>
             <ScrollView style={{ maxHeight: 260 }} showsVerticalScrollIndicator={false}>
               {athletes.map(ath => {
                 const isSelected = selectedSim.includes(ath.id);
@@ -137,7 +137,7 @@ export default function CrewStrategist() {
               activeOpacity={0.85}
             >
               {simulating ? <ActivityIndicator color="#000" size="small" /> : (
-                <><Ionicons name="calculator" size={15} color="#000" /><Text style={c$.simBtnText}>CALCOLA SCORE ({selectedSim.length} atleti)</Text></>
+                <><Ionicons name="calculator" size={15} color="#000" /><Text style={c$.simBtnText}>CALCOLA SCORE ({selectedSim.length} Kore)</Text></>
               )}
             </TouchableOpacity>
 

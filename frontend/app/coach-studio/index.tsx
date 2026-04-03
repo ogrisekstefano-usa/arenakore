@@ -186,7 +186,7 @@ export default function GlobalDashboard() {
 
       {/* ── KPI ROW ── */}
       <Animated.View entering={FadeInDown.delay(60).duration(300)} style={pg$.kpiRow}>
-        <KPITile icon="people" label="ATLETI ATTIVI" value={athletes?.total || 0} sub={`${athletes?.crew_count || 0} crew`} color={theme.accent} trend="up" />
+        <KPITile icon="people" label="KORE ATTIVI" value={athletes?.total || 0} sub={`${athletes?.crew_count || 0} crew`} color={theme.accent} trend="up" />
         <KPITile icon="analytics" label="DNA MEDIO" value={avgDna} sub="/ 100 KORE" color={theme.accentGold} trend="up" />
         <KPITile icon="checkmark-circle" label="COMPLIANCE" value={`${avgComp}%`} sub="template completion" color={theme.positive} />
         <KPITile icon="shield" label="BATTLE W/L" value={`${battles?.wins || 0}/${battles?.losses || 0}`} sub={`${battles?.win_rate || 0}% win rate`} color="#AF52DE" />
@@ -254,7 +254,7 @@ export default function GlobalDashboard() {
         <Widget title="AZIONI RAPIDE" icon="flash" iconColor={theme.accentGold}>
           <View style={pg$.actionRow}>
             <QuickAction label="NUOVO TEMPLATE" icon="add-circle" color={theme.accent} onPress={() => router.push('/coach-studio/builder' as any)} />
-            <QuickAction label="SCOUT ATLETI" icon="star" color={theme.accentGold} onPress={() => router.push('/coach-studio/talent' as any)} />
+            <QuickAction label="SCOUT KORE" icon="star" color={theme.accentGold} onPress={() => router.push('/coach-studio/talent' as any)} />
             <QuickAction label="AI ANALYSIS" icon="hardware-chip" color="#AF52DE" onPress={() => router.push('/coach-studio/ai' as any)} />
             <QuickAction label="CREW BATTLE" icon="shield" color={theme.accentRed} onPress={() => router.push('/coach-studio/crew' as any)} />
           </View>

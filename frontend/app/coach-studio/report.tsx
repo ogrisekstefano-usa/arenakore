@@ -243,7 +243,7 @@ export default function TalentReportPage() {
             <Text style={[rp$.sectionTitle, MONT('700'), { color: 'rgba(255,255,255,0.30)' }]}>DNA SIGNATURE</Text>
             <ReportRadar dna={dna} worldAvg={world_avg_dna} size={200} />
             <View style={rp$.legend}>
-              <View style={rp$.legendItem}><View style={[rp$.legendDot, { backgroundColor: '#00E5FF' }]} /><Text style={[rp$.legendText, MONT('300')]}>Atleta</Text></View>
+              <View style={rp$.legendItem}><View style={[rp$.legendDot, { backgroundColor: '#00E5FF' }]} /><Text style={[rp$.legendText, MONT('300')]}>Kore</Text></View>
               <View style={rp$.legendItem}><View style={[rp$.legendDot, { backgroundColor: '#FFD700' }]} /><Text style={[rp$.legendText, MONT('300')]}>Media Mondiale</Text></View>
             </View>
           </View>

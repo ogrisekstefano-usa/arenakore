@@ -69,7 +69,7 @@ export default function AICoachAssistant() {
           </View>
           <View style={ai$.groupStat}>
             <Text style={[ai$.groupVal, { color: '#00E5FF' }]}>{summary.total_athletes || 0}</Text>
-            <Text style={ai$.groupLabel}>ATLETI</Text>
+            <Text style={ai$.groupLabel}>KORE</Text>
           </View>
         </View>
       </View>

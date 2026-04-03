@@ -188,7 +188,7 @@ export default function StaffManagement() {
 
             <View style={s$.infoBox}>
               <Ionicons name="shield-checkmark" size={13} color="rgba(0,229,255,0.5)" />
-              <Text style={s$.infoText}>Solo il GYM_OWNER può aggiungere o rimuovere staff. Ogni Coach può vedere solo i propri atleti.</Text>
+              <Text style={s$.infoText}>Solo il GYM_OWNER può aggiungere o rimuovere staff. Ogni Coach può vedere solo i propri Kore.</Text>
             </View>
           </View>
         </View>

@@ -88,7 +88,7 @@ function InjectFonts() {
 // ── Role-based nav ─────────────────────────────────────────────────────────────
 const NAV_ITEMS_GYM_OWNER = [
   { href: '/coach-studio',               icon: 'grid',           label: 'DASHBOARD',    sub: 'Global Overview' },
-  { href: '/coach-studio/athletes',      icon: 'people',         label: 'ATHLETE CRM',  sub: 'Biometric Data' },
+  { href: '/coach-studio/athletes',      icon: 'people',         label: 'KORE CRM',  sub: 'Biometric Data' },
   { href: '/coach-studio/crew',          icon: 'shield',         label: 'CREW MGT',     sub: 'Battle Control' },
   { href: '/coach-studio/builder',       icon: 'construct',      label: 'CHALLENGE',    sub: 'Builder' },
   { href: '/coach-studio/talent',        icon: 'star',           label: 'SCOUTING',     sub: 'Talent Discovery' },
@@ -99,7 +99,7 @@ const NAV_ITEMS_GYM_OWNER = [
 
 const NAV_ITEMS_COACH = [
   { href: '/coach-studio',          icon: 'grid',           label: 'DASHBOARD',    sub: 'Global Overview' },
-  { href: '/coach-studio/athletes', icon: 'people',         label: 'ATHLETE CRM',  sub: 'Biometric Data' },
+  { href: '/coach-studio/athletes', icon: 'people',         label: 'KORE CRM',  sub: 'Biometric Data' },
   { href: '/coach-studio/crew',     icon: 'shield',         label: 'CREW MGT',     sub: 'Battle Control' },
   { href: '/coach-studio/builder',  icon: 'construct',      label: 'CHALLENGE',    sub: 'Builder' },
   { href: '/coach-studio/talent',   icon: 'star',           label: 'SCOUTING',     sub: 'Talent Discovery' },

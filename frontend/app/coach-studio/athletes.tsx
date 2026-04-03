@@ -809,8 +809,8 @@ export default function AthletesModule() {
               <>
                 {/* Table header */}
                 <View style={[am$.tableHead, { backgroundColor: theme.surface, borderBottomColor: theme.border2 }]}>
-                  {['#', 'ATLETA', 'KORE', 'RISK', 'SCAN', 'CREW', 'RANK'].map(h => (
-                    <Text key={h} style={[am$.th, MONT('900'), { color: theme.textTer, flex: h === 'ATLETA' ? 2 : undefined }]}>{h}</Text>
+                  {['#', 'KORE', 'SCORE', 'RISK', 'SCAN', 'CREW', 'RANK'].map(h => (
+                    <Text key={h} style={[am$.th, MONT('900'), { color: theme.textTer, flex: h === 'KORE' ? 2 : undefined }]}>{h}</Text>
                   ))}
                   <View style={{ width: 70 }} />
                 </View>

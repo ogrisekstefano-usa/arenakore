@@ -41,7 +41,7 @@ export default function MyAthletes() {
   return (
     <ImageBackground source={{ uri: TAB_BACKGROUNDS.kore }} style={s.root} imageStyle={{ opacity: 0.10 }}>
       <StatusBar barStyle="light-content" />
-      <Header title="I MIEI ATLETI" />
+      <Header title="I MIEI KORE" />
       {loading ? (
         <View style={s.center}><ActivityIndicator color="#00E5FF" size="large" /></View>
       ) : (
@@ -49,7 +49,7 @@ export default function MyAthletes() {
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#00E5FF" />}
         >
-          <Text style={s.sectionTitle}>ROSTER — {athletes.length} ATLETI</Text>
+          <Text style={s.sectionTitle}>ROSTER — {athletes.length} KORE</Text>
           {athletes.map((a, idx) => {
             const avg = dnaAvg(a.dna);
             return (

@@ -355,9 +355,11 @@ VALIDATION_FLUX_MULTIPLIERS = {
 
 # FLUX multipliers per verification status
 VERIFICATION_FLUX_MULTIPLIERS = {
-    "UNVERIFIED": 0.5,       # Grey — manual, no proof
+    "UNVERIFIED": 0.5,       # Grey — manual, no proof → 50% FLUX, No Rank
     "PROOF_PENDING": 0.75,   # Yellow — video uploaded, awaiting check
-    "AI_VERIFIED": 1.0,      # Cyan — NEXUS/Sensor/GPS confirmed
+    "AI_VERIFIED": 1.0,      # Cyan — NEXUS Vision confirmed → 100% FLUX, Full Rank
+    "TECH_VERIFIED": 0.9,    # Blue — HealthKit/Strava/BLE data confirmed → 90% FLUX, Standard Rank
+    "SUSPICIOUS": 0.25,      # Orange — biometric mismatch → 25% FLUX, No Rank
 }
 
 # World records reference (approximate) for biometric sanity check
@@ -1602,9 +1604,10 @@ async def ingest_health_data(data: HealthIngestPayload, current_user: dict = Dep
         source_trust = SOURCE_TRUST.get(data.source, 0.3)
         if source_trust >= 0.85 and current_vs in ("UNVERIFIED", "PROOF_PENDING"):
             if data.data_type == "GPS_TRACK":
-                update_fields["verification_status"] = "AI_VERIFIED"
+                update_fields["verification_status"] = "TECH_VERIFIED"
                 update_fields["proof_type"] = "GPS_IMPORT"
             elif data.data_type == "BPM" and data.source == "BLE_SENSOR":
+                update_fields["verification_status"] = "TECH_VERIFIED"
                 # Inject BPM data into challenge for biometric correlation
                 if data.values:
                     bpm_vals = [v.get("bpm", v) if isinstance(v, dict) else v for v in data.values if v]

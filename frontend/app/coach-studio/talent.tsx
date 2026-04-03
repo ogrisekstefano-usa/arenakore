@@ -161,7 +161,7 @@ export default function TalentScout() {
       {/* Legend */}
       <View style={t$.legend}>
         <Text style={t$.legendTitle}>⚡ EFFICIENCY RATIO</Text>
-        <Text style={t$.legendDesc}>Potenziale DNA × (11 − livello) / 10. Un atleta LVL 2 con DNA 80 ha ratio 160 — molto più "grezzo" di un LVL 10 con lo stesso DNA (ratio 10).</Text>
+        <Text style={t$.legendDesc}>Potenziale DNA × (11 − livello) / 10. Un Kore LVL 2 con DNA 80 ha ratio 160 — molto più "grezzo" di un LVL 10 con lo stesso DNA (ratio 10).</Text>
         <View style={t$.tierRow}>
           {Object.entries(TIER_CFG).map(([tier, cfg]) => (
             <View key={tier} style={[t$.tierPill, { backgroundColor: cfg.bg, borderColor: cfg.color + '50' }]}>
@@ -176,7 +176,7 @@ export default function TalentScout() {
       <View style={t$.table}>
         {/* Header */}
         <View style={t$.tableHeader}>
-          <Text style={[t$.th, { flex: 1 }]}>ATLETA</Text>
+          <Text style={[t$.th, { flex: 1 }]}>KORE</Text>
           <Text style={t$.th}>DNA</Text>
           <Text style={[t$.th, { color: '#FFD700' }]}>⚡EFF</Text>
           <Text style={t$.th}>TIER</Text>
@@ -189,7 +189,7 @@ export default function TalentScout() {
         ) : athletes.length === 0 ? (
           <View style={t$.emptyRow}>
             <Ionicons name="search-outline" size={24} color="rgba(255,255,255,0.1)" />
-            <Text style={t$.emptyText}>Nessun atleta trovato con questi filtri</Text>
+            <Text style={t$.emptyText}>Nessun Kore trovato con questi filtri</Text>
           </View>
         ) : athletes.map((ath, idx) => {
           const tier = TIER_CFG[ath.talent_tier] || TIER_CFG.SCOUT;
@@ -270,7 +270,7 @@ export default function TalentScout() {
       {/* My Drafts */}
       {drafts.length > 0 && (
         <View style={t$.draftsSection}>
-          <SectionHeader title="IL MIO TEAM REMOTO" sub={`${drafts.length} atleti draftati`} />
+          <SectionHeader title="IL MIO TEAM REMOTO" sub={`${drafts.length} Kore draftati`} />
           {drafts.map(d => (
             <View key={d.draft_id} style={t$.draftRow}>
               <View style={[t$.draftAvatar, { backgroundColor: '#FFD700' }]}>
