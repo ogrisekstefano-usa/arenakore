@@ -698,6 +698,8 @@ def user_to_response(user: dict) -> dict:
         "ak_credits": user.get("ak_credits", 0),
         "unlocked_tools": user.get("unlocked_tools", []),
         "total_scans": total_scans,
+        "bmi": user.get("bmi"),
+        "bio_coefficient": user.get("bio_coefficient"),
     }
 
 
