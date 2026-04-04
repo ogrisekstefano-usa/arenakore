@@ -204,7 +204,7 @@ export default function Login() {
           <TouchableOpacity testID="login-register-link" onPress={() => router.replace('/register')} activeOpacity={0.7}>
             <Text style={s$.registerLink}>
               Non hai un account?{' '}
-              <Text style={s$.registerLinkBold}>CREA IL TUO DESTINO</Text>
+              <Text style={s$.registerLinkBold}>COMINCIA LA SFIDA</Text>
             </Text>
           </TouchableOpacity>
         </Animated.View>

@@ -1077,10 +1077,10 @@ function BioScanStatusCard({ user, router }: { user: any; router: any }) {
             if (needsRescan) {
               router.push('/onboarding/step2');
             } else {
-              Share.share({
-                message: `Ecco il mio KORE ID su ARENAKORE. Pensi di potermi battere?\n\nhttps://arenakore.app`,
-                title: 'ARENAKORE — KORE ID',
-              }).catch(() => {});
+              // Open KORE ID modal for snapshot sharing
+              if (typeof (globalThis as any).__openKoreIdModal === 'function') {
+                (globalThis as any).__openKoreIdModal();
+              }
             }
           }}
           activeOpacity={0.85}
@@ -1253,6 +1253,12 @@ export default function KoreTab() {
   const [city, setCity] = useState('MILANO');
   const [rankingRefreshKey, setRankingRefreshKey] = useState(0);
   const [koreIdVisible, setKoreIdVisible] = useState(false);
+
+  // Wire global callback so BioScanStatus SHARE KORE ID opens the modal
+  useEffect(() => {
+    (globalThis as any).__openKoreIdModal = () => setKoreIdVisible(true);
+    return () => { delete (globalThis as any).__openKoreIdModal; };
+  }, []);
 
   // ── MY POSITION HUD state (set by CityRanking via callback)
   const [myHudRank,  setMyHudRank]  = useState<number | null>(null);

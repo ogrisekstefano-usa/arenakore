@@ -162,7 +162,7 @@ const $ = StyleSheet.create({
   },
   centerLabel: {
     color: '#AAAAAA', fontSize: 11, fontWeight: '900',
-    letterSpacing: 2, marginTop: 38,
+    letterSpacing: 2, marginTop: 35,
   },
   nexusWrap: {
     position: 'absolute', top: -28, alignSelf: 'center',

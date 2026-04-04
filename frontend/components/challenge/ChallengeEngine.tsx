@@ -3,7 +3,7 @@
  * Tag Selection → Validation Mode → Manual Entry / Auto / Sensor → Sanity Check → THE VERDICT
  * "Trust Engine" — Biometric Sanity + Verification Badges + Integrity Glow
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView,
   Dimensions, Platform, KeyboardAvoidingView, ActivityIndicator,
@@ -89,6 +89,12 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
   const [manualKg, setManualKg] = useState('');
   const [hasVideoProof, setHasVideoProof] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Manual Mode Timer Lock — athlete must run the timer before entering data
+  const [manualTimerRunning, setManualTimerRunning] = useState(false);
+  const [manualTimerElapsed, setManualTimerElapsed] = useState(0);
+  const [manualTimerCompleted, setManualTimerCompleted] = useState(false);
+  const manualTimerRef = useRef<any>(null);
 
   // Trust Engine state
   const [sanityResult, setSanityResult] = useState<any>(null);
@@ -428,11 +434,37 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
 
   // PHASE 3B: MANUAL ENTRY
   if (phase === 'manual_entry') {
+    // Timer functions
+    const formatTimer = (secs: number) => {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    };
+
+    const toggleTimer = () => {
+      if (manualTimerRunning) {
+        // Stop
+        if (manualTimerRef.current) clearInterval(manualTimerRef.current);
+        setManualTimerRunning(false);
+        if (manualTimerElapsed >= 10) setManualTimerCompleted(true);
+      } else {
+        // Start
+        setManualTimerRunning(true);
+        manualTimerRef.current = setInterval(() => {
+          setManualTimerElapsed(prev => {
+            const next = prev + 1;
+            if (next >= 10 && !manualTimerCompleted) setManualTimerCompleted(true);
+            return next;
+          });
+        }, 1000);
+      }
+    };
+
     return (
       <DarkBase>
         <SafeAreaView style={s.safe}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-            <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
+            <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               <Animated.View entering={FadeIn.duration(400)}>
                 <View style={s.phaseHeader}>
                   <Text style={[s.phaseLabel, { color: dominantColor }]}>03 / 03</Text>
@@ -453,8 +485,43 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
                   </View>
                 </View>
 
-                {/* Input Fields */}
-                <View style={s.inputGroup}>
+                {/* ═══ ARENA TIMER LOCK ═══ */}
+                <View style={[s.timerLock, { borderColor: manualTimerCompleted ? '#00FF87' + '40' : dominantColor + '30' }]}>
+                  <View style={s.timerHeader}>
+                    <Ionicons name="timer-outline" size={18} color={manualTimerCompleted ? '#00FF87' : dominantColor} />
+                    <Text style={[s.timerTitle, { color: manualTimerCompleted ? '#00FF87' : '#FFF' }]}>
+                      {manualTimerCompleted ? 'TIMER COMPLETATO' : 'AVVIA IL TIMER'}
+                    </Text>
+                  </View>
+                  <Text style={[s.timerDisplay, { color: manualTimerRunning ? dominantColor : 'rgba(255,255,255,0.5)' }]}>
+                    {formatTimer(manualTimerElapsed)}
+                  </Text>
+                  {!manualTimerCompleted && (
+                    <Text style={s.timerHint}>
+                      Devi vivere la durata della sfida. Avvia e ferma il timer (min. 10s).
+                    </Text>
+                  )}
+                  <TouchableOpacity
+                    style={[s.timerBtn, manualTimerRunning && { backgroundColor: '#FF3B30' }, manualTimerCompleted && { backgroundColor: '#00FF87' }]}
+                    onPress={toggleTimer}
+                    disabled={manualTimerCompleted}
+                    activeOpacity={0.85}
+                  >
+                    <Ionicons
+                      name={manualTimerCompleted ? 'checkmark' : manualTimerRunning ? 'stop' : 'play'}
+                      size={16}
+                      color={manualTimerCompleted ? '#000' : '#000'}
+                    />
+                    <Text style={s.timerBtnText}>
+                      {manualTimerCompleted ? 'COMPLETATO' : manualTimerRunning ? 'STOP' : 'START'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Input Fields — locked until timer completed */}
+                <View style={[s.inputGroup, !manualTimerCompleted && { opacity: 0.3 }]}
+                  pointerEvents={manualTimerCompleted ? 'auto' : 'none'}
+                >
                   <View style={s.inputRow}>
                     <View style={s.inputWrap}>
                       <Text style={s.inputLabel}>RIPETIZIONI</Text>
@@ -1186,6 +1253,13 @@ const s = StyleSheet.create({
   recommendedText: { fontFamily: FONT_MONT, color: '#000', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
 
   inputGroup: { gap: 16, marginBottom: 20 },
+  timerLock: { marginBottom: 16, padding: 16, borderRadius: 14, borderWidth: 1, backgroundColor: 'rgba(0,0,0,0.3)', gap: 10, alignItems: 'center' as const },
+  timerHeader: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 8 },
+  timerTitle: { fontSize: 13, fontWeight: '800' as const, letterSpacing: 2 },
+  timerDisplay: { fontSize: 48, fontWeight: '900' as const, letterSpacing: 2 },
+  timerHint: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '400' as const, textAlign: 'center' as const, lineHeight: 15 },
+  timerBtn: { flexDirection: 'row' as const, alignItems: 'center' as const, justifyContent: 'center' as const, gap: 8, backgroundColor: '#00E5FF', borderRadius: 10, paddingVertical: 14, width: '100%' as const, marginTop: 4 },
+  timerBtnText: { color: '#000', fontSize: 14, fontWeight: '900' as const, letterSpacing: 2 },
   inputRow: { flexDirection: 'row', gap: 12 },
   inputWrap: { flex: 1, gap: 6 },
   inputLabel: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 0.3 },
