@@ -217,7 +217,7 @@ export default function HeroIndex() {
 
           {/* ── CTA AREA ── */}
           <Animated.View entering={FadeInDown.delay(800)} style={s.ctaArea}>
-            {/* PRIMARY: START NEXUS INITIALIZATION */}
+            {/* PRIMARY (GIALLO): INIZIA LA SFIDA CON NEXUS */}
             <TouchableOpacity
               testID="start-nexus-btn"
               style={s.primaryBtn}
@@ -225,10 +225,10 @@ export default function HeroIndex() {
               activeOpacity={0.85}
             >
               <Ionicons name="scan" size={18} color={BG} />
-              <Text style={s.primaryBtnTxt}>START NEXUS INITIALIZATION</Text>
+              <Text style={s.primaryBtnTxt}>INIZIA LA SFIDA CON NEXUS</Text>
             </TouchableOpacity>
 
-            {/* SECONDARY: RESUME SESSION */}
+            {/* SECONDARY (BLU): KORE, RITORNA NELL'ARENA */}
             <TouchableOpacity
               testID="resume-btn"
               style={s.outlineBtn}
@@ -236,7 +236,7 @@ export default function HeroIndex() {
               activeOpacity={0.8}
             >
               <Ionicons name="log-in-outline" size={16} color={CYAN} />
-              <Text style={s.outlineBtnTxt}>RESUME SESSION</Text>
+              <Text style={s.outlineBtnTxt}>KORE, RITORNA NELL'ARENA</Text>
             </TouchableOpacity>
           </Animated.View>
         </View>
