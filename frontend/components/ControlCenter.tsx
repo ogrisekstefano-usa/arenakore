@@ -68,12 +68,31 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
 
   if (!visible) return null;
 
-  const menuItems: { icon: keyof typeof Ionicons.glyphMap; label: string; sub: string; color: string }[] = [
-    { icon: 'scan',                label: 'BIO-SCAN',      sub: 'Ricalibra sensori',        color: CYAN },
-    { icon: 'settings-sharp',      label: 'SETTINGS',      sub: 'Configurazione NEXUS',     color: WHITE },
-    { icon: 'trophy',              label: 'FOUNDERS CLUB', sub: isFounder ? `Founder #${user?.founder_number || '—'}` : 'Non Founder', color: GOLD },
-    { icon: 'chatbubble-ellipses', label: 'SUPPORTO',      sub: 'Contatta il team',         color: WHITE },
+  const handleNav = (route: string) => { onClose(); router.push(route as any); };
+
+  // ═══ DYNAMIC MENU BY GHOSTING ROLE ═══
+  const menuItems: { icon: keyof typeof Ionicons.glyphMap; label: string; sub: string; color: string; route: string }[] = [
+    { icon: 'settings-sharp', label: 'SETTINGS', sub: 'Profilo · Account · Privacy', color: WHITE, route: '/settings' },
+    { icon: 'trophy', label: 'FOUNDERS CLUB', sub: isFounder ? `Founder #${user?.founder_number || '—'}` : 'Non Founder', color: GOLD, route: '/founders-club' },
+    { icon: 'chatbubble-ellipses', label: 'SUPPORTO', sub: 'support@arenakore.com', color: WHITE, route: '/support' },
   ];
+
+  // Dynamic items based on active ghosting role
+  const roleMenuItems: { icon: keyof typeof Ionicons.glyphMap; label: string; sub: string; color: string; route: string }[] = [];
+  if (activeRole === 'GYM_OWNER') {
+    roleMenuItems.push(
+      { icon: 'people', label: 'GYM HUB', sub: 'Coach & Eventi', color: GOLD, route: '/coach-studio' },
+    );
+  } else if (activeRole === 'COACH') {
+    roleMenuItems.push(
+      { icon: 'clipboard', label: 'COACH HUB', sub: 'Template & Gestione Kore', color: CYAN, route: '/coach-studio/builder' },
+      { icon: 'people', label: 'I MIEI KORE', sub: 'Web-Link Gestione Atleti', color: CYAN, route: '/coach-studio/athletes' },
+    );
+  } else if (activeRole === 'ADMIN') {
+    roleMenuItems.push(
+      { icon: 'shield-checkmark', label: 'ADMIN PANEL', sub: 'Pannello amministrazione', color: '#FF3B30', route: '/coach-studio' },
+    );
+  }
 
   const handleLogout = () => { onClose(); logout(); router.replace('/'); };
 
@@ -111,7 +130,7 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
 
               {/* ── MENU ITEMS ── */}
               {menuItems.map((item, i) => (
-                <TouchableOpacity key={i} style={st.item} activeOpacity={0.75}>
+                <TouchableOpacity key={i} style={st.item} activeOpacity={0.75} onPress={() => handleNav(item.route)}>
                   <View style={[st.iconWrap, { borderColor: item.color + '22' }]}>
                     <Ionicons name={item.icon} size={18} color={item.color} />
                   </View>
@@ -123,21 +142,23 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
                 </TouchableOpacity>
               ))}
 
-              {/* ── GYM HUB (GYM_OWNER only) ── */}
-              {activeRole === 'GYM_OWNER' && (
+              {/* ── ROLE-SPECIFIC MENU (Dynamic Ghosting) ── */}
+              {roleMenuItems.length > 0 && (
                 <View style={st.section}>
                   <View style={st.divider} />
-                  <Text style={st.sectionTitle}>GYM HUB</Text>
-                  <TouchableOpacity style={st.item} activeOpacity={0.75}>
-                    <View style={[st.iconWrap, { borderColor: GOLD + '22' }]}><Ionicons name="people" size={18} color={GOLD} /></View>
-                    <View style={st.itemText}><Text style={st.itemLabel}>GESTIONE COACH</Text><Text style={st.itemSub}>Assegna ruoli e permessi</Text></View>
-                    <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.2)" />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={st.item} activeOpacity={0.75}>
-                    <View style={[st.iconWrap, { borderColor: GOLD + '22' }]}><Ionicons name="calendar" size={18} color={GOLD} /></View>
-                    <View style={st.itemText}><Text style={st.itemLabel}>EVENTI</Text><Text style={st.itemSub}>Calendario e competizioni</Text></View>
-                    <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.2)" />
-                  </TouchableOpacity>
+                  <Text style={st.sectionTitle}>{activeRole === 'GYM_OWNER' ? 'GYM HUB' : activeRole === 'COACH' ? 'COACH HUB' : 'ADMIN'}</Text>
+                  {roleMenuItems.map((item, i) => (
+                    <TouchableOpacity key={i} style={st.item} activeOpacity={0.75} onPress={() => handleNav(item.route)}>
+                      <View style={[st.iconWrap, { borderColor: item.color + '22' }]}>
+                        <Ionicons name={item.icon} size={18} color={item.color} />
+                      </View>
+                      <View style={st.itemText}>
+                        <Text style={st.itemLabel}>{item.label}</Text>
+                        <Text style={st.itemSub}>{item.sub}</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.2)" />
+                    </TouchableOpacity>
+                  ))}
                 </View>
               )}
 
@@ -224,7 +245,7 @@ const st = StyleSheet.create({
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px) saturate(130%)', WebkitBackdropFilter: 'blur(20px) saturate(130%)' } as any : {}),
   },
   panel: { width: SW * 0.78, height: '100%' },
-  panelInner: { flex: 1, paddingTop: 60, borderLeftWidth: 1.5, borderLeftColor: '#00E5FF22' },
+  panelInner: { flex: 1, paddingTop: Platform.OS === 'ios' ? 48 : 28, borderLeftWidth: 1.5, borderLeftColor: '#00E5FF22' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 22, marginBottom: 16 },
   headerLeft: { flex: 1, gap: 2 },
   headerTitle: { color: WHITE, fontSize: 18, fontWeight: '800', letterSpacing: 4 },
