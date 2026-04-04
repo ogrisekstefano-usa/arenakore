@@ -2,7 +2,7 @@
  * AI COACH ASSISTANT — Injury Risk + Performance Forecasting
  */
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Rect } from 'react-native-svg';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -33,6 +33,7 @@ export default function AICoachAssistant() {
   const [data, setData] = useState<any>(null);
   const [tierData, setTierData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [expandedRisk, setExpandedRisk] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) return;
@@ -89,25 +90,54 @@ export default function AICoachAssistant() {
                 <Text style={ai$.emptyText}>Nessun rischio rilevato{'\n'}Parametri nella norma</Text>
               </View>
             ) : risks.map((r: any, i: number) => (
-              <Animated.View key={r.athlete_id} entering={FadeInDown.delay(i * 60).duration(250)} style={ai$.riskRow}>
-                <View style={ai$.riskHeader}>
-                  <Text style={ai$.riskAth}>{r.athlete}</Text>
-                  <View style={[ai$.riskBadge, { backgroundColor: r.color + '20', borderColor: r.color + '50' }]}>
-                    <Text style={[ai$.riskBadgeText, { color: r.color }]}>{r.risk_pct >= 60 ? 'ALTO' : 'MEDIO'}</Text>
+              <Animated.View key={r.athlete_id || i} entering={FadeInDown.delay(i * 60).duration(250)}>
+                <TouchableOpacity
+                  style={[ai$.riskRow, expandedRisk === r.athlete_id && { borderColor: (r.color || '#FF3B30') + '50' }]}
+                  onPress={() => setExpandedRisk(expandedRisk === r.athlete_id ? null : r.athlete_id)}
+                  activeOpacity={0.85}
+                >
+                  <View style={ai$.riskHeader}>
+                    <Text style={ai$.riskAth}>{r.athlete}</Text>
+                    <View style={[ai$.riskBadge, { backgroundColor: r.color + '20', borderColor: r.color + '50' }]}>
+                      <Text style={[ai$.riskBadgeText, { color: r.color }]}>{r.risk_pct >= 60 ? 'ALTO' : 'MEDIO'}</Text>
+                    </View>
                   </View>
-                </View>
-                <RiskBar pct={r.risk_pct} color={r.color} />
-                <View style={ai$.riskDetail}>
-                  <View style={ai$.riskMeta}>
-                    <Ionicons name="arrow-up" size={10} color="#FF3B30" />
-                    <Text style={ai$.riskMetaText}>Overload: {r.overloaded}</Text>
-                  </View>
-                  <View style={ai$.riskMeta}>
-                    <Ionicons name="arrow-down" size={10} color="#FF9500" />
-                    <Text style={ai$.riskMetaText}>Carente: {r.weak_area}</Text>
-                  </View>
-                </View>
-                <Text style={ai$.riskRec}>{r.recommendation}</Text>
+                  <RiskBar pct={r.risk_pct} color={r.color} />
+                  {/* Expanded — InjuryRiskAnalysis detail */}
+                  {expandedRisk === r.athlete_id ? (
+                    <View style={ai$.riskExpanded}>
+                      <View style={ai$.riskDetail}>
+                        <View style={ai$.riskMeta}>
+                          <Ionicons name="arrow-up" size={10} color="#FF3B30" />
+                          <Text style={ai$.riskMetaText}>Overload: {r.overloaded || 'N/A'}</Text>
+                        </View>
+                        <View style={ai$.riskMeta}>
+                          <Ionicons name="arrow-down" size={10} color="#FF9500" />
+                          <Text style={ai$.riskMetaText}>Area Carente: {r.weak_area || 'N/A'}</Text>
+                        </View>
+                      </View>
+                      <Text style={ai$.riskRec}>{r.recommendation || 'Monitorare il carico e bilanciare le sessioni.'}</Text>
+                      <View style={ai$.riskActions}>
+                        <View style={ai$.riskAction}>
+                          <Ionicons name="fitness" size={12} color="#FF9500" />
+                          <Text style={ai$.riskActionText}>Ridurre volume {r.overloaded || 'upper body'} del 30%</Text>
+                        </View>
+                        <View style={ai$.riskAction}>
+                          <Ionicons name="medkit" size={12} color="#00FF87" />
+                          <Text style={ai$.riskActionText}>Sessione recupero consigliata</Text>
+                        </View>
+                      </View>
+                    </View>
+                  ) : (
+                    <View style={ai$.riskDetail}>
+                      <View style={ai$.riskMeta}>
+                        <Ionicons name="arrow-up" size={10} color="#FF3B30" />
+                        <Text style={ai$.riskMetaText}>Overload: {r.overloaded}</Text>
+                      </View>
+                      <Text style={ai$.riskExpandHint}>Tocca per dettagli</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
               </Animated.View>
             ))}
           </View>
@@ -182,15 +212,20 @@ const ai$ = StyleSheet.create({
   secTitle: { color: '#FFF', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
   emptyBlock: { alignItems: 'center', paddingVertical: 30, gap: 12 },
   emptyText: { color: 'rgba(255,255,255,0.25)', fontSize: 14, textAlign: 'center', lineHeight: 18 },
-  riskRow: { backgroundColor: '#111', borderRadius: 10, padding: 12, gap: 8 },
+  riskRow: { backgroundColor: '#111', borderRadius: 10, padding: 12, gap: 8, borderWidth: 1, borderColor: 'transparent', marginBottom: 6 },
   riskHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   riskAth: { flex: 1, color: '#FFF', fontSize: 16, fontWeight: '700' },
   riskBadge: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 },
   riskBadgeText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
-  riskDetail: { flexDirection: 'row', gap: 16 },
+  riskDetail: { flexDirection: 'row', gap: 16, alignItems: 'center' },
   riskMeta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   riskMetaText: { color: '#AAAAAA', fontSize: 13 },
-  riskRec: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '300', lineHeight: 16, borderTopWidth: 1, borderTopColor: '#1E1E1E', paddingTop: 8 },
+  riskExpandHint: { color: 'rgba(0,229,255,0.35)', fontSize: 11, fontWeight: '700', letterSpacing: 1, marginLeft: 'auto' },
+  riskExpanded: { gap: 8, borderTopWidth: 1, borderTopColor: '#1E1E1E', paddingTop: 8, marginTop: 4 },
+  riskRec: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '300', lineHeight: 17 },
+  riskActions: { gap: 6 },
+  riskAction: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
+  riskActionText: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '600' },
   forecastRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#111' },
   forecastLeft: { flex: 1, gap: 3 },
   trendRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },

@@ -257,7 +257,7 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
     title: 'RISCATTA REWARD',
     subtitle: 'Badge eksklusivi · Medaglie KORE disponibili',
     cta: 'RISCATTA', ctaColor: '#AF52DE',
-    action: () => onNavigate('/(tabs)/kore'),
+    action: () => onNavigate('/reward-store'),
   });
 
   // 6. PUSH TO COACH
@@ -269,7 +269,7 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
       : 'Unisciti a una Crew con un Coach KORE',
     cta: myCrews && myCrews.length > 0 ? 'INVIA DATI' : 'TROVA CREW',
     ctaColor: '#00FF87',
-    action: () => onNavigate('/(tabs)/kore'),
+    action: () => onNavigate('/coach-connect'),
   });
 
   if (cards.length === 0) return null;
@@ -1533,20 +1533,26 @@ export default function NexusTriggerScreen() {
   const isVoiceActive = ['body_lock', 'countdown', 'scanning', 'tilt_setup', 'bioscan'].includes(phase);
   const bodyLockedRef = useRef(false); // Track body lock state for voice "VIA"
   const [bodyLockedUI, setBodyLockedUI] = useState(false); // Re-render trigger for "Dì VIA" prompt
+  const [isProntoConfirmed, setIsProntoConfirmed] = useState(false); // "PRONTO" gate before "VIA"
 
   const handleVoiceCommand = useCallback((cmd: 'PRONTO' | 'VIA' | 'ESCI' | null) => {
     if (!cmd) return;
     switch (cmd) {
       case 'PRONTO':
-        // Activate scanner — if in console, start bioscan
+        // If in console → start bioscan
         if (phase === 'console') {
           setSessionMode('scan');
           setPhase('bioscan');
         }
+        // If body_lock and body is locked → confirm readiness
+        if (phase === 'body_lock' && bodyLockedRef.current) {
+          setIsProntoConfirmed(true);
+          speakCoach("Pronto confermato. Dì VIA per partire.", 'it-IT');
+        }
         break;
       case 'VIA':
-        // Start countdown — ONLY if body locked
-        if (phase === 'body_lock' && bodyLockedRef.current) {
+        // Start countdown — ONLY if body locked AND "PRONTO" was confirmed
+        if (phase === 'body_lock' && bodyLockedRef.current && isProntoConfirmed) {
           setPhase('countdown');
         }
         break;
@@ -1555,7 +1561,7 @@ export default function NexusTriggerScreen() {
         handleEmergencyExit();
         break;
     }
-  }, [phase]);
+  }, [phase, isProntoConfirmed]);
 
   const { isListening } = useVoiceCommands({
     enabled: isVoiceActive,
@@ -1579,6 +1585,7 @@ export default function NexusTriggerScreen() {
     setIsVictory(false);
     bodyLockedRef.current = false;
     setBodyLockedUI(false);
+    setIsProntoConfirmed(false);
   }, []);
 
   useEffect(() => { const dp = profileDevice(); setDeviceTier(dp.tier); }, []);
@@ -1808,34 +1815,12 @@ export default function NexusTriggerScreen() {
         setPhase('challenge_engine');
         break;
       case 'duel':
-        // Navigate to Arena tab for PvP duels
-        router.push('/(tabs)/arena');
+        // Navigate to Duel Search screen
+        router.push('/duel-search');
         break;
       case 'live':
-        // Create a QR Challenge and enter Post-Race Validation
-        (async () => {
-          try {
-            if (!token) return;
-            const res = await api.qrCreateChallenge({
-              title: 'LIVE ARENA CHALLENGE',
-              exercise_type: exercise,
-              tags: ['POWER'],
-              challenge_type: 'CLOSED_LIVE',
-              total_participants: 3,
-            }, token);
-            setQrContext({
-              challengeId: res.challenge_id,
-              score: { reps: 15, seconds: 45, kg: 0 }, // Default demo score
-              totalParticipants: res.total_participants,
-              tags: ['POWER'],
-              challengeType: 'CLOSED_LIVE',
-            });
-            setPhase('qr_validation');
-          } catch (err) {
-            console.error('QR challenge create failed:', err);
-            setPhase('live_queue'); // fallback
-          }
-        })();
+        // Navigate to Live Events screen
+        router.push('/live-events');
         break;
       default:
         break;
@@ -1932,8 +1917,20 @@ export default function NexusTriggerScreen() {
         />
         <ExitButton onExit={handleEmergencyExit} />
 
-        {/* ═══ "Dì VIA" prompt — appears ONLY after biometric lock ═══ */}
-        {bodyLockedUI && (
+        {/* ═══ Voice prompt — 2-step: "PRONTO" → "VIA" ═══ */}
+        {bodyLockedUI && !isProntoConfirmed && (
+          <View style={main$.voicePrompt}>
+            <TouchableOpacity
+              style={[main$.voicePromptBox, { borderColor: 'rgba(255,165,0,0.35)', backgroundColor: 'rgba(255,165,0,0.08)' }]}
+              onPress={() => { setIsProntoConfirmed(true); speakCoach("Pronto confermato. Dì VIA per partire.", 'it-IT'); }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="mic" size={20} color="#FF9500" />
+              <Text style={[main$.voicePromptText, { color: '#FF9500' }]}>DÌ "PRONTO" O TOCCA</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        {bodyLockedUI && isProntoConfirmed && (
           <View style={main$.voicePrompt}>
             <TouchableOpacity
               style={main$.voicePromptBox}

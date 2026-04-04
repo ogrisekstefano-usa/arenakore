@@ -9192,6 +9192,123 @@ async def submit_hub_request(body: dict):
     }
 
 
+
+# ═══════════════════════════════════════════════
+# SOCIAL ENGINE — Duel Search + Live Events
+# ═══════════════════════════════════════════════
+
+@api_router.get("/duel/search")
+async def duel_search(
+    q: str = "",
+    city: str = "",
+    discipline: str = "",
+    status: str = "",
+    current_user: dict = Depends(get_current_user),
+):
+    """Search for Kore opponents for 1vs1 duels."""
+    query: dict = {"role": "ATHLETE"}
+    # Exclude self
+    query["_id"] = {"$ne": current_user["_id"]}
+    if q:
+        query["username"] = {"$regex": q, "$options": "i"}
+    if city:
+        query["city"] = {"$regex": city, "$options": "i"}
+    athletes = await db.users.find(query).limit(20).to_list(20)
+    results = []
+    for a in athletes:
+        results.append({
+            "id": str(a["_id"]),
+            "username": a.get("username", "Kore"),
+            "city": a.get("city", ""),
+            "flux": a.get("flux", a.get("ak_credits", 0)),
+            "level": 1 + a.get("flux", a.get("ak_credits", 0)) // 200,
+            "avatar_color": a.get("avatar_color", "#00E5FF"),
+        })
+    return {"results": results, "total": len(results)}
+
+
+@api_router.get("/live-events")
+async def list_live_events(current_user: dict = Depends(get_current_user)):
+    """List all upcoming/active live events."""
+    events = await db.community_events.find(
+        {"status": {"$in": ["scheduled", "active"]}}
+    ).sort("created_at", -1).limit(30).to_list(30)
+    result = []
+    for ev in events:
+        result.append({
+            "id": str(ev["_id"]),
+            "title": ev.get("title", "Live Event"),
+            "exercise_type": ev.get("exercise_type", "squat"),
+            "max_participants": ev.get("max_participants", 8),
+            "participants": ev.get("participants", []),
+            "scheduled_time": ev.get("scheduled_time", "Tra poco"),
+            "creator_id": str(ev.get("creator_id", "")),
+            "creator_name": ev.get("creator_name", "Organizzatore"),
+            "status": ev.get("status", "scheduled"),
+        })
+    return {"events": result}
+
+
+@api_router.post("/live-events/create")
+async def create_live_event(body: dict = Body(...), current_user: dict = Depends(get_current_user)):
+    """Create a new community live event."""
+    title = body.get("title", "").strip()
+    if not title:
+        raise HTTPException(400, "Titolo richiesto")
+    from datetime import timedelta
+    scheduled_in = int(body.get("scheduled_in_minutes", 30))
+    event = {
+        "title": title,
+        "exercise_type": body.get("exercise_type", "squat"),
+        "max_participants": min(int(body.get("max_participants", 8)), 50),
+        "participants": [str(current_user["_id"])],
+        "creator_id": current_user["_id"],
+        "creator_name": current_user.get("username", "Kore"),
+        "scheduled_time": (datetime.now(timezone.utc) + timedelta(minutes=scheduled_in)).isoformat(),
+        "status": "scheduled",
+        "created_at": datetime.now(timezone.utc),
+    }
+    res = await db.community_events.insert_one(event)
+    return {"id": str(res.inserted_id), "status": "created"}
+
+
+@api_router.post("/live-events/{event_id}/join")
+async def join_live_event(event_id: str, current_user: dict = Depends(get_current_user)):
+    """Join an existing live event."""
+    from bson import ObjectId
+    try:
+        oid = ObjectId(event_id)
+    except Exception:
+        raise HTTPException(400, "ID evento non valido")
+    ev = await db.community_events.find_one({"_id": oid})
+    if not ev:
+        raise HTTPException(404, "Evento non trovato")
+    participants = ev.get("participants", [])
+    uid = str(current_user["_id"])
+    if uid in participants:
+        raise HTTPException(400, "Sei già iscritto")
+    if len(participants) >= ev.get("max_participants", 8):
+        raise HTTPException(400, "Evento al completo")
+    await db.community_events.update_one({"_id": oid}, {"$push": {"participants": uid}})
+    return {"status": "joined"}
+
+
+@api_router.post("/coach/receive-bio")
+async def receive_bio_signature(body: dict = Body(...), current_user: dict = Depends(get_current_user)):
+    """Athlete sends bio-signature to coach via crew."""
+    crew_id = body.get("crew_id", "")
+    await db.bio_signatures.update_one(
+        {"athlete_id": current_user["_id"], "crew_id": crew_id},
+        {"$set": {
+            "dna": current_user.get("dna", {}),
+            "flux": current_user.get("flux", current_user.get("ak_credits", 0)),
+            "updated_at": datetime.now(timezone.utc),
+        }},
+        upsert=True,
+    )
+    return {"status": "sent"}
+
+
 # Register all routes (must be AFTER all @api_router decorators)
 app.include_router(api_router)
 

@@ -161,30 +161,35 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
   const handleTagConfirm = () => {
     if (selectedTags.length === 0) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    setValidationMode(null); // Reset — force manual selection
     setPhase('validation');
   };
 
   // ═══ VALIDATION MODE SELECTION ═══
-  const handleModeSelect = async (mode: ValidationMode) => {
-    if (!token) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+  const handleModeHighlight = (mode: ValidationMode) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     setValidationMode(mode);
+  };
+
+  const handleModeConfirm = async () => {
+    if (!validationMode || !token) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
 
     try {
       const res = await api.createChallenge({
         title: `${selectedTags.join(' · ')} ${exerciseType.toUpperCase()}`,
         exercise_type: exerciseType,
         tags: selectedTags,
-        validation_mode: mode,
+        validation_mode: validationMode,
         mode: sessionMode,
       }, token);
       setChallengeId(res.challenge_id);
 
-      if (mode === 'AUTO_COUNT') {
+      if (validationMode === 'AUTO_COUNT') {
         onAutoScan(res.challenge_id, selectedTags, dominantColor);
-      } else if (mode === 'MANUAL_ENTRY') {
+      } else if (validationMode === 'MANUAL_ENTRY') {
         setPhase('manual_entry');
-      } else if (mode === 'SENSOR_IMPORT') {
+      } else if (validationMode === 'SENSOR_IMPORT') {
         setPhase('sensor_mock');
       }
     } catch (err) {
@@ -366,30 +371,50 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
               {(Object.keys(MODE_CONFIG) as ValidationMode[]).map(mode => {
                 const cfg = MODE_CONFIG[mode];
                 const isAuto = mode === 'AUTO_COUNT';
+                const isSelected = validationMode === mode;
                 return (
                   <TouchableOpacity
                     key={mode}
-                    style={[s.modeCard, isAuto && { borderColor: dominantColor }]}
-                    onPress={() => handleModeSelect(mode)}
+                    style={[
+                      s.modeCard,
+                      isSelected && { borderColor: dominantColor, backgroundColor: dominantColor + '08' },
+                    ]}
+                    onPress={() => handleModeHighlight(mode)}
                     activeOpacity={0.82}
                   >
-                    <View style={[s.modeIconWrap, { backgroundColor: (isAuto ? dominantColor : '#555') + '15' }]}>
-                      <Ionicons name={cfg.icon as any} size={24} color={isAuto ? dominantColor : '#888'} />
+                    <View style={[s.modeIconWrap, { backgroundColor: (isSelected ? dominantColor : '#555') + '15' }]}>
+                      <Ionicons name={cfg.icon as any} size={24} color={isSelected ? dominantColor : '#888'} />
                     </View>
                     <View style={s.modeContent}>
-                      <Text style={[s.modeTitle, isAuto && { color: dominantColor }]}>{cfg.title}</Text>
+                      <Text style={[s.modeTitle, isSelected && { color: dominantColor }]}>{cfg.title}</Text>
                       <Text style={s.modeSub}>{cfg.sub}</Text>
                     </View>
-                    <View style={[s.modeBadge, { borderColor: isAuto ? dominantColor : '#444' }]}>
-                      <Text style={[s.modeBadgeText, { color: isAuto ? dominantColor : '#888' }]}>{cfg.badge}</Text>
+                    <View style={[s.modeBadge, { borderColor: isSelected ? dominantColor : '#444' }]}>
+                      <Text style={[s.modeBadgeText, { color: isSelected ? dominantColor : '#888' }]}>{cfg.badge}</Text>
                     </View>
-                    {isAuto && <View style={[s.recommended, { backgroundColor: dominantColor }]}>
+                    {isSelected && (
+                      <View style={[s.tagCheck, { backgroundColor: dominantColor }]}>
+                        <Ionicons name="checkmark" size={14} color="#000" />
+                      </View>
+                    )}
+                    {isAuto && !isSelected && <View style={[s.recommended, { backgroundColor: '#333' }]}>
                       <Text style={s.recommendedText}>CONSIGLIATO</Text>
                     </View>}
                   </TouchableOpacity>
                 );
               })}
             </View>
+
+            {/* CONTINUA button — only appears after manual selection */}
+            <TouchableOpacity
+              style={[s.primaryBtn, { backgroundColor: validationMode ? dominantColor : '#333', opacity: validationMode ? 1 : 0.4 }]}
+              onPress={handleModeConfirm}
+              disabled={!validationMode}
+              activeOpacity={0.85}
+            >
+              <Text style={s.primaryBtnText}>CONTINUA</Text>
+              <Ionicons name="arrow-forward" size={18} color="#000" />
+            </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setPhase('tags')} style={s.backBtn}>
               <Ionicons name="arrow-back" size={14} color="#555" />

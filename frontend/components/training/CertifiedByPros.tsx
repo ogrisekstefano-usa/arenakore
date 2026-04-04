@@ -77,6 +77,7 @@ export function CertifiedByPros() {
     router.push({
       pathname: '/(tabs)/nexus-trigger',
       params: {
+        trainingPushId: t.id || 'coach_template',
         trainingExercise: t.exercise,
         trainingTargetReps: String(t.target_reps),
         trainingTargetTime: String(t.target_time),
