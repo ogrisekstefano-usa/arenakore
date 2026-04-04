@@ -18,17 +18,11 @@ import Animated, {
 import QRCode from 'react-native-qrcode-svg';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
-import { Header } from '../../components/Header';
-import { KoreVault, AKBadge } from '../../components/KoreVault';
-import { AKDropsWallet, CertBadge } from '../../components/CertBadge';
-import { ValidationBreakdown } from '../../components/challenge/ValidationBreakdown';
 import { KoreIDModal } from '../../components/KoreIDModal';
+import { ControlCenter } from '../../components/ControlCenter';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { ImageBackground } from 'react-native';
-import { TAB_BACKGROUNDS } from '../../utils/images';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SW } = Dimensions.get('window');
 
@@ -1241,185 +1235,193 @@ function GoalsSection({ user }: { user: any }) {
   );
 }
 
-// ========== MAIN KORE TAB ==========
+// ========== MAIN KORE TAB — "THE ENTRY GATE" ==========
 export default function KoreTab() {
   const { user, token, refreshUser } = useAuth();
   const router = useRouter();
-  const [rankData, setRankData] = useState<any>(null);
-  const [affiliData, setAffiliData] = useState<any>(null);
-  const [actionData, setActionData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [city, setCity] = useState('MILANO');
-  const [rankingRefreshKey, setRankingRefreshKey] = useState(0);
   const [koreIdVisible, setKoreIdVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
-  // Wire global callback so BioScanStatus SHARE KORE ID opens the modal
+  // Wire global callback for KORE ID modal
   useEffect(() => {
     (globalThis as any).__openKoreIdModal = () => setKoreIdVisible(true);
     return () => { delete (globalThis as any).__openKoreIdModal; };
   }, []);
 
-  // ── MY POSITION HUD state (set by CityRanking via callback)
-  const [myHudRank,  setMyHudRank]  = useState<number | null>(null);
-  const [myHudScore, setMyHudScore] = useState<number | null>(null);
-  const [myHudCity,  setMyHudCity]  = useState<string>('CHICAGO');
+  const flux = user?.flux ?? user?.xp ?? 0;
+  const firstName = user?.first_name || user?.username || 'Kore';
+  const level = user?.level || 1;
 
-  const insets = useSafeAreaInsets();
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try { if (refreshUser) await refreshUser(); } catch (_) {}
+    finally { setRefreshing(false); }
+  }, [refreshUser]);
 
-  const loadData = useCallback(async () => {
-    if (!token) return;
-    try {
-      const [rank, affili, action] = await Promise.all([
-        api.getCityRank(city, token).catch(() => null),
-        api.getAffiliations(token).catch(() => null),
-        api.getActionCenter(token).catch(() => null),
-      ]);
-      setRankData(rank);
-      setAffiliData(affili);
-      setActionData(action);
-    } catch (_e) { /* silently handle */ }
-    finally { setLoading(false); setRefreshing(false); }
-  }, [token, city]);
-
-  useEffect(() => { loadData(); }, [loadData]);
-
-  // ── Real-time refresh on tab focus (triggers CityRanking reload after scan)
-  useFocusEffect(
-    useCallback(() => {
-      setRankingRefreshKey(k => k + 1);
-    }, [])
-  );
-
-  const handleCitySelect = (newCity: string) => {
-    setCity(newCity);
-    // Rank will auto-reload because city is in loadData dependency
-  };
+  // ═══ 4 MACRO ACTIONS ═══
+  const ACTIONS = [
+    {
+      key: 'sfida',
+      icon: 'flash' as const,
+      label: 'SFIDA IMMEDIATA',
+      sub: 'Vai diretto in Arena',
+      color: '#FF3B30',
+      bg: 'rgba(255,59,48,0.06)',
+      border: 'rgba(255,59,48,0.15)',
+      onPress: () => router.push('/(tabs)/nexus-trigger'),
+    },
+    {
+      key: 'koreid',
+      icon: 'qr-code' as const,
+      label: 'IL TUO KORE ID',
+      sub: 'Identità · DNA · QR',
+      color: '#00E5FF',
+      bg: 'rgba(0,229,255,0.06)',
+      border: 'rgba(0,229,255,0.15)',
+      onPress: () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); setKoreIdVisible(true); },
+    },
+    {
+      key: 'arena',
+      icon: 'people' as const,
+      label: 'ARENA LIVE',
+      sub: 'Eventi · Duelli · Community',
+      color: '#FFD700',
+      bg: 'rgba(255,215,0,0.06)',
+      border: 'rgba(255,215,0,0.15)',
+      onPress: () => router.push('/live-events'),
+    },
+    {
+      key: 'programmi',
+      icon: 'barbell' as const,
+      label: 'SCOPRI PROGRAMMI',
+      sub: 'Template · Allenamenti',
+      color: '#00FF87',
+      bg: 'rgba(0,255,135,0.06)',
+      border: 'rgba(0,255,135,0.15)',
+      onPress: () => router.push('/reward-store'),
+    },
+  ];
 
   return (
-    <ImageBackground source={{ uri: TAB_BACKGROUNDS.kore }} style={s.container} imageStyle={{ opacity: 0.10, resizeMode: 'cover' }}>
+    <View style={s.container}>
       <StatusBar barStyle="light-content" />
-      <Header title="KORE" />
-      {loading ? (
-        <View style={s.center}><ActivityIndicator color="#00E5FF" size="large" /></View>
-      ) : (
-        <>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); setRankingRefreshKey(k => k + 1); }} tintColor="#00E5FF" />}
-            contentContainerStyle={{ paddingBottom: myHudRank && myHudRank > 10 ? 130 : 100 }}
-          >
-            {/* 1. KORE ID CARD */}
-            <PassportHeader user={user} />
 
-            {/* KORE ID — Visualizza il tuo QR Code identificativo */}
-            <Animated.View entering={FadeInDown.delay(50)} style={kid$.wrap}>
+      {/* ═══ MINIMAL HEADER ═══ */}
+      <View style={[wh$.header, { paddingTop: insets.top + 8 }]}>
+        <View style={wh$.headerLeft}>
+          <Text style={wh$.greeting} numberOfLines={1}>
+            Ciao <Text style={wh$.greetingName}>{firstName}</Text>,
+          </Text>
+          <Text style={wh$.greetingSub}>la tua Arena ti aspetta.</Text>
+        </View>
+        <View style={wh$.headerRight}>
+          <View style={wh$.fluxBadge}>
+            <Ionicons name="flash" size={12} color="#FFD700" />
+            <Text style={wh$.fluxText}>{flux.toLocaleString()}</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => {
+              const h = require('../../components/Header');
+              // Use the Header's menu open logic — trigger via global
+              if (typeof (globalThis as any).__openControlCenter === 'function') {
+                (globalThis as any).__openControlCenter();
+              }
+            }}
+            style={wh$.menuBtn}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="ellipsis-horizontal" size={20} color="rgba(255,255,255,0.5)" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#00E5FF" />}
+        contentContainerStyle={wh$.scroll}
+      >
+        {/* ═══ LEVEL BADGE ═══ */}
+        <Animated.View entering={FadeInDown.delay(100)} style={wh$.levelRow}>
+          <View style={wh$.levelBadge}>
+            <Text style={wh$.levelVal}>LVL {level}</Text>
+          </View>
+          {user?.is_nexus_certified && (
+            <View style={wh$.certChip}>
+              <Ionicons name="shield-checkmark" size={10} color="#00FF87" />
+              <Text style={wh$.certText}>NEXUS</Text>
+            </View>
+          )}
+          {(user?.is_founder || user?.is_admin) && (
+            <View style={wh$.founderChip}>
+              <Ionicons name="star" size={10} color="#FFD700" />
+              <Text style={wh$.founderText}>FOUNDER</Text>
+            </View>
+          )}
+        </Animated.View>
+
+        {/* ═══ 4 MACRO ACTIONS ═══ */}
+        <View style={wh$.grid}>
+          {ACTIONS.map((a, i) => (
+            <Animated.View key={a.key} entering={FadeInDown.delay(150 + i * 80)} style={wh$.cardWrap}>
               <TouchableOpacity
-                style={kid$.btn}
-                onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); setKoreIdVisible(true); }}
+                style={[wh$.card, { backgroundColor: a.bg, borderColor: a.border }]}
+                onPress={a.onPress}
                 activeOpacity={0.85}
               >
-                <View style={kid$.iconBox}>
-                  <Ionicons name="qr-code" size={16} color="#00E5FF" />
+                <View style={[wh$.cardIcon, { backgroundColor: a.color + '15' }]}>
+                  <Ionicons name={a.icon} size={24} color={a.color} />
                 </View>
-                <View style={kid$.txtBox}>
-                  <Text style={kid$.btnLabel}>VISUALIZZA KORE ID</Text>
-                  <Text style={kid$.btnSub}>QR Code · Identità · Rank</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={14} color="rgba(0,229,255,0.4)" />
+                <Text style={[wh$.cardLabel, { color: a.color }]}>{a.label}</Text>
+                <Text style={wh$.cardSub}>{a.sub}</Text>
               </TouchableOpacity>
             </Animated.View>
+          ))}
+        </View>
 
-            {/* BIO-SCAN STATUS */}
-          <BioScanStatusCard user={user} router={router} />
+        {/* ═══ QUICK STATS (minimal) ═══ */}
+        <Animated.View entering={FadeInDown.delay(500)} style={wh$.statsCard}>
+          <View style={wh$.statItem}>
+            <Text style={wh$.statVal}>{user?.total_scans || 0}</Text>
+            <Text style={wh$.statLabel}>SCANS</Text>
+          </View>
+          <View style={wh$.statDivider} />
+          <View style={wh$.statItem}>
+            <Text style={[wh$.statVal, { color: '#FFD700' }]}>{flux.toLocaleString()}</Text>
+            <Text style={wh$.statLabel}>FLUX</Text>
+          </View>
+          <View style={wh$.statDivider} />
+          <View style={wh$.statItem}>
+            <Text style={wh$.statVal}>LVL {level}</Text>
+            <Text style={wh$.statLabel}>LIVELLO</Text>
+          </View>
+        </Animated.View>
 
-          {/* GOALS */}
-          <GoalsSection user={user} />
-          {/* FLUX Wallet — locked for Fast Entry */}
-          <AKDropsWallet user={user} />
-          {/* OFFERTE SCOUT — incoming draft invitations */}
-          <OfferteScout token={token} refreshUser={refreshUser} />
-          {/* Scout Visibility Toggle */}
-          <ScoutVisibilityToggle user={user} token={token} refreshUser={refreshUser} />
-          <KoreVault />
+        {/* ═══ QUICK LINKS ═══ */}
+        <Animated.View entering={FadeInDown.delay(600)} style={wh$.linksSection}>
+          <TouchableOpacity style={wh$.linkRow} onPress={() => router.push('/(tabs)/dna')} activeOpacity={0.7}>
+            <Ionicons name="analytics" size={16} color="#00E5FF" />
+            <Text style={wh$.linkText}>DNA PROFILE</Text>
+            <Ionicons name="chevron-forward" size={14} color="rgba(0,229,255,0.3)" />
+          </TouchableOpacity>
+          <TouchableOpacity style={wh$.linkRow} onPress={() => router.push('/settings/health-hub')} activeOpacity={0.7}>
+            <Ionicons name="pulse" size={16} color="#FF9500" />
+            <Text style={[wh$.linkText, { color: '#FF9500' }]}>HEALTH HUB</Text>
+            <Ionicons name="chevron-forward" size={14} color="rgba(255,149,0,0.3)" />
+          </TouchableOpacity>
+          <TouchableOpacity style={wh$.linkRow} onPress={() => router.push('/(tabs)/hall')} activeOpacity={0.7}>
+            <Ionicons name="trophy" size={16} color="#FFD700" />
+            <Text style={[wh$.linkText, { color: '#FFD700' }]}>CLASSIFICHE</Text>
+            <Ionicons name="chevron-forward" size={14} color="rgba(255,215,0,0.3)" />
+          </TouchableOpacity>
+        </Animated.View>
 
-          {/* 2. RANK INFOGRAPHIC */}
-            <RankInfographic rankData={rankData} city={city} onCitySelect={handleCitySelect} />
+        <View style={{ height: 40 }} />
+      </ScrollView>
 
-            {/* 3. CITY RANKING — Real-Time KORE_SCORE */}
-            {token && (
-              <CityRanking
-                token={token}
-                refreshKey={rankingRefreshKey}
-                onRankUpdate={(rank, score, c) => {
-                  setMyHudRank(rank);
-                  setMyHudScore(score);
-                  setMyHudCity(c);
-                }}
-              />
-            )}
-
-            {/* 4. AFFILIATIONS */}
-            <Affiliations affiliData={affiliData} token={token || ''} onRefresh={loadData} />
-
-            {/* 5. ACTION CENTER */}
-            <ActionCenter actionData={actionData} />
-
-            {/* 6. KORE CARD + WALLET */}
-            <KoreCard user={user} rankData={rankData} />
-
-            {/* 6.5 TRUST BREAKDOWN — Validation Methods */}
-            <ValidationBreakdown />
-
-            {/* 6.7 HEALTH HUB — External Connectivity */}
-            <Animated.View entering={FadeInDown.delay(450)} style={ps$.wrap}>
-              <TouchableOpacity style={[ps$.btn, { borderColor: 'rgba(255,149,0,0.15)' }]} onPress={() => router.push('/settings/health-hub')} activeOpacity={0.8}>
-                <Ionicons name="pulse" size={14} color="#FF9500" />
-                <Text style={[ps$.txt, { color: '#FF9500' }]}>HEALTH HUB</Text>
-                <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '600', flex: 1 }}>Dispositivi e servizi</Text>
-                <Ionicons name="chevron-forward" size={12} color="rgba(255,149,0,0.4)" />
-              </TouchableOpacity>
-            </Animated.View>
-
-            {/* 7. PRIVACY SHIELD */}
-            <Animated.View entering={FadeInDown.delay(500)} style={ps$.wrap}>
-              <TouchableOpacity style={ps$.btn} onPress={() => router.push('/settings/shield')} activeOpacity={0.8}>
-                <Ionicons name="shield-checkmark" size={14} color="#00E5FF" />
-                <Text style={ps$.txt}>PRIVACY SHIELD</Text>
-                <Ionicons name="chevron-forward" size={12} color="rgba(0,229,255,0.4)" />
-              </TouchableOpacity>
-            </Animated.View>
-
-            {/* 8. FLUX PROGRESS */}
-            <XpProgress user={user} />
-          </ScrollView>
-
-          {/* ── MY POSITION HUD: fixed bottom bar when outside top 10 ── */}
-          {myHudRank !== null && myHudRank > 10 && (
-            <Animated.View
-              entering={FadeInDown.duration(400)}
-              style={[hud$.bar, { paddingBottom: insets.bottom + 8 }]}
-            >
-              <View style={hud$.inner}>
-                <View style={hud$.col}>
-                  <Ionicons name="location" size={10} color="#00E5FF" />
-                  <Text style={hud$.city}>{myHudCity}</Text>
-                </View>
-                <View style={[hud$.col, { flex: 1 }]}>
-                  <Text style={hud$.label}>LA TUA POSIZIONE</Text>
-                  <Text style={hud$.rank}>#{myHudRank} <Text style={hud$.rankSub}>— SCORE: {myHudScore}</Text></Text>
-                </View>
-                <View style={hud$.col}>
-                  <Text style={hud$.hint}>FATTI UNO{'\n'}SCAN</Text>
-                  <Ionicons name="arrow-up-circle" size={16} color="#FFD700" />
-                </View>
-              </View>
-            </Animated.View>
-          )}
-        </>
-      )}
       <KoreIDModal visible={koreIdVisible} onClose={() => setKoreIdVisible(false)} />
-    </ImageBackground>  );
+    </View>
+  );
 }
 
 const s = StyleSheet.create({
@@ -1427,72 +1429,71 @@ const s = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });
 
-// Privacy Shield link styles
-const ps$ = StyleSheet.create({
-  wrap: { marginHorizontal: 24, marginBottom: 8 },
-  btn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'transparent', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  txt: { flex: 1, color: 'rgba(0,229,255,0.7)', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
-});
-
-// MY POSITION HUD — fixed bottom bar
-const hud$ = StyleSheet.create({
-  bar: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: 'rgba(5,5,5,0.96)',
-    borderTopWidth: 1.5, borderTopColor: 'rgba(0,229,255,0.2)',
-    paddingTop: 12, paddingHorizontal: 24,
-    shadowColor: '#00E5FF',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 20,
+// ═══ WELCOME DASHBOARD STYLES ═══
+const wh$ = StyleSheet.create({
+  // Header
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingBottom: 12,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
   },
-  inner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  col: { alignItems: 'center', gap: 2 },
-  city: { color: '#00E5FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-  label: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-  rank: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
-  rankSub: { color: '#00E5FF22', fontSize: 14, fontWeight: '700' },
-  score: { color: '#FFD700', fontSize: 18, fontWeight: '900' },
-  hint: { color: 'rgba(255,215,0,0.5)', fontSize: 10, fontWeight: '800', letterSpacing: 1, textAlign: 'center' },
-});
-
-const bsc$ = StyleSheet.create({
-  card: { marginHorizontal: 24, marginBottom: 10, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  info: { flex: 1, gap: 3 },
-  label: { color: '#AAAAAA', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  status: { color: '#00E5FF', fontSize: 15, fontWeight: '700' },
-  btn: { backgroundColor: '#00E5FF', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9 },
-  btnRed: { backgroundColor: '#FF3B30' },
-  btnText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
-});
-
-const goals$ = StyleSheet.create({
-  card: { marginHorizontal: 24, marginBottom: 10, backgroundColor: 'rgba(255,215,0,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)' },
-  title: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '900', letterSpacing: 4, marginBottom: 14 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  badge: { flex: 1, minWidth: '44%', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
-  badgeDone: { borderColor: 'rgba(255,215,0,0.15)', backgroundColor: 'rgba(255,215,0,0.04)' },
-  badgeLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '900', letterSpacing: 1.5, textAlign: 'center' },
-  badgePct: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '300', letterSpacing: 1 },
-});
-
-
-// KORE ID Button styles
-const kid$ = StyleSheet.create({
-  wrap: { marginHorizontal: 24, marginBottom: 8 },
-  btn: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(0,229,255,0.04)', borderRadius: 14,
-    padding: 14, borderWidth: 1.5, borderColor: 'rgba(0,229,255,0.15)',
+  headerLeft: { flex: 1, gap: 1 },
+  greeting: { color: 'rgba(255,255,255,0.5)', fontSize: 16, fontWeight: '500' },
+  greetingName: { color: '#FFF', fontWeight: '800' },
+  greetingSub: { color: 'rgba(255,255,255,0.25)', fontSize: 13, fontWeight: '400' },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  fluxBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 6,
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)',
   },
-  iconBox: {
-    width: 38, height: 38, borderRadius: 10,
-    backgroundColor: 'rgba(0,229,255,0.08)',
+  fluxText: { color: '#FFD700', fontSize: 14, fontWeight: '900' },
+  menuBtn: {
+    width: 38, height: 38, borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.04)',
     alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
   },
-  txtBox: { flex: 1, gap: 2 },
-  btnLabel: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
-  btnSub: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '500', letterSpacing: 0.5 },
+  scroll: { paddingHorizontal: 20, paddingTop: 16 },
+  // Level
+  levelRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 20 },
+  levelBadge: { backgroundColor: 'rgba(0,229,255,0.08)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)' },
+  levelVal: { color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  certChip: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(0,255,135,0.06)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(0,255,135,0.15)' },
+  certText: { color: '#00FF87', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  founderChip: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)' },
+  founderText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  // Grid
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },
+  cardWrap: { width: (SW - 52) / 2 },
+  card: {
+    borderRadius: 16, padding: 16, borderWidth: 1.5,
+    minHeight: 140, justifyContent: 'space-between',
+  },
+  cardIcon: {
+    width: 48, height: 48, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 12,
+  },
+  cardLabel: { fontSize: 14, fontWeight: '900', letterSpacing: 0.5, marginBottom: 2 },
+  cardSub: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '500' },
+  // Stats
+  statsCard: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
+    backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 14,
+    paddingVertical: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
+    marginBottom: 16,
+  },
+  statItem: { alignItems: 'center', gap: 2 },
+  statVal: { color: '#00E5FF', fontSize: 20, fontWeight: '900' },
+  statLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '800', letterSpacing: 2 },
+  statDivider: { width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.05)' },
+  // Links
+  linksSection: { gap: 4 },
+  linkRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingVertical: 14, paddingHorizontal: 4,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)',
+  },
+  linkText: { flex: 1, color: '#00E5FF', fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
 });
