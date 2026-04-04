@@ -1,15 +1,21 @@
+/**
+ * ARENAKORE — LOGIN v3.0 (THE CHALLENGE)
+ * Premium brutalist login with Social Login, "TORNA NELL'ARENA" CTA, and "CREA IL TUO DESTINO" link.
+ */
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, StatusBar,
+  Dimensions, Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AnimatedButton } from '../components/AnimatedButton';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
+const { width: SW } = Dimensions.get('window');
 const PENDING_EVENT_KEY = '@arenakore_pending_event';
 
 export default function Login() {
@@ -22,11 +28,11 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Real-time validation
+  // Validation
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const passwordValid = password.length >= 6;
-  const emailBorder = email.length === 0 ? '#222222' : emailValid ? '#00E5FF' : '#FF3B30';
-  const pwdBorder = password.length === 0 ? '#222222' : passwordValid ? '#00E5FF' : '#FF3B30';
+  const emailBorder = email.length === 0 ? '#1A1A1A' : emailValid ? '#00E5FF' : '#FF3B30';
+  const pwdBorder = password.length === 0 ? '#1A1A1A' : passwordValid ? '#00E5FF' : '#FF3B30';
 
   const handleLogin = async () => {
     if (!email || !password) { setError('Inserisci email e password'); return; }
@@ -34,11 +40,8 @@ export default function Login() {
     setError('');
     try {
       const result = await login(email, password);
-
-      // Check for pending event enrollment from QR scan
       const pendingCode = await AsyncStorage.getItem(PENDING_EVENT_KEY);
       if (pendingCode) {
-        // Redirect to join screen for auto-enrollment
         router.replace(`/join/${pendingCode}`);
       } else if (result.onboarding_completed) {
         router.replace('/(tabs)/kore');
@@ -46,130 +49,232 @@ export default function Login() {
         router.replace('/onboarding/step1');
       }
     } catch (e: any) {
-      setError(e.message || 'Errore di accesso');
+      setError(e.message || 'Credenziali non valide');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSocialLogin = (provider: string) => {
+    Alert.alert(
+      `${provider} Login`,
+      `Il login con ${provider} sarà disponibile nella prossima versione.`,
+      [{ text: 'OK' }]
+    );
+  };
+
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={s$.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <StatusBar barStyle="light-content" />
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 20 }]}
+        contentContainerStyle={[s$.content, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 24 }]}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <TouchableOpacity testID="login-back-btn" onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← INDIETRO</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>RESUME</Text>
-        <Text style={styles.subtitle}>Accedi al tuo Legacy</Text>
+        {/* Back */}
+        <Animated.View entering={FadeInDown.duration(300)}>
+          <TouchableOpacity testID="login-back-btn" onPress={() => router.back()} style={s$.backBtn} activeOpacity={0.7}>
+            <Ionicons name="chevron-back" size={20} color="#00E5FF" />
+            <Text style={s$.backText}>INDIETRO</Text>
+          </TouchableOpacity>
+        </Animated.View>
 
-        <View style={styles.form}>
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>EMAIL</Text>
-            <TextInput
-              testID="login-email-input"
-              style={[styles.input, { borderColor: emailBorder }]}
-              value={email}
-              onChangeText={setEmail}
-              placeholder="la-tua@email.com"
-              placeholderTextColor="#333"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+        {/* Title Block */}
+        <Animated.View entering={FadeInDown.delay(80).duration(400)} style={s$.titleBlock}>
+          <View style={s$.brandRow}>
+            <Text style={s$.brandA}>ARENA</Text>
+            <Text style={s$.brandK}>KORE</Text>
+          </View>
+          <Text style={s$.title}>BENTORNATO{'\n'}GUERRIERO.</Text>
+          <Text style={s$.subtitle}>La tua arena ti aspetta.</Text>
+        </Animated.View>
+
+        {/* Form */}
+        <Animated.View entering={FadeInDown.delay(160).duration(400)} style={s$.form}>
+          {/* Email */}
+          <View style={s$.fieldGroup}>
+            <Text style={s$.label}>EMAIL</Text>
+            <View style={[s$.inputWrap, { borderColor: emailBorder }]}>
+              <Ionicons name="mail-outline" size={16} color="rgba(255,255,255,0.2)" style={s$.inputIcon} />
+              <TextInput
+                testID="login-email-input"
+                style={s$.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="la-tua@email.com"
+                placeholderTextColor="rgba(255,255,255,0.15)"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+              />
+            </View>
           </View>
 
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>PASSWORD</Text>
-            <View style={[styles.pwdContainer, { borderColor: pwdBorder }]}>
+          {/* Password */}
+          <View style={s$.fieldGroup}>
+            <Text style={s$.label}>PASSWORD</Text>
+            <View style={[s$.inputWrap, { borderColor: pwdBorder }]}>
+              <Ionicons name="lock-closed-outline" size={16} color="rgba(255,255,255,0.2)" style={s$.inputIcon} />
               <TextInput
                 testID="login-password-input"
-                style={styles.pwdInput}
+                style={s$.input}
                 value={password}
                 onChangeText={setPassword}
                 placeholder="••••••••"
-                placeholderTextColor="#333"
+                placeholderTextColor="rgba(255,255,255,0.15)"
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
               />
-              <TouchableOpacity testID="login-toggle-pwd" onPress={() => setShowPassword(!showPassword)} style={styles.showHide}>
-                <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color="rgba(255,255,255,0.45)" />
+              <TouchableOpacity testID="login-toggle-pwd" onPress={() => setShowPassword(!showPassword)} style={s$.eyeBtn}>
+                <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={18} color="rgba(255,255,255,0.35)" />
               </TouchableOpacity>
             </View>
           </View>
 
-          {!!error && <Text testID="login-error" style={styles.error}>{error}</Text>}
+          {/* Error */}
+          {!!error && (
+            <Animated.View entering={FadeInDown.duration(200)} style={s$.errorWrap}>
+              <Ionicons name="warning" size={14} color="#FF3B30" />
+              <Text testID="login-error" style={s$.error}>{error}</Text>
+            </Animated.View>
+          )}
 
-          <AnimatedButton
+          {/* MAIN CTA — TORNA NELL'ARENA */}
+          <TouchableOpacity
             testID="login-submit-btn"
             onPress={handleLogin}
-            style={styles.loginButton}
+            style={[s$.mainBtn, loading && { opacity: 0.7 }]}
             disabled={loading}
+            activeOpacity={0.85}
           >
-            {loading
-              ? <ActivityIndicator color="#050505" />
-              : <Text style={styles.loginButtonText}>ACCEDI</Text>
-            }
-          </AnimatedButton>
+            {loading ? (
+              <ActivityIndicator color="#000" size="small" />
+            ) : (
+              <>
+                <Ionicons name="flash" size={18} color="#000" />
+                <Text style={s$.mainBtnText}>TORNA NELL'ARENA</Text>
+              </>
+            )}
+          </TouchableOpacity>
 
-          {/* RECUPERA ACCESSO — ID Recovery Link */}
+          {/* Recover Link */}
           <TouchableOpacity
             testID="login-recover-link"
             onPress={() => router.push('/recover')}
-            style={styles.recoverRow}
+            style={s$.recoverRow}
+            activeOpacity={0.7}
           >
-            <Text style={styles.recoverText}>RECUPERA ACCESSO</Text>
+            <Text style={s$.recoverText}>PASSWORD DIMENTICATA?</Text>
+          </TouchableOpacity>
+        </Animated.View>
+
+        {/* Divider */}
+        <Animated.View entering={FadeInDown.delay(240).duration(400)} style={s$.dividerRow}>
+          <View style={s$.dividerLine} />
+          <Text style={s$.dividerText}>OPPURE</Text>
+          <View style={s$.dividerLine} />
+        </Animated.View>
+
+        {/* Social Login Buttons */}
+        <Animated.View entering={FadeInDown.delay(320).duration(400)} style={s$.socialRow}>
+          <TouchableOpacity
+            style={s$.socialBtn}
+            onPress={() => handleSocialLogin('Apple')}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="logo-apple" size={20} color="#FFF" />
+            <Text style={s$.socialBtnText}>APPLE</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity testID="login-register-link" onPress={() => router.replace('/onboarding/step1')}>
-            <Text style={styles.registerLink}>
-              Non hai un account? <Text style={styles.registerLinkBold}>START LEGACY</Text>
+          <TouchableOpacity
+            style={s$.socialBtn}
+            onPress={() => handleSocialLogin('Google')}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="logo-google" size={18} color="#FFF" />
+            <Text style={s$.socialBtnText}>GOOGLE</Text>
+          </TouchableOpacity>
+        </Animated.View>
+
+        {/* Register Link */}
+        <Animated.View entering={FadeInDown.delay(400).duration(400)} style={s$.registerBlock}>
+          <TouchableOpacity testID="login-register-link" onPress={() => router.replace('/register')} activeOpacity={0.7}>
+            <Text style={s$.registerLink}>
+              Non hai un account?{' '}
+              <Text style={s$.registerLinkBold}>CREA IL TUO DESTINO</Text>
             </Text>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
+
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
+const s$ = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
   content: { paddingHorizontal: 24, flexGrow: 1 },
-  backBtn: { marginBottom: 32 },
-  backText: { color: '#00E5FF', fontSize: 14, fontWeight: '700', letterSpacing: 1 },
-  title: { color: '#FFFFFF', fontSize: 44, fontWeight: '900', letterSpacing: 0.5 },
-  subtitle: { color: '#555555', fontSize: 16, marginTop: 6, marginBottom: 40 },
-  form: { gap: 20 },
-  fieldGroup: { gap: 8 },
-  label: { color: '#00E5FF', fontSize: 13, fontWeight: '700', letterSpacing: 2 },
-  input: {
-    backgroundColor: '#111111', borderWidth: 1, borderColor: '#222222',
-    borderRadius: 8, padding: 16, color: '#FFFFFF', fontSize: 18,
-  },
-  pwdContainer: {
+
+  // Back
+  backBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 24 },
+  backText: { color: '#00E5FF', fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
+
+  // Title
+  titleBlock: { marginBottom: 32, gap: 6 },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  brandA: { color: '#FFF', fontSize: 12, fontWeight: '900', letterSpacing: 5 },
+  brandK: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 5 },
+  title: { color: '#FFFFFF', fontSize: 34, fontWeight: '900', letterSpacing: -0.5, lineHeight: 38 },
+  subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 15, fontWeight: '500', marginTop: 4 },
+
+  // Form
+  form: { gap: 16 },
+  fieldGroup: { gap: 6 },
+  label: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  inputWrap: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#111111', borderWidth: 1, borderColor: '#222222', borderRadius: 8,
+    backgroundColor: '#0C0C0C', borderWidth: 1.5, borderColor: '#1A1A1A',
+    borderRadius: 12, overflow: 'hidden',
   },
-  pwdInput: { flex: 1, padding: 16, color: '#FFFFFF', fontSize: 18 },
-  showHide: { paddingHorizontal: 24 },
-  showHideText: { color: '#00E5FF', fontSize: 12, fontWeight: '700', letterSpacing: 1 },
-  error: { color: '#FF3B30', fontSize: 15, textAlign: 'center' },
-  loginButton: {
-    backgroundColor: '#00E5FF', borderRadius: 8,
-    paddingVertical: 18, alignItems: 'center', marginTop: 8,
+  inputIcon: { paddingLeft: 14 },
+  input: { flex: 1, paddingVertical: 16, paddingHorizontal: 10, color: '#FFFFFF', fontSize: 16 },
+  eyeBtn: { paddingHorizontal: 16, paddingVertical: 14 },
+
+  // Error
+  errorWrap: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' },
+  error: { color: '#FF3B30', fontSize: 14, fontWeight: '600' },
+
+  // Main CTA
+  mainBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    backgroundColor: '#00E5FF', borderRadius: 14,
+    paddingVertical: 18, marginTop: 4,
   },
-  loginButtonText: { color: '#000000', fontSize: 18, fontWeight: '800', letterSpacing: 2 },
-  registerLink: { color: '#555555', fontSize: 16, textAlign: 'center', marginTop: 8 },
-  registerLinkBold: { color: '#00E5FF', fontWeight: '700' },
-  recoverRow: {
-    alignItems: 'center', paddingVertical: 14,
-    borderTopWidth: 1, borderTopColor: '#111', marginTop: 4,
+  mainBtnText: { color: '#000000', fontSize: 17, fontWeight: '900', letterSpacing: 1.5 },
+
+  // Recover
+  recoverRow: { alignItems: 'center', paddingVertical: 10 },
+  recoverText: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
+
+  // Divider
+  dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginVertical: 20 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.06)' },
+  dividerText: { color: 'rgba(255,255,255,0.15)', fontSize: 11, fontWeight: '800', letterSpacing: 3 },
+
+  // Social
+  socialRow: { flexDirection: 'row', gap: 12 },
+  socialBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: '#0C0C0C', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 12, paddingVertical: 16,
   },
-  recoverText: {
-    color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 3,
-  },
+  socialBtnText: { color: '#FFF', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
+
+  // Register
+  registerBlock: { marginTop: 28, alignItems: 'center' },
+  registerLink: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '500', textAlign: 'center' },
+  registerLinkBold: { color: '#00E5FF', fontWeight: '900', letterSpacing: 0.5 },
 });

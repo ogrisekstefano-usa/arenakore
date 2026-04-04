@@ -7,7 +7,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar, TouchableOpacity,
   Dimensions, Linking, Platform, RefreshControl, ActivityIndicator, Modal,
-  TextInput,
+  TextInput, Share,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -1072,7 +1072,17 @@ function BioScanStatusCard({ user, router }: { user: any; router: any }) {
         </View>
         <TouchableOpacity
           style={[bsc$.btn, needsRescan && bsc$.btnRed]}
-          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(()=>{}); router.push('/onboarding/step2'); }}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(()=>{});
+            if (needsRescan) {
+              router.push('/onboarding/step2');
+            } else {
+              Share.share({
+                message: `Ecco il mio KORE ID su ARENAKORE. Pensi di potermi battere?\n\nhttps://arenakore.app`,
+                title: 'ARENAKORE — KORE PASSPORT',
+              }).catch(() => {});
+            }
+          }}
           activeOpacity={0.85}
         >
           <Text style={bsc$.btnText}>{needsRescan ? 'RECALIBRATE DNA' : 'SHARE PASSPORT'}</Text>

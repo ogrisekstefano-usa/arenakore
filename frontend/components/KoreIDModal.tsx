@@ -1,25 +1,44 @@
 /**
- * ARENAKORE — KORE ID MODAL v2.0
- * Premium identity card with QR Code, Rank, Founder Badge.
- * NIKE-GRADE: Black + Cyan + Gold accents.
+ * ARENAKORE — KORE ID MODAL v3.0 (GLASSMORPHISM EDITION)
+ * Premium identity card with Glassmorphism design.
+ * Neon border dynamically changes based on athlete MOOD:
+ *   - GREEN (#00FF87): DNA Avg > 80 = BEAST MODE
+ *   - CYAN (#00E5FF): DNA Avg 50-80 = STEADY
+ *   - ORANGE (#FF9500): DNA Avg 30-50 = RECOVERY
+ *   - RED (#FF3B30): DNA Avg < 30 = COLD
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View, Text, StyleSheet, Modal, TouchableOpacity, Dimensions, Platform,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
-import Animated, { FadeIn, FadeInDown, useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
+import Animated, {
+  FadeIn, FadeInDown, FadeInUp,
+  useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming,
+} from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
 import { useAuth } from '../contexts/AuthContext';
 
 const { width: SW } = Dimensions.get('window');
-const QR_SIZE = Math.min(SW * 0.5, 200);
+const QR_SIZE = Math.min(SW * 0.45, 180);
 
 interface KoreIDModalProps {
   visible: boolean;
   onClose: () => void;
+}
+
+// Mood engine: determines neon color based on DNA average
+function getMood(dna: Record<string, number> | null | undefined) {
+  if (!dna) return { color: '#00E5FF', label: 'UNKNOWN', icon: 'help-circle' as const };
+  const vals = Object.values(dna);
+  if (!vals.length) return { color: '#00E5FF', label: 'UNKNOWN', icon: 'help-circle' as const };
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+  if (avg > 80) return { color: '#00FF87', label: 'BEAST MODE', icon: 'flame' as const };
+  if (avg > 50) return { color: '#00E5FF', label: 'STEADY', icon: 'pulse' as const };
+  if (avg > 30) return { color: '#FF9500', label: 'RECOVERY', icon: 'battery-charging' as const };
+  return { color: '#FF3B30', label: 'COLD START', icon: 'snow' as const };
 }
 
 export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
@@ -31,26 +50,44 @@ export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
   const level = user?.level || 1;
   const isCertified = user?.is_nexus_certified;
 
-  // Rank data
+  const mood = useMemo(() => getMood(user?.dna), [user?.dna]);
+
+  // Rank fetch
   const [rank, setRank] = useState<number | null>(null);
   const [loadingRank, setLoadingRank] = useState(false);
 
-  // Shimmer animation for founder badge
-  const shimmer = useSharedValue(0.7);
+  // Neon pulse animation
+  const pulse = useSharedValue(0.5);
+  useEffect(() => {
+    if (visible) {
+      pulse.value = withRepeat(
+        withSequence(
+          withTiming(1, { duration: 2000 }),
+          withTiming(0.5, { duration: 2000 })
+        ), -1, false
+      );
+    }
+  }, [visible]);
+  const pulseStyle = useAnimatedStyle(() => ({
+    opacity: pulse.value,
+  }));
+
+  // Founder shimmer
+  const shimmer = useSharedValue(0.6);
   useEffect(() => {
     if (visible && isFounder) {
       shimmer.value = withRepeat(
-        withSequence(withTiming(1, { duration: 1500 }), withTiming(0.7, { duration: 1500 })), -1, false
+        withSequence(withTiming(1, { duration: 1500 }), withTiming(0.6, { duration: 1500 })), -1, false
       );
     }
   }, [visible, isFounder]);
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: shimmer.value }));
 
-  // Fetch rank when modal opens
+  // Fetch rank
   useEffect(() => {
     if (visible && token) {
       setLoadingRank(true);
-      fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/city-ranking?city=GLOBAL`, {
+      fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/rankings/city?city=GLOBAL`, {
         headers: { 'Authorization': `Bearer ${token}` },
       })
         .then(r => r.json())
@@ -69,26 +106,43 @@ export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
   return (
     <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
       <TouchableOpacity style={ki$.overlay} activeOpacity={1} onPress={onClose}>
-        <Animated.View entering={FadeInDown.duration(350).springify()} style={ki$.cardWrap}>
+        <Animated.View entering={FadeInDown.duration(400).springify()} style={ki$.cardOuter}>
           <TouchableOpacity activeOpacity={1}>
-            <LinearGradient colors={['#0C0C0C', '#050505']} style={ki$.card}>
-              {/* Cyan glow line */}
-              <View style={ki$.topGlow} />
+            {/* Neon border glow */}
+            <Animated.View style={[ki$.neonGlow, { borderColor: mood.color }, pulseStyle]} />
+
+            {/* Glassmorphism card */}
+            <View style={[ki$.card, { borderColor: mood.color + '40' }]}>
+              {/* Glass background effect */}
+              {Platform.OS !== 'web' ? (
+                <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFillObject} />
+              ) : (
+                <View style={[StyleSheet.absoluteFillObject, ki$.webGlass]} />
+              )}
+
+              {/* Mood indicator line at top */}
+              <View style={[ki$.moodLine, { backgroundColor: mood.color }]} />
 
               {/* Header */}
               <View style={ki$.header}>
                 <View style={ki$.headerLeft}>
                   <Text style={ki$.brand}>ARENAKORE</Text>
-                  <Text style={ki$.title}>KORE ID</Text>
+                  <Text style={[ki$.title, { color: mood.color }]}>KORE ID</Text>
                 </View>
-                <TouchableOpacity onPress={onClose} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                  <Ionicons name="close" size={22} color="rgba(255,255,255,0.3)" />
-                </TouchableOpacity>
+                <View style={ki$.headerRight}>
+                  <View style={[ki$.moodBadge, { backgroundColor: mood.color + '15', borderColor: mood.color + '35' }]}>
+                    <Ionicons name={mood.icon} size={10} color={mood.color} />
+                    <Text style={[ki$.moodText, { color: mood.color }]}>{mood.label}</Text>
+                  </View>
+                  <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                    <Ionicons name="close" size={20} color="rgba(255,255,255,0.3)" />
+                  </TouchableOpacity>
+                </View>
               </View>
 
-              {/* Username + Badges */}
+              {/* Identity section */}
               <View style={ki$.identSection}>
-                <View style={[ki$.avatar, { backgroundColor: user?.avatar_color || '#00E5FF' }]}>
+                <View style={[ki$.avatar, { backgroundColor: user?.avatar_color || mood.color }]}>
                   <Text style={ki$.avatarLetter}>{username[0]}</Text>
                 </View>
                 <View style={ki$.identInfo}>
@@ -110,13 +164,13 @@ export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
                 </View>
               </View>
 
-              {/* QR Code */}
+              {/* QR Code - centered with glow */}
               <View style={ki$.qrSection}>
-                <View style={ki$.qrFrame}>
+                <View style={[ki$.qrFrame, { borderColor: mood.color + '20' }]}>
                   <QRCode
                     value={`arenakore://kore/${uid}`}
                     size={QR_SIZE}
-                    color="#00E5FF"
+                    color={mood.color}
                     backgroundColor="transparent"
                   />
                 </View>
@@ -124,20 +178,20 @@ export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
               </View>
 
               {/* Divider */}
-              <View style={ki$.divider} />
+              <View style={[ki$.divider, { backgroundColor: mood.color + '15' }]} />
 
               {/* Stats Grid */}
-              <View style={ki$.statsGrid}>
+              <Animated.View entering={FadeInUp.delay(200).duration(300)} style={ki$.statsGrid}>
                 <View style={ki$.stat}>
-                  <Text style={ki$.statValue}>{flux.toLocaleString()}</Text>
+                  <Text style={[ki$.statValue, { color: mood.color }]}>{flux.toLocaleString()}</Text>
                   <Text style={ki$.statLabel}>FLUX</Text>
                 </View>
-                <View style={ki$.statDivider} />
+                <View style={[ki$.statDivider, { backgroundColor: mood.color + '15' }]} />
                 <View style={ki$.stat}>
-                  <Text style={ki$.statValue}>LVL {level}</Text>
+                  <Text style={[ki$.statValue, { color: mood.color }]}>LVL {level}</Text>
                   <Text style={ki$.statLabel}>LIVELLO</Text>
                 </View>
-                <View style={ki$.statDivider} />
+                <View style={[ki$.statDivider, { backgroundColor: mood.color + '15' }]} />
                 <View style={ki$.stat}>
                   {loadingRank ? (
                     <ActivityIndicator color="#FFD700" size="small" />
@@ -148,19 +202,19 @@ export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
                   )}
                   <Text style={ki$.statLabel}>RANK</Text>
                 </View>
-                <View style={ki$.statDivider} />
+                <View style={[ki$.statDivider, { backgroundColor: mood.color + '15' }]} />
                 <View style={ki$.stat}>
-                  <Text style={ki$.statValue}>{user?.total_scans || 0}</Text>
+                  <Text style={[ki$.statValue, { color: mood.color }]}>{user?.total_scans || 0}</Text>
                   <Text style={ki$.statLabel}>SCANS</Text>
                 </View>
-              </View>
+              </Animated.View>
 
               {/* Serial */}
               <View style={ki$.serialRow}>
-                <Text style={ki$.serial}>KORE #{koreNumber}</Text>
+                <Text style={[ki$.serial, { color: mood.color + '60' }]}>KORE #{koreNumber}</Text>
                 <Text style={ki$.uid}>{uid.substring(0, 8).toUpperCase()}</Text>
               </View>
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         </Animated.View>
       </TouchableOpacity>
@@ -169,14 +223,45 @@ export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
 }
 
 const ki$ = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.88)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  cardWrap: { width: '100%', maxWidth: 360 },
-  card: { borderRadius: 22, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(0,229,255,0.12)', padding: 0 },
-  topGlow: { height: 2.5, backgroundColor: '#00E5FF', opacity: 0.7 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingHorizontal: 20, paddingTop: 18, paddingBottom: 4 },
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.92)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  cardOuter: { width: '100%', maxWidth: 370, position: 'relative' },
+
+  // Neon outer glow
+  neonGlow: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 24, borderWidth: 2,
+    ...Platform.select({
+      web: {},
+      default: {},
+    }),
+  },
+
+  // Card
+  card: {
+    borderRadius: 22, overflow: 'hidden', borderWidth: 1,
+    backgroundColor: Platform.OS === 'web' ? 'rgba(10,10,10,0.85)' : 'rgba(5,5,5,0.6)',
+  },
+  webGlass: { backgroundColor: 'rgba(10,10,10,0.88)' },
+
+  // Mood indicator
+  moodLine: { height: 2.5, opacity: 0.8 },
+
+  // Header
+  header: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
+    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 2,
+  },
   headerLeft: { gap: 0 },
-  brand: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '800', letterSpacing: 4 },
-  title: { color: '#00E5FF', fontSize: 16, fontWeight: '900', letterSpacing: 4 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  brand: { color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '800', letterSpacing: 4 },
+  title: { fontSize: 16, fontWeight: '900', letterSpacing: 4 },
+  moodBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
+    borderWidth: 1,
+  },
+  moodText: { fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
+
   // Identity
   identSection: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 10 },
   avatar: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
@@ -188,20 +273,36 @@ const ki$ = StyleSheet.create({
   founderText: { color: '#FFD700', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
   certBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(0,255,135,0.06)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(0,255,135,0.2)' },
   certText: { color: '#00FF87', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+
   // QR
   qrSection: { alignItems: 'center', paddingVertical: 14, gap: 8 },
-  qrFrame: { padding: 14, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(0,229,255,0.08)', backgroundColor: 'rgba(0,0,0,0.4)' },
-  qrHint: { color: 'rgba(255,255,255,0.15)', fontSize: 10, fontWeight: '600', letterSpacing: 1.5 },
+  qrFrame: {
+    padding: 16, borderRadius: 18, borderWidth: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  qrHint: { color: 'rgba(255,255,255,0.12)', fontSize: 10, fontWeight: '600', letterSpacing: 1.5 },
+
   // Divider
-  divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginHorizontal: 20 },
+  divider: { height: 1, marginHorizontal: 20 },
+
   // Stats
-  statsGrid: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, paddingHorizontal: 16, gap: 0 },
+  statsGrid: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 14, paddingHorizontal: 16,
+  },
   stat: { flex: 1, alignItems: 'center', gap: 2 },
-  statValue: { color: '#00E5FF', fontSize: 16, fontWeight: '900' },
-  statLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 8, fontWeight: '800', letterSpacing: 2 },
-  statDivider: { width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.06)' },
+  statValue: { fontSize: 16, fontWeight: '900' },
+  statLabel: { color: 'rgba(255,255,255,0.18)', fontSize: 8, fontWeight: '800', letterSpacing: 2 },
+  statDivider: { width: 1, height: 28 },
+
   // Serial
-  serialRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 16, paddingTop: 4 },
-  serial: { color: 'rgba(0,229,255,0.35)', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
-  uid: { color: 'rgba(255,255,255,0.12)', fontSize: 10, fontWeight: '600', letterSpacing: 1, ...Platform.select({ web: { fontFamily: 'monospace' }, default: {} }) },
+  serialRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 20, paddingBottom: 16, paddingTop: 4,
+  },
+  serial: { fontSize: 11, fontWeight: '800', letterSpacing: 2 },
+  uid: {
+    color: 'rgba(255,255,255,0.1)', fontSize: 10, fontWeight: '600', letterSpacing: 1,
+    ...Platform.select({ web: { fontFamily: 'monospace' }, default: {} }),
+  },
 });
