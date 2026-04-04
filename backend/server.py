@@ -661,14 +661,20 @@ def user_to_response(user: dict) -> dict:
         user.get("baseline_scanned_at") and
         user.get("dna")
     )
+    # Calculate total scans from dna_scans array
+    total_scans = len(user.get("dna_scans", []))
     return {
         "id": str(user["_id"]),
         "username": user["username"],
         "email": user["email"],
+        "first_name": user.get("first_name", ""),
+        "last_name": user.get("last_name", ""),
+        "language": user.get("language", "IT"),
         "role": normalize_role(user),
         "gym_id": str(user["gym_id"]) if user.get("gym_id") else None,
         "sport": user.get("sport"),
         "xp": user.get("xp", 0),
+        "flux": user.get("xp", 0),
         "level": user.get("level", 1),
         "onboarding_completed": user.get("onboarding_completed", False),
         "is_nexus_certified": is_nexus_certified,
@@ -691,6 +697,7 @@ def user_to_response(user: dict) -> dict:
         "city": user.get("city"),
         "ak_credits": user.get("ak_credits", 0),
         "unlocked_tools": user.get("unlocked_tools", []),
+        "total_scans": total_scans,
     }
 
 
@@ -867,6 +874,104 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 async def check_username(username: str):
     existing = await db.users.find_one({"username": username})
     return {"available": existing is None}
+
+
+# ================================================================
+# PROFILE UPDATE — Settings sync + Bio-kinetic recalculation
+# ================================================================
+
+class ProfileUpdate(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
+    username: str | None = None
+    weight: float | None = None
+    height: float | None = None
+    gender: str | None = None
+    language: str | None = None
+
+@api_router.put("/auth/update-profile")
+async def update_profile(data: ProfileUpdate, current_user: dict = Depends(get_current_user)):
+    update_fields = {}
+
+    # Profile fields
+    if data.first_name is not None:
+        update_fields["first_name"] = data.first_name.strip()
+    if data.last_name is not None:
+        update_fields["last_name"] = data.last_name.strip()
+    if data.language is not None:
+        update_fields["language"] = data.language.strip().upper()
+
+    # Username change — validate uniqueness
+    if data.username is not None and data.username.strip() != current_user.get("username", ""):
+        new_username = data.username.strip()
+        if len(new_username) < 3:
+            raise HTTPException(status_code=400, detail="Username troppo corto (min. 3 caratteri)")
+        existing = await db.users.find_one({"username": new_username, "_id": {"$ne": current_user["_id"]}})
+        if existing:
+            raise HTTPException(status_code=400, detail="Username già in uso")
+        update_fields["username"] = new_username
+
+    # Physical data — triggers bio-kinetic recalculation flag
+    bio_changed = False
+    if data.weight is not None:
+        update_fields["weight_kg"] = data.weight
+        bio_changed = True
+    if data.height is not None:
+        update_fields["height_cm"] = data.height
+        bio_changed = True
+    if data.gender is not None:
+        update_fields["gender"] = data.gender.strip().upper()
+        bio_changed = True
+
+    # If physical data changed, recalculate biocinematic modifiers
+    if bio_changed:
+        weight = data.weight or current_user.get("weight_kg") or 70
+        height = data.height or current_user.get("height_cm") or 175
+        # Bio-kinetic coefficient: affects DNA scaling during NEXUS scans
+        bmi = weight / ((height / 100) ** 2) if height > 0 else 22
+        bio_coefficient = round(min(1.2, max(0.8, 1.0 + (22 - bmi) * 0.01)), 3)
+        update_fields["bio_coefficient"] = bio_coefficient
+        update_fields["bmi"] = round(bmi, 1)
+        update_fields["bio_recalculated_at"] = datetime.now(timezone.utc)
+
+    if not update_fields:
+        return {"detail": "Nessuna modifica", "user": user_to_response(current_user)}
+
+    await db.users.update_one({"_id": current_user["_id"]}, {"$set": update_fields})
+    updated = await db.users.find_one({"_id": current_user["_id"]})
+    return {"detail": "Profilo aggiornato", "user": user_to_response(updated)}
+
+
+# ================================================================
+# USER LOOKUP — Universal QR Scanner resolution
+# ================================================================
+
+@api_router.get("/user/lookup/{user_id}")
+async def user_lookup(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Resolve a Kore ID (from QR scan) to basic public profile data."""
+    try:
+        target = await db.users.find_one({"_id": ObjectId(user_id)})
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID non valido")
+    if not target:
+        raise HTTPException(status_code=404, detail="Kore non trovato")
+
+    dna_vals = list((target.get("dna") or {}).values())
+    dna_avg = round(sum(dna_vals) / len(dna_vals)) if dna_vals else 0
+
+    return {
+        "id": str(target["_id"]),
+        "username": target.get("username", ""),
+        "avatar_color": target.get("avatar_color", "#00E5FF"),
+        "level": target.get("level", 1),
+        "flux": target.get("xp", 0),
+        "dna_avg": dna_avg,
+        "is_nexus_certified": bool(target.get("onboarding_completed") and target.get("baseline_scanned_at") and target.get("dna")),
+        "is_founder": target.get("is_founder", False),
+        "founder_number": target.get("founder_number"),
+        "city": target.get("city"),
+        "sport": target.get("sport"),
+    }
 
 
 @api_router.put("/auth/onboarding")

@@ -36,8 +36,8 @@ export default function SettingsScreen() {
         last_name: user.last_name || '',
         username: user.username || '',
         email: user.email || '',
-        weight: user.weight ? String(user.weight) : '',
-        height: user.height ? String(user.height) : '',
+        weight: user.weight_kg ? String(user.weight_kg) : (user.weight ? String(user.weight) : ''),
+        height: user.height_cm ? String(user.height_cm) : (user.height ? String(user.height) : ''),
         gender: user.gender || 'M',
         language: user.language || 'IT',
       });
@@ -65,8 +65,13 @@ export default function SettingsScreen() {
         body: JSON.stringify(body),
       });
       if (res.ok) {
-        Alert.alert('SALVATO', 'Profilo aggiornato con successo.');
+        const data = await res.json();
         if (refreshUser) refreshUser();
+        if (tab === 'DATI FISICI' && data.user?.bmi) {
+          Alert.alert('PROFILO AGGIORNATO', `BMI ricalcolato: ${data.user.bmi}\nI parametri biocinetici del NEXUS sono stati aggiornati.`);
+        } else {
+          Alert.alert('SALVATO', 'Profilo aggiornato con successo.');
+        }
       } else {
         const d = await res.json();
         Alert.alert('Errore', d.detail || 'Impossibile salvare');

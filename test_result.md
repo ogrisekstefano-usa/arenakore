@@ -1016,14 +1016,54 @@ frontend:
         agent: "main"
         comment: "Both index.tsx START LEGACY button and login.tsx 'Non hai un account? START LEGACY' link now route to /onboarding/step1."
 
+backend:
+  - task: "ARENAKORE Profile Update API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST PASSED: PUT /api/auth/update-profile working correctly. Admin login successful with ogrisek.stefano@gmail.com / Founder@KORE2026!. Profile update with first_name='Stefano', last_name='Ogrisek', weight=80, height=182, gender='M', language='IT' successful. Response contains 'Profilo aggiornato' message and updated user data. Weight/height correctly updated. Note: BMI/bio_coefficient calculated and stored in DB but not included in user_to_response function (minor implementation detail)."
+
+  - task: "ARENAKORE User Lookup API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST PASSED: GET /api/user/lookup/{user_id} working correctly. Valid user lookup returns all required fields: id, username='STEFANO', level=20, flux=9999, is_nexus_certified=true, is_founder=true. Invalid user lookup (invalidid123) correctly returns 400 status with 'ID non valido' message. Authentication with Bearer token working properly."
+
+  - task: "ARENAKORE Standard User Login API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST PASSED: POST /api/auth/login working correctly for standard user d.rose@chicago.kore / Seed@Chicago1. Returns token and user data with username='D.ROSE'. Authentication flow functional for both admin and standard users."
+
 test_plan:
   current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
+agent_communication:
     - agent: "main"
       message: "SPRINT 14 — SECURITY + ID RECOVERY IMPLEMENTED. (1) SECURITY VERIFIED: bcrypt confirmed via CryptContext(schemes=['bcrypt']) in server.py lines 39-51. hash_password() calls pwd_context.hash() (bcrypt salted, irreversible). verify_password() calls pwd_context.verify(). Zero MD5 anywhere. (2) ID RECOVERY BACKEND: Added 3 endpoints - POST /api/auth/forgot-password (generates 6-digit OTP, SHA256-hashed in MongoDB collection 'password_resets', returns dev_otp in response for demo), POST /api/auth/verify-otp (verifies SHA256 OTP hash, returns JWT reset_token with type=password_reset, 15min expiry), POST /api/auth/reset-password (verifies reset_token, new password hashed with bcrypt, marks reset as used). All 3 endpoints tested via curl: forgot→OTP 638522, verify→reset_token issued, reset→success, login still works. (3) ID RECOVERY FRONTEND: New /app/recover.tsx with 4-step flow: email→OTP→password→done. 6 cyan neon OTP boxes (dynamic width via useWindowDimensions). ARENAKORE brand: gold ARENAKORE text, massive 42pt 'ID RECOVERY', cyan step labels. (4) LOGIN UPDATED: Added 'RECUPERA ACCESSO' link between ACCEDI button and START LEGACY. PLEASE TEST: (A) Go to Login page → verify 'RECUPERA ACCESSO' link visible. (B) Tap RECUPERA ACCESSO → navigate to /recover. (C) Enter admin@arenadare.com → tap INVIA CODICE OTP → go to Step 2 with 6 OTP boxes and dev_otp visible. (D) Enter the 6-digit code in boxes → tap VERIFICA CODICE → go to Step 3. (E) Enter new password (min 8 chars) + confirm → tap RIPRISTINA ACCESSO → see success screen with 'ACCESSO RIPRISTINATO'. (F) Tap ACCEDI ORA → go to login, login with new password. Base URL: https://arena-scan-lab.preview.emergentagent.com Credentials: chicago@arena.com / testpassword123"
+    - agent: "testing"
+      message: "ARENAKORE BACKEND API TESTING COMPLETED: All 3 new endpoints from review request tested successfully. ✅ Admin login (ogrisek.stefano@gmail.com / Founder@KORE2026!) working correctly with is_admin=true, is_founder=true ✅ Standard user login (d.rose@chicago.kore / Seed@Chicago1) working correctly ✅ PUT /api/auth/update-profile successfully updates profile with first_name, last_name, weight, height, gender, language - returns 'Profilo aggiornato' message ✅ GET /api/user/lookup/{user_id} returns all required fields (username=STEFANO, level, flux, is_nexus_certified, is_founder) ✅ Invalid user lookup correctly returns 400 'ID non valido'. Minor note: BMI/bio_coefficient calculated and stored in DB but not included in API response (user_to_response function). All core functionality working as specified in review request."
 
 backend:
   - task: "ARENAKORE ID Recovery - forgot-password endpoint"

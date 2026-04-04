@@ -16,6 +16,7 @@ import Animated, {
 import { useRouter } from 'expo-router';
 import { useAuth, UserRole, ROLE_CONFIG } from '../contexts/AuthContext';
 import { profileDevice, getTierLabel, getTrackingMode } from '../utils/DeviceIntelligence';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width: SW } = Dimensions.get('window');
 const CYAN = '#00E5FF';
@@ -60,6 +61,7 @@ function PulseTicker() {
 export function ControlCenter({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const { user, logout, activeRole, setActiveRole } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const isFounder = user?.is_founder || user?.is_admin;
   const isAdmin = user?.is_admin;
   const ROLES: UserRole[] = ['ADMIN', 'GYM_OWNER', 'COACH', 'ATHLETE'];
@@ -101,7 +103,7 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
       <TouchableOpacity style={st.backdrop} activeOpacity={1} onPress={onClose}>
         <View style={st.blurLayer} />
         <Animated.View entering={SlideInRight.duration(250)} exiting={SlideOutRight.duration(200)} style={st.panel}>
-          <LinearGradient colors={['#0A0A0A', '#000000']} style={st.panelInner}>
+          <LinearGradient colors={['#0A0A0A', '#000000']} style={[st.panelInner, { paddingTop: Math.max(insets.top, 12) + 8 }]}>
 
             {/* ── HEADER ── */}
             <View style={st.header}>
@@ -245,7 +247,7 @@ const st = StyleSheet.create({
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px) saturate(130%)', WebkitBackdropFilter: 'blur(20px) saturate(130%)' } as any : {}),
   },
   panel: { width: SW * 0.78, height: '100%' },
-  panelInner: { flex: 1, paddingTop: Platform.OS === 'ios' ? 48 : 28, borderLeftWidth: 1.5, borderLeftColor: '#00E5FF22' },
+  panelInner: { flex: 1, borderLeftWidth: 1.5, borderLeftColor: '#00E5FF22' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 22, marginBottom: 16 },
   headerLeft: { flex: 1, gap: 2 },
   headerTitle: { color: WHITE, fontSize: 18, fontWeight: '800', letterSpacing: 4 },

@@ -22,6 +22,7 @@ import { Header } from '../../components/Header';
 import { KoreVault, AKBadge } from '../../components/KoreVault';
 import { AKDropsWallet, CertBadge } from '../../components/CertBadge';
 import { ValidationBreakdown } from '../../components/challenge/ValidationBreakdown';
+import { KoreIDModal } from '../../components/KoreIDModal';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { ImageBackground } from 'react-native';
@@ -1241,6 +1242,7 @@ export default function KoreTab() {
   const [refreshing, setRefreshing] = useState(false);
   const [city, setCity] = useState('MILANO');
   const [rankingRefreshKey, setRankingRefreshKey] = useState(0);
+  const [koreIdVisible, setKoreIdVisible] = useState(false);
 
   // ── MY POSITION HUD state (set by CityRanking via callback)
   const [myHudRank,  setMyHudRank]  = useState<number | null>(null);
@@ -1293,6 +1295,24 @@ export default function KoreTab() {
           >
             {/* 1. PASSPORT HEADER */}
             <PassportHeader user={user} />
+
+            {/* KORE ID — Visualizza il tuo QR Code identificativo */}
+            <Animated.View entering={FadeInDown.delay(50)} style={kid$.wrap}>
+              <TouchableOpacity
+                style={kid$.btn}
+                onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); setKoreIdVisible(true); }}
+                activeOpacity={0.85}
+              >
+                <View style={kid$.iconBox}>
+                  <Ionicons name="qr-code" size={16} color="#00E5FF" />
+                </View>
+                <View style={kid$.txtBox}>
+                  <Text style={kid$.btnLabel}>VISUALIZZA KORE ID</Text>
+                  <Text style={kid$.btnSub}>QR Code · Identità · Rank</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={14} color="rgba(0,229,255,0.4)" />
+              </TouchableOpacity>
+            </Animated.View>
 
             {/* BIO-SCAN STATUS */}
           <BioScanStatusCard user={user} router={router} />
@@ -1382,6 +1402,7 @@ export default function KoreTab() {
           )}
         </>
       )}
+      <KoreIDModal visible={koreIdVisible} onClose={() => setKoreIdVisible(false)} />
     </ImageBackground>  );
 }
 
@@ -1441,3 +1462,21 @@ const goals$ = StyleSheet.create({
   badgePct: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '300', letterSpacing: 1 },
 });
 
+
+// KORE ID Button styles
+const kid$ = StyleSheet.create({
+  wrap: { marginHorizontal: 24, marginBottom: 8 },
+  btn: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: 'rgba(0,229,255,0.04)', borderRadius: 14,
+    padding: 14, borderWidth: 1.5, borderColor: 'rgba(0,229,255,0.15)',
+  },
+  iconBox: {
+    width: 38, height: 38, borderRadius: 10,
+    backgroundColor: 'rgba(0,229,255,0.08)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  txtBox: { flex: 1, gap: 2 },
+  btnLabel: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
+  btnSub: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '500', letterSpacing: 0.5 },
+});

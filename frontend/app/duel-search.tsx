@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '../contexts/AuthContext';
+import { QRScannerModal } from '../components/QRScannerModal';
 
 const DISCIPLINES = ['TUTTI', 'POWER', 'AGILITY', 'ENDURANCE'];
 const STATUSES = ['TUTTI', 'ONLINE', 'DISPONIBILE', 'IN SFIDA'];
@@ -24,6 +25,7 @@ export default function DuelSearch() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [challenging, setChallenging] = useState<string | null>(null);
+  const [qrScannerVisible, setQrScannerVisible] = useState(false);
 
   const handleSearch = useCallback(async () => {
     if (!token) return;
@@ -81,7 +83,7 @@ export default function DuelSearch() {
       </SafeAreaView>
 
       <ScrollView contentContainerStyle={ds$.scroll} showsVerticalScrollIndicator={false}>
-        {/* Search Input */}
+        {/* Search Input with QR Scanner */}
         <View style={ds$.searchRow}>
           <View style={ds$.searchInput}>
             <Ionicons name="search" size={16} color="rgba(255,255,255,0.3)" />
@@ -93,6 +95,13 @@ export default function DuelSearch() {
               onChangeText={setNickname}
               autoCapitalize="none"
             />
+            <TouchableOpacity
+              style={ds$.qrBtn}
+              onPress={() => setQrScannerVisible(true)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="qr-code" size={18} color="#00E5FF" />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -184,6 +193,26 @@ export default function DuelSearch() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* QR Scanner Modal */}
+      <QRScannerModal
+        visible={qrScannerVisible}
+        onClose={() => setQrScannerVisible(false)}
+        onUserFound={(userData) => {
+          setNickname(userData.username || '');
+          // Auto-inject found user into results
+          setResults([{
+            id: userData.id,
+            username: userData.username,
+            avatar_color: userData.avatar_color,
+            level: userData.level,
+            flux: userData.flux,
+            city: userData.city,
+            is_founder: userData.is_founder,
+          }]);
+          setSearched(true);
+        }}
+      />
     </View>
   );
 }
@@ -217,4 +246,5 @@ const ds$ = StyleSheet.create({
   resultName: { color: '#FFF', fontSize: 15, fontWeight: '800', letterSpacing: -0.3 },
   resultMeta: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '500' },
   challengeBtn: { width: 42, height: 42, borderRadius: 12, backgroundColor: '#FF3B30', alignItems: 'center', justifyContent: 'center' },
+  qrBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(0,229,255,0.1)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(0,229,255,0.2)' },
 });
