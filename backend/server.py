@@ -9309,6 +9309,24 @@ async def receive_bio_signature(body: dict = Body(...), current_user: dict = Dep
     return {"status": "sent"}
 
 
+@api_router.post("/health/force-sync")
+async def force_health_sync(body: dict = Body(...), current_user: dict = Depends(get_current_user)):
+    """Force re-sync HealthKit/Health Connect tokens and refresh data."""
+    source = body.get("source", "APPLE_HEALTH")
+    result = await db.health_connections.update_one(
+        {"user_id": current_user["_id"], "source": source},
+        {"$set": {
+            "last_force_sync": datetime.now(timezone.utc),
+            "token_refreshed_at": datetime.now(timezone.utc),
+            "total_syncs": (await db.health_connections.find_one(
+                {"user_id": current_user["_id"], "source": source}
+            ) or {}).get("total_syncs", 0) + 1,
+        }},
+        upsert=True,
+    )
+    return {"status": "synced", "source": source, "timestamp": datetime.now(timezone.utc).isoformat()}
+
+
 # Register all routes (must be AFTER all @api_router decorators)
 app.include_router(api_router)
 

@@ -19,7 +19,7 @@ export default function LiveEvents() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ title: '', exercise: 'SQUAT', max_participants: '8', scheduled_minutes: '30' });
+  const [form, setForm] = useState({ title: '', exercise: 'SQUAT', max_participants: '8', scheduled_minutes: '30', visibility: 'OPEN' });
 
   const loadEvents = useCallback(async () => {
     if (!token) { setLoading(false); return; }
@@ -47,12 +47,13 @@ export default function LiveEvents() {
           exercise_type: form.exercise.toLowerCase(),
           max_participants: parseInt(form.max_participants) || 8,
           scheduled_in_minutes: parseInt(form.scheduled_minutes) || 30,
+          visibility: form.visibility.toLowerCase(),
         }),
       });
       if (res.ok) {
         Alert.alert('EVENTO CREATO', 'Il tuo evento live è stato programmato!');
         setShowCreate(false);
-        setForm({ title: '', exercise: 'SQUAT', max_participants: '8', scheduled_minutes: '30' });
+        setForm({ title: '', exercise: 'SQUAT', max_participants: '8', scheduled_minutes: '30', visibility: 'OPEN' });
         loadEvents();
       } else {
         const d = await res.json();
@@ -211,6 +212,22 @@ export default function LiveEvents() {
                   keyboardType="number-pad"
                 />
               </View>
+            </View>
+
+            <Text style={le$.formLabel}>PARTECIPAZIONE</Text>
+            <View style={le$.exerciseRow}>
+              {['OPEN', 'AMICI', 'CREW'].map(v => (
+                <TouchableOpacity
+                  key={v}
+                  style={[le$.exChip, form.visibility === v && le$.exChipActive]}
+                  onPress={() => setForm(p => ({ ...p, visibility: v }))}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[le$.exChipText, form.visibility === v && le$.exChipTextActive]}>
+                    {v === 'OPEN' ? '🌐 OPEN' : v === 'AMICI' ? '👥 AMICI' : '🛡 CREW'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
 
             <TouchableOpacity style={le$.submitBtn} onPress={handleCreate} disabled={creating} activeOpacity={0.85}>

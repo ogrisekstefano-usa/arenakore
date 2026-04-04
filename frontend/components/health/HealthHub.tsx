@@ -167,10 +167,15 @@ export default function HealthHub() {
                     <Text style={hh.connName}>{conn.display_name}</Text>
                     <Text style={hh.connDesc}>{meta.description}</Text>
                   </View>
-                  {conn.connected ? (
+                  {conn.connected && conn.total_syncs > 0 && conn.last_sync ? (
                     <View style={[hh.statusPill, { backgroundColor: '#34C75918', borderColor: '#34C759' }]}>
                       <View style={hh.statusDot} />
                       <Text style={hh.statusText}>ATTIVO</Text>
+                    </View>
+                  ) : conn.connected ? (
+                    <View style={[hh.statusPill, { backgroundColor: 'rgba(255,149,0,0.10)', borderColor: '#FF9500' }]}>
+                      <View style={[hh.statusDot, { backgroundColor: '#FF9500' }]} />
+                      <Text style={[hh.statusText, { color: '#FF9500' }]}>NO DATI</Text>
                     </View>
                   ) : (
                     <View style={[hh.statusPill, { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.15)' }]}>
@@ -194,11 +199,51 @@ export default function HealthHub() {
                         </Text>
                       </View>
                     )}
+                    {/* False-positive check: show data flow status */}
+                    <View style={hh.statItem}>
+                      <Text style={hh.statLabel}>FLUSSO</Text>
+                      <Text style={[hh.statValue, { color: conn.total_syncs > 0 && conn.last_sync ? '#34C759' : '#FF9500' }]}>
+                        {conn.total_syncs > 0 && conn.last_sync ? 'OK' : 'NESSUNO'}
+                      </Text>
+                    </View>
                   </View>
                 )}
 
                 {/* Action buttons */}
                 <View style={hh.connActions}>
+                  {/* FORZA SINCRONIZZAZIONE — Deep Re-Sync */}
+                  {conn.connected && (
+                    <TouchableOpacity
+                      style={[hh.forceSyncBtn]}
+                      onPress={async () => {
+                        setSyncing(conn.source);
+                        try {
+                          await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/health/force-sync`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                            body: JSON.stringify({ source: conn.source }),
+                          });
+                          await loadData();
+                          Alert.alert('SYNC FORZATA', `Token ${conn.display_name} rigenerato. Dati aggiornati.`);
+                        } catch (e) {
+                          Alert.alert('Errore', 'Impossibile forzare la sincronizzazione');
+                        } finally {
+                          setSyncing(null);
+                        }
+                      }}
+                      disabled={syncing === conn.source}
+                      activeOpacity={0.85}
+                    >
+                      {syncing === conn.source ? (
+                        <ActivityIndicator size="small" color="#FF9500" />
+                      ) : (
+                        <>
+                          <Ionicons name="refresh" size={13} color="#FF9500" />
+                          <Text style={hh.forceSyncText}>FORZA SINCRONIZZAZIONE</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  )}
                   {conn.source === 'STRAVA' && !conn.connected ? (
                     <TouchableOpacity
                       style={[hh.connectBtn, { backgroundColor: '#FC4C02' }]}
@@ -363,13 +408,20 @@ const hh = StyleSheet.create({
     fontFamily: "'Plus Jakarta Sans', 'Montserrat', sans-serif",
     fontWeight: '800',
   },
-  connActions: { flexDirection: 'row' },
+  connActions: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   connectBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10, flex: 1,
     justifyContent: 'center',
   },
   connectBtnText: { color: '#FFF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  forceSyncBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8,
+    backgroundColor: 'rgba(255,149,0,0.10)', borderWidth: 1,
+    borderColor: 'rgba(255,149,0,0.25)',
+  },
+  forceSyncText: { color: '#FF9500', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
 
   feedSection: { gap: 10, marginTop: 6 },
   feedTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },

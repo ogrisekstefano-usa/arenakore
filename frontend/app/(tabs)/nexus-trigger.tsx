@@ -30,6 +30,7 @@ import { FluxIcon } from '../../components/FluxIcon';
 import { Header } from '../../components/Header';
 import { BodyLockOverlay } from '../../components/nexus/BodyLockOverlay';
 import { ExitButton } from '../../components/nexus/ExitButton';
+import { LiveBPMWidget } from '../../components/health/HealthHub';
 import { useVoiceCommands, speakCoach, cancelCoachSpeech } from '../../utils/VoiceCommandEngine';
 
 // Extracted sub-components
@@ -1534,6 +1535,7 @@ export default function NexusTriggerScreen() {
   const bodyLockedRef = useRef(false); // Track body lock state for voice "VIA"
   const [bodyLockedUI, setBodyLockedUI] = useState(false); // Re-render trigger for "Dì VIA" prompt
   const [isProntoConfirmed, setIsProntoConfirmed] = useState(false); // "PRONTO" gate before "VIA"
+  const [liveBpm, setLiveBpm] = useState<number | null>(null); // HealthKit live BPM
 
   const handleVoiceCommand = useCallback((cmd: 'PRONTO' | 'VIA' | 'ESCI' | null) => {
     if (!cmd) return;
@@ -1832,7 +1834,7 @@ export default function NexusTriggerScreen() {
       <NexusConsole
         user={user}
         onScan={() => { setSessionMode('scan'); setPhase('bioscan'); }}
-        onForge={() => { setSessionMode('scan'); setPhase('challenge_engine'); }}
+        onForge={() => { setSessionMode('scan'); setPhase('forge'); }}
         onPillarAction={handlePillarAction}
         deviceTier={deviceTier}
         eligibility={eligibility}
@@ -1974,6 +1976,12 @@ export default function NexusTriggerScreen() {
       <StatusBar barStyle="light-content" />
       {/* SPRINT 5: Camera-transparent dark overlay at 0.3 opacity */}
       <View style={main$.cameraOverlay} />
+      {/* ⌚ Live BPM Telemetry — Shows during active scan phases */}
+      {(phase === 'scanning' || phase === 'countdown' || phase === 'body_lock') && (
+        <View style={main$.bpmOverlay}>
+          <LiveBPMWidget bpm={liveBpm} source="watch" />
+        </View>
+      )}
       <CyberGrid intensity={motionActive ? 0.5 : 0.2} scanning={phase === 'scanning' || phase === 'stabilizing'} />
       <DigitalShadow pose={skeleton} exercise={exercise} goldFlash={goldFlash} motionActive={motionActive} deviceTier={deviceTier} />
       <ScanLine active={phase === 'scanning'} />
@@ -2142,6 +2150,13 @@ const main$ = StyleSheet.create({
   },
   cancelWrap: { alignItems: 'center', marginTop: 20 },
   cancelText: { color: '#555', fontSize: 17, fontWeight: '700', letterSpacing: 1 },
+  // ⌚ BPM overlay — top-right during scanning
+  bpmOverlay: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 56 : 16,
+    right: 16,
+    zIndex: 999,
+  },
   // Voice-Command indicator (bottom-left during body_lock / scanning)
   voiceIndicator: {
     position: 'absolute',

@@ -19,10 +19,12 @@ import Animated, {
   withSequence, Easing, cancelAnimation,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { Gyroscope } from 'expo-sensors';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 const CONFIDENCE_THRESHOLD = 0.85;
 const LOCK_DURATION_MS = 1500; // 1.5 seconds CONSECUTIVE required
+const GYRO_THRESHOLD = 0.5; // rad/s — above this = phone is moving
 
 interface BodySegment {
   key: string;
@@ -48,6 +50,7 @@ export function BodyLockOverlay({ onBodyLocked, onGuidance }: BodyLockOverlayPro
   const [isLocked, setIsLocked] = useState(false);
   const [lockProgress, setLockProgress] = useState(0); // 0-100%
   const [guidanceText, setGuidanceText] = useState('INQUADRA TUTTO IL CORPO');
+  const [isMoving, setIsMoving] = useState(false); // Gyroscope motion gate
   
   const lockStartTime = useRef<number | null>(null);
   const lockTimerRef = useRef<any>(null);
@@ -74,6 +77,31 @@ export function BodyLockOverlay({ onBodyLocked, onGuidance }: BodyLockOverlayPro
         withTiming(0.2, { duration: 800 })
       ), -1, true
     );
+  }, []);
+
+  // ═══ GYROSCOPE MOTION GATE — Block calibration if phone is moving ═══
+  useEffect(() => {
+    let sub: any = null;
+    let stableTimer: any = null;
+    try {
+      Gyroscope.setUpdateInterval(200);
+      sub = Gyroscope.addListener(({ x, y, z }) => {
+        const magnitude = Math.sqrt(x * x + y * y + z * z);
+        if (magnitude > GYRO_THRESHOLD) {
+          setIsMoving(true);
+          if (stableTimer) { clearTimeout(stableTimer); stableTimer = null; }
+          // Auto-clear after 1s of stability
+          stableTimer = setTimeout(() => setIsMoving(false), 1000);
+        }
+      });
+    } catch (e) {
+      // Gyroscope not available (web/simulator) — skip
+      setIsMoving(false);
+    }
+    return () => {
+      if (sub) sub.remove();
+      if (stableTimer) clearTimeout(stableTimer);
+    };
   }, []);
 
   // ═══ WEB SIMULATION: Progressive segment detection ═══
@@ -110,7 +138,22 @@ export function BodyLockOverlay({ onBodyLocked, onGuidance }: BodyLockOverlayPro
     const missingSegments = segments.filter(s => !s.detected);
 
     if (allDetected) {
-      // All keypoints visible — start or continue the 1.5s timer
+      // ═══ MOTION GATE: Block calibration if phone is moving ═══
+      if (isMoving) {
+        // Phone moving — reset lock timer
+        if (lockStartTime.current) {
+          lockStartTime.current = null;
+          setLockProgress(0);
+          if (lockTimerRef.current) {
+            clearInterval(lockTimerRef.current);
+            lockTimerRef.current = null;
+          }
+        }
+        setGuidanceText('FERMA IL TELEFONO');
+        return;
+      }
+
+      // All keypoints visible & phone stable — start or continue the 1.5s timer
       if (!lockStartTime.current) {
         lockStartTime.current = Date.now();
         
@@ -212,9 +255,14 @@ export function BodyLockOverlay({ onBodyLocked, onGuidance }: BodyLockOverlayPro
         <View style={[bl$.corner, bl$.bottomRight, { borderColor: isLocked ? '#00FFFF' : '#FF3B30' }]} />
       </Animated.View>
 
-      {/* GUIDANCE — RED warning / CYAN locked */}
+      {/* GUIDANCE — RED warning / ORANGE motion / CYAN locked */}
       <View style={bl$.guidanceWrap}>
-        {!allVisible ? (
+        {isMoving && allVisible ? (
+          <Animated.View style={[bl$.guidanceBox, bl$.guidanceOrange, warningStyle]}>
+            <Ionicons name="phone-portrait" size={18} color="#FF9500" />
+            <Text style={bl$.guidanceTextOrange}>FERMA IL TELEFONO</Text>
+          </Animated.View>
+        ) : !allVisible ? (
           <Animated.View style={[bl$.guidanceBox, bl$.guidanceRed, warningStyle]}>
             <Ionicons name="warning" size={18} color="#FF3B30" />
             <Text style={bl$.guidanceTextRed}>{guidanceText}</Text>
@@ -328,6 +376,10 @@ const bl$ = StyleSheet.create({
     backgroundColor: 'rgba(255,59,48,0.15)',
     borderColor: 'rgba(255,59,48,0.4)',
   },
+  guidanceOrange: {
+    backgroundColor: 'rgba(255,149,0,0.15)',
+    borderColor: 'rgba(255,149,0,0.4)',
+  },
   guidanceYellow: {
     backgroundColor: 'rgba(255,215,0,0.10)',
     borderColor: 'rgba(255,215,0,0.3)',
@@ -338,6 +390,13 @@ const bl$ = StyleSheet.create({
   },
   guidanceTextRed: {
     color: '#FF3B30',
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    ...Platform.select({ web: { fontFamily: "'Montserrat', sans-serif" }, default: {} }),
+  },
+  guidanceTextOrange: {
+    color: '#FF9500',
     fontSize: 15,
     fontWeight: '800',
     letterSpacing: 0.5,
