@@ -577,7 +577,7 @@ function KoreCard({ user, rankData }: { user: any; rankData: any }) {
           <View style={kc$.cardHeader}>
             <View>
               <Text style={kc$.brandSm}>ARENAKORE</Text>
-              <Text style={kc$.cardType}>ATHLETE PASSPORT</Text>
+              <Text style={kc$.cardType}>KORE ID CARD</Text>
             </View>
             {isFounder && (
               <View style={kc$.founderBadge}>
@@ -1079,13 +1079,13 @@ function BioScanStatusCard({ user, router }: { user: any; router: any }) {
             } else {
               Share.share({
                 message: `Ecco il mio KORE ID su ARENAKORE. Pensi di potermi battere?\n\nhttps://arenakore.app`,
-                title: 'ARENAKORE — KORE PASSPORT',
+                title: 'ARENAKORE — KORE ID',
               }).catch(() => {});
             }
           }}
           activeOpacity={0.85}
         >
-          <Text style={bsc$.btnText}>{needsRescan ? 'RECALIBRATE DNA' : 'SHARE PASSPORT'}</Text>
+          <Text style={bsc$.btnText}>{needsRescan ? 'RECALIBRATE DNA' : 'SHARE KORE ID'}</Text>
         </TouchableOpacity>
       </View>
     </Animated.View>
@@ -1303,7 +1303,7 @@ export default function KoreTab() {
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); setRankingRefreshKey(k => k + 1); }} tintColor="#00E5FF" />}
             contentContainerStyle={{ paddingBottom: myHudRank && myHudRank > 10 ? 130 : 100 }}
           >
-            {/* 1. PASSPORT HEADER */}
+            {/* 1. KORE ID CARD */}
             <PassportHeader user={user} />
 
             {/* KORE ID — Visualizza il tuo QR Code identificativo */}

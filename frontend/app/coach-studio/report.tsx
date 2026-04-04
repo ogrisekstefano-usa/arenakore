@@ -128,7 +128,7 @@ export default function TalentReportPage() {
       if (typeof window !== 'undefined') {
         const link = document.createElement('a');
         link.href = url;
-        link.download = `KORE_PASSPORT_${report?.username || 'EXPORT'}.pdf`;
+        link.download = `KORE_ID_${report?.username || 'EXPORT'}.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

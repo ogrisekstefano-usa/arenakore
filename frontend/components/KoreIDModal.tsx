@@ -20,6 +20,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { useAuth } from '../contexts/AuthContext';
+import { KoreIDSharer } from './KoreIDSharer';
 
 const { width: SW } = Dimensions.get('window');
 const QR_SIZE = Math.min(SW * 0.45, 180);
@@ -214,6 +215,11 @@ export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
                 <Text style={[ki$.serial, { color: mood.color + '60' }]}>KORE #{koreNumber}</Text>
                 <Text style={ki$.uid}>{uid.substring(0, 8).toUpperCase()}</Text>
               </View>
+
+              {/* Share KORE ID as Image */}
+              <View style={ki$.shareSection}>
+                <KoreIDSharer user={user} />
+              </View>
             </View>
           </TouchableOpacity>
         </Animated.View>
@@ -305,4 +311,6 @@ const ki$ = StyleSheet.create({
     color: 'rgba(255,255,255,0.1)', fontSize: 10, fontWeight: '600', letterSpacing: 1,
     ...Platform.select({ web: { fontFamily: 'monospace' }, default: {} }),
   },
+  // Share section
+  shareSection: { paddingHorizontal: 20, paddingBottom: 16 },
 });

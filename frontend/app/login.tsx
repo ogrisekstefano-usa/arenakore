@@ -88,7 +88,7 @@ export default function Login() {
             <Text style={s$.brandA}>ARENA</Text>
             <Text style={s$.brandK}>KORE</Text>
           </View>
-          <Text style={s$.title}>BENTORNATO{'\n'}GUERRIERO.</Text>
+          <Text style={s$.title}>BENTORNATO,{'\n'}KORE.</Text>
           <Text style={s$.subtitle}>La tua arena ti aspetta.</Text>
         </Animated.View>
 
@@ -155,7 +155,7 @@ export default function Login() {
             ) : (
               <>
                 <Ionicons name="flash" size={18} color="#000" />
-                <Text style={s$.mainBtnText}>TORNA NELL'ARENA</Text>
+                <Text style={s$.mainBtnText}>RECLAMA IL TUO DNA</Text>
               </>
             )}
           </TouchableOpacity>

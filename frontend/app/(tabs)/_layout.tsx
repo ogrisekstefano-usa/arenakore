@@ -140,7 +140,7 @@ const $ = StyleSheet.create({
   bar: {
     flexDirection: 'row', backgroundColor: '#000000',
     borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.07)',
-    height: 76, alignItems: 'center',
+    height: 76, alignItems: 'center', overflow: 'visible',
   },
   tabItem: {
     flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4, position: 'relative',
@@ -158,7 +158,7 @@ const $ = StyleSheet.create({
     color: '#00E5FF',
   },
   centerWrap: {
-    flex: 1, alignItems: 'center', justifyContent: 'center',
+    flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'visible',
   },
   centerLabel: {
     color: '#AAAAAA', fontSize: 11, fontWeight: '900',

@@ -306,7 +306,7 @@ function DeepProfilePanel({ athleteId, onClose }: { athleteId: string; onClose: 
         activeOpacity={0.8}
       >
         <Ionicons name="document-text" size={14} color={theme.accent} />
-        <Text style={[{ color: theme.accent, fontSize: 12, letterSpacing: 1.5 }, MONT('800')]}>EXPORT KORE PASSPORT (PDF)</Text>
+        <Text style={[{ color: theme.accent, fontSize: 12, letterSpacing: 1.5 }, MONT('800')]}>EXPORT KORE ID (PDF)</Text>
       </TouchableOpacity>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>

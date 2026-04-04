@@ -130,7 +130,7 @@ export default function ManualOnboarding() {
 
           <TouchableOpacity style={s.cta} onPress={handleContinue} activeOpacity={0.85}>
             <Ionicons name="person-add-outline" size={18} color={BG} />
-            <Text style={s.ctaTxt}>GENERA KORE PASSPORT</Text>
+            <Text style={s.ctaTxt}>GENERA KORE DNA</Text>
           </TouchableOpacity>
 
           <Text style={s.note}>

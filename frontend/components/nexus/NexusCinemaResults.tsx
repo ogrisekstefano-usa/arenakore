@@ -1,13 +1,15 @@
 /**
- * ARENAKORE — Cinema Results v2.0
- * Session completion modal
- * Extracted from nexus-trigger.tsx
+ * ARENAKORE — Cinema Results v3.0 (VictoryCard SnapshotEngine)
+ * Session completion modal with view-shot share capability.
+ * SHARE generates a "VictoryCard" image with mood-based background.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Dimensions,
+  Share, Platform, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import ViewShot, { captureRef } from 'react-native-view-shot';
 import Animated, {
   useSharedValue, withSpring, withTiming, useAnimatedStyle,
   withSequence, withDelay, withRepeat, Easing, FadeInDown,
@@ -15,12 +17,23 @@ import Animated, {
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
+// Mood engine for background color
+function getMood(qualityScore: number) {
+  if (qualityScore >= 85) return { bg: '#1A0000', accent: '#FF3B30', label: 'POWER', icon: 'flame' as const };
+  if (qualityScore >= 65) return { bg: '#001A0A', accent: '#00FF87', label: 'FLOW', icon: 'leaf' as const };
+  if (qualityScore >= 40) return { bg: '#00101A', accent: '#00E5FF', label: 'PULSE', icon: 'pulse' as const };
+  return { bg: '#0A0A0A', accent: '#888', label: 'WARM UP', icon: 'fitness' as const };
+}
+
 export function CinemaResults({ visible, result, user, onClose }: { visible: boolean; result: any; user: any; onClose: () => void }) {
   const slideY = useSharedValue(300);
   const fadeIn = useSharedValue(0);
   const [displayXP, setDisplayXP] = useState(0);
   const founderShimmer = useSharedValue(-1);
-  const [showShare, setShowShare] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const victoryRef = useRef<any>(null);
+
+  const mood = useMemo(() => getMood(result?.quality_score || 0), [result?.quality_score]);
 
   useEffect(() => {
     if (visible && result) {
@@ -36,6 +49,28 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
 
   const cs = useAnimatedStyle(() => ({ transform: [{ translateY: slideY.value }], opacity: fadeIn.value }));
   const ss = useAnimatedStyle(() => ({ opacity: 0.35 + Math.max(0, 1 - Math.abs(founderShimmer.value)) * 0.65 }));
+
+  const handleShare = useCallback(async () => {
+    if (!victoryRef.current) return;
+    setSharing(true);
+    try {
+      const uri = await captureRef(victoryRef, { format: 'png', quality: 1 });
+      if (Platform.OS === 'web') {
+        const w = window.open();
+        if (w) w.document.write(`<img src="${uri}" style="max-width:100%"/>`);
+      } else {
+        await Share.share({
+          url: uri,
+          message: 'Sfidami su ARENA KORE! https://arenakore.app',
+          title: 'ARENAKORE — Risultato Sessione',
+        });
+      }
+    } catch (e) {
+      Alert.alert('Errore', 'Impossibile condividere');
+    } finally {
+      setSharing(false);
+    }
+  }, []);
 
   if (!visible || !result) return null;
   const isFounder = user?.is_founder || user?.is_admin;
@@ -54,7 +89,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
             </View>
             <Text style={cin$.username}>{user?.username || 'Kore'}</Text>
             <View style={cin$.scoreCircle}><Text style={cin$.scoreVal}>{result.quality_score || '\u2014'}</Text><Text style={cin$.scoreLabel}>QUALIT{'\u00c0'}</Text></View>
-            <View style={cin$.xpWrap}><Text style={cin$.xpPlus}>+</Text><Text style={cin$.xpVal}>{displayXP}</Text><Text style={cin$.xpUnit}>XP</Text></View>
+            <View style={cin$.xpWrap}><Text style={cin$.xpPlus}>+</Text><Text style={cin$.xpVal}>{displayXP}</Text><Text style={cin$.xpUnit}>FLUX</Text></View>
             <View style={cin$.statsRow}>
               <View style={cin$.stat}><Text style={cin$.statVal}>{result.reps_completed}</Text><Text style={cin$.statLabel}>REPS</Text></View>
               <View style={cin$.stat}><Text style={[cin$.statVal, { color: '#FFD700' }]}>x{result.quality_multiplier}</Text><Text style={cin$.statLabel}>MULTI</Text></View>
@@ -69,23 +104,77 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
                 <View key={k} style={cin$.dnaItem}><Text style={cin$.dnaVal}>{Math.round(v)}</Text><Text style={cin$.dnaLabel}>{k.slice(0, 3).toUpperCase()}</Text></View>
               ))}</View>
             )}
-            <TouchableOpacity style={cin$.shareBtn} onPress={() => setShowShare(!showShare)} activeOpacity={0.85}>
-              <Text style={cin$.shareBtnText}>{'\u2191'} SHARE ATHLETE PASSPORT</Text>
+
+            {/* SHARE VICTORY CARD BUTTON */}
+            <TouchableOpacity
+              style={[cin$.shareBtn, { borderColor: mood.accent + '35' }]}
+              onPress={handleShare}
+              activeOpacity={0.85}
+              disabled={sharing}
+            >
+              <Ionicons name="share-outline" size={16} color={mood.accent} />
+              <Text style={[cin$.shareBtnText, { color: mood.accent }]}>
+                {sharing ? 'GENERAZIONE...' : 'SHARE VICTORY CARD'}
+              </Text>
             </TouchableOpacity>
-            {showShare && (
-              <Animated.View entering={FadeInDown.duration(300)} style={cin$.shareCard}>
-                <Text style={cin$.shareLogo}>ARENAKORE</Text>
-                <Text style={cin$.shareTag}>Hall of Kore</Text>
-                <View style={cin$.shareLine} />
-                <Text style={cin$.shareScore}>Quality: {result.quality_score} {'\u00b7'} +{result.xp_earned} XP {'\u00b7'} {result.reps_completed} Reps</Text>
-                <Text style={cin$.shareFounder}>
-                  {isFounder ? `Founder #${user?.founder_number || '?'}` : user?.username} {'\u2014'} Performance Logged in Chicago
-                </Text>
-              </Animated.View>
-            )}
+
             <TouchableOpacity style={cin$.closeBtn} onPress={onClose}><Text style={cin$.closeBtnText}>CHIUDI</Text></TouchableOpacity>
           </ScrollView>
         </Animated.View>
+
+        {/* HIDDEN VICTORY CARD FOR SNAPSHOT */}
+        <View style={vic$.offscreen}>
+          <ViewShot ref={victoryRef} options={{ format: 'png', quality: 1 }} style={vic$.card}>
+            <View style={[vic$.bg, { backgroundColor: mood.bg }]}>
+              {/* Mood accent line */}
+              <View style={[vic$.accentLine, { backgroundColor: mood.accent }]} />
+
+              {/* Brand */}
+              <View style={vic$.brandRow}>
+                <Text style={vic$.brandA}>ARENA</Text>
+                <Text style={[vic$.brandK, { color: mood.accent }]}>KORE</Text>
+              </View>
+
+              {/* Username */}
+              <Text style={vic$.username}>{(user?.username || 'KORE').toUpperCase()}</Text>
+              {isFounder && <Text style={vic$.founderTag}>FOUNDER #{user?.founder_number || '?'}</Text>}
+
+              {/* Giant Result */}
+              <View style={vic$.resultSection}>
+                <Text style={[vic$.resultBig, { color: mood.accent }]}>{result.reps_completed || '0'}</Text>
+                <Text style={vic$.resultUnit}>REPS</Text>
+              </View>
+
+              {/* Quality Score */}
+              <View style={vic$.qualRow}>
+                <View style={[vic$.qualCircle, { borderColor: mood.accent }]}>
+                  <Text style={[vic$.qualVal, { color: mood.accent }]}>{result.quality_score || '—'}</Text>
+                </View>
+                <View style={vic$.qualInfo}>
+                  <Text style={vic$.qualLabel}>QUALITÀ</Text>
+                  <Text style={[vic$.moodLabel, { color: mood.accent }]}>{mood.label}</Text>
+                </View>
+              </View>
+
+              {/* FLUX earned */}
+              <View style={vic$.fluxRow}>
+                <Text style={vic$.fluxPlus}>+</Text>
+                <Text style={[vic$.fluxVal, { color: mood.accent }]}>{result.xp_earned || 0}</Text>
+                <Text style={vic$.fluxUnit}>FLUX</Text>
+              </View>
+
+              {/* Validation */}
+              <View style={vic$.validRow}>
+                <Ionicons name="eye" size={14} color="rgba(255,255,255,0.3)" />
+                <Text style={vic$.validText}>NEXUS VALIDATED</Text>
+              </View>
+
+              {/* Footer */}
+              <Text style={vic$.tagline}>Sfidami su ARENA KORE!</Text>
+              <Text style={vic$.footer}>arenakore.app</Text>
+            </View>
+          </ViewShot>
+        </View>
       </View>
     </Modal>
   );
@@ -93,7 +182,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
 
 const cin$ = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(5,5,5,0.96)' },
-  card: { width: SW * 0.9, maxHeight: SH * 0.85, backgroundColor: '#0A0A0A', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.12, shadowRadius: 25 },
+  card: { width: SW * 0.9, maxHeight: SH * 0.85, backgroundColor: '#0A0A0A', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   scroll: { padding: 24, alignItems: 'center' },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 },
   title: { color: '#00E5FF', fontSize: 13, fontWeight: '800', letterSpacing: 4 },
@@ -120,14 +209,37 @@ const cin$ = StyleSheet.create({
   dnaItem: { alignItems: 'center', gap: 1 },
   dnaVal: { color: '#00E5FF', fontSize: 16, fontWeight: '900' },
   dnaLabel: { color: '#555', fontSize: 7, fontWeight: '700' },
-  shareBtn: { width: '100%', backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 6, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)' },
-  shareBtnText: { color: '#FFD700', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
-  shareCard: { width: '100%', backgroundColor: 'rgba(255,215,0,0.05)', borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 8, borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)', gap: 4 },
-  shareLogo: { color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 4 },
-  shareTag: { color: '#888', fontSize: 11, fontWeight: '600', letterSpacing: 2 },
-  shareLine: { width: 40, height: 1, backgroundColor: 'rgba(255,215,0,0.3)', marginVertical: 6 },
-  shareScore: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-  shareFounder: { color: '#FFD700', fontSize: 12, fontWeight: '600', fontStyle: 'italic', textAlign: 'center' },
+  shareBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 10, paddingVertical: 14, marginTop: 6, borderWidth: 1 },
+  shareBtnText: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   closeBtn: { width: '100%', backgroundColor: '#00E5FF', borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: 10 },
   closeBtnText: { color: '#000000', fontSize: 16, fontWeight: '800', letterSpacing: 2 },
+});
+
+const vic$ = StyleSheet.create({
+  offscreen: { position: 'absolute', left: -9999, top: -9999, opacity: 1 },
+  card: { width: 360, height: 640 },
+  bg: { flex: 1, paddingHorizontal: 24, paddingVertical: 20, justifyContent: 'space-between' },
+  accentLine: { height: 3, borderRadius: 2, width: 40, marginBottom: 10 },
+  brandRow: { flexDirection: 'row', gap: 6 },
+  brandA: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '900', letterSpacing: 5 },
+  brandK: { fontSize: 10, fontWeight: '900', letterSpacing: 5 },
+  username: { color: '#FFF', fontSize: 22, fontWeight: '800', letterSpacing: -0.5, marginTop: 8 },
+  founderTag: { color: '#FFD700', fontSize: 10, fontWeight: '900', letterSpacing: 2, marginTop: 2 },
+  resultSection: { alignItems: 'center', marginVertical: 8 },
+  resultBig: { fontSize: 80, fontWeight: '900', lineHeight: 88 },
+  resultUnit: { color: 'rgba(255,255,255,0.2)', fontSize: 14, fontWeight: '800', letterSpacing: 6, marginTop: -4 },
+  qualRow: { flexDirection: 'row', alignItems: 'center', gap: 16, alignSelf: 'center' },
+  qualCircle: { width: 56, height: 56, borderRadius: 28, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' },
+  qualVal: { fontSize: 22, fontWeight: '900' },
+  qualInfo: { gap: 2 },
+  qualLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '800', letterSpacing: 2 },
+  moodLabel: { fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+  fluxRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 2, marginVertical: 4 },
+  fluxPlus: { color: '#FFD700', fontSize: 20, fontWeight: '300' },
+  fluxVal: { fontSize: 36, fontWeight: '900' },
+  fluxUnit: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '800', letterSpacing: 3, marginLeft: 4 },
+  validRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginVertical: 4 },
+  validText: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '800', letterSpacing: 2 },
+  tagline: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '600', textAlign: 'center', fontStyle: 'italic' },
+  footer: { color: 'rgba(255,255,255,0.1)', fontSize: 10, fontWeight: '800', letterSpacing: 3, textAlign: 'center' },
 });

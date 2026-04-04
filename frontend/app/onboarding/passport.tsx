@@ -124,13 +124,13 @@ export default function PassportScreen() {
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, {
           mimeType: 'image/png',
-          dialogTitle: 'ARENAKORE — KORE DNA PASSPORT',
+          dialogTitle: 'ARENAKORE — KORE DNA ID',
         });
       } else {
         // Fallback: native Share sheet
         await Share.share({
-          message: `ARENAKORE — KORE DNA PASSPORT\n\nDNA SCORE: ${result?.kore_score}/100\nSTABILITÀ: ${result?.stability}% | AMPIEZZA: ${result?.amplitude}%\nCERTIFIED IN ${result?.city}\n${result ? formatDate(result.scan_date) : ''}\n\nhttps://arena-scan-lab.preview.emergentagent.com`,
-          title: 'KORE DNA PASSPORT',
+          message: `ARENAKORE — KORE DNA ID\n\nDNA SCORE: ${result?.kore_score}/100\nSTABILITÀ: ${result?.stability}% | AMPIEZZA: ${result?.amplitude}%\nCERTIFIED IN ${result?.city}\n${result ? formatDate(result.scan_date) : ''}\n\nhttps://arena-scan-lab.preview.emergentagent.com`,
+          title: 'KORE DNA ID',
         });
       }
       setDownloadOk(true);
@@ -166,7 +166,7 @@ export default function PassportScreen() {
           <Text style={[s.brand, { color: CYAN }]}>KORE</Text>
         </View>
         <View style={s.stepPill}>
-          <Text style={s.stepTxt}>DNA PASSPORT</Text>
+          <Text style={s.stepTxt}>DNA KORE ID</Text>
         </View>
       </Animated.View>
 
@@ -181,7 +181,7 @@ export default function PassportScreen() {
           <View style={s.cardHeader}>
             <View>
               <Text style={s.cardBrandArena}>ARENA<Text style={{ color: CYAN }}>KORE</Text></Text>
-              <Text style={s.cardLabel}>BIOMETRIC DNA PASSPORT</Text>
+              <Text style={s.cardLabel}>BIOMETRIC DNA KORE ID</Text>
             </View>
             <View style={{ alignItems: 'flex-end', gap: 2 }}>
               <Text style={s.cardDate}>{formDate}</Text>
@@ -267,7 +267,7 @@ export default function PassportScreen() {
             <>
               <Ionicons name={downloadOk ? 'checkmark-circle' : 'download'} size={18} color={BG} />
               <Text style={s.downloadTxt}>
-                {downloadOk ? 'PASSPORT SALVATO' : 'DOWNLOAD PASSPORT'}
+                {downloadOk ? 'KORE ID SALVATO' : 'DOWNLOAD KORE ID'}
               </Text>
             </>
           )}
