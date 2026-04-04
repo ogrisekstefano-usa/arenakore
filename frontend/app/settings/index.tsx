@@ -1,6 +1,7 @@
 /**
- * ARENAKORE — SETTINGS SCREEN
+ * ARENAKORE — SETTINGS SCREEN v2.0
  * Tab: Profilo, Account, Dati Fisici, Privacy
+ * FIX: TextInput field components extracted outside parent to prevent re-renders on keystroke.
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -17,6 +18,46 @@ type TabKey = typeof TABS[number];
 
 const GENDER_OPTIONS = ['M', 'F', 'ALTRO'];
 const LANG_OPTIONS = ['IT', 'EN', 'ES', 'DE'];
+
+// ═══ EXTRACTED FIELD COMPONENT (outside parent to prevent unmounting on re-render) ═══
+function SettingsField({ label, value, onChangeText, editable = true, keyboardType = 'default' as any }: {
+  label: string; value: string; onChangeText?: (v: string) => void;
+  editable?: boolean; keyboardType?: any;
+}) {
+  return (
+    <View style={se$.fieldWrap}>
+      <Text style={se$.fieldLabel}>{label}</Text>
+      <TextInput
+        style={[se$.fieldInput, !editable && se$.fieldReadOnly]}
+        value={value}
+        onChangeText={editable ? onChangeText : undefined}
+        editable={editable}
+        placeholderTextColor="rgba(255,255,255,0.15)"
+        keyboardType={keyboardType}
+        selectionColor="#00E5FF"
+        autoCorrect={false}
+      />
+    </View>
+  );
+}
+
+// ═══ EXTRACTED CHIP ROW COMPONENT ═══
+function ChipRow({ options, selected, onSelect }: { options: string[]; selected: string; onSelect: (v: string) => void }) {
+  return (
+    <View style={se$.chipRow}>
+      {options.map(o => (
+        <TouchableOpacity
+          key={o}
+          style={[se$.chip, selected === o && se$.chipActive]}
+          onPress={() => onSelect(o)}
+          activeOpacity={0.8}
+        >
+          <Text style={[se$.chipText, selected === o && se$.chipTextActive]}>{o}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+}
 
 export default function SettingsScreen() {
   const { user, token, refreshUser } = useAuth();
@@ -43,6 +84,15 @@ export default function SettingsScreen() {
       });
     }
   }, [user]);
+
+  // Individual field updaters (stable references, no re-creation)
+  const updateFirstName = useCallback((v: string) => setForm(p => ({ ...p, first_name: v })), []);
+  const updateLastName = useCallback((v: string) => setForm(p => ({ ...p, last_name: v })), []);
+  const updateUsername = useCallback((v: string) => setForm(p => ({ ...p, username: v })), []);
+  const updateWeight = useCallback((v: string) => setForm(p => ({ ...p, weight: v })), []);
+  const updateHeight = useCallback((v: string) => setForm(p => ({ ...p, height: v })), []);
+  const updateGender = useCallback((v: string) => setForm(p => ({ ...p, gender: v })), []);
+  const updateLanguage = useCallback((v: string) => setForm(p => ({ ...p, language: v })), []);
 
   const handleSave = useCallback(async () => {
     if (!token) return;
@@ -83,36 +133,6 @@ export default function SettingsScreen() {
     }
   }, [token, tab, form]);
 
-  const F = ({ label, value, field, editable = true, keyboardType = 'default' as any }: any) => (
-    <View style={se$.fieldWrap}>
-      <Text style={se$.fieldLabel}>{label}</Text>
-      <TextInput
-        style={[se$.fieldInput, !editable && se$.fieldReadOnly]}
-        value={value}
-        onChangeText={editable ? (v: string) => setForm(p => ({ ...p, [field]: v })) : undefined}
-        editable={editable}
-        placeholderTextColor="rgba(255,255,255,0.15)"
-        keyboardType={keyboardType}
-        selectionColor="#00E5FF"
-      />
-    </View>
-  );
-
-  const ChipRow = ({ options, selected, field }: { options: string[]; selected: string; field: string }) => (
-    <View style={se$.chipRow}>
-      {options.map(o => (
-        <TouchableOpacity
-          key={o}
-          style={[se$.chip, selected === o && se$.chipActive]}
-          onPress={() => setForm(p => ({ ...p, [field]: o }))}
-          activeOpacity={0.8}
-        >
-          <Text style={[se$.chipText, selected === o && se$.chipTextActive]}>{o}</Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-
   return (
     <View style={se$.container}>
       <SafeAreaView edges={['top']} style={{ backgroundColor: '#000' }}>
@@ -134,21 +154,21 @@ export default function SettingsScreen() {
       </ScrollView>
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={se$.scroll} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={se$.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           {tab === 'PROFILO' && (
             <>
-              <F label="NOME" value={form.first_name} field="first_name" />
-              <F label="COGNOME" value={form.last_name} field="last_name" />
-              <F label="USERNAME" value={form.username} field="username" />
-              <F label="EMAIL" value={form.email} field="email" editable={false} />
+              <SettingsField label="NOME" value={form.first_name} onChangeText={updateFirstName} />
+              <SettingsField label="COGNOME" value={form.last_name} onChangeText={updateLastName} />
+              <SettingsField label="USERNAME" value={form.username} onChangeText={updateUsername} />
+              <SettingsField label="EMAIL" value={form.email} editable={false} />
               <Text style={se$.fieldLabel}>LINGUA</Text>
-              <ChipRow options={LANG_OPTIONS} selected={form.language} field="language" />
+              <ChipRow options={LANG_OPTIONS} selected={form.language} onSelect={updateLanguage} />
             </>
           )}
 
           {tab === 'ACCOUNT' && (
             <>
-              <F label="EMAIL" value={form.email} field="email" editable={false} />
+              <SettingsField label="EMAIL" value={form.email} editable={false} />
               <View style={se$.infoCard}>
                 <Ionicons name="information-circle" size={18} color="rgba(255,255,255,0.3)" />
                 <Text style={se$.infoText}>Per cambiare email o password, contatta il supporto.</Text>
@@ -162,10 +182,10 @@ export default function SettingsScreen() {
 
           {tab === 'DATI FISICI' && (
             <>
-              <F label="PESO (KG)" value={form.weight} field="weight" keyboardType="decimal-pad" />
-              <F label="ALTEZZA (CM)" value={form.height} field="height" keyboardType="number-pad" />
+              <SettingsField label="PESO (KG)" value={form.weight} onChangeText={updateWeight} keyboardType="decimal-pad" />
+              <SettingsField label="ALTEZZA (CM)" value={form.height} onChangeText={updateHeight} keyboardType="number-pad" />
               <Text style={se$.fieldLabel}>SESSO</Text>
-              <ChipRow options={GENDER_OPTIONS} selected={form.gender} field="gender" />
+              <ChipRow options={GENDER_OPTIONS} selected={form.gender} onSelect={updateGender} />
             </>
           )}
 
@@ -218,10 +238,10 @@ const se$ = StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingTop: 16 },
   fieldWrap: { marginBottom: 16 },
   fieldLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '800', letterSpacing: 3, marginBottom: 6 },
-  fieldInput: { backgroundColor: '#0A0A0A', borderWidth: 1, borderColor: '#1C1C1E', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, color: '#FFF', fontSize: 16, fontWeight: '600' },
+  fieldInput: { backgroundColor: '#0A0A0A', borderWidth: 1, borderColor: '#1C1C1E', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 14, color: '#FFF', fontSize: 16, fontWeight: '600' },
   fieldReadOnly: { opacity: 0.4 },
   chipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 16 },
-  chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#1C1C1E', backgroundColor: '#0A0A0A' },
+  chip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: '#1C1C1E', backgroundColor: '#0A0A0A' },
   chipActive: { borderColor: '#00E5FF', backgroundColor: 'rgba(0,229,255,0.08)' },
   chipText: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '800', letterSpacing: 1 },
   chipTextActive: { color: '#00E5FF' },

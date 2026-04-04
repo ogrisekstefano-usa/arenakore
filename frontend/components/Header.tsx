@@ -41,7 +41,7 @@ export function Header({ title, rightAction }: { title: string; rightAction?: Re
             {rightAction}
 
             {/* Menu */}
-            <TouchableOpacity onPress={() => setMenuOpen(true)} style={h.iconBtn} hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}>
+            <TouchableOpacity onPress={() => setMenuOpen(true)} style={h.menuBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
               <Ionicons name="ellipsis-horizontal" size={20} color={EL.TEXT_SEC} />
             </TouchableOpacity>
           </View>
@@ -77,6 +77,10 @@ const h = StyleSheet.create({
   },
   iconBtn: {
     padding: 6,
+  },
+  menuBtn: {
+    padding: 10,
+    marginLeft: 2,
   },
   // FLUX Pill — minimal
   fluxPill: {
