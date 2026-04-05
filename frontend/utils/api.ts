@@ -1,3 +1,5 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 
 async function request(path: string, options: RequestInit = {}, token?: string | null) {
@@ -15,6 +17,16 @@ async function request(path: string, options: RequestInit = {}, token?: string |
   }
   return response.json();
 }
+
+// ── Generic API client for new endpoints ──
+export const apiClient = async (path: string, options: RequestInit = {}) => {
+  let token: string | null = null;
+  try {
+    token = await AsyncStorage.getItem('auth_token');
+  } catch {}
+  const cleanPath = path.startsWith('/api') ? path.replace('/api', '') : path;
+  return request(cleanPath, options, token);
+};
 
 export const api = {
   register: (data: {
