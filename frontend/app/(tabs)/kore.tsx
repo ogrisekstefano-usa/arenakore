@@ -1,13 +1,13 @@
 /**
- * ARENAKORE — KORE TAB v9.0 "THE ENTRY GATE — NEON EDITION"
- * Pulsating neon auras, glassmorphism depth, aggressive micro-copy.
- * Typography: Montserrat 800 titles, Plus Jakarta Sans 800 numerics.
- * Palette: #121212 bg, Cyan #00E5FF, Gold #FFD700, Red #FF3B30, Green #00FF87.
+ * ARENAKORE — KORE TAB v10.0 "NIKE DYNAMIC DASHBOARD"
+ * 4 Macro-Cards with cross-fade athlete imagery (3s cycle).
+ * Dark vignette overlay, pulsating 1px neon aura.
+ * Typography: Plus Jakarta Sans 800 titles, Montserrat body.
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar, TouchableOpacity,
-  RefreshControl, Platform,
+  RefreshControl, Platform, Image, ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,91 +24,116 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// ─── Neon Card with Pulsating Aura ──────────────────────────────────
-function NeonActionCard({
-  icon, label, sub, motivational, color, gradientStart, gradientEnd,
-  onPress, index,
+const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
+const FONT_M = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });
+
+// ─── IMAGE SETS PER CARD ───
+const CARD_IMAGES = {
+  sfida: [
+    'https://images.unsplash.com/photo-1636581563711-cd454f1bf99a?w=600&q=50',
+    'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600&q=50',
+    'https://images.unsplash.com/photo-1663791088119-07535b0fafeb?w=600&q=50',
+  ],
+  koreid: [
+    'https://images.unsplash.com/photo-1656785139062-0a4f174467a4?w=600&q=50',
+    'https://images.unsplash.com/photo-1601113329251-0aebe217bdbe?w=600&q=50',
+    'https://images.unsplash.com/photo-1652532678111-85849708e1f4?w=600&q=50',
+  ],
+  arena: [
+    'https://images.unsplash.com/photo-1599995730539-695f5717b24c?w=600&q=50',
+    'https://images.unsplash.com/photo-1577416412292-747c6607f055?w=600&q=50',
+    'https://images.unsplash.com/photo-1519879709058-11082644047d?w=600&q=50',
+  ],
+  coach: [
+    'https://images.unsplash.com/photo-1548690312-e3b507d8c110?w=600&q=50',
+    'https://images.unsplash.com/photo-1550345332-09e3ac987658?w=600&q=50',
+    'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=50',
+  ],
+};
+
+// ═══ DYNAMIC IMAGE CARD ═══
+function DynamicNeonCard({
+  images, label, sub, color, onPress, index,
 }: {
-  icon: keyof typeof Ionicons.glyphMap;
+  images: string[];
   label: string;
   sub: string;
-  motivational: string;
   color: string;
-  gradientStart: string;
-  gradientEnd: string;
   onPress: () => void;
   index: number;
 }) {
-  // Pulsating neon border glow
+  const [activeIdx, setActiveIdx] = useState(0);
+  const fadeA = useSharedValue(1);
+  const fadeB = useSharedValue(0);
+  const showA = useRef(true);
+
+  // Cross-fade cycle every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (showA.current) {
+        fadeB.value = withTiming(1, { duration: 900, easing: Easing.inOut(Easing.ease) });
+        fadeA.value = withTiming(0, { duration: 900, easing: Easing.inOut(Easing.ease) });
+      } else {
+        fadeA.value = withTiming(1, { duration: 900, easing: Easing.inOut(Easing.ease) });
+        fadeB.value = withTiming(0, { duration: 900, easing: Easing.inOut(Easing.ease) });
+      }
+      showA.current = !showA.current;
+      setActiveIdx(prev => (prev + 1) % images.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  const styleA = useAnimatedStyle(() => ({ opacity: fadeA.value }));
+  const styleB = useAnimatedStyle(() => ({ opacity: fadeB.value }));
+
+  // Pulsating neon border
   const pulse = useSharedValue(0);
   useEffect(() => {
     pulse.value = withDelay(
-      index * 150,
+      index * 200,
       withRepeat(
         withSequence(
-          withTiming(1, { duration: 1800, easing: Easing.inOut(Easing.ease) }),
-          withTiming(0, { duration: 1800, easing: Easing.inOut(Easing.ease) }),
-        ),
-        -1, true,
+          withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+          withTiming(0, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+        ), -1, true,
       ),
     );
   }, []);
 
   const glowStyle = useAnimatedStyle(() => ({
-    borderColor: interpolateColor(
-      pulse.value,
-      [0, 1],
-      [color + '30', color + 'AA'],
-    ),
+    borderColor: interpolateColor(pulse.value, [0, 1], [color + '20', color + '80']),
     ...Platform.select({
-      web: {
-        boxShadow: `0 0 ${8 + pulse.value * 14}px ${color}${Math.round(15 + pulse.value * 35).toString(16).padStart(2, '0')}`,
-      },
+      web: { boxShadow: `0 0 ${4 + pulse.value * 12}px ${color}${Math.round(10 + pulse.value * 30).toString(16).padStart(2, '0')}` },
       default: {},
     }),
   }));
 
-  // Icon incandescence
-  const iconGlow = useAnimatedStyle(() => ({
-    ...Platform.select({
-      web: {
-        boxShadow: `0 0 ${10 + pulse.value * 20}px ${color}${Math.round(20 + pulse.value * 50).toString(16).padStart(2, '0')}`,
-      },
-      default: {},
-    }),
-    opacity: 0.85 + pulse.value * 0.15,
-  }));
+  const imgA = images[activeIdx];
+  const imgB = images[(activeIdx + 1) % images.length];
 
   return (
-    <Animated.View
-      entering={FadeInDown.delay(120 + index * 90).duration(500)}
-      style={c.wrap}
-    >
-      <TouchableOpacity onPress={onPress} activeOpacity={0.82}>
-        <Animated.View style={[c.card, glowStyle]}>
+    <Animated.View entering={FadeInDown.delay(100 + index * 100).duration(500)} style={cd.wrap}>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
+        <Animated.View style={[cd.card, glowStyle]}>
+          {/* Image Layer A */}
+          <Animated.View style={[cd.imgLayer, styleA]}>
+            <Image source={{ uri: imgA }} style={cd.img} resizeMode="cover" />
+          </Animated.View>
+          {/* Image Layer B */}
+          <Animated.View style={[cd.imgLayer, styleB]}>
+            <Image source={{ uri: imgB }} style={cd.img} resizeMode="cover" />
+          </Animated.View>
+          {/* Vignette */}
           <LinearGradient
-            colors={[gradientStart, gradientEnd, '#0A0A0A']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={c.cardGradient}
-          >
-            {/* Glass overlay */}
-            <View style={c.glassOverlay} />
-
-            {/* Icon with incandescence */}
-            <Animated.View style={[c.iconBox, { backgroundColor: color + '18' }, iconGlow]}>
-              <Ionicons name={icon} size={26} color={color} />
-            </Animated.View>
-
-            {/* Label */}
-            <Text style={[c.cardLabel, { color }]}>{label}</Text>
-
-            {/* Sub */}
-            <Text style={c.cardSub}>{sub}</Text>
-
-            {/* Motivational micro-copy */}
-            <Text style={[c.cardMotivational, { color: color + '80' }]}>{motivational}</Text>
-          </LinearGradient>
+            colors={['transparent', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.75)', 'rgba(0,0,0,0.92)']}
+            locations={[0, 0.3, 0.65, 1]}
+            style={cd.vignette}
+          />
+          {/* Content */}
+          <View style={cd.content}>
+            <Text style={[cd.label, { color }]}>{label}</Text>
+            <Text style={cd.sub}>{sub}</Text>
+          </View>
         </Animated.View>
       </TouchableOpacity>
     </Animated.View>
@@ -116,7 +141,7 @@ function NeonActionCard({
 }
 
 // ═══════════════════════════════════════════════════════════
-// MAIN KORE TAB — "THE ENTRY GATE"
+// MAIN KORE TAB
 // ═══════════════════════════════════════════════════════════
 export default function KoreTab() {
   const { user, token, refreshUser } = useAuth();
@@ -129,7 +154,6 @@ export default function KoreTab() {
   const [creatorVisible, setCreatorVisible] = useState(false);
   const [myChallenges, setMyChallenges] = useState<any[]>([]);
 
-  // Wire global callbacks
   useEffect(() => {
     (globalThis as any).__openKoreIdModal = () => setKoreIdVisible(true);
     (globalThis as any).__openControlCenter = () => setSidebarOpen(true);
@@ -168,7 +192,25 @@ export default function KoreTab() {
     finally { setRefreshing(false); }
   }, [refreshUser, fetchMyChallenges]);
 
-  // ═══ Shimmer for FOUNDER chip ═══
+  // FLUX badge glow
+  const fluxGlow = useSharedValue(0);
+  useEffect(() => {
+    fluxGlow.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
+      ), -1, true,
+    );
+  }, []);
+  const fluxBadgeStyle = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(fluxGlow.value, [0, 1], ['rgba(255,215,0,0.08)', 'rgba(255,215,0,0.30)']),
+    ...Platform.select({
+      web: { boxShadow: `0 0 ${3 + fluxGlow.value * 8}px rgba(255,215,0,${0.04 + fluxGlow.value * 0.10})` },
+      default: {},
+    }),
+  }));
+
+  // Founder shimmer
   const shimmer = useSharedValue(0.5);
   useEffect(() => {
     shimmer.value = withRepeat(
@@ -179,90 +221,23 @@ export default function KoreTab() {
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: shimmer.value }));
   const isFounder = user?.is_founder || user?.is_admin;
 
-  // ═══ FLUX counter glow ═══
-  const fluxGlow = useSharedValue(0);
-  useEffect(() => {
-    fluxGlow.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
-      ),
-      -1, true,
-    );
-  }, []);
-  const fluxBadgeStyle = useAnimatedStyle(() => ({
-    borderColor: interpolateColor(fluxGlow.value, [0, 1], ['rgba(255,215,0,0.10)', 'rgba(255,215,0,0.35)']),
-    ...Platform.select({
-      web: { boxShadow: `0 0 ${4 + fluxGlow.value * 8}px rgba(255,215,0,${0.05 + fluxGlow.value * 0.12})` },
-      default: {},
-    }),
-  }));
-
-  // ═══ 4 MACRO ACTIONS CONFIG ═══
-  const ACTIONS = [
-    {
-      key: 'sfida',
-      icon: 'flash' as const,
-      label: 'SFIDA IMMEDIATA',
-      sub: 'Vai diretto in Arena',
-      motivational: 'Nessuna scusa. Solo performance.',
-      color: '#FF3B30',
-      gradientStart: '#1A0808',
-      gradientEnd: '#120404',
-      onPress: () => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
-        router.push('/(tabs)/nexus-trigger');
-      },
-    },
-    {
-      key: 'koreid',
-      icon: 'qr-code' as const,
-      label: 'IL TUO KORE ID',
-      sub: 'Identità · DNA · QR',
-      motivational: 'Il tuo DNA, la tua Autorità nell\'Arena.',
-      color: '#00E5FF',
-      gradientStart: '#041418',
-      gradientEnd: '#020D10',
-      onPress: () => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-        setKoreIdVisible(true);
-      },
-    },
-    {
-      key: 'arena',
-      icon: 'people' as const,
-      label: 'ARENA LIVE',
-      sub: 'Eventi · Duelli · Community',
-      motivational: 'Guarda il mondo sfidarsi. Ora.',
-      color: '#FFD700',
-      gradientStart: '#181408',
-      gradientEnd: '#100E04',
-      onPress: () => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-        router.push('/live-events');
-      },
-    },
-    {
-      key: 'programmi',
-      icon: 'barbell' as const,
-      label: 'SCOPRI PROGRAMMI',
-      sub: 'Template · Allenamenti',
-      motivational: 'Evolvi con i migliori. Segui la guida.',
-      color: '#00FF87',
-      gradientStart: '#041A0E',
-      gradientEnd: '#021008',
-      onPress: () => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-        router.push('/reward-store');
-      },
-    },
+  // Card actions
+  const CARDS = [
+    { key: 'sfida', images: CARD_IMAGES.sfida, label: 'SFIDA ORA', sub: 'Mettiti alla prova.', color: '#FF3B30',
+      onPress: () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {}); router.push('/(tabs)/nexus-trigger'); } },
+    { key: 'koreid', images: CARD_IMAGES.koreid, label: 'KORE ID', sub: 'La tua identità digitale.', color: '#00E5FF',
+      onPress: () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); setKoreIdVisible(true); } },
+    { key: 'arena', images: CARD_IMAGES.arena, label: 'LIVE ARENA', sub: 'Le sfide LIVE, entra in Arena!', color: '#FFD700',
+      onPress: () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); router.push('/live-events'); } },
+    { key: 'coach', images: CARD_IMAGES.coach, label: 'COACH', sub: 'Preparati per le sfide.', color: '#00FF87',
+      onPress: () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); router.push('/reward-store'); } },
   ];
 
   return (
     <View style={s.root}>
       <StatusBar barStyle="light-content" />
 
-      {/* ═══ PREMIUM HEADER ═══ */}
+      {/* ═══ HEADER ═══ */}
       <Animated.View entering={FadeIn.duration(400)} style={[hdr.container, { paddingTop: insets.top + 10 }]}>
         <View style={hdr.left}>
           <Text style={hdr.greeting} numberOfLines={1}>
@@ -292,7 +267,7 @@ export default function KoreTab() {
         contentContainerStyle={s.scroll}
       >
         {/* ═══ STATUS CHIPS ═══ */}
-        <Animated.View entering={FadeInDown.delay(60).duration(400)} style={st.row}>
+        <Animated.View entering={FadeInDown.delay(50).duration(400)} style={st.row}>
           <View style={st.lvlChip}>
             <Ionicons name="shield-checkmark" size={11} color="#00E5FF" />
             <Text style={st.lvlText}>LVL {level}</Text>
@@ -311,25 +286,22 @@ export default function KoreTab() {
           )}
         </Animated.View>
 
-        {/* ═══ 4 NEON MACRO ACTIONS ═══ */}
+        {/* ═══ 4 DYNAMIC CARDS ═══ */}
         <View style={s.grid}>
-          {ACTIONS.map((a, i) => (
-            <NeonActionCard
-              key={a.key}
-              icon={a.icon}
-              label={a.label}
-              sub={a.sub}
-              motivational={a.motivational}
-              color={a.color}
-              gradientStart={a.gradientStart}
-              gradientEnd={a.gradientEnd}
-              onPress={a.onPress}
+          {CARDS.map((c, i) => (
+            <DynamicNeonCard
+              key={c.key}
+              images={c.images}
+              label={c.label}
+              sub={c.sub}
+              color={c.color}
+              onPress={c.onPress}
               index={i}
             />
           ))}
         </View>
 
-        {/* ═══ QUICK STATS — Glassmorphism Bar ═══ */}
+        {/* ═══ QUICK STATS ═══ */}
         <Animated.View entering={FadeInDown.delay(500).duration(400)} style={qs.container}>
           <LinearGradient
             colors={['rgba(255,255,255,0.03)', 'rgba(255,255,255,0.01)', 'transparent']}
@@ -352,7 +324,7 @@ export default function KoreTab() {
           </LinearGradient>
         </Animated.View>
 
-        {/* ═══ LE MIE SFIDE — UGC Catalog ═══ */}
+        {/* ═══ LE MIE SFIDE ═══ */}
         <Animated.View entering={FadeInDown.delay(550).duration(400)} style={ugc.section}>
           <View style={ugc.headerRow}>
             <View>
@@ -400,7 +372,6 @@ export default function KoreTab() {
         <View style={{ height: 44 }} />
       </ScrollView>
 
-      {/* ═══ MODALS ═══ */}
       <KoreIDModal visible={koreIdVisible} onClose={() => setKoreIdVisible(false)} />
       <ControlCenter visible={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <ChallengeCreator
@@ -412,7 +383,7 @@ export default function KoreTab() {
   );
 }
 
-// ─── UGC Challenge Card (Horizontal Scroll) ────────────────────────
+// ─── UGC Card (Horizontal Scroll) ──────────────────────────────────
 const TEMPLATE_COLORS: Record<string, string> = {
   AMRAP: '#FF3B30', EMOM: '#00E5FF', FOR_TIME: '#FFD700', TABATA: '#00FF87', CUSTOM: '#FF9500',
 };
@@ -458,10 +429,7 @@ function UGCCard({ challenge, onStart, onInvite, onLive }: {
 
 // ─── Quick Link Row ─────────────────────────────────────────────────
 function QuickLink({ icon, color, label, onPress }: {
-  icon: keyof typeof Ionicons.glyphMap;
-  color: string;
-  label: string;
-  onPress: () => void;
+  icon: keyof typeof Ionicons.glyphMap; color: string; label: string; onPress: () => void;
 }) {
   return (
     <TouchableOpacity style={lnk.row} onPress={onPress} activeOpacity={0.65}>
@@ -477,35 +445,23 @@ function QuickLink({ icon, color, label, onPress }: {
 // ═══════════════════════════════════════════════════════════
 // STYLES
 // ═══════════════════════════════════════════════════════════
-
-const FONT_JAKARTA = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
-const FONT_MONT = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });
-
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#0A0A0A' },
-  scroll: { paddingHorizontal: 20, paddingTop: 16 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between', marginBottom: 24 },
+  scroll: { paddingHorizontal: 16, paddingTop: 12 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between', marginBottom: 20 },
 });
 
-// ── HEADER ──
 const hdr = StyleSheet.create({
   container: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingBottom: 14,
+    paddingHorizontal: 20, paddingBottom: 12,
     backgroundColor: '#0A0A0A',
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)',
   },
   left: { flex: 1, gap: 2 },
-  greeting: {
-    color: 'rgba(255,255,255,0.45)', fontSize: 17,
-    fontFamily: FONT_JAKARTA, fontWeight: '500',
-  },
+  greeting: { color: 'rgba(255,255,255,0.45)', fontSize: 17, fontFamily: FONT_J, fontWeight: '500' },
   name: { color: '#FFFFFF', fontWeight: '800', fontSize: 18 },
-  sub: {
-    color: 'rgba(255,255,255,0.20)', fontSize: 13,
-    fontFamily: FONT_JAKARTA, fontWeight: '800',
-    letterSpacing: 0.3,
-  },
+  sub: { color: 'rgba(255,255,255,0.20)', fontSize: 13, fontFamily: FONT_J, fontWeight: '800', letterSpacing: 0.3 },
   right: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   fluxBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
@@ -513,10 +469,7 @@ const hdr = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 7,
     borderWidth: 1.2, borderColor: 'rgba(255,215,0,0.12)',
   },
-  fluxVal: {
-    color: '#FFD700', fontSize: 15, fontWeight: '900',
-    fontFamily: FONT_JAKARTA, letterSpacing: 0.5,
-  },
+  fluxVal: { color: '#FFD700', fontSize: 15, fontWeight: '900', fontFamily: FONT_J, letterSpacing: 0.5 },
   menuBtn: {
     width: 36, height: 36, borderRadius: 10,
     backgroundColor: 'rgba(255,255,255,0.03)',
@@ -525,76 +478,63 @@ const hdr = StyleSheet.create({
   },
 });
 
-// ── STATUS CHIPS ──
 const st = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 20 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 },
   lvlChip: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: 'rgba(0,229,255,0.07)', borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 6,
     borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)',
   },
-  lvlText: {
-    color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 1.5,
-    fontFamily: FONT_JAKARTA,
-  },
+  lvlText: { color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
   nexusChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: 'rgba(0,255,135,0.05)', borderRadius: 10,
     paddingHorizontal: 10, paddingVertical: 6,
     borderWidth: 1, borderColor: 'rgba(0,255,135,0.15)',
   },
-  nexusText: { color: '#00FF87', fontSize: 11, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_MONT },
+  nexusText: { color: '#00FF87', fontSize: 11, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_M },
   founderChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 10,
     paddingHorizontal: 10, paddingVertical: 6,
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.18)',
   },
-  founderText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_MONT },
+  founderText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_M },
 });
 
-// ── NEON CARDS ──
-const c = StyleSheet.create({
-  wrap: {
-    width: '47.5%' as any,
-    flexGrow: 0, flexShrink: 0,
-  },
+// ── DYNAMIC CARDS ──
+const cd = StyleSheet.create({
+  wrap: { width: '48%' as any, flexGrow: 0, flexShrink: 0 },
   card: {
-    borderRadius: 20, overflow: 'hidden',
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.08)',
-  },
-  cardGradient: {
-    padding: 16, minHeight: 170,
-    justifyContent: 'flex-end',
+    borderRadius: 18, overflow: 'hidden', height: 180,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
     position: 'relative',
   },
-  glassOverlay: {
+  imgLayer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255,255,255,0.015)',
-    borderRadius: 20,
+    zIndex: 1,
   },
-  iconBox: {
-    width: 52, height: 52, borderRadius: 16,
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+  img: { width: '100%', height: '100%' },
+  vignette: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 2,
   },
-  cardLabel: {
-    fontSize: 14, fontWeight: '900', letterSpacing: 0.5, marginBottom: 2,
-    fontFamily: FONT_JAKARTA,
+  content: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    paddingHorizontal: 14, paddingBottom: 14,
+    zIndex: 3,
   },
-  cardSub: {
-    color: 'rgba(255,255,255,0.30)', fontSize: 11, fontWeight: '600',
-    fontFamily: FONT_MONT, marginBottom: 6,
+  label: {
+    fontSize: 16, fontWeight: '900', letterSpacing: 1,
+    fontFamily: FONT_J, marginBottom: 2,
   },
-  cardMotivational: {
-    fontSize: 10, fontWeight: '500', fontStyle: 'italic',
-    fontFamily: FONT_MONT, letterSpacing: 0.3, lineHeight: 13,
+  sub: {
+    color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: '600',
+    fontFamily: FONT_M, lineHeight: 14,
   },
 });
 
-// ── QUICK STATS ──
 const qs = StyleSheet.create({
   container: {
     borderRadius: 16, overflow: 'hidden',
@@ -606,18 +546,11 @@ const qs = StyleSheet.create({
     paddingVertical: 18,
   },
   item: { alignItems: 'center', gap: 3 },
-  num: {
-    color: '#00E5FF', fontSize: 22, fontWeight: '900',
-    fontFamily: FONT_JAKARTA,
-  },
-  label: {
-    color: 'rgba(255,255,255,0.18)', fontSize: 9, fontWeight: '800', letterSpacing: 2.5,
-    fontFamily: FONT_MONT,
-  },
+  num: { color: '#00E5FF', fontSize: 22, fontWeight: '900', fontFamily: FONT_J },
+  label: { color: 'rgba(255,255,255,0.18)', fontSize: 9, fontWeight: '800', letterSpacing: 2.5, fontFamily: FONT_M },
   divider: { width: 1, height: 30, backgroundColor: 'rgba(255,255,255,0.04)' },
 });
 
-// ── QUICK LINKS ──
 const lnk = StyleSheet.create({
   section: { gap: 2, marginBottom: 8 },
   row: {
@@ -625,37 +558,27 @@ const lnk = StyleSheet.create({
     paddingVertical: 14, paddingHorizontal: 4,
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.025)',
   },
-  iconBox: {
-    width: 34, height: 34, borderRadius: 10,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  text: {
-    flex: 1, fontSize: 13, fontWeight: '800', letterSpacing: 1.5,
-    fontFamily: FONT_MONT,
-  },
+  iconBox: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  text: { flex: 1, fontSize: 13, fontWeight: '800', letterSpacing: 1.5, fontFamily: FONT_M },
 });
 
-
-// ── UGC CHALLENGES ──
 const ugc = StyleSheet.create({
   section: { marginBottom: 20 },
-  headerRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14,
-  },
-  title: { color: '#FFF', fontSize: 16, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_JAKARTA },
-  sub: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '500', fontFamily: FONT_MONT, marginTop: 2 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
+  title: { color: '#FFF', fontSize: 16, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
+  sub: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '500', fontFamily: FONT_M, marginTop: 2 },
   createBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: '#00E5FF', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8,
   },
-  createBtnText: { color: '#0A0A0A', fontSize: 12, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_JAKARTA },
+  createBtnText: { color: '#0A0A0A', fontSize: 12, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
   emptyCard: {
     alignItems: 'center', justifyContent: 'center', paddingVertical: 30, borderRadius: 16,
     borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.05)', borderStyle: 'dashed',
     backgroundColor: 'rgba(255,255,255,0.015)',
   },
-  emptyText: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '700', fontFamily: FONT_JAKARTA, marginTop: 10 },
-  emptySub: { color: 'rgba(255,255,255,0.15)', fontSize: 11, fontWeight: '500', fontFamily: FONT_MONT, marginTop: 3 },
+  emptyText: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '700', fontFamily: FONT_J, marginTop: 10 },
+  emptySub: { color: 'rgba(255,255,255,0.15)', fontSize: 11, fontWeight: '500', fontFamily: FONT_M, marginTop: 3 },
   listScroll: { gap: 10, paddingRight: 20 },
   card: {
     width: 200, borderRadius: 16, overflow: 'hidden',
@@ -666,14 +589,14 @@ const ugc = StyleSheet.create({
   cardBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8,
   },
-  cardBadgeText: { fontSize: 9, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_JAKARTA },
-  cardFlux: { fontSize: 12, fontWeight: '900', fontFamily: FONT_JAKARTA },
-  cardTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 0.5, fontFamily: FONT_JAKARTA, marginBottom: 3 },
-  cardExercises: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '500', fontFamily: FONT_MONT, marginBottom: 10 },
+  cardBadgeText: { fontSize: 9, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J },
+  cardFlux: { fontSize: 12, fontWeight: '900', fontFamily: FONT_J },
+  cardTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 0.5, fontFamily: FONT_J, marginBottom: 3 },
+  cardExercises: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '500', fontFamily: FONT_M, marginBottom: 10 },
   cardActions: { flexDirection: 'row', gap: 6 },
   actionBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1,
   },
-  actionText: { fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_JAKARTA },
+  actionText: { fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J },
 });
