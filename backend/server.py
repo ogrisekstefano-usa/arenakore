@@ -700,6 +700,8 @@ def user_to_response(user: dict) -> dict:
         "total_scans": total_scans,
         "bmi": user.get("bmi"),
         "bio_coefficient": user.get("bio_coefficient"),
+        "profile_picture": user.get("profile_picture"),
+        "preferred_sport": user.get("preferred_sport") or user.get("sport"),
     }
 
 
@@ -890,6 +892,7 @@ class ProfileUpdate(BaseModel):
     height: float | None = None
     gender: str | None = None
     language: str | None = None
+    preferred_sport: str | None = None
 
 @api_router.put("/auth/update-profile")
 async def update_profile(data: ProfileUpdate, current_user: dict = Depends(get_current_user)):
@@ -912,6 +915,11 @@ async def update_profile(data: ProfileUpdate, current_user: dict = Depends(get_c
         if existing:
             raise HTTPException(status_code=400, detail="Username già in uso")
         update_fields["username"] = new_username
+
+    # Preferred sport
+    if data.preferred_sport is not None:
+        update_fields["preferred_sport"] = data.preferred_sport.strip()
+        update_fields["sport"] = data.preferred_sport.strip()
 
     # Physical data — triggers bio-kinetic recalculation flag
     bio_changed = False
@@ -942,6 +950,32 @@ async def update_profile(data: ProfileUpdate, current_user: dict = Depends(get_c
     await db.users.update_one({"_id": current_user["_id"]}, {"$set": update_fields})
     updated = await db.users.find_one({"_id": current_user["_id"]})
     return {"detail": "Profilo aggiornato", "user": user_to_response(updated)}
+
+
+class ProfilePictureBody(BaseModel):
+    image_base64: str  # Base64 encoded image data (can include data:image/... prefix)
+
+
+@api_router.post("/user/profile-picture")
+async def upload_profile_picture(body: ProfilePictureBody, current_user: dict = Depends(get_current_user)):
+    """
+    Upload/update profile picture. Accepts base64-encoded image.
+    Stores as base64 in the user document (for MVP; move to object storage later).
+    """
+    raw = body.image_base64.strip()
+    # Validate it's not too large (max ~2MB base64 = ~2.7M chars)
+    if len(raw) > 3_000_000:
+        raise HTTPException(status_code=400, detail="Immagine troppo grande (max 2MB)")
+    # Ensure data URI prefix
+    if not raw.startswith("data:image"):
+        raw = f"data:image/jpeg;base64,{raw}"
+
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": {"profile_picture": raw, "profile_picture_updated_at": datetime.now(timezone.utc)}},
+    )
+    updated = await db.users.find_one({"_id": current_user["_id"]})
+    return {"detail": "Foto profilo aggiornata", "user": user_to_response(updated)}
 
 
 # ================================================================

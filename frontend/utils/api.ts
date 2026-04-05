@@ -493,4 +493,7 @@ export const api = {
     request(`/kore/record/${recordId}`, {}, token),
 
   getSiloProfile: (token: string) => request('/kore/silo-profile', {}, token),
+
+  uploadProfilePicture: (token: string, imageBase64: string) =>
+    request('/user/profile-picture', { method: 'POST', body: JSON.stringify({ image_base64: imageBase64 }) }, token),
 };
