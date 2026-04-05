@@ -24,6 +24,7 @@ import { FluxGenerator } from '../../components/FluxGenerator';
 import { ChallengeShareCard } from '../../components/ChallengeShareCard';
 import { ChallengePreviewModal } from '../../components/ChallengePreviewModal';
 import { QRScannerModal } from '../../components/QRScannerModal';
+import { PerformanceDetailModal } from '../../components/kore/PerformanceDetailModal';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -179,6 +180,7 @@ export default function KoreTab() {
   const [warLogStats, setWarLogStats] = useState<any>({});
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [loadingWarLog, setLoadingWarLog] = useState(false);
+  const [selectedPerformance, setSelectedPerformance] = useState<any>(null);
 
   useEffect(() => {
     (globalThis as any).__openKoreIdModal = () => setKoreIdVisible(true);
@@ -496,7 +498,7 @@ export default function KoreTab() {
               </View>
             ) : (
               warLog.map((rec, i) => (
-                <PerformanceCard key={rec.id || i} record={rec} index={i} />
+                <PerformanceCard key={rec.id || i} record={rec} index={i} onPress={() => setSelectedPerformance(rec)} />
               ))
             )}
           </Animated.View>
@@ -600,6 +602,11 @@ export default function KoreTab() {
         onUserFound={(userData) => { setKoreIdVisible(true); }}
         onChallengeFound={(challengeData) => { setPreviewChallenge(challengeData); }}
       />
+      <PerformanceDetailModal
+        visible={!!selectedPerformance}
+        record={selectedPerformance}
+        onClose={() => setSelectedPerformance(null)}
+      />
     </View>
   );
 }
@@ -619,7 +626,7 @@ const DISC_ICONS: Record<string, string> = {
   'Boxing': '🥊', 'MMA': '🥋', 'Ciclismo': '🚴',
 };
 
-function PerformanceCard({ record, index }: { record: any; index: number }) {
+function PerformanceCard({ record, index, onPress }: { record: any; index: number; onPress?: () => void }) {
   const cfg = TIPO_CONFIG[record.tipo] || TIPO_CONFIG['ALLENAMENTO'];
   const kpi = record.kpi || {};
   const pr = kpi.primary_result || {};
@@ -655,6 +662,7 @@ function PerformanceCard({ record, index }: { record: any; index: number }) {
   }
 
   return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
     <Animated.View entering={FadeInDown.delay(index * 60).duration(300)} style={pc.card}>
       {/* PEAK snapshot background */}
       {snapPeak ? (
@@ -749,6 +757,7 @@ function PerformanceCard({ record, index }: { record: any; index: number }) {
         </View>
       </View>
     </Animated.View>
+    </TouchableOpacity>
   );
 }
 

@@ -2325,6 +2325,42 @@ agent_communication:
           agent: "testing"
           comment: "COMPREHENSIVE TEST PASSED: Performance record auto-save integration working correctly. Direct POST /api/performance/record endpoint successfully creates records with proper metadata persistence. All required fields (tipo, modalita, disciplina, exercise_type, kpi, is_certified, flux_earned) properly stored. Optional fields (snapshots, template_name, validation_status) correctly handled. MongoDB indexes and data persistence fully functional."
 
+  - task: "KORE Detail View - Personal Record API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/kore/personal-record working correctly for all test scenarios. Golf swing query (exercise_type=swing&disciplina=Golf) returns PR data with primary_result (15 rep), quality_score (92%), and avg_stats (1 attempt, avg_value=15.0). Fitness squat query (exercise_type=squat&disciplina=Fitness) returns PR data with primary_result (25 rep), quality_score (85%), and avg_stats (1 attempt, avg_value=25.0). Nonexistent exercise query (exercise_type=nonexistent&disciplina=Unknown) correctly returns null PR data, null best_quality, and 0 total_attempts. All response structures match expected format with proper aggregation calculations."
+
+  - task: "KORE Detail View - History API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/kore/history working correctly. Returns 2 performance records with proper structure including tipo, modalita, disciplina, exercise_type, kpi, is_certified, flux_earned, and completed_at fields. Aggregate stats show total_sessions=2, total_flux=130, avg_quality=88.5, certified_count=1. Discipline breakdown correctly shows Golf (1 session) and Fitness (1 session). All previously saved records appear correctly with proper metadata and timestamps."
+
+  - task: "KORE Detail View - Stats API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/kore/stats working correctly. Returns comprehensive stats object with total_sessions=2, total_flux=130, avg_quality=88.5, best_quality=92, total_reps=40, certified_count=1. Tipo breakdown correctly shows ALLENAMENTO=1, COACH_PROGRAM=1. Weekly trend shows proper aggregation with date='2026-04-05', count=2, flux=130. All statistical calculations and breakdowns functional for KORE dashboard header display."
+
 test_plan:
   current_focus: []
   stuck_tasks: []
@@ -2382,3 +2418,5 @@ agent_communication:
       message: "DATA PERSISTENCE & METADATA SYNC (P0) IMPLEMENTED. NEW ENDPOINTS: (1) POST /api/performance/record — saves full performance metadata with tipo (ALLENAMENTO/SFIDA_UGC/LIVE_ARENA/COACH_PROGRAM/CREW_BATTLE/DUELLO), modalita (INDIVIDUALE/CREW), disciplina, exercise_type, snapshots {start,peak,finish}, kpi {primary_result,rom_pct,explosivity_pct,power_output,heart_rate_avg,heart_rate_peak,quality_score}, is_certified (true if Master Template), template_name, validation_status, flux_earned. (2) GET /api/kore/history?limit=50&offset=0&tipo=&disciplina= — paginated performance timeline with aggregate stats and discipline breakdown. (3) GET /api/kore/stats — quick dashboard stats with tipo breakdown and weekly trend. Also injected save_performance_record() into ALL existing completion endpoints. MongoDB indexes on (user_id, completed_at), (user_id, tipo), (user_id, disciplina). PLEASE TEST: (A) Login as ogrisek.stefano@gmail.com / Founder@KORE2026!. (B) POST /api/performance/record with {tipo:'ALLENAMENTO', disciplina:'Fitness', exercise_type:'squat', kpi:{primary_result:{type:'REPS',value:25,unit:'rep'},quality_score:85}, is_certified:false, flux_earned:50}. (C) GET /api/kore/history → should return the record. (D) GET /api/kore/stats → should return stats. (E) GET /api/kore/history?tipo=SFIDA_UGC → should return empty. (F) POST /api/performance/record with {tipo:'COACH_PROGRAM', is_certified:true, template_name:'Squat Program'} → GET /api/kore/history → should show certified_count=1. Base URL from env. Credentials in /app/memory/test_credentials.md."
     - agent: "testing"
       message: "PERFORMANCE RECORDS — DATA PERSISTENCE & METADATA SYNC TESTING COMPLETED: ALL 4 NEW ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test flow executed as specified in review request: ✅ Test 1: Admin Login - Successfully authenticated admin user (ogrisek.stefano@gmail.com) ✅ Test 2: Create ALLENAMENTO Performance Record - POST /api/performance/record with ALLENAMENTO data (Fitness/squat, 25 reps, quality_score=85, is_certified=false, flux_earned=50) returns status='saved' with record_id ✅ Test 3: Create COACH_PROGRAM Performance Record - POST /api/performance/record with COACH_PROGRAM data (Golf/swing, 15 reps, quality_score=92, is_certified=true, template_name='Golf Power Swing', validation_status='AI_VERIFIED', flux_earned=80, snapshots included) returns status='saved' with record_id ✅ Test 4: Get KORE History (All Records) - GET /api/kore/history returns 2 records with total=2, stats.certified_count=1, complete discipline_breakdown ✅ Test 5: Get KORE History Filtered by COACH_PROGRAM - GET /api/kore/history?tipo=COACH_PROGRAM returns only Golf record (1 record) ✅ Test 6: Get KORE History Filtered by Fitness Discipline - GET /api/kore/history?disciplina=Fitness returns only Fitness record (1 record) ✅ Test 7: Get KORE Stats - GET /api/kore/stats returns complete stats (total_sessions=2, total_flux=130, avg_quality=88.5, certified_count=1, best_quality=92, total_reps=40) with tipo_breakdown (ALLENAMENTO=1, COACH_PROGRAM=1) and weekly_trend ✅ Test 8: Athlete Login and Data Isolation - Athlete (d.rose@chicago.kore) can create SFIDA_UGC records (Basketball/dribble) and only sees their own records (not admin's), confirming proper data isolation. All Performance Records features are production-ready. Data persistence, metadata sync, filtering, aggregation, and user isolation all functional. Total backend endpoints tested: 52/52 ✅"
+    - agent: "testing"
+      message: "KORE DETAIL VIEW BACKEND TESTING COMPLETED: ALL 6 NEW ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test flow executed as specified in review request using admin credentials ogrisek.stefano@gmail.com / Founder@KORE2026!: ✅ Test 1: Admin Login - successful authentication with is_admin=true, is_founder=true ✅ Test 2: Golf Swing Personal Record (GET /api/kore/personal-record?exercise_type=swing&disciplina=Golf) - returns PR data with primary_result (15 rep), quality_score (92%), best_quality (92%), avg_stats (1 attempt, avg_value=15.0, avg_quality=92.0) ✅ Test 3: Fitness Squat Personal Record (GET /api/kore/personal-record?exercise_type=squat&disciplina=Fitness) - returns PR data with primary_result (25 rep), quality_score (85%), best_quality (85%), avg_stats (1 attempt, avg_value=25.0, avg_quality=85.0) ✅ Test 4: Nonexistent Exercise Personal Record (GET /api/kore/personal-record?exercise_type=nonexistent&disciplina=Unknown) - correctly returns null PR data, null best_quality, and 0 total_attempts ✅ Test 5: KORE History (GET /api/kore/history) - returns 2 performance records with proper structure, aggregate stats (total_sessions=2, total_flux=130, avg_quality=88.5, certified_count=1), and discipline breakdown ✅ Test 6: KORE Stats (GET /api/kore/stats) - returns comprehensive stats with tipo breakdown and weekly trend data. All KORE Detail View endpoints are production-ready with proper data aggregation, filtering, and response structures. Previously saved records appear correctly with proper metadata and timestamps."

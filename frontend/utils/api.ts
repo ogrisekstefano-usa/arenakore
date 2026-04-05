@@ -485,4 +485,10 @@ export const api = {
   },
 
   getKoreStats: (token: string) => request('/kore/stats', {}, token),
+
+  getPersonalRecord: (token: string, exerciseType: string, disciplina: string) =>
+    request(`/kore/personal-record?exercise_type=${encodeURIComponent(exerciseType)}&disciplina=${encodeURIComponent(disciplina)}`, {}, token),
+
+  getPerformanceDetail: (token: string, recordId: string) =>
+    request(`/kore/record/${recordId}`, {}, token),
 };

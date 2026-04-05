@@ -10984,6 +10984,110 @@ async def get_kore_stats(current_user: dict = Depends(get_current_user)):
     }
 
 
+@api_router.get("/kore/personal-record")
+async def get_personal_record(
+    exercise_type: str = Query("squat"),
+    disciplina: str = Query("Fitness"),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Returns the Personal Record (PR) for a given exercise/discipline.
+    Used by the Detail View to show the comparative chart.
+    """
+    user_id = current_user["_id"]
+    # PR = highest primary_result.value
+    pipeline = [
+        {"$match": {
+            "user_id": user_id,
+            "exercise_type": exercise_type,
+            "disciplina": disciplina,
+        }},
+        {"$sort": {"kpi.primary_result.value": -1}},
+        {"$limit": 1},
+    ]
+    pr_list = await db.performance_records.aggregate(pipeline).to_list(1)
+    pr = pr_list[0] if pr_list else None
+
+    # Best quality score
+    pipeline_q = [
+        {"$match": {"user_id": user_id, "exercise_type": exercise_type, "disciplina": disciplina}},
+        {"$sort": {"kpi.quality_score": -1}},
+        {"$limit": 1},
+    ]
+    best_q_list = await db.performance_records.aggregate(pipeline_q).to_list(1)
+    best_q = best_q_list[0] if best_q_list else None
+
+    # Avg stats across all records for this exercise
+    pipeline_avg = [
+        {"$match": {"user_id": user_id, "exercise_type": exercise_type, "disciplina": disciplina}},
+        {"$group": {
+            "_id": None,
+            "avg_value": {"$avg": "$kpi.primary_result.value"},
+            "avg_quality": {"$avg": "$kpi.quality_score"},
+            "max_value": {"$max": "$kpi.primary_result.value"},
+            "max_quality": {"$max": "$kpi.quality_score"},
+            "total_attempts": {"$sum": 1},
+            "avg_rom": {"$avg": "$kpi.rom_pct"},
+            "max_rom": {"$max": "$kpi.rom_pct"},
+            "avg_explosivity": {"$avg": "$kpi.explosivity_pct"},
+            "max_explosivity": {"$max": "$kpi.explosivity_pct"},
+        }},
+    ]
+    avg_list = await db.performance_records.aggregate(pipeline_avg).to_list(1)
+    avg_stats = avg_list[0] if avg_list else {}
+    avg_stats.pop("_id", None)
+
+    # Round values
+    for k in avg_stats:
+        if isinstance(avg_stats[k], float):
+            avg_stats[k] = round(avg_stats[k], 1)
+
+    return {
+        "pr": {
+            "primary_result": pr["kpi"]["primary_result"] if pr else None,
+            "quality_score": pr["kpi"].get("quality_score") if pr else None,
+            "completed_at": pr["completed_at"].isoformat() if pr and pr.get("completed_at") else None,
+        } if pr else None,
+        "best_quality": {
+            "quality_score": best_q["kpi"].get("quality_score") if best_q else None,
+        } if best_q else None,
+        "avg_stats": avg_stats,
+    }
+
+
+@api_router.get("/kore/record/{record_id}")
+async def get_performance_record_detail(
+    record_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Returns a single performance record by ID for the Detail View.
+    """
+    try:
+        oid = ObjectId(record_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID non valido")
+    rec = await db.performance_records.find_one({"_id": oid, "user_id": current_user["_id"]})
+    if not rec:
+        raise HTTPException(status_code=404, detail="Record non trovato")
+    return {
+        "id": str(rec["_id"]),
+        "tipo": rec.get("tipo"),
+        "modalita": rec.get("modalita"),
+        "crew_id": rec.get("crew_id"),
+        "disciplina": rec.get("disciplina"),
+        "exercise_type": rec.get("exercise_type"),
+        "snapshots": rec.get("snapshots", {}),
+        "kpi": rec.get("kpi", {}),
+        "is_certified": rec.get("is_certified", False),
+        "template_name": rec.get("template_name"),
+        "validation_status": rec.get("validation_status"),
+        "flux_earned": rec.get("flux_earned", 0),
+        "completed_at": rec["completed_at"].isoformat() if rec.get("completed_at") else None,
+        "meta": rec.get("meta", {}),
+    }
+
+
 app.include_router(api_router)
 
 
