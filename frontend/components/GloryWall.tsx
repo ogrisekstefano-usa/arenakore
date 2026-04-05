@@ -391,9 +391,7 @@ export function HallOfKore() {
             <Ionicons name="trophy" size={22} color="#FFD700" />
             <Text style={gl$.title}>HALL OF KORE</Text>
           </View>
-          <TouchableOpacity onPress={() => setMenuOpen(true)} style={{ padding: 6 }}>
-            <Ionicons name="menu" size={24} color="#00E5FF" />
-          </TouchableOpacity>
+          {/* Menu removed — uses only ••• from top Header */}
         </View>
 
         {/* Tab Switcher */}
@@ -547,14 +545,14 @@ const gl$ = StyleSheet.create({
   verifiedText: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   // Certified row glow border
   certifiedRow: { borderLeftWidth: 2, borderLeftColor: '#00E5FF', borderRadius: 4 },
-  catRow: { paddingHorizontal: 24, paddingVertical: 10, gap: 6 },
+  catRow: { paddingHorizontal: 24, paddingVertical: 10, gap: 8 },
   catChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
-    borderWidth: 1, borderColor: '#2A2A2A'
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+    borderWidth: 1.5, borderColor: '#3A3A3A', backgroundColor: 'rgba(30,30,30,0.8)'
   },
-  catChipActive: { borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.1)' },
-  catChipText: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
+  catChipActive: { borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.15)' },
+  catChipText: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
   catChipTextActive: { color: '#FFD700' },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,

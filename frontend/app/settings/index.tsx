@@ -161,7 +161,36 @@ export default function SettingsScreen() {
     ]);
   }, [token, refreshUser]);
 
-  // ── Save Profile ──
+  // ── Unified Avatar Picker (Gallery or Camera via ActionSheet) ──
+  const handleAvatarPress = useCallback(() => {
+    if (Platform.OS === 'web') {
+      // Web: just open gallery
+      handlePickImage();
+      return;
+    }
+    Alert.alert('Foto Profilo', 'Come vuoi caricare la foto?', [
+      { text: 'Galleria', onPress: handlePickImage },
+      { text: 'Scatta Foto', onPress: handleTakePhoto },
+      ...(profilePic ? [{ text: 'Rimuovi', style: 'destructive' as const, onPress: () => {
+        setProfilePic(null);
+        // Optionally call API to remove
+      }}] : []),
+      { text: 'Annulla', style: 'cancel' as const }
+    ]);
+  }, [handlePickImage, handleTakePhoto, profilePic]);
+
+  // ── Unified Cover Photo Picker ──
+  const handleCoverPress = useCallback(() => {
+    if (Platform.OS === 'web') {
+      handlePickCover();
+      return;
+    }
+    Alert.alert('Foto Copertina KORE', 'Come vuoi caricare la foto?', [
+      { text: 'Galleria', onPress: handlePickCover },
+      ...(coverPhoto ? [{ text: 'Elimina', style: 'destructive' as const, onPress: () => handleDeleteCover() }] : []),
+      { text: 'Annulla', style: 'cancel' as const }
+    ]);
+  }, [handlePickCover, handleDeleteCover, coverPhoto]);
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
@@ -214,7 +243,7 @@ export default function SettingsScreen() {
           <Animated.View entering={FadeInDown.delay(100).duration(400)} style={s.section}>
             <Text style={s.sectionTitle}>FOTO PROFILO</Text>
             <View style={s.avatarSection}>
-              <TouchableOpacity onPress={handlePickImage} activeOpacity={0.85} style={s.avatarContainer}>
+              <TouchableOpacity onPress={handleAvatarPress} activeOpacity={0.85} style={s.avatarContainer}>
                 {profilePic ? (
                   <Image source={{ uri: profilePic }} style={s.avatar} />
                 ) : (
@@ -233,34 +262,29 @@ export default function SettingsScreen() {
                   <Ionicons name="camera" size={14} color="#000" />
                 </View>
               </TouchableOpacity>
-              <View style={s.avatarActions}>
-                <TouchableOpacity style={s.avatarBtn} onPress={handlePickImage} activeOpacity={0.7}>
-                  <Ionicons name="images" size={16} color="#00E5FF" />
-                  <Text style={s.avatarBtnText}>GALLERIA</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={s.avatarBtn} onPress={handleTakePhoto} activeOpacity={0.7}>
-                  <Ionicons name="camera" size={16} color="#00E5FF" />
-                  <Text style={s.avatarBtnText}>SCATTA</Text>
-                </TouchableOpacity>
-              </View>
+              <Text style={s.sportHint}>Tocca l'avatar per cambiare foto (con editor ritaglio)</Text>
             </View>
           </Animated.View>
 
           {/* ═══ COVER PHOTO KORE (Separate from Avatar) ═══ */}
           <Animated.View entering={FadeInDown.delay(120).duration(400)} style={s.section}>
             <Text style={s.sectionTitle}>FOTO COPERTINA KORE</Text>
-            <Text style={[s.sportHint, { marginBottom: 10 }]}>Questa foto verrà usata come sfondo nel tuo profilo KORE (diversa dall'avatar).</Text>
+            <Text style={[s.sportHint, { marginBottom: 10 }]}>Questa foto verrà usata come sfondo nel tuo profilo KORE. Tocca per modificare.</Text>
             {coverPhoto ? (
-              <View style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }}>
+              <TouchableOpacity onPress={handleCoverPress} activeOpacity={0.85} style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }}>
                 <Image source={{ uri: coverPhoto }} style={{ width: '100%', height: 140 }} resizeMode="cover" />
                 {uploadingCover && (
                   <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}>
                     <ActivityIndicator color="#00E5FF" size="small" />
                   </View>
                 )}
-              </View>
+                <View style={{ position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Ionicons name="pencil" size={12} color="#00E5FF" />
+                  <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 }}>MODIFICA</Text>
+                </View>
+              </TouchableOpacity>
             ) : (
-              <TouchableOpacity onPress={handlePickCover} style={{ height: 100, borderRadius: 12, borderWidth: 1.5, borderColor: 'rgba(0,229,255,0.2)', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,229,255,0.03)' }} activeOpacity={0.7}>
+              <TouchableOpacity onPress={handleCoverPress} style={{ height: 100, borderRadius: 12, borderWidth: 1.5, borderColor: 'rgba(0,229,255,0.2)', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,229,255,0.03)' }} activeOpacity={0.7}>
                 {uploadingCover ? (
                   <ActivityIndicator color="#00E5FF" size="small" />
                 ) : (
@@ -271,18 +295,6 @@ export default function SettingsScreen() {
                 )}
               </TouchableOpacity>
             )}
-            <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-              <TouchableOpacity style={s.avatarBtn} onPress={handlePickCover} activeOpacity={0.7}>
-                <Ionicons name="images" size={16} color="#00E5FF" />
-                <Text style={s.avatarBtnText}>{coverPhoto ? 'CAMBIA' : 'GALLERIA'}</Text>
-              </TouchableOpacity>
-              {coverPhoto && (
-                <TouchableOpacity style={[s.avatarBtn, { borderColor: 'rgba(255,59,48,0.3)' }]} onPress={handleDeleteCover} activeOpacity={0.7}>
-                  <Ionicons name="trash-outline" size={16} color="#FF3B30" />
-                  <Text style={[s.avatarBtnText, { color: '#FF3B30' }]}>ELIMINA</Text>
-                </TouchableOpacity>
-              )}
-            </View>
           </Animated.View>
 
           {/* ═══ PREFERRED SPORT ═══ */}

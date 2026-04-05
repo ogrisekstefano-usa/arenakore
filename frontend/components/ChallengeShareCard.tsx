@@ -46,16 +46,31 @@ export function ChallengeShareCard({ visible, challenge, onClose }: Props) {
     if (!challenge) return;
     setSharing(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    
+    // Small delay to ensure ViewShot content is fully rendered
+    await new Promise(r => setTimeout(r, 300));
+    
     try {
       if (Platform.OS === 'web') {
         await shareText(`🔥 ${challenge.title} — Sfida creata su ARENAKORE!\n\nEsercizi: ${exercises}\nFLUX Reward: +${challenge.flux_reward}⚡\n\nScansiona il QR nell'app per importarla!`);
-      } else {
+      } else if (viewRef.current) {
         const uri = await captureRef(viewRef, { format: 'png', quality: 0.9 });
-        await shareImageWithText(uri, `🔥 ${challenge.title} — Sfida ARENAKORE`, 'ARENA KORE — Sfida');
+        if (uri) {
+          await shareImageWithText(uri, `🔥 ${challenge.title} — Sfida ARENAKORE\n\n${exercises}\n+${challenge.flux_reward}⚡ FLUX`, 'ARENA KORE — Sfida');
+        } else {
+          // No URI from capture — fallback to text
+          await shareText(`🔥 ${challenge.title}\n${exercises}\n+${challenge.flux_reward}⚡ FLUX\n\nSfida su ARENAKORE!`);
+        }
+      } else {
+        // Ref not available — fallback
+        await shareText(`🔥 ${challenge.title}\n${exercises}\n+${challenge.flux_reward}⚡ FLUX\n\nSfida su ARENAKORE!`);
       }
     } catch (e) {
+      console.log('[SHARE_ERROR]', e);
       // Fallback to text sharing
-      await shareText(`🔥 ${challenge.title}\n${exercises}\n+${challenge.flux_reward}⚡ FLUX\n\nSfida su ARENAKORE!`);
+      try {
+        await shareText(`🔥 ${challenge.title}\n${exercises}\n+${challenge.flux_reward}⚡ FLUX\n\nSfida su ARENAKORE!`);
+      } catch {}
     } finally {
       setSharing(false);
     }
@@ -71,8 +86,8 @@ export function ChallengeShareCard({ visible, challenge, onClose }: Props) {
           <Ionicons name="close" size={24} color="#FFF" />
         </TouchableOpacity>
 
-        {/* Snapshot Card */}
-        <ViewShot ref={viewRef} options={{ format: 'png', quality: 0.9 }} style={s.cardWrap}>
+        {/* Snapshot Card — collapsable=false required for Android captureRef */}
+        <ViewShot ref={viewRef} options={{ format: 'png', quality: 0.9 }} style={s.cardWrap} collapsable={false}>
           <LinearGradient colors={['#0A0A0A', '#111111', '#0A0A0A']} style={s.card}>
             {/* Top badge */}
             <View style={s.topRow}>

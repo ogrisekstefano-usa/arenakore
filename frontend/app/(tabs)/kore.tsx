@@ -332,7 +332,11 @@ export default function KoreTab() {
   const heroFadeB = useSharedValue(0);
   const heroShowA = useRef(true);
 
+  // Cross-fade HERO images — ONLY if no user cover photo (sport defaults rotate)
   useEffect(() => {
+    // If user has their own cover photo, keep it fixed — NO transition
+    if (userCoverPhoto) return;
+    if (HERO_IMAGES.length <= 1) return;
     const interval = setInterval(() => {
       if (heroShowA.current) {
         heroFadeB.value = withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) });
@@ -345,7 +349,7 @@ export default function KoreTab() {
       setHeroIdx(p => (p + 1) % HERO_IMAGES.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [userCoverPhoto, HERO_IMAGES.length]);
 
   const heroStyleA = useAnimatedStyle(() => ({ opacity: heroFadeA.value }));
   const heroStyleB = useAnimatedStyle(() => ({ opacity: heroFadeB.value }));
@@ -369,12 +373,17 @@ export default function KoreTab() {
           <Animated.View style={[hero.imgLayer, heroStyleB]}>
             <Image source={{ uri: heroImgB }} style={hero.img} resizeMode="cover" />
           </Animated.View>
-          {/* Heavy gradient vignette — VELINA NERA */}
-          <LinearGradient
-            colors={['rgba(0,0,0,0.55)', 'rgba(0,0,0,0.45)', 'rgba(0,0,0,0.70)', '#0A0A0A']}
-            locations={[0, 0.25, 0.65, 1]}
-            style={StyleSheet.absoluteFillObject}
-          />
+          {/* Heavy gradient vignette — VELINA NERA 30% + gradient */}
+          <View style={StyleSheet.absoluteFillObject}>
+            {/* Base solid black velina at 30% */}
+            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.30)', zIndex: 1 }]} />
+            {/* Gradient from bottom for text legibility */}
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.30)', 'rgba(0,0,0,0.80)', '#0A0A0A']}
+              locations={[0, 0.25, 0.65, 1]}
+              style={[StyleSheet.absoluteFillObject, { zIndex: 2 }]}
+            />
+          </View>
           {/* Top row: QR + FLUX + Menu */}
           <View style={[hero.topRow, { paddingTop: insets.top + 8 }]}>
             <View style={{ flex: 1 }} />
