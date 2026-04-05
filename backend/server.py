@@ -9441,10 +9441,12 @@ async def force_health_sync(body: dict = Body(...), current_user: dict = Depends
 UGC_TEMPLATES = ["AMRAP", "EMOM", "FOR_TIME", "TABATA", "CUSTOM"]
 UGC_DESTINATIONS = ["solo", "ranked", "friend", "live"]
 UGC_CERTIFICATIONS = ["nexus_ai", "self", "peer", "device"]
+SPORT_DISCIPLINES = ["Fitness", "Bodybuilding", "Golf", "Basket", "Tennis", "Running"]
 
 class UGCCreate(BaseModel):
     title: str
     template_type: str  # AMRAP, EMOM, FOR_TIME, TABATA, CUSTOM
+    discipline: str     # Fitness, Bodybuilding, Golf, Basket, Tennis, Running
     exercises: list      # [{name, target_reps, target_seconds, rest_seconds}]
     destination: str     # solo, ranked, friend, live
     certification: str   # nexus_ai, self, peer, device
@@ -9469,6 +9471,7 @@ async def ugc_create_challenge(data: UGCCreate, current_user: dict = Depends(get
         "creator_name": current_user.get("username", "Kore"),
         "title": data.title.strip()[:60],
         "template_type": data.template_type,
+        "discipline": data.discipline if data.discipline in SPORT_DISCIPLINES else "Fitness",
         "exercises": data.exercises[:10],  # max 10
         "destination": data.destination,
         "certification": data.certification,
@@ -9501,11 +9504,13 @@ async def ugc_create_challenge(data: UGCCreate, current_user: dict = Depends(get
 
 
 @api_router.get("/ugc/mine")
-async def ugc_my_challenges(current_user: dict = Depends(get_current_user)):
-    """Get all challenges created by the current user."""
-    challenges = await db.ugc_challenges.find(
-        {"creator_id": current_user["_id"]}
-    ).sort("created_at", -1).to_list(100)
+async def ugc_my_challenges(discipline: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """Get all challenges created by the current user, optionally filtered by discipline."""
+    query = {"creator_id": current_user["_id"]}
+    if discipline and discipline in SPORT_DISCIPLINES:
+        query["discipline"] = discipline
+
+    challenges = await db.ugc_challenges.find(query).sort("created_at", -1).to_list(100)
 
     for c in challenges:
         c["_id"] = str(c["_id"])

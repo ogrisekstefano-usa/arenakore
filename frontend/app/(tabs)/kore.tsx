@@ -27,6 +27,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
 const FONT_M = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });
 
+// ─── SPORT DISCIPLINES ───
+const DISCIPLINES = [
+  { key: 'Fitness', icon: 'barbell' as const, color: '#FF3B30' },
+  { key: 'Bodybuilding', icon: 'body' as const, color: '#FF9500' },
+  { key: 'Golf', icon: 'golf' as const, color: '#00FF87' },
+  { key: 'Basket', icon: 'basketball' as const, color: '#FFD700' },
+  { key: 'Tennis', icon: 'tennisball' as const, color: '#00E5FF' },
+  { key: 'Running', icon: 'walk' as const, color: '#FF6EC7' },
+];
+
 // ─── IMAGE SETS PER CARD ───
 const CARD_IMAGES = {
   sfida: [
@@ -153,6 +163,7 @@ export default function KoreTab() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [creatorVisible, setCreatorVisible] = useState(false);
   const [myChallenges, setMyChallenges] = useState<any[]>([]);
+  const [activeDiscipline, setActiveDiscipline] = useState<string | null>(null);
 
   useEffect(() => {
     (globalThis as any).__openKoreIdModal = () => setKoreIdVisible(true);
@@ -286,6 +297,34 @@ export default function KoreTab() {
           )}
         </Animated.View>
 
+        {/* ═══ DISCIPLINE SELECTOR ═══ */}
+        <Animated.View entering={FadeInDown.delay(70).duration(400)}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={dsc.scroll}>
+            <TouchableOpacity
+              style={[dsc.chip, !activeDiscipline && dsc.chipActive]}
+              onPress={() => { setActiveDiscipline(null); Haptics.selectionAsync().catch(() => {}); }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="grid" size={13} color={!activeDiscipline ? '#0A0A0A' : 'rgba(255,255,255,0.45)'} />
+              <Text style={[dsc.chipText, !activeDiscipline && dsc.chipTextActive]}>TUTTI</Text>
+            </TouchableOpacity>
+            {DISCIPLINES.map(d => {
+              const active = activeDiscipline === d.key;
+              return (
+                <TouchableOpacity
+                  key={d.key}
+                  style={[dsc.chip, active && { backgroundColor: d.color, borderColor: d.color }]}
+                  onPress={() => { setActiveDiscipline(d.key); Haptics.selectionAsync().catch(() => {}); }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name={d.icon} size={13} color={active ? '#0A0A0A' : d.color} />
+                  <Text style={[dsc.chipText, active && { color: '#0A0A0A' }]}>{d.key.toUpperCase()}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </Animated.View>
+
         {/* ═══ 4 DYNAMIC CARDS ═══ */}
         <View style={s.grid}>
           {CARDS.map((c, i) => (
@@ -349,7 +388,9 @@ export default function KoreTab() {
             </TouchableOpacity>
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ugc.listScroll}>
-              {myChallenges.slice(0, 10).map((ch) => (
+              {myChallenges
+                .filter(ch => !activeDiscipline || ch.discipline === activeDiscipline)
+                .slice(0, 10).map((ch) => (
                 <UGCCard
                   key={ch._id}
                   challenge={ch}
@@ -358,6 +399,12 @@ export default function KoreTab() {
                   onLive={() => router.push('/live-events')}
                 />
               ))}
+              {myChallenges.filter(ch => !activeDiscipline || ch.discipline === activeDiscipline).length === 0 && (
+                <View style={ugc.emptyCard}>
+                  <Ionicons name="filter" size={22} color="rgba(255,255,255,0.15)" />
+                  <Text style={ugc.emptyText}>Nessuna sfida in questo silo</Text>
+                </View>
+              )}
             </ScrollView>
           )}
         </Animated.View>
@@ -599,4 +646,21 @@ const ugc = StyleSheet.create({
     paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1,
   },
   actionText: { fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J },
+});
+
+// ── DISCIPLINE SELECTOR ──
+const dsc = StyleSheet.create({
+  scroll: { gap: 8, paddingBottom: 14 },
+  chip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12,
+    borderWidth: 1.2, borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+  },
+  chipActive: { backgroundColor: '#FFF', borderColor: '#FFF' },
+  chipText: {
+    color: 'rgba(255,255,255,0.50)', fontSize: 11, fontWeight: '800',
+    letterSpacing: 1, fontFamily: FONT_J,
+  },
+  chipTextActive: { color: '#0A0A0A' },
 });

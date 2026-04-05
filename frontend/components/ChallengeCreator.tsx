@@ -53,6 +53,16 @@ const CERTIFICATIONS = [
   { key: 'device', label: 'DISPOSITIVI TERZI', icon: 'watch' as const, color: '#00FF87', sub: 'Garmin, Apple Watch, Whoop.' },
 ];
 
+// ─── DISCIPLINES (SPORT SILOS) ───
+const DISCIPLINES = [
+  { key: 'Fitness', icon: 'barbell' as const, color: '#FF3B30' },
+  { key: 'Bodybuilding', icon: 'body' as const, color: '#FF9500' },
+  { key: 'Golf', icon: 'golf' as const, color: '#00FF87' },
+  { key: 'Basket', icon: 'basketball' as const, color: '#FFD700' },
+  { key: 'Tennis', icon: 'tennisball' as const, color: '#00E5FF' },
+  { key: 'Running', icon: 'walk' as const, color: '#FF6EC7' },
+];
+
 type Step = 1 | 2 | 3 | 4;
 
 interface Exercise {
@@ -74,6 +84,7 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
 
   const [step, setStep] = useState<Step>(1);
   const [template, setTemplate] = useState<string | null>(null);
+  const [discipline, setDiscipline] = useState<string | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [destination, setDestination] = useState<string | null>(null);
   const [certification, setCertification] = useState<string | null>(null);
@@ -83,7 +94,7 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
   const [submitting, setSubmitting] = useState(false);
 
   const reset = () => {
-    setStep(1); setTemplate(null); setExercises([]); setDestination(null);
+    setStep(1); setTemplate(null); setDiscipline(null); setExercises([]); setDestination(null);
     setCertification(null); setTitle(''); setTimeCap('600'); setRounds(''); setSubmitting(false);
   };
 
@@ -107,7 +118,7 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
 
   const canNext = (): boolean => {
     if (step === 1) return !!template;
-    if (step === 2) return exercises.length > 0 && title.trim().length >= 3;
+    if (step === 2) return exercises.length > 0 && title.trim().length >= 3 && !!discipline;
     if (step === 3) return !!destination;
     if (step === 4) return !!certification;
     return false;
@@ -126,6 +137,7 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
         body: JSON.stringify({
           title: title.trim(),
           template_type: template,
+          discipline,
           exercises,
           destination,
           certification,
@@ -205,6 +217,22 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
             {step === 2 && (
               <Animated.View entering={FadeIn.duration(300)}>
                 <Text style={s.sectionTitle}>Costruisci la Sfida</Text>
+
+                {/* Discipline Selector (MANDATORY) */}
+                <Text style={s.inputLabel}>DISCIPLINA SPORTIVA *</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }} contentContainerStyle={{ gap: 8 }}>
+                  {DISCIPLINES.map(d => (
+                    <TouchableOpacity
+                      key={d.key}
+                      style={[s.exChip, discipline === d.key && { backgroundColor: d.color, borderColor: d.color }]}
+                      onPress={() => { setDiscipline(d.key); Haptics.selectionAsync().catch(() => {}); }}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name={d.icon} size={14} color={discipline === d.key ? '#0A0A0A' : d.color} style={{ marginRight: 5 }} />
+                      <Text style={[s.exChipText, discipline === d.key && { color: '#0A0A0A' }]}>{d.key}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
 
                 {/* Title */}
                 <Text style={s.inputLabel}>NOME SFIDA</Text>
@@ -352,6 +380,9 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
                     <Text style={s.summaryTitle}>📋 RIEPILOGO</Text>
                     <Text style={s.summaryLine}>
                       <Text style={s.summaryKey}>Sfida: </Text>{title || '—'}
+                    </Text>
+                    <Text style={s.summaryLine}>
+                      <Text style={s.summaryKey}>Disciplina: </Text>{discipline || '—'}
                     </Text>
                     <Text style={s.summaryLine}>
                       <Text style={s.summaryKey}>Template: </Text>{template}
