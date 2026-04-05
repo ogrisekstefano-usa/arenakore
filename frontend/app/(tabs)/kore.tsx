@@ -284,7 +284,7 @@ export default function KoreTab() {
   const sportHeroImages = getSportHeroImages(userSport);
   const userProfilePic = user?.profile_picture;
   const HERO_IMAGES = userProfilePic
-    ? [userProfilePic, sportHeroImages[0], sportHeroImages[1]]
+    ? [userProfilePic]
     : sportHeroImages;
   const DNA_BG = sportHeroImages[2] || 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800&q=40';
   const sportAura = getSportAuraColor(userSport);
@@ -553,11 +553,11 @@ export default function KoreTab() {
             </Animated.View>
           )}
 
-          {/* ═══ WAR LOG — PERFORMANCE CARDS ═══ */}
+          {/* ═══ SFIDE — PERFORMANCE CARDS ═══ */}
           <Animated.View entering={FadeInDown.delay(300).duration(400)} style={wl.section}>
             <View style={wl.headerRow}>
               <View>
-                <Text style={wl.title}>WAR LOG</Text>
+                <Text style={wl.title}>SFIDE</Text>
                 <Text style={wl.sub}>{warLog.length} performance registrate</Text>
               </View>
               {warLogStats.total_sessions > 0 && (

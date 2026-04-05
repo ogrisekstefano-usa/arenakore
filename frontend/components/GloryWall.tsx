@@ -57,7 +57,7 @@ function ShimmerName({ name, color }: { name: string; color: string }) {
   const shimmerStyle = useAnimatedStyle(() => ({
     opacity: 0.3 + Math.max(0, 1 - Math.abs(shimmerX.value)) * 0.7
   }));
-  return <Animated.Text style={[{ fontSize: 18, fontWeight: '900', letterSpacing: -0.3, color }, shimmerStyle]}>{name}</Animated.Text>;
+  return <Animated.Text style={[{ fontSize: 13, fontWeight: '800', letterSpacing: -0.3, color }, shimmerStyle]} numberOfLines={1}>{name}</Animated.Text>;
 }
 
 // GIANT CARD (Top 3)
@@ -105,27 +105,27 @@ function GiantCard({ item, medal }: { item: any; medal: typeof MEDAL_COLORS[1] }
 
 const giant$ = StyleSheet.create({
   card: {
-    flex: 1, alignItems: 'center', gap: 4, paddingVertical: 16, paddingHorizontal: 6,
+    flex: 1, alignItems: 'center', gap: 3, paddingVertical: 12, paddingHorizontal: 4,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16,
-    borderWidth: 1, minHeight: 170
+    borderWidth: 1, minHeight: 155
   },
-  rankBadge: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  rankNum: { fontSize: 18, fontWeight: '400', letterSpacing: 1 },
+  rankBadge: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  rankNum: { fontSize: 13, fontWeight: '600', letterSpacing: 1 },
   avatarWrap: {
-    width: 52, height: 52, borderRadius: 26, borderWidth: 2,
+    width: 44, height: 44, borderRadius: 22, borderWidth: 2,
     alignItems: 'center', justifyContent: 'center', elevation: 8
   },
-  avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#000000', fontSize: 20, fontWeight: '900' },
-  sportRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  sport: { color: 'rgba(255,255,255,0.5)', fontSize: 15, fontWeight: '700' },
-  xpBadge: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 3, marginTop: 2 },
-  xpText: { fontSize: 17, fontWeight: '900' },
+  avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { color: '#000000', fontSize: 16, fontWeight: '900' },
+  sportRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  sport: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '600' },
+  xpBadge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginTop: 1 },
+  xpText: { fontSize: 11, fontWeight: '800' },
   founderTag: {
     backgroundColor: 'rgba(255,215,0,0.15)', borderRadius: 4,
-    paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(255,215,0,0.35)'
+    paddingHorizontal: 5, paddingVertical: 1, borderWidth: 1, borderColor: 'rgba(255,215,0,0.35)'
   },
-  founderText: { color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 1 }
+  founderText: { color: '#FFD700', fontSize: 9, fontWeight: '800', letterSpacing: 1 }
 });
 
 // REGULAR LEADERBOARD ROW

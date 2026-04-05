@@ -141,9 +141,9 @@ export default function SettingsScreen() {
   }, [firstName, lastName, username, weight, height, selectedSport, token, refreshUser]);
 
   // ── Sport Picker Modal ──
-  const filteredSports = SPORTS_LIST.filter(s =>
+  const filteredSports = [...SPORTS_LIST].filter(s =>
     s.toLowerCase().includes(sportSearch.toLowerCase())
-  );
+  ).sort((a, b) => a.localeCompare(b));
 
   return (
     <View style={[s.root, { paddingTop: insets.top }]}>
@@ -381,7 +381,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12,
     borderWidth: 1.2, borderColor: 'rgba(255,255,255,0.08)',
     paddingHorizontal: 14, paddingVertical: 12, marginBottom: 10,
-    color: '#FFF', fontSize: 14, fontWeight: '600', fontFamily: FONT_M
+    color: '#FFF', fontSize: 16, fontWeight: '600', fontFamily: FONT_M
   },
 
   // Save button
