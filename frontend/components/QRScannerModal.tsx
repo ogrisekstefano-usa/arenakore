@@ -20,9 +20,10 @@ interface QRScannerModalProps {
   visible: boolean;
   onClose: () => void;
   onUserFound: (userData: any) => void;
+  onChallengeFound?: (challengeData: any) => void;
 }
 
-export function QRScannerModal({ visible, onClose, onUserFound }: QRScannerModalProps) {
+export function QRScannerModal({ visible, onClose, onUserFound, onChallengeFound }: QRScannerModalProps) {
   const { token } = useAuth();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanning, setScanning] = useState(false);
@@ -37,7 +38,37 @@ export function QRScannerModal({ visible, onClose, onUserFound }: QRScannerModal
     setScanning(false);
 
     const raw = result.data || '';
-    // Extract user ID from QR: format "arenakore://kore/{userId}" or just userId
+
+    // ─── CHALLENGE QR FORMAT: arenakore://challenge/{challengeId} ───
+    if (raw.includes('arenakore://challenge/')) {
+      const challengeId = raw.split('arenakore://challenge/')[1];
+      if (!challengeId || challengeId.length < 10) {
+        setError('QR SFIDA NON VALIDO');
+        setTimeout(() => { processedRef.current = false; setError(null); setScanning(true); }, 2000);
+        return;
+      }
+      setLookupLoading(true);
+      try {
+        const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+        const res = await fetch(`${backendUrl}/api/ugc/${challengeId}/public`);
+        if (res.ok) {
+          const data = await res.json();
+          onChallengeFound?.(data);
+          handleClose();
+        } else {
+          setError('SFIDA NON TROVATA');
+          setTimeout(() => { processedRef.current = false; setError(null); setScanning(true); }, 2000);
+        }
+      } catch {
+        setError('ERRORE DI RETE');
+        setTimeout(() => { processedRef.current = false; setError(null); setScanning(true); }, 2000);
+      } finally {
+        setLookupLoading(false);
+      }
+      return;
+    }
+
+    // ─── KORE ID QR FORMAT: arenakore://kore/{userId} ───
     let userId = raw;
     if (raw.includes('arenakore://kore/')) {
       userId = raw.split('arenakore://kore/')[1];
@@ -69,7 +100,7 @@ export function QRScannerModal({ visible, onClose, onUserFound }: QRScannerModal
     } finally {
       setLookupLoading(false);
     }
-  }, [token, lookupLoading]);
+  }, [token, lookupLoading, onChallengeFound]);
 
   const handleConfirm = () => {
     if (foundUser) {
@@ -126,7 +157,7 @@ export function QRScannerModal({ visible, onClose, onUserFound }: QRScannerModal
           <TouchableOpacity onPress={handleClose} style={qs$.backBtn} activeOpacity={0.7}>
             <Ionicons name="close" size={22} color="#FFF" />
           </TouchableOpacity>
-          <Text style={qs$.headerTitle}>SCANSIONA KORE ID</Text>
+          <Text style={qs$.headerTitle}>SCANNER UNIVERSALE</Text>
         </View>
 
         {/* Camera or Found User */}
@@ -216,7 +247,7 @@ export function QRScannerModal({ visible, onClose, onUserFound }: QRScannerModal
           </View>
         )}
 
-        <Text style={qs$.hint}>Inquadra il QR Code del KORE ID dell'atleta</Text>
+        <Text style={qs$.hint}>Inquadra un QR KORE ID o una Sfida da importare</Text>
       </View>
     </Modal>
   );

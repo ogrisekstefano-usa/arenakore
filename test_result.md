@@ -892,6 +892,54 @@ backend:
           agent: "testing"
           comment: "COMPREHENSIVE TEST PASSED: GET /api/webhooks/strava webhook verification working correctly. Properly validates hub.mode=subscribe, hub.verify_token=ARENAKORE_STRAVA_VERIFY, and echoes back hub.challenge='test123'. Public webhook endpoint functional."
 
+  - task: "UGC Challenge Create API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/ugc/create working correctly. Admin login successful with ogrisek.stefano@gmail.com / Founder@KORE2026!. Challenge creation with title='TEST SHARE FLOW', template_type='AMRAP', discipline='Fitness', exercises=[Push-ups, Squats], flux_reward=25 successful. Returns challenge object with _id and all required fields."
+
+  - task: "UGC Challenge Public API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/ugc/{challenge_id}/public (NO AUTH REQUIRED) working correctly. Returns all required fields: title, template_type, discipline, exercises, flux_reward, creator_name, creator_level. Public endpoint accessible without authentication as expected."
+
+  - task: "UGC Challenge Import API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/ugc/{challenge_id}/import working correctly. Same user import returns status='imported' and creates new challenge with imported_from field pointing to original challenge. Challenge cloning functionality working as expected."
+
+  - task: "UGC Challenge Mine API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/ugc/mine working correctly. Returns challenges object with array of user's challenges and total count. Created challenge found in user's challenge list. Response includes both original and imported challenges with proper metadata."
+
 frontend:
   - task: "KORE Card Wallet Integration (Apple + Google)"
     implemented: true
@@ -2013,3 +2061,5 @@ agent_communication:
       message: "WALLET ENGINE IMPLEMENTED (P0): (1) BACKEND: Added GET /api/wallet/apple-pass — generates a structurally valid mock .pkpass file (ZIP with pass.json + manifest.json + signature), returns base64-encoded with metadata. Added GET /api/wallet/google-pass — generates a Google Wallet JWT payload with athlete KORE Card data, returns wallet_url=https://pay.google.com/gp/v/save/{JWT}. Both endpoints require Bearer token auth. (2) FRONTEND kore.tsx: KoreCard now uses useAuth to get token. handleApple calls /api/wallet/apple-pass, on web triggers .pkpass blob download. handleGoogle calls /api/wallet/google-pass and opens the wallet_url via Linking.openURL. Added wallet success/error modal with Nike Elite design (massive KORE CARD GENERATA text, icon circle, athlete info, KORE# display). (3) api.ts: Added generateApplePass(token) and generateGooglePass(token). ARCHITECTURE NOTE: Mock is production-ready — replace mock Apple teamIdentifier+PKCS7 cert and Google service account key when ready. PLEASE TEST: (A) Login as admin@arenadare.com / Admin2026! → go to KORE tab → scroll to KORE CARD section → tap APPLE WALLET button → should trigger loading state then success modal with KORE CARD info. (B) Tap GOOGLE WALLET button → should trigger loading state then success modal + open Google Wallet URL. (C) Verify NEXUS tab: tap NEXUS center button → tap NEXUS SCAN card → bioscan animation → forge selection → choose exercise → countdown → SmoothedValidation overlay (TIENI LA POSIZIONE + stability bars) → after 3s: KORE IDENTIFICATO: ACCESSO AUTORIZZATO gold flash. Base URL: https://arena-scan-lab.preview.emergentagent.com Credentials: admin@arenadare.com / Admin2026!"
     - agent: "testing"
       message: "UNIVERSAL DATA AGGREGATOR TESTING COMPLETED: ALL 8 NEW HEALTH/CONNECTIVITY ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Test results using credentials d.rose@chicago.kore / Seed@Chicago1: ✅ Health Ingest API - BLE_SENSOR BPM (source_trust=0.92, 5 data points) and APPLE_HEALTH GPS (source_trust=0.85, 2 data points) ingestion working correctly ✅ Invalid source rejection (400 error) ✅ Health Connections API - returns all 4 expected connections (APPLE_HEALTH, GOOGLE_HEALTH, STRAVA, BLE_SENSOR) with proper metadata ✅ Health Connect/Disconnect API - toggle behavior working correctly ✅ Recent Health Data API - returns proper data structure with all required fields ✅ Strava Demo Sync API - creates 3 activities (ACTIVITY_SUMMARY, GPS_TRACK, BPM) with demo_mode=true ✅ Source Meta API (NO AUTH) - returns all 6 sources with proper structure and numeric trust levels ✅ Strava Webhook Verify API - correctly validates and echoes hub.challenge. All Universal Data Aggregator features are production-ready. Auto-correlation, timestamp parsing, data validation, and webhook verification all functional."
+    - agent: "testing"
+      message: "UGC CHALLENGE FLOW TESTING COMPLETED: ALL 4 NEW UGC ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Test results using admin credentials ogrisek.stefano@gmail.com / Founder@KORE2026!: ✅ POST /api/ugc/create - Challenge creation working correctly with title='TEST SHARE FLOW', template_type='AMRAP', discipline='Fitness', exercises=[Push-ups, Squats], flux_reward=25. Returns challenge object with _id and all required fields. ✅ GET /api/ugc/{challenge_id}/public (NO AUTH) - Public endpoint accessible without authentication, returns all required fields: title, template_type, discipline, exercises, flux_reward, creator_name, creator_level. ✅ POST /api/ugc/{challenge_id}/import - Same user import returns status='imported' and creates new challenge with imported_from field pointing to original challenge. Challenge cloning functionality working correctly. ✅ GET /api/ugc/mine - Returns challenges object with array of user's challenges and total count. Created challenge found in user's challenge list with both original and imported challenges. All UGC Challenge share flow features are production-ready."

@@ -23,6 +23,7 @@ import { ChallengeCreator } from '../../components/ChallengeCreator';
 import { FluxGenerator } from '../../components/FluxGenerator';
 import { ChallengeShareCard } from '../../components/ChallengeShareCard';
 import { ChallengePreviewModal } from '../../components/ChallengePreviewModal';
+import { QRScannerModal } from '../../components/QRScannerModal';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -170,6 +171,7 @@ export default function KoreTab() {
   const [activeDiscipline, setActiveDiscipline] = useState<string | null>(null);
   const [shareChallenge, setShareChallenge] = useState<any>(null);
   const [previewChallenge, setPreviewChallenge] = useState<any>(null);
+  const [scannerVisible, setScannerVisible] = useState(false);
 
   useEffect(() => {
     (globalThis as any).__openKoreIdModal = () => setKoreIdVisible(true);
@@ -263,6 +265,11 @@ export default function KoreTab() {
           <Text style={hdr.sub}>pronto a superarti?</Text>
         </View>
         <View style={hdr.right}>
+          <TouchableOpacity onPress={() => { setScannerVisible(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}>
+            <View style={hdr.scanBtn}>
+              <Ionicons name="qr-code" size={15} color="#00E5FF" />
+            </View>
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => { setShopVisible(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); }}>
             <Animated.View style={[hdr.fluxBadge, fluxBadgeStyle]}>
               <Ionicons name="flash" size={13} color="#FFD700" />
@@ -407,6 +414,7 @@ export default function KoreTab() {
                   onStart={() => router.push('/(tabs)/nexus-trigger')}
                   onInvite={() => {}}
                   onLive={() => router.push('/live-events')}
+                  onShare={() => { setShareChallenge(ch); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}
                 />
               ))}
               {myChallenges.filter(ch => !activeDiscipline || ch.discipline === activeDiscipline).length === 0 && (
@@ -441,6 +449,23 @@ export default function KoreTab() {
         onClose={() => setShopVisible(false)}
         onPurchased={() => {}}
       />
+      <ChallengeShareCard
+        visible={!!shareChallenge}
+        challenge={shareChallenge}
+        onClose={() => setShareChallenge(null)}
+      />
+      <ChallengePreviewModal
+        visible={!!previewChallenge}
+        challengeData={previewChallenge}
+        onClose={() => setPreviewChallenge(null)}
+        onImported={() => { fetchMyChallenges(); setPreviewChallenge(null); }}
+      />
+      <QRScannerModal
+        visible={scannerVisible}
+        onClose={() => setScannerVisible(false)}
+        onUserFound={(userData) => { setKoreIdVisible(true); }}
+        onChallengeFound={(challengeData) => { setPreviewChallenge(challengeData); }}
+      />
     </View>
   );
 }
@@ -454,8 +479,8 @@ const TEMPLATE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   AMRAP: 'flame', EMOM: 'timer', FOR_TIME: 'speedometer', TABATA: 'pulse', CUSTOM: 'construct',
 };
 
-function UGCCard({ challenge, onStart, onInvite, onLive, userFlux }: {
-  challenge: any; onStart: () => void; onInvite: () => void; onLive: () => void; userFlux: number;
+function UGCCard({ challenge, onStart, onInvite, onLive, onShare, userFlux }: {
+  challenge: any; onStart: () => void; onInvite: () => void; onLive: () => void; onShare: () => void; userFlux: number;
 }) {
   const color = TEMPLATE_COLORS[challenge.template_type] || '#00E5FF';
   const icon = TEMPLATE_ICONS[challenge.template_type] || 'flash';
@@ -484,6 +509,13 @@ function UGCCard({ challenge, onStart, onInvite, onLive, userFlux }: {
             <Text style={[ugc.actionText, { color }]}>AVVIA</Text>
           </TouchableOpacity>
           <TouchableOpacity
+            style={[ugc.actionBtn, { backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }]}
+            onPress={onShare}
+          >
+            <Ionicons name="share-social" size={11} color={color} />
+            <Text style={[ugc.actionText, { color: color + '90' }]}>SHARE</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
             style={[ugc.actionBtn, {
               backgroundColor: canInvite ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)',
               borderColor: canInvite ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
@@ -494,18 +526,6 @@ function UGCCard({ challenge, onStart, onInvite, onLive, userFlux }: {
           >
             <Ionicons name="person-add" size={11} color="rgba(255,255,255,0.4)" />
             <Text style={[ugc.actionText, { color: 'rgba(255,255,255,0.3)', fontSize: 8 }]}>{inviteFee}⚡</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[ugc.actionBtn, {
-              backgroundColor: canLive ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)',
-              borderColor: canLive ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
-              opacity: canLive ? 1 : 0.4,
-            }]}
-            onPress={canLive ? onLive : undefined}
-            disabled={!canLive}
-          >
-            <Ionicons name="radio" size={11} color="rgba(255,255,255,0.4)" />
-            <Text style={[ugc.actionText, { color: 'rgba(255,255,255,0.3)', fontSize: 8 }]}>{liveFee}⚡</Text>
           </TouchableOpacity>
         </View>
       </LinearGradient>
@@ -549,6 +569,12 @@ const hdr = StyleSheet.create({
   name: { color: '#FFFFFF', fontWeight: '800', fontSize: 18 },
   sub: { color: 'rgba(255,255,255,0.20)', fontSize: 13, fontFamily: FONT_J, fontWeight: '800', letterSpacing: 0.3 },
   right: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  scanBtn: {
+    width: 36, height: 36, borderRadius: 10,
+    backgroundColor: 'rgba(0,229,255,0.06)',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)',
+  },
   fluxBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: 'rgba(255,215,0,0.05)', borderRadius: 10,
