@@ -38,11 +38,12 @@ const EXERCISES = [
 ];
 
 // ─── DESTINATIONS ───
+const FLUX_FEES: Record<string, number> = { solo: 0, ranked: 10, friend: 0, live: 15, crew: 15 };
 const DESTINATIONS = [
-  { key: 'solo', label: 'SOLO ALLENAMENTO', icon: 'person' as const, color: '#00E5FF', sub: 'Solo tu. Focus puro.' },
-  { key: 'ranked', label: 'CLASSIFICA PERSONALE', icon: 'podium' as const, color: '#FFD700', sub: 'Entra nella classifica globale.' },
-  { key: 'friend', label: 'SFIDA AMICO / CREW', icon: 'people' as const, color: '#FF3B30', sub: 'Manda il guanto di sfida.' },
-  { key: 'live', label: 'CREA LIVE EVENT', icon: 'radio' as const, color: '#00FF87', sub: 'Trasmetti nell\'Arena.' },
+  { key: 'solo', label: 'SOLO ALLENAMENTO', icon: 'person' as const, color: '#00E5FF', sub: 'Solo tu. Focus puro.', fee: 0 },
+  { key: 'ranked', label: 'CLASSIFICA PERSONALE', icon: 'podium' as const, color: '#FFD700', sub: 'Entra nella classifica globale.', fee: 10 },
+  { key: 'friend', label: 'SFIDA AMICO / CREW', icon: 'people' as const, color: '#FF3B30', sub: 'Manda il guanto di sfida.', fee: 0 },
+  { key: 'live', label: 'CREA LIVE EVENT', icon: 'radio' as const, color: '#00FF87', sub: 'Trasmetti nell\'Arena.', fee: 15 },
 ];
 
 // ─── CERTIFICATIONS ───
@@ -149,8 +150,16 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
       if (res.ok) {
         onCreated?.(data.challenge);
         handleClose();
+      } else if (res.status === 402) {
+        // FLUX INSUFFICIENT — show clear message
+        const detail = typeof data.detail === 'object' ? data.detail : { message: data.detail };
+        Alert.alert(
+          '⚡ FLUX Insufficienti',
+          detail.message || `Servono FLUX per pubblicare. Hai ${detail.current || 0} FLUX, servono ${detail.required || 0}.`,
+          [{ text: 'OK', style: 'default' }]
+        );
       } else {
-        Alert.alert('Errore', data.detail || 'Impossibile creare la sfida');
+        Alert.alert('Errore', typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail) || 'Impossibile creare la sfida');
       }
     } catch {
       Alert.alert('Errore', 'Connessione al server fallita');
@@ -345,6 +354,15 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
                       <Text style={[s.optionLabel, { color: destination === d.key ? d.color : '#FFF' }]}>{d.label}</Text>
                       <Text style={s.optionSub}>{d.sub}</Text>
                     </View>
+                    {d.fee > 0 ? (
+                      <View style={s.feeBadge}>
+                        <Text style={s.feeText}>{d.fee}⚡</Text>
+                      </View>
+                    ) : (
+                      <View style={s.freeBadge}>
+                        <Text style={s.freeText}>FREE</Text>
+                      </View>
+                    )}
                     {destination === d.key && <Ionicons name="checkmark-circle" size={22} color={d.color} />}
                   </TouchableOpacity>
                 ))}
@@ -399,6 +417,11 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
                     <Text style={s.summaryFlux}>
                       FLUX Reward: +{15 + exercises.length * 5} ⚡
                     </Text>
+                    {(FLUX_FEES[destination] || 0) > 0 && (
+                      <Text style={s.summaryFee}>
+                        Costo Pubblicazione: -{FLUX_FEES[destination]} ⚡ FLUX
+                      </Text>
+                    )}
                   </Animated.View>
                 )}
               </Animated.View>
@@ -521,6 +544,19 @@ const s = StyleSheet.create({
   summaryLine: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '500', fontFamily: FONT_M, marginBottom: 4 },
   summaryKey: { color: '#FFF', fontWeight: '800' },
   summaryFlux: { color: '#FFD700', fontSize: 16, fontWeight: '900', fontFamily: FONT_J, marginTop: 12, letterSpacing: 1 },
+  summaryFee: { color: '#FF3B30', fontSize: 12, fontWeight: '800', fontFamily: FONT_J, marginTop: 4, letterSpacing: 0.5 },
+
+  // Fee badges on destination cards
+  feeBadge: {
+    backgroundColor: 'rgba(255,215,0,0.12)', borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
+  },
+  feeText: { color: '#FFD700', fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J },
+  freeBadge: {
+    backgroundColor: 'rgba(0,255,135,0.08)', borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(0,255,135,0.15)',
+  },
+  freeText: { color: '#00FF87', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
 
   // Bottom bar
   bottomBar: { paddingHorizontal: 20, paddingTop: 14, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.04)' },

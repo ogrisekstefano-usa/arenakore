@@ -51,6 +51,8 @@ import { PostRaceValidation } from '../../components/challenge/PostRaceValidatio
 import { QRScannerModal } from '../../components/QRScannerModal';
 import { ChallengePreviewModal } from '../../components/ChallengePreviewModal';
 import { TemplateRequestModal, CategoryProposalModal } from '../../components/GovernanceModals';
+import { FluxStoreModal } from '../../components/FluxStoreModal';
+import { CrewBattleProgressBar } from '../../components/CrewBattleProgressBar';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -441,10 +443,10 @@ const ghost$ = StyleSheet.create({
 });
 
 // ========== NEXUS CONSOLE ==========
-function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligibility, myRank, myCrews, onTemplateReq, onCategoryProposal }: {
+function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligibility, myRank, myCrews, onTemplateReq, onCategoryProposal, onFluxStore }: {
   user: any; onScan: () => void; onForge: () => void; onPillarAction: (key: string) => void;
   deviceTier: DeviceTier; eligibility: any; myRank: any; myCrews: any[];
-  onTemplateReq: (disc: string) => void; onCategoryProposal: () => void;
+  onTemplateReq: (disc: string) => void; onCategoryProposal: () => void; onFluxStore: () => void;
 }) {
   const router = useRouter();
   const { width: screenWidth } = Dimensions.get('window');
@@ -576,6 +578,12 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
                 <Ionicons name="flash" size={16} color="#FF3B30" />
               </View>
               <Text style={cn$.quickLabel}>DUELLO</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={cn$.quickBtn} onPress={onFluxStore} activeOpacity={0.8}>
+              <View style={[cn$.quickIcon, { backgroundColor: 'rgba(255,215,0,0.10)' }]}>
+                <Ionicons name="diamond" size={16} color="#FFD700" />
+              </View>
+              <Text style={cn$.quickLabel}>FLUX</Text>
             </TouchableOpacity>
           </View>
 
@@ -1763,6 +1771,8 @@ export default function NexusTriggerScreen() {
   const [templateReqDiscipline, setTemplateReqDiscipline] = useState('');
   const [showTemplateReq, setShowTemplateReq] = useState(false);
   const [showCategoryProposal, setShowCategoryProposal] = useState(false);
+  const [showFluxStore, setShowFluxStore] = useState(false);
+  const [expandedBattleId, setExpandedBattleId] = useState<string | null>(null);
   // Dopamine layer: FLUX Rain + Victory
   const [showDropsRain, setShowDropsRain] = useState(false);
   const [dropsEarned, setDropsEarned] = useState(0);
@@ -2215,6 +2225,7 @@ export default function NexusTriggerScreen() {
           myCrews={myCrews}
           onTemplateReq={(disc: string) => { setTemplateReqDiscipline(disc); setShowTemplateReq(true); }}
           onCategoryProposal={() => setShowCategoryProposal(true)}
+          onFluxStore={() => setShowFluxStore(true)}
         />
         <TemplateRequestModal
           visible={showTemplateReq}
@@ -2224,6 +2235,17 @@ export default function NexusTriggerScreen() {
         <CategoryProposalModal
           visible={showCategoryProposal}
           onClose={() => setShowCategoryProposal(false)}
+        />
+        <FluxStoreModal
+          visible={showFluxStore}
+          onClose={() => setShowFluxStore(false)}
+          userFlux={user?.xp || 0}
+          onPurchase={(res: any) => {
+            if (res.user) {
+              // Refresh user state would be done via AuthContext
+            }
+            setShowFluxStore(false);
+          }}
         />
       </View>
     );

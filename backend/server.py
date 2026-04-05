@@ -2496,10 +2496,37 @@ async def matchmake_crew_battle(current_user: dict = Depends(get_current_user)):
 
 @api_router.post("/battles/crew/challenge")
 async def challenge_crew_to_battle(data: CrewChallengeRequest, current_user: dict = Depends(get_current_user)):
-    """Challenge a crew to a live battle"""
+    """Challenge a crew to a live battle — costs FLUX"""
     my_crew = await db.crews_v2.find_one({"members": current_user["_id"]})
     if not my_crew:
         raise HTTPException(status_code=400, detail="Devi essere in una crew")
+
+    # ── FLUX FEE for Crew Challenge ──
+    fee = FLUX_PUBLISH_FEES.get("crew", 15)
+    user_flux = current_user.get("xp", 0)
+    if user_flux < fee:
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "error": "FLUX_INSUFFICIENT",
+                "message": f"Servono {fee} FLUX per sfidare una Crew. Hai {user_flux} FLUX.",
+                "required": fee,
+                "current": user_flux,
+            }
+        )
+
+    # Deduct fee
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$inc": {"xp": -fee, "flux": -fee}}
+    )
+    await db.flux_transactions.insert_one({
+        "user_id": current_user["_id"],
+        "type": "crew_challenge_fee",
+        "amount": -fee,
+        "description": "Fee sfida Crew vs Crew",
+        "created_at": datetime.now(timezone.utc),
+    })
 
     try:
         opp_crew = await db.crews_v2.find_one({"_id": ObjectId(data.crew_id)})
@@ -9534,9 +9561,26 @@ async def force_health_sync(body: dict = Body(...), current_user: dict = Depends
 # ═══════════════════════════════════════════════════════════
 
 UGC_TEMPLATES = ["AMRAP", "EMOM", "FOR_TIME", "TABATA", "CUSTOM"]
-UGC_DESTINATIONS = ["solo", "ranked", "friend", "live"]
+UGC_DESTINATIONS = ["solo", "ranked", "friend", "live", "crew"]
 UGC_CERTIFICATIONS = ["nexus_ai", "self", "peer", "device"]
 SPORT_DISCIPLINES = ["Fitness", "Bodybuilding", "Golf", "Basket", "Tennis", "Running"]
+
+# ── FLUX PUBLISHING FEES — Anti-spam filter ──
+FLUX_PUBLISH_FEES = {
+    "solo": 0,       # Free — personal challenges
+    "friend": 0,     # Free — direct invite
+    "ranked": 10,    # 10 FLUX — public silo publishing
+    "live": 15,      # 15 FLUX — live event
+    "crew": 15,      # 15 FLUX — crew challenge
+}
+
+# ── FLUX PACKAGES — Purchasable via Squad Boost ──
+FLUX_PACKAGES = {
+    "spark":   {"flux": 30,  "label": "Spark",   "crew_pct": 0.0,  "price_label": "Gratuito"},
+    "kinetic": {"flux": 100, "label": "Kinetic", "crew_pct": 0.15, "price_label": "€4.99"},
+    "power":   {"flux": 300, "label": "Power",   "crew_pct": 0.20, "price_label": "€11.99"},
+    "ultra":   {"flux": 800, "label": "Ultra",   "crew_pct": 0.25, "price_label": "€29.99"},
+}
 
 class UGCCreate(BaseModel):
     title: str
@@ -9551,7 +9595,7 @@ class UGCCreate(BaseModel):
 
 @api_router.post("/ugc/create")
 async def ugc_create_challenge(data: UGCCreate, current_user: dict = Depends(get_current_user)):
-    """Create a User-Generated Challenge (UGC)."""
+    """Create a User-Generated Challenge (UGC) — with FLUX publishing fee."""
     if data.template_type not in UGC_TEMPLATES:
         raise HTTPException(400, f"Template non valido. Usa: {UGC_TEMPLATES}")
     if data.destination not in UGC_DESTINATIONS:
@@ -9560,6 +9604,36 @@ async def ugc_create_challenge(data: UGCCreate, current_user: dict = Depends(get
         raise HTTPException(400, f"Certificazione non valida. Usa: {UGC_CERTIFICATIONS}")
     if not data.exercises or len(data.exercises) == 0:
         raise HTTPException(400, "Devi aggiungere almeno 1 esercizio.")
+
+    # ── FLUX PUBLISHING FEE — Anti-spam ──
+    fee = FLUX_PUBLISH_FEES.get(data.destination, 0)
+    user_flux = current_user.get("xp", 0)  # xp = flux
+    if fee > 0 and user_flux < fee:
+        raise HTTPException(
+            402,
+            detail={
+                "error": "FLUX_INSUFFICIENT",
+                "message": f"Servono {fee} FLUX per pubblicare in '{data.destination}'. Hai {user_flux} FLUX.",
+                "required": fee,
+                "current": user_flux,
+            }
+        )
+
+    # Deduct fee
+    if fee > 0:
+        await db.users.update_one(
+            {"_id": current_user["_id"]},
+            {"$inc": {"xp": -fee, "flux": -fee}}
+        )
+        # Record transaction
+        await db.flux_transactions.insert_one({
+            "user_id": current_user["_id"],
+            "type": "publish_fee",
+            "amount": -fee,
+            "destination": data.destination,
+            "description": f"Fee pubblicazione sfida ({data.destination})",
+            "created_at": datetime.now(timezone.utc),
+        })
 
     # ── Determine creator role for AI validation strictness ──
     user_role = current_user.get("role", "ATHLETE")
@@ -9601,7 +9675,7 @@ async def ugc_create_challenge(data: UGCCreate, current_user: dict = Depends(get
             "created_at": datetime.now(timezone.utc),
         })
 
-    return {"status": "created", "challenge": doc}
+    return {"status": "created", "challenge": doc, "flux_fee_charged": fee, "user_flux_remaining": max(0, user_flux - fee)}
 
 
 @api_router.get("/ugc/mine")
@@ -10183,6 +10257,278 @@ async def admin_governance(current_user: dict = Depends(get_current_user)):
         "total_template": len(template_reqs),
         "total_category": len(category_reqs),
     }
+
+
+app.include_router(api_router)
+
+
+# ═════════════════════════════════════════════════════════════════════
+# FLUX ECONOMY — PACKAGES, SQUAD BOOST & PUBLISHING FEES
+# ═════════════════════════════════════════════════════════════════════
+
+class FluxPurchaseBody(BaseModel):
+    package_id: str  # spark, kinetic, power, ultra
+
+@api_router.get("/flux/packages")
+async def get_flux_packages(current_user: dict = Depends(get_current_user)):
+    """Return available FLUX packages with crew boost info."""
+    user_flux = current_user.get("xp", 0)
+    # Check if user is in a crew
+    crew = await db.crews_v2.find_one({"members": current_user["_id"]})
+    has_crew = crew is not None
+    crew_name = crew["name"] if crew else None
+    crew_size = len(crew.get("members", [])) - 1 if crew else 0  # minus self
+
+    packages = []
+    for pid, pkg in FLUX_PACKAGES.items():
+        crew_bonus = int(pkg["flux"] * pkg["crew_pct"]) if has_crew and pkg["crew_pct"] > 0 else 0
+        packages.append({
+            "id": pid,
+            "label": pkg["label"],
+            "flux": pkg["flux"],
+            "price_label": pkg["price_label"],
+            "crew_boost_pct": int(pkg["crew_pct"] * 100),
+            "crew_bonus_per_member": crew_bonus,
+            "crew_members_count": crew_size,
+            "total_crew_bonus": crew_bonus * crew_size,
+            "has_crew_boost": pkg["crew_pct"] > 0,
+        })
+
+    return {
+        "packages": packages,
+        "user_flux": user_flux,
+        "has_crew": has_crew,
+        "crew_name": crew_name,
+        "publish_fees": FLUX_PUBLISH_FEES,
+    }
+
+
+@api_router.post("/flux/purchase")
+async def purchase_flux_package(body: FluxPurchaseBody, current_user: dict = Depends(get_current_user)):
+    """Purchase a FLUX package. Kinetic+ distributes bonus to Crew members."""
+    pkg = FLUX_PACKAGES.get(body.package_id)
+    if not pkg:
+        raise HTTPException(400, f"Pacchetto non valido. Opzioni: {list(FLUX_PACKAGES.keys())}")
+
+    now = datetime.now(timezone.utc)
+    flux_amount = pkg["flux"]
+    crew_pct = pkg["crew_pct"]
+
+    # Add FLUX to user
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$inc": {"xp": flux_amount, "flux": flux_amount}}
+    )
+
+    # Record transaction
+    await db.flux_transactions.insert_one({
+        "user_id": current_user["_id"],
+        "type": "purchase",
+        "package_id": body.package_id,
+        "amount": flux_amount,
+        "description": f"Acquisto pacchetto {pkg['label']}",
+        "created_at": now,
+    })
+
+    # ── SQUAD BOOST: Distribute to Crew members ──
+    crew_members_boosted = 0
+    crew_bonus_per_member = 0
+    crew_name = None
+
+    if crew_pct > 0:
+        crew = await db.crews_v2.find_one({"members": current_user["_id"]})
+        if crew:
+            crew_name = crew["name"]
+            crew_bonus_per_member = int(flux_amount * crew_pct)
+            members = crew.get("members", [])
+            username = current_user.get("username", "Kore")
+
+            for mid in members:
+                if mid != current_user["_id"]:
+                    # Add bonus FLUX to each crew member
+                    await db.users.update_one(
+                        {"_id": mid},
+                        {"$inc": {"xp": crew_bonus_per_member, "flux": crew_bonus_per_member}}
+                    )
+                    crew_members_boosted += 1
+
+                    # Record transaction for each member
+                    await db.flux_transactions.insert_one({
+                        "user_id": mid,
+                        "type": "squad_boost",
+                        "from_user": str(current_user["_id"]),
+                        "from_username": username,
+                        "amount": crew_bonus_per_member,
+                        "description": f"Squad Boost da {username} ({pkg['label']})",
+                        "created_at": now,
+                    })
+
+                    # Push notification to crew member
+                    await db.notifications.insert_one({
+                        "user_id": mid,
+                        "type": "squad_boost",
+                        "title": "⚡ SQUAD BOOST!",
+                        "message": f"{username} ha iniettato energia! +{crew_bonus_per_member} FLUX bonus per te.",
+                        "icon": "flash",
+                        "color": "#FFD700",
+                        "read": False,
+                        "created_at": now,
+                    })
+
+            # Feed entry for crew
+            await db.crew_feed.insert_one({
+                "crew_id": crew["_id"],
+                "type": "squad_boost",
+                "username": username,
+                "message": f"⚡ {username} ha attivato Squad Boost ({pkg['label']})! +{crew_bonus_per_member} FLUX a tutti.",
+                "created_at": now,
+            })
+
+    # Refresh user
+    updated_user = await db.users.find_one({"_id": current_user["_id"]})
+    user_resp = user_to_response(updated_user) if updated_user else None
+
+    return {
+        "status": "purchased",
+        "package": pkg["label"],
+        "flux_added": flux_amount,
+        "crew_boost": {
+            "active": crew_pct > 0 and crew_members_boosted > 0,
+            "crew_name": crew_name,
+            "bonus_per_member": crew_bonus_per_member,
+            "members_boosted": crew_members_boosted,
+            "total_distributed": crew_bonus_per_member * crew_members_boosted,
+        },
+        "user": user_resp,
+    }
+
+
+@api_router.get("/flux/history")
+async def get_flux_history(current_user: dict = Depends(get_current_user)):
+    """Get user's FLUX transaction history."""
+    txns = await db.flux_transactions.find(
+        {"user_id": current_user["_id"]}
+    ).sort("created_at", -1).limit(50).to_list(50)
+
+    return [{
+        "id": str(t["_id"]),
+        "type": t.get("type"),
+        "amount": t.get("amount", 0),
+        "description": t.get("description", ""),
+        "from_username": t.get("from_username"),
+        "created_at": t.get("created_at", "").isoformat() if t.get("created_at") else None,
+    } for t in txns]
+
+
+# ═════════════════════════════════════════════════════════════════════
+# CREW SYNC ENGINE — REAL-TIME BATTLE PROGRESS (ENHANCED)
+# ═════════════════════════════════════════════════════════════════════
+
+@api_router.get("/battles/crew/{battle_id}/live-state")
+async def get_crew_battle_live_state(battle_id: str, current_user: dict = Depends(get_current_user)):
+    """Real-time battle state with per-member contributions and weighted averages."""
+    try:
+        battle = await db.crew_battles.find_one({"_id": ObjectId(battle_id)})
+    except Exception:
+        raise HTTPException(404, "Battle non trovata")
+    if not battle:
+        raise HTTPException(404, "Battle non trovata")
+
+    # Get all contributions for this battle
+    contribs_a = await db.battle_feed.find(
+        {"battle_id": battle_id, "crew_side": "A"}
+    ).sort("created_at", -1).to_list(200)
+    contribs_b = await db.battle_feed.find(
+        {"battle_id": battle_id, "crew_side": "B"}
+    ).sort("created_at", -1).to_list(200)
+
+    def build_member_stats(contribs):
+        members = {}
+        for c in contribs:
+            uid = c.get("user_id")
+            if uid not in members:
+                members[uid] = {
+                    "user_id": uid,
+                    "username": c.get("username", "Kore"),
+                    "total_pts": 0,
+                    "scans": 0,
+                    "avg_quality": 0,
+                    "total_reps": 0,
+                    "last_scan": None,
+                }
+            members[uid]["total_pts"] += c.get("contribution_pts", 0)
+            members[uid]["scans"] += 1
+            members[uid]["total_reps"] += c.get("reps", 0)
+            members[uid]["avg_quality"] = (
+                (members[uid]["avg_quality"] * (members[uid]["scans"] - 1) + c.get("quality_score", 50))
+                / members[uid]["scans"]
+            )
+            ts = c.get("created_at")
+            if ts and (members[uid]["last_scan"] is None or ts > members[uid]["last_scan"]):
+                members[uid]["last_scan"] = ts
+        result = list(members.values())
+        for m in result:
+            m["total_pts"] = round(m["total_pts"], 2)
+            m["avg_quality"] = round(m["avg_quality"], 1)
+            if m["last_scan"]:
+                m["last_scan"] = m["last_scan"].isoformat()
+        result.sort(key=lambda x: x["total_pts"], reverse=True)
+        return result
+
+    members_a = build_member_stats(contribs_a)
+    members_b = build_member_stats(contribs_b)
+
+    crew_a_score = battle.get("crew_a_kore_score", 50) + battle.get("crew_a_contribution", 0)
+    crew_b_score = battle.get("crew_b_kore_score", 50) + battle.get("crew_b_contribution", 0)
+    total = max(crew_a_score + crew_b_score, 1)
+
+    # Time remaining
+    ends_at = battle.get("ends_at")
+    now = datetime.utcnow()
+    remaining_seconds = max(0, int((ends_at - now).total_seconds())) if ends_at else 0
+
+    # Recent feed (last 10 contributions across both crews)
+    all_contribs = sorted(contribs_a + contribs_b, key=lambda c: c.get("created_at", datetime.min), reverse=True)[:10]
+    feed = [{
+        "username": c.get("username"),
+        "crew_side": c.get("crew_side"),
+        "pts": round(c.get("contribution_pts", 0), 2),
+        "quality": c.get("quality_score", 0),
+        "reps": c.get("reps", 0),
+        "time": c.get("created_at", "").isoformat() if c.get("created_at") else None,
+    } for c in all_contribs]
+
+    return {
+        "battle_id": battle_id,
+        "status": battle.get("status"),
+        "crew_a": {
+            "id": str(battle["crew_a_id"]),
+            "name": battle["crew_a_name"],
+            "base_score": round(battle.get("crew_a_kore_score", 50), 1),
+            "contribution": round(battle.get("crew_a_contribution", 0), 2),
+            "total_score": round(crew_a_score, 1),
+            "pct": round(crew_a_score / total * 100, 1),
+            "active_members": len(members_a),
+            "members": members_a,
+        },
+        "crew_b": {
+            "id": str(battle["crew_b_id"]),
+            "name": battle["crew_b_name"],
+            "base_score": round(battle.get("crew_b_kore_score", 50), 1),
+            "contribution": round(battle.get("crew_b_contribution", 0), 2),
+            "total_score": round(crew_b_score, 1),
+            "pct": round(crew_b_score / total * 100, 1),
+            "active_members": len(members_b),
+            "members": members_b,
+        },
+        "remaining_seconds": remaining_seconds,
+        "ends_at": ends_at.isoformat() if ends_at else None,
+        "live_feed": feed,
+    }
+
+
+# Also add crew challenge FLUX fee to /battles/crew/challenge
+# (Already exists but need to add FLUX deduction)
 
 
 app.include_router(api_router)
