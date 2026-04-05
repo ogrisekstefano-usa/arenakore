@@ -17,7 +17,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Line, Circle, Rect, Defs, LinearGradient as SvgGrad, Stop, G } from 'react-native-svg';
-import { Video, ResizeMode } from 'expo-av';
 import { useAuth } from '../contexts/AuthContext';
 
 // ── Assets
