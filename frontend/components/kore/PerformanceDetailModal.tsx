@@ -16,6 +16,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { api } from '../../utils/api';
 import ViewShot, { captureRef } from 'react-native-view-shot';
+import { TalentCardTemplate } from './TalentCardTemplate';
+import type { TalentCardData } from './TalentCardTemplate';
 
 const FONT_J = Platform.select({ ios: 'PlusJakartaSans-ExtraBold', android: 'PlusJakartaSans-ExtraBold', default: 'Plus Jakarta Sans' });
 const FONT_M = Platform.select({ ios: 'Montserrat-Regular', android: 'Montserrat-Regular', default: 'Montserrat' });
@@ -44,13 +46,14 @@ interface Props {
 
 export function PerformanceDetailModal({ visible, record, onClose }: Props) {
   const insets = useSafeAreaInsets();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const router = useRouter();
   const [prData, setPrData] = useState<any>(null);
   const [loadingPr, setLoadingPr] = useState(false);
   const [activeSnap, setActiveSnap] = useState(0);
   const [exporting, setExporting] = useState(false);
   const talentCardRef = useRef<any>(null);
+  const [siloProfile, setSiloProfile] = useState<any>(null);
 
   const cfg = TIPO_CONFIG[record?.tipo] || TIPO_CONFIG['ALLENAMENTO'];
   const kpi = record?.kpi || {};
@@ -73,6 +76,10 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
         setPrData(data);
       } catch {}
       setLoadingPr(false);
+    })();
+    // Fetch silo profile for title
+    (async () => {
+      try { const sp = await api.getSiloProfile(token); setSiloProfile(sp); } catch {}
     })();
   }, [visible, record?.id]);
 
@@ -371,54 +378,25 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
         {/* ═══ HIDDEN TALENT CARD — 9:16 Format for Export ═══ */}
         <View style={ds.offscreen}>
           <ViewShot ref={talentCardRef} options={{ format: 'png', quality: 1 }} style={{ width: 360, height: 640 }}>
-            <View style={{ flex: 1, backgroundColor: '#0A0A0A', position: 'relative' }}>
-              {record?.snapshots?.peak && (
-                <Image source={{ uri: record.snapshots.peak }} style={{ position: 'absolute', width: 360, height: 640 }} resizeMode="cover" />
-              )}
-              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.55)' }} />
-              {/* Top watermark */}
-              <View style={{ position: 'absolute', top: 20, left: 20, right: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View style={{ flexDirection: 'row', gap: 4 }}>
-                  <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '900', letterSpacing: 5 }}>ARENA</Text>
-                  <Text style={{ color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 5 }}>KORE</Text>
-                </View>
-                {record?.is_certified && (
-                  <View style={{ backgroundColor: 'rgba(0,255,135,0.15)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(0,255,135,0.30)' }}>
-                    <Text style={{ color: '#00FF87', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 }}>CERTIFIED</Text>
-                  </View>
-                )}
-              </View>
-              {/* Center result */}
-              <View style={{ position: 'absolute', top: 200, left: 0, right: 0, alignItems: 'center' }}>
-                <Text style={{ color: '#FFFFFF', fontSize: 96, fontWeight: '900', lineHeight: 100 }}>{primaryDisplay}</Text>
-                <Text style={{ color: 'rgba(255,255,255,0.30)', fontSize: 18, fontWeight: '900', letterSpacing: 8, marginTop: -4 }}>{primaryUnit}</Text>
-                <View style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: cfg.color, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', marginTop: 16 }}>
-                  <Text style={{ color: cfg.color, fontSize: 20, fontWeight: '900' }}>{myQual || '—'}</Text>
-                  <Text style={{ color: cfg.color + '80', fontSize: 8, fontWeight: '800', letterSpacing: 2 }}>Q</Text>
-                </View>
-              </View>
-              {/* KPI row */}
-              <View style={{ position: 'absolute', bottom: 130, left: 20, right: 20, flexDirection: 'row', justifyContent: 'space-around' }}>
-                <View style={{ alignItems: 'center', gap: 2 }}>
-                  <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900' }}>{Math.round(kpi.rom_pct || 0)}%</Text>
-                  <Text style={{ color: 'rgba(255,255,255,0.30)', fontSize: 9, fontWeight: '800', letterSpacing: 2 }}>ROM</Text>
-                </View>
-                <View style={{ alignItems: 'center', gap: 2 }}>
-                  <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900' }}>{Math.round(kpi.explosivity_pct || 0)}%</Text>
-                  <Text style={{ color: 'rgba(255,255,255,0.30)', fontSize: 9, fontWeight: '800', letterSpacing: 2 }}>EXPL</Text>
-                </View>
-                <View style={{ alignItems: 'center', gap: 2 }}>
-                  <Text style={{ color: '#FFD700', fontSize: 22, fontWeight: '900' }}>+{record?.flux_earned || 0}</Text>
-                  <Text style={{ color: 'rgba(255,255,255,0.30)', fontSize: 9, fontWeight: '800', letterSpacing: 2 }}>FLUX</Text>
-                </View>
-              </View>
-              {/* Bottom identity */}
-              <View style={{ position: 'absolute', bottom: 30, left: 20, right: 20, alignItems: 'center' }}>
-                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1 }}>{discIcon} {record?.disciplina || 'Fitness'}</Text>
-                <Text style={{ color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '800', letterSpacing: 2, marginTop: 6 }}>NEXUS AI VALIDATED</Text>
-                <Text style={{ color: 'rgba(255,255,255,0.12)', fontSize: 10, fontWeight: '800', letterSpacing: 3, marginTop: 4 }}>arenakore.app</Text>
-              </View>
-            </View>
+            <TalentCardTemplate data={{
+              username: user?.username || 'KORE',
+              title: siloProfile?.title,
+              disciplina: record?.disciplina || 'Fitness',
+              peakSnapshot: record?.snapshots?.peak,
+              primaryValue: pr.value || 0,
+              primaryUnit: primaryUnit || 'REPS',
+              qualityScore: myQual,
+              romPct: kpi.rom_pct,
+              explosivityPct: kpi.explosivity_pct,
+              powerOutput: kpi.power_output,
+              heartRate: kpi.heart_rate_avg,
+              fluxEarned: record?.flux_earned || 0,
+              isCertified: record?.is_certified || false,
+              isFounder: user?.is_admin,
+              founderNumber: user?.founder_number,
+              tipo: record?.tipo || 'ALLENAMENTO',
+              validationStatus: record?.validation_status,
+            }} />
           </ViewShot>
         </View>
       </View>

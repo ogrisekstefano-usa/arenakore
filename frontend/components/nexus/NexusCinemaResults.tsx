@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ViewShot, { captureRef } from 'react-native-view-shot';
+import { TalentCardTemplate } from '../kore/TalentCardTemplate';
 import Animated, {
   useSharedValue, withSpring, withTiming, useAnimatedStyle,
   withSequence, withDelay, withRepeat, Easing, FadeInDown,
@@ -339,63 +340,24 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
         {/* ═══ HIDDEN TALENT CARD — 9:16 STORIES FORMAT ═══ */}
         <View style={tc$.offscreen}>
           <ViewShot ref={talentRef} options={{ format: 'png', quality: 1 }} style={tc$.card}>
-            <View style={tc$.bg}>
-              {/* PEAK snapshot background */}
-              {result.snapshots?.peak && (
-                <Image source={{ uri: result.snapshots.peak }} style={tc$.bgImage} resizeMode="cover" />
-              )}
-              {/* Dark overlay */}
-              <View style={tc$.overlay} />
-
-              {/* Top brand watermark */}
-              <View style={tc$.topSection}>
-                <View style={tc$.brandRow}>
-                  <Text style={tc$.brandA}>ARENA</Text>
-                  <Text style={tc$.brandK}>KORE</Text>
-                </View>
-                {showCoachBadge && (
-                  <View style={tc$.certBadge}>
-                    <Text style={tc$.certText}>COACH CERTIFIED</Text>
-                  </View>
-                )}
-              </View>
-
-              {/* Middle — Giant result */}
-              <View style={tc$.centerSection}>
-                <Text style={tc$.resultBig}>{result.reps_completed || '0'}</Text>
-                <Text style={tc$.resultUnit}>REPS</Text>
-                <View style={tc$.qualCircle}>
-                  <Text style={tc$.qualVal}>{result.quality_score || '—'}</Text>
-                  <Text style={tc$.qualLabel}>Q</Text>
-                </View>
-              </View>
-
-              {/* KPI row */}
-              <View style={tc$.kpiRow}>
-                <View style={tc$.kpiItem}>
-                  <Text style={tc$.kpiVal}>{Math.round(result.rom_pct || 0)}%</Text>
-                  <Text style={tc$.kpiLabel}>ROM</Text>
-                </View>
-                <View style={tc$.kpiItem}>
-                  <Text style={tc$.kpiVal}>{Math.round(result.explosivity_pct || 0)}%</Text>
-                  <Text style={tc$.kpiLabel}>EXPL</Text>
-                </View>
-                <View style={tc$.kpiItem}>
-                  <Text style={tc$.kpiVal}>+{result.xp_earned || 0}</Text>
-                  <Text style={tc$.kpiLabel}>FLUX</Text>
-                </View>
-              </View>
-
-              {/* Bottom — Username + Title + Watermark */}
-              <View style={tc$.bottomSection}>
-                <Text style={tc$.username}>{(user?.username || 'KORE').toUpperCase()}</Text>
-                {isFounder && <Text style={tc$.founderTag}>FOUNDER #{user?.founder_number || '?'}</Text>}
-                <View style={tc$.validRow}>
-                  <Text style={tc$.validText}>NEXUS AI VALIDATED</Text>
-                </View>
-                <Text style={tc$.footer}>arenakore.app</Text>
-              </View>
-            </View>
+            <TalentCardTemplate data={{
+              username: user?.username || 'KORE',
+              disciplina: result.disciplina || user?.sport || 'Fitness',
+              peakSnapshot: result.snapshots?.peak,
+              primaryValue: result.reps_completed || 0,
+              primaryUnit: 'REPS',
+              qualityScore: result.quality_score || 0,
+              romPct: result.rom_pct,
+              explosivityPct: result.explosivity_pct,
+              powerOutput: result.power_output,
+              heartRate: result.heart_rate_avg,
+              fluxEarned: result.xp_earned || 0,
+              isCertified: showCoachBadge,
+              isFounder: isFounder,
+              founderNumber: user?.founder_number,
+              tipo: result.training_mode ? 'COACH_PROGRAM' : (result.ugc_mode ? 'SFIDA_UGC' : 'ALLENAMENTO'),
+              validationStatus: result.verification_status,
+            }} />
           </ViewShot>
         </View>
       </View>
