@@ -274,7 +274,7 @@ function BioDataPhase({
         { age: ageN, gender } as any,
       );
       if (destination === 'fast') {
-        router.replace('/(tabs)/arena');
+        router.replace('/(tabs)/nexus-trigger');
       } else {
         router.replace('/onboarding/step1');
       }

@@ -97,7 +97,7 @@ export default function HeroIndex() {
   useEffect(() => {
     if (!isLoading && token && user) {
       if (user.onboarding_completed) {
-        router.replace('/(tabs)/kore');
+        router.replace('/(tabs)/nexus-trigger');
       } else {
         router.replace('/onboarding/step1');
       }

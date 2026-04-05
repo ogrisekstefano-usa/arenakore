@@ -84,7 +84,7 @@ export default function LegacyStep4() {
       } catch (_syncErr) {
         // Non-blocking: registration still succeeds
       }
-      router.replace('/(tabs)/kore');
+      router.replace('/(tabs)/nexus-trigger');
     } catch (e: any) {
       setError((e.message || 'ERRORE DI REGISTRAZIONE').toUpperCase());
     } finally {

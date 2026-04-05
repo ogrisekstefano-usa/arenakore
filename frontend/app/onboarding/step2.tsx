@@ -1258,7 +1258,7 @@ export default function NexusBioScan() {
     // Rescan mode: go back to KORE tab with updated scores
     // Onboarding mode: go to passport
     if (isRescan) {
-      setTimeout(() => router.replace('/(tabs)/kore'), 4000);
+      setTimeout(() => router.replace('/(tabs)/nexus-trigger'), 4000);
     } else {
       setTimeout(() => router.push('/onboarding/passport'), 4000);
     }

@@ -44,7 +44,7 @@ export default function Login() {
       if (pendingCode) {
         router.replace(`/join/${pendingCode}`);
       } else if (result.onboarding_completed) {
-        router.replace('/(tabs)/kore');
+        router.replace('/(tabs)/nexus-trigger');
       } else {
         router.replace('/onboarding/step1');
       }
