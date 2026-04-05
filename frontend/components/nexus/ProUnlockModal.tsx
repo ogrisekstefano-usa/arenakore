@@ -69,12 +69,12 @@ export function ProUnlockModal({ visible, onClose, avgDna }: ProUnlockModalProps
   }));
 
   const topLineStyle = useAnimatedStyle(() => ({
-    width: `${lineProgress.value * 100}%` as any,
+    width: lineProgress.value * (Dimensions.get('window').width - 80),
   }));
 
   const bottomLineStyle = useAnimatedStyle(() => ({
-    width: `${lineProgress.value * 100}%` as any,
-    alignSelf: 'flex-end' as any,
+    width: lineProgress.value * (Dimensions.get('window').width - 80),
+    alignSelf: 'flex-end' as const,
   }));
 
   const contentStyle = useAnimatedStyle(() => ({

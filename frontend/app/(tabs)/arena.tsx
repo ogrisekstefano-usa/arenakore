@@ -10,7 +10,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn, FadeInDown, useSharedValue,
-  withRepeat, withSequence, withTiming, useAnimatedStyle, Easing, withSpring
+  withRepeat, withSequence, withTiming, useAnimatedStyle, Easing, withSpring,
+  interpolateColor
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -283,12 +284,13 @@ function useCountdown(endsAt: string | null) {
 }
 
 function WarBar({ pctA, isMyCrewA, isMyCrewB }: { pctA: number; isMyCrewA: boolean; isMyCrewB: boolean }) {
-  const width = useSharedValue(50);
-  useEffect(() => { width.value = withTiming(pctA, { duration: 1000, easing: Easing.out(Easing.cubic) }); }, [pctA]);
-  const styleA = useAnimatedStyle(() => ({ width: `${width.value}%` as any }));
+  const progress = useSharedValue(50);
+  const trackW = useSharedValue(SW - 76);
+  useEffect(() => { progress.value = withTiming(pctA, { duration: 1000, easing: Easing.out(Easing.cubic) }); }, [pctA]);
+  const styleA = useAnimatedStyle(() => ({ width: (progress.value / 100) * trackW.value }));
   return (
     <View style={wb$.container}>
-      <View style={wb$.track}>
+      <View style={wb$.track} onLayout={(e) => { trackW.value = e.nativeEvent.layout.width; }}>
         <Animated.View style={[wb$.fillMine, styleA, isMyCrewA && { backgroundColor: '#00E5FF' }, isMyCrewB && { backgroundColor: '#333' }]} />
       </View>
       <View style={wb$.pctRow}>
@@ -301,7 +303,7 @@ function WarBar({ pctA, isMyCrewA, isMyCrewB }: { pctA: number; isMyCrewA: boole
 const wb$ = StyleSheet.create({
   container: { gap: 6 },
   track: { height: 20, backgroundColor: '#222', borderRadius: 10, overflow: 'hidden' },
-  fillMine: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 10 },
+  fillMine: { height: 20, backgroundColor: '#00E5FF', borderRadius: 10 },
   pctRow: { flexDirection: 'row', justifyContent: 'space-between' },
   pct: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '700', letterSpacing: 1 }
 });
@@ -327,7 +329,9 @@ function LiveBattleCard({ battle, onOpenDashboard }: { battle: any; onOpenDashbo
     }
   }, [isLosing]);
   const borderStyle = useAnimatedStyle(() => ({
-    borderColor: isLosing ? `rgba(255,59,48,${borderGlow.value})` : 'rgba(255,255,255,0.06)' ? borderGlow.value * 0.5 : 0
+    borderColor: isLosing
+      ? interpolateColor(borderGlow.value, [0, 1], ['rgba(255,59,48,0.1)', 'rgba(255,59,48,1)'])
+      : 'rgba(255,255,255,0.06)'
   }));
 
   return (

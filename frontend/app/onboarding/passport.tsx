@@ -34,11 +34,12 @@ interface ScanResult {
 // ── Animated bar (brutalist) ──────────────────────────────────────
 function BiometricBar({ value, color, label }: { value: number; color: string; label: string }) {
   const barWidth = useSharedValue(0);
+  const trackW = useSharedValue(200);
   useEffect(() => {
     barWidth.value = withTiming(value, { duration: 900, easing: Easing.out(Easing.cubic) });
   }, [value]);
   const barStyle = useAnimatedStyle(() => ({
-    width: `${barWidth.value}%`,
+    width: (barWidth.value / 100) * trackW.value,
     backgroundColor: color
   }));
   return (
@@ -47,7 +48,7 @@ function BiometricBar({ value, color, label }: { value: number; color: string; l
         <Text style={[bar$.label, { color }]}>{label}</Text>
         <Text style={[bar$.val, { color }]}>{value}%</Text>
       </View>
-      <View style={bar$.track}>
+      <View style={bar$.track} onLayout={(e) => { trackW.value = e.nativeEvent.layout.width; }}>
         <Animated.View style={[bar$.fill, barStyle]} />
       </View>
     </View>

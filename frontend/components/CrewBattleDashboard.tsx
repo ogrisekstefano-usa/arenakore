@@ -84,8 +84,8 @@ export function CrewBattleDashboard({ visible, battleId, onClose }: Props) {
       barWidth.value = withTiming(data.crew_a.pct, { duration: 800, easing: Easing.out(Easing.cubic) });
     }
   }, [data?.crew_a.pct]);
-  const barAStyle = useAnimatedStyle(() => ({ width: `${barWidth.value}%` as any }));
-  const barBStyle = useAnimatedStyle(() => ({ width: `${100 - barWidth.value}%` as any }));
+  const barAStyle = useAnimatedStyle(() => ({ flex: Math.max(barWidth.value, 0.01) }));
+  const barBStyle = useAnimatedStyle(() => ({ flex: Math.max(100 - barWidth.value, 0.01) }));
 
   // Pulse glow for leading team
   const pulse = useSharedValue(0);
@@ -269,8 +269,8 @@ const s = StyleSheet.create({
   scoreNum: { fontSize: 32, fontWeight: '900', fontFamily: FONT_J },
   scorePct: { color: 'rgba(255,255,255,0.20)', fontSize: 12, fontWeight: '800', fontFamily: FONT_J, letterSpacing: 1 },
   barTrack: { flexDirection: 'row', height: 20, borderRadius: 10, overflow: 'hidden', marginBottom: 14 },
-  barA: { height: '100%', overflow: 'hidden' },
-  barB: { height: '100%', overflow: 'hidden' },
+  barA: { height: 20, overflow: 'hidden' },
+  barB: { height: 20, overflow: 'hidden' },
   barGrad: { flex: 1, borderRadius: 10 },
   breakdownRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   breakLabel: { color: 'rgba(255,255,255,0.15)', fontSize: 8, fontWeight: '800', letterSpacing: 1.5, fontFamily: FONT_M },

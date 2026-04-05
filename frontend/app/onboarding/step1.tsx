@@ -230,7 +230,7 @@ function Waveform({ active, color }: { active: boolean; color: string }) {
     <View style={wf$.container}>
       {barAnims.map((anim, i) => {
         const barStyle = useAnimatedStyle(() => ({
-          height: `${anim.value * 100}%` as any,
+          height: anim.value * 20,
           backgroundColor: color
         }));
         return (

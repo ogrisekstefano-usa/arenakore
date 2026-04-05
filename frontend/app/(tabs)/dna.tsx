@@ -386,7 +386,8 @@ export default function DNATab() {
                   <Text style={styles.statLabel}>{a.label}</Text>
                   <Text style={[styles.statValue, broken && styles.statValueBroken]}>{val}</Text>
                   <View style={styles.statBar}>
-                    <View style={[styles.statFill, { width: `${val}%` as any }, broken && styles.statFillBroken]} />
+                    <View style={[styles.statFill, { flex: Math.max(val, 0.01) }, broken && styles.statFillBroken]} />
+                    <View style={{ flex: Math.max(100 - val, 0.01) }} />
                   </View>
                   {broken && (
                     <View style={styles.newRecordRow}>
@@ -587,8 +588,8 @@ const styles = StyleSheet.create({
   statLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '800', letterSpacing: 1.5 },
   statValue: { color: '#FFFFFF', fontSize: 26, fontWeight: '900' },
   statValueBroken: { color: '#FFD700' },
-  statBar: { height: 3, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden', marginTop: 2 },
-  statFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 2 },
+  statBar: { height: 3, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden', marginTop: 2, flexDirection: 'row' },
+  statFill: { height: 3, backgroundColor: '#00E5FF', borderRadius: 2 },
   statFillBroken: { backgroundColor: '#FFD700' },
   newRecordRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
   newRecordBadge: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 1 },

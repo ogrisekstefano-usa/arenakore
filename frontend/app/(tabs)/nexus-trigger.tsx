@@ -1118,8 +1118,8 @@ function SmoothedValidation({ exercise, onComplete }: { exercise: ExerciseType; 
     return () => { activeRef.current = false; clearTimeout(initTimer); clearInterval(tick); };
   }, []);
 
-  const progressStyle = useAnimatedStyle(() => ({ width: `${progressAnim.value * 100}%` as any }));
-  const stabStyle = useAnimatedStyle(() => ({ width: `${stabilityAnim.value * 100}%` as any }));
+  const progressStyle = useAnimatedStyle(() => ({ width: progressAnim.value * (SW - 64) }));
+  const stabStyle = useAnimatedStyle(() => ({ width: stabilityAnim.value * (SW - 64) }));
   const glowStyle = useAnimatedStyle(() => ({ opacity: glowAnim.value }));
   const flashStyle = useAnimatedStyle(() => ({ opacity: screenFlash.value }));
   const doneStyle = useAnimatedStyle(() => ({ transform: [{ scale: doneScale.value }], opacity: doneScale.value }));
@@ -1228,10 +1228,10 @@ const smv$ = StyleSheet.create({
   barLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
   barPct: { fontSize: 17, fontWeight: '900', letterSpacing: 2 },
   barBg: { height: 5, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 2.5, overflow: 'hidden' },
-  stabFill: { height: '100%', borderRadius: 2.5 },
+  stabFill: { height: 5, borderRadius: 2.5 },
   progressBg: { height: 7, backgroundColor: 'rgba(0,229,255,0.15)', borderRadius: 3.5, overflow: 'hidden' },
   progressFill: {
-    height: '100%', borderRadius: 3.5, backgroundColor: '#00E5FF'
+    height: 7, borderRadius: 3.5, backgroundColor: '#00E5FF'
   },
   progressPct: { color: '#00E5FF', fontSize: 22, fontWeight: '900', letterSpacing: 2 },
   progressNote: { color: 'rgba(255,255,255,0.3)', fontSize: 15, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center' },

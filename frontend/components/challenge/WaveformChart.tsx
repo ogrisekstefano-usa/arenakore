@@ -112,6 +112,7 @@ export function WaveformChart({
           <Text style={wf.statLabel}>MATCH</Text>
           <Text style={[wf.statVal, { color: matchColor }]}>{repMatchPct}%</Text>
         </View>
+        <View style={{flex: 1}} />
         <View style={[wf.statusPill, { backgroundColor: matchColor + '18', borderColor: matchColor }]}>
           <Text style={[wf.statusText, { color: matchColor }]}>
             {status === 'AUDIO_CORRELATED' ? 'CORRELATO' : status === 'PARTIAL_MATCH' ? 'PARZIALE' : 'BASSO'}
@@ -144,7 +145,7 @@ const wf = StyleSheet.create({
   statLabel: { color: 'rgba(255,255,255,0.35)', fontSize: 8, fontWeight: '800', letterSpacing: 1 },
   statVal: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
   statusPill: {
-    borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, marginLeft: 'auto' as any
+    borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3
   },
   statusText: { fontSize: 9, fontWeight: '900', letterSpacing: 1 }
 });

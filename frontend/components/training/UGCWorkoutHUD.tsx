@@ -4,7 +4,7 @@
  * Shows current exercise, rep counter, progress bar, and auto-advances.
  */
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, Text, StyleSheet, Platform, Dimensions } from 'react-native';
 import Animated, {
   FadeIn, FadeInDown, FadeInUp, FadeOut,
   useSharedValue, useAnimatedStyle, withSpring, withTiming, withSequence,
@@ -85,7 +85,7 @@ export function UGCWorkoutHUD({
     progressWidth.value = withTiming(progress * 100, { duration: 300, easing: Easing.out(Easing.ease) });
   }, [progress]);
   const progressStyle = useAnimatedStyle(() => ({
-    width: `${progressWidth.value}%` as any
+    width: progressWidth.value * (Dimensions.get('window').width - 48) / 100
   }));
 
   if (!ex || !isActive) return null;
