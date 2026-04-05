@@ -9761,6 +9761,97 @@ async def ugc_import_challenge(challenge_id: str, current_user: dict = Depends(g
     return {"status": "imported", "challenge": clone}
 
 
+
+# ═══════════════════════════════════════════════════════════
+#  UGC CHALLENGE COMPLETION & NÈXUS VALIDATION
+# ═══════════════════════════════════════════════════════════
+
+class UGCCompleteBody(BaseModel):
+    exercises_completed: list = []  # [{name, reps_done, quality, seconds}]
+    total_reps: int = 0
+    avg_quality: float = 0
+    duration_seconds: int = 0
+    motion_tracked: bool = False
+
+@api_router.post("/ugc/{challenge_id}/complete")
+async def ugc_complete_challenge(challenge_id: str, body: UGCCompleteBody, current_user: dict = Depends(get_current_user)):
+    """Complete a UGC challenge — validate and award FLUX based on tracking quality."""
+    try:
+        oid = ObjectId(challenge_id)
+    except Exception:
+        raise HTTPException(400, "ID sfida non valido")
+
+    ch = await db.ugc_challenges.find_one({"_id": oid})
+    if not ch:
+        raise HTTPException(404, "Sfida non trovata")
+
+    exercises = ch.get("exercises", [])
+    base_flux = ch.get("flux_reward", 15)
+
+    # ── VALIDATION ENGINE ──
+    # Check how many exercises were completed vs target
+    total_target_reps = sum(e.get("target_reps", 0) for e in exercises)
+    total_done_reps = body.total_reps
+    completion_ratio = min(1.0, total_done_reps / max(total_target_reps, 1))
+    quality_factor = body.avg_quality / 100.0 if body.avg_quality > 0 else 0.5
+
+    # VERIFIED = motion tracked + >=80% completion + avg quality >= 50
+    is_verified = (
+        body.motion_tracked
+        and completion_ratio >= 0.80
+        and body.avg_quality >= 50
+    )
+
+    # Flux calculation: verified gets full reward + quality bonus
+    if is_verified:
+        flux_earned = base_flux + int(base_flux * quality_factor * 0.5)
+        validation_status = "VERIFIED"
+    else:
+        # Unverified: partial reward based on completion
+        flux_earned = max(1, int(base_flux * completion_ratio * 0.4))
+        validation_status = "UNVERIFIED"
+
+    # Award FLUX to user
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$inc": {"flux": flux_earned, "xp": flux_earned, "total_scans": 1}}
+    )
+
+    # Increment challenge completion count
+    await db.ugc_challenges.update_one({"_id": oid}, {"$inc": {"times_completed": 1}})
+
+    # Record the completion
+    completion_doc = {
+        "user_id": current_user["_id"],
+        "challenge_id": challenge_id,
+        "exercises_completed": body.exercises_completed,
+        "total_reps": body.total_reps,
+        "avg_quality": body.avg_quality,
+        "duration_seconds": body.duration_seconds,
+        "motion_tracked": body.motion_tracked,
+        "is_verified": is_verified,
+        "flux_earned": flux_earned,
+        "completion_ratio": completion_ratio,
+        "created_at": datetime.now(timezone.utc),
+    }
+    await db.ugc_completions.insert_one(completion_doc)
+
+    # Refresh user
+    updated_user = await db.users.find_one({"_id": current_user["_id"]})
+    user_response = user_to_response(updated_user) if updated_user else None
+
+    return {
+        "status": validation_status,
+        "is_verified": is_verified,
+        "flux_earned": flux_earned,
+        "completion_ratio": round(completion_ratio, 2),
+        "avg_quality": round(body.avg_quality, 1),
+        "total_reps": body.total_reps,
+        "duration_seconds": body.duration_seconds,
+        "user": user_response,
+    }
+
+
 # ═══════════════════════════════════════════════════════════
 #  FLUX ECONOMY — Shop, Crew Boost, Publishing Fees
 # ═══════════════════════════════════════════════════════════

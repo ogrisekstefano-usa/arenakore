@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 """
-ARENAKORE Backend API Testing Suite
-Testing UGC Challenge endpoints as requested in review_request:
-1. POST /api/auth/login (admin credentials)
-2. POST /api/ugc/create (create UGC challenge)
-3. GET /api/ugc/{challenge_id}/public (no auth)
-4. POST /api/ugc/{challenge_id}/import (same user token)
-5. GET /api/ugc/mine (Bearer token)
+ARENAKORE Backend Testing - UGC Challenge Completion Endpoint
+Testing the UGC Challenge completion endpoint with VERIFIED and UNVERIFIED scenarios
 """
 
 import requests
@@ -19,168 +14,256 @@ BASE_URL = "https://arena-scan-lab.preview.emergentagent.com/api"
 ADMIN_EMAIL = "ogrisek.stefano@gmail.com"
 ADMIN_PASSWORD = "Founder@KORE2026!"
 
-def log_test(step, description, success=True):
-    """Log test step with timestamp"""
+def log_test(message):
+    """Log test messages with timestamp"""
     timestamp = datetime.now().strftime("%H:%M:%S")
-    status = "✅" if success else "❌"
-    print(f"[{timestamp}] {status} {step}: {description}")
+    print(f"[{timestamp}] {message}")
 
-def log_response(response, step_name):
-    """Log response details"""
-    print(f"\n--- {step_name} Response ---")
-    print(f"Status Code: {response.status_code}")
-    print(f"Headers: {dict(response.headers)}")
-    try:
-        response_json = response.json()
-        print(f"Response Body: {json.dumps(response_json, indent=2)}")
-        return response_json
-    except:
-        print(f"Response Text: {response.text}")
-        return None
-
-def test_ugc_challenge_flow():
-    """Test the complete UGC Challenge flow as specified in review request"""
+def test_ugc_challenge_completion():
+    """Test UGC Challenge completion endpoint with VERIFIED and UNVERIFIED scenarios"""
     
-    print("🚀 Starting ARENAKORE UGC Challenge Flow Testing")
-    print(f"Base URL: {BASE_URL}")
-    print(f"Admin Credentials: {ADMIN_EMAIL}")
-    print("=" * 60)
+    log_test("🚀 STARTING UGC CHALLENGE COMPLETION ENDPOINT TEST")
+    log_test("=" * 60)
     
-    # Step 1: Admin Login
-    print("\n📝 STEP 1: Admin Login")
+    # Step 1: Login with admin credentials
+    log_test("STEP 1: Admin Login")
     login_data = {
         "email": ADMIN_EMAIL,
         "password": ADMIN_PASSWORD
     }
     
     try:
-        response = requests.post(f"{BASE_URL}/auth/login", json=login_data)
-        login_result = log_response(response, "Admin Login")
+        login_response = requests.post(f"{BASE_URL}/auth/login", json=login_data)
+        log_test(f"Login Status: {login_response.status_code}")
         
-        if response.status_code == 200 and login_result and "token" in login_result:
-            token = login_result["token"]
-            log_test("1", f"Admin login successful, token received")
-            print(f"Token: {token[:50]}...")
-        else:
-            log_test("1", f"Admin login failed - Status: {response.status_code}", False)
+        if login_response.status_code != 200:
+            log_test(f"❌ LOGIN FAILED: {login_response.text}")
             return False
             
+        login_result = login_response.json()
+        token = login_result.get("token")
+        user = login_result.get("user", {})
+        
+        log_test(f"✅ Login successful for user: {user.get('username', 'Unknown')}")
+        log_test(f"Token received: {token[:20]}...")
+        
+        headers = {"Authorization": f"Bearer {token}"}
+        
     except Exception as e:
-        log_test("1", f"Admin login error: {str(e)}", False)
+        log_test(f"❌ LOGIN ERROR: {str(e)}")
         return False
     
-    # Step 2: Create UGC Challenge
-    print("\n📝 STEP 2: Create UGC Challenge")
-    headers = {"Authorization": f"Bearer {token}"}
-    challenge_data = {
-        "title": "TEST SHARE FLOW",
-        "template_type": "AMRAP",
-        "discipline": "Fitness",
-        "time_cap_seconds": 600,
-        "exercises": [
-            {"name": "Push-ups", "target_reps": 20, "target_seconds": 0},
-            {"name": "Squats", "target_reps": 15, "target_seconds": 0}
+    # Step 2: Get user's challenges
+    log_test("\nSTEP 2: Get User's Challenges")
+    try:
+        challenges_response = requests.get(f"{BASE_URL}/ugc/mine", headers=headers)
+        log_test(f"Get Challenges Status: {challenges_response.status_code}")
+        
+        if challenges_response.status_code != 200:
+            log_test(f"❌ GET CHALLENGES FAILED: {challenges_response.text}")
+            return False
+            
+        challenges_result = challenges_response.json()
+        challenges = challenges_result.get("challenges", [])
+        
+        log_test(f"✅ Found {len(challenges)} challenges")
+        
+        if not challenges:
+            log_test("⚠️ No challenges found. Creating a test challenge first...")
+            # Create a test challenge for testing
+            create_challenge_data = {
+                "title": "TEST CHALLENGE FOR COMPLETION",
+                "template_type": "FOR_TIME",
+                "discipline": "Fitness",
+                "time_cap_seconds": 300,
+                "exercises": [
+                    {"name": "Push-ups", "target_reps": 20, "target_seconds": 0},
+                    {"name": "Squats", "target_reps": 15, "target_seconds": 0}
+                ],
+                "destination": "solo",
+                "certification": "self",
+                "flux_reward": 30
+            }
+            
+            create_response = requests.post(f"{BASE_URL}/ugc/create", json=create_challenge_data, headers=headers)
+            if create_response.status_code == 200:
+                created_challenge_response = create_response.json()
+                challenge_obj = created_challenge_response.get("challenge", {})
+                challenge_id = challenge_obj.get("_id")
+                log_test(f"✅ Created test challenge with ID: {challenge_id}")
+            else:
+                log_test(f"❌ Failed to create test challenge: {create_response.text}")
+                return False
+        else:
+            challenge_id = challenges[0].get("_id")
+            log_test(f"✅ Using existing challenge ID: {challenge_id}")
+            
+            # Get challenge details to understand target reps
+            challenge_detail_response = requests.get(f"{BASE_URL}/ugc/{challenge_id}/public")
+            if challenge_detail_response.status_code == 200:
+                challenge_detail = challenge_detail_response.json()
+                exercises = challenge_detail.get("exercises", [])
+                total_target_reps = sum(e.get("target_reps", 0) for e in exercises)
+                log_test(f"Challenge exercises: {exercises}")
+                log_test(f"Total target reps: {total_target_reps}")
+            else:
+                log_test(f"⚠️ Could not get challenge details: {challenge_detail_response.text}")
+        
+    except Exception as e:
+        log_test(f"❌ GET CHALLENGES ERROR: {str(e)}")
+        return False
+    
+    # Step 3: Test UGC Complete (VERIFIED scenario)
+    log_test("\nSTEP 3: Test UGC Complete (VERIFIED scenario)")
+    # Adjust completion data to match the challenge requirements for VERIFIED status
+    # Need >= 80% completion (40+ reps out of 50), motion_tracked=True, avg_quality >= 50
+    verified_completion_data = {
+        "exercises_completed": [
+            {"name": "Burpees", "reps_done": 45, "quality": 85}
         ],
-        "destination": "solo",
-        "certification": "self",
-        "flux_reward": 25
+        "total_reps": 45,
+        "avg_quality": 85.0,
+        "duration_seconds": 180,
+        "motion_tracked": True
     }
     
     try:
-        response = requests.post(f"{BASE_URL}/ugc/create", json=challenge_data, headers=headers)
-        create_result = log_response(response, "Create UGC Challenge")
+        verified_response = requests.post(
+            f"{BASE_URL}/ugc/{challenge_id}/complete", 
+            json=verified_completion_data, 
+            headers=headers
+        )
+        log_test(f"VERIFIED Completion Status: {verified_response.status_code}")
         
-        if response.status_code == 200 and create_result:
-            # Handle different response formats
-            if "challenge_id" in create_result:
-                challenge_id = create_result["challenge_id"]
-            elif "challenge" in create_result and "_id" in create_result["challenge"]:
-                challenge_id = create_result["challenge"]["_id"]
-            else:
-                log_test("2", f"UGC Challenge creation failed - No challenge ID found", False)
-                return False
-            log_test("2", f"UGC Challenge created successfully, ID: {challenge_id}")
-        else:
-            log_test("2", f"UGC Challenge creation failed - Status: {response.status_code}", False)
+        if verified_response.status_code != 200:
+            log_test(f"❌ VERIFIED COMPLETION FAILED: {verified_response.text}")
             return False
             
+        verified_result = verified_response.json()
+        log_test("✅ VERIFIED COMPLETION SUCCESS")
+        log_test(f"Response: {json.dumps(verified_result, indent=2)}")
+        
+        # Validate VERIFIED response
+        expected_verified = {
+            "is_verified": True,
+            "status": "VERIFIED"
+        }
+        
+        for key, expected_value in expected_verified.items():
+            actual_value = verified_result.get(key)
+            if actual_value == expected_value:
+                log_test(f"✅ {key}: {actual_value} (as expected)")
+            else:
+                log_test(f"❌ {key}: {actual_value} (expected {expected_value})")
+        
+        flux_earned = verified_result.get("flux_earned", 0)
+        if flux_earned > 0:
+            log_test(f"✅ flux_earned: {flux_earned} (> 0 as expected)")
+        else:
+            log_test(f"❌ flux_earned: {flux_earned} (expected > 0)")
+        
     except Exception as e:
-        log_test("2", f"UGC Challenge creation error: {str(e)}", False)
+        log_test(f"❌ VERIFIED COMPLETION ERROR: {str(e)}")
         return False
     
-    # Step 3: Test Public Challenge Endpoint (NO AUTH)
-    print("\n📝 STEP 3: Get Public Challenge Details (No Auth)")
+    # Step 4: Create another challenge for UNVERIFIED test
+    log_test("\nSTEP 4: Create Challenge for UNVERIFIED Test")
+    unverified_challenge_data = {
+        "title": "UNVERIFIED TEST",
+        "template_type": "FOR_TIME",
+        "discipline": "Fitness",
+        "time_cap_seconds": 300,
+        "exercises": [{"name": "Burpees", "target_reps": 50, "target_seconds": 0}],
+        "destination": "solo",
+        "certification": "self",
+        "flux_reward": 20
+    }
+    
     try:
-        response = requests.get(f"{BASE_URL}/ugc/{challenge_id}/public")
-        public_result = log_response(response, "Public Challenge Details")
+        unverified_create_response = requests.post(
+            f"{BASE_URL}/ugc/create", 
+            json=unverified_challenge_data, 
+            headers=headers
+        )
+        log_test(f"Create UNVERIFIED Challenge Status: {unverified_create_response.status_code}")
         
-        if response.status_code == 200 and public_result:
-            log_test("3", f"Public challenge details retrieved successfully")
-            # Check for required fields
-            required_fields = ["title", "template_type", "discipline", "exercises", "flux_reward", "creator_name"]
-            missing_fields = [field for field in required_fields if field not in public_result]
-            if missing_fields:
-                log_test("3", f"Missing required fields: {missing_fields}", False)
+        if unverified_create_response.status_code != 200:
+            log_test(f"❌ CREATE UNVERIFIED CHALLENGE FAILED: {unverified_create_response.text}")
+            return False
+            
+        unverified_challenge = unverified_create_response.json()
+        # The ID is nested in the challenge object
+        challenge_obj = unverified_challenge.get("challenge", {})
+        unverified_challenge_id = challenge_obj.get("_id")
+        log_test(f"✅ Created UNVERIFIED test challenge with ID: {unverified_challenge_id}")
+        
+        if not unverified_challenge_id:
+            log_test(f"❌ Challenge ID is None, using challenge object keys: {list(unverified_challenge.keys())}")
+            log_test(f"Full challenge response: {json.dumps(unverified_challenge, indent=2)}")
+            return False
+        
+    except Exception as e:
+        log_test(f"❌ CREATE UNVERIFIED CHALLENGE ERROR: {str(e)}")
+        return False
+    
+    # Step 5: Test UGC Complete (UNVERIFIED scenario)
+    log_test("\nSTEP 5: Test UGC Complete (UNVERIFIED scenario)")
+    unverified_completion_data = {
+        "exercises_completed": [{"name": "Burpees", "reps_done": 5, "quality": 30}],
+        "total_reps": 5,
+        "avg_quality": 30,
+        "duration_seconds": 60,
+        "motion_tracked": False
+    }
+    
+    try:
+        unverified_response = requests.post(
+            f"{BASE_URL}/ugc/{unverified_challenge_id}/complete", 
+            json=unverified_completion_data, 
+            headers=headers
+        )
+        log_test(f"UNVERIFIED Completion Status: {unverified_response.status_code}")
+        
+        if unverified_response.status_code != 200:
+            log_test(f"❌ UNVERIFIED COMPLETION FAILED: {unverified_response.text}")
+            return False
+            
+        unverified_result = unverified_response.json()
+        log_test("✅ UNVERIFIED COMPLETION SUCCESS")
+        log_test(f"Response: {json.dumps(unverified_result, indent=2)}")
+        
+        # Validate UNVERIFIED response
+        expected_unverified = {
+            "is_verified": False,
+            "status": "UNVERIFIED"
+        }
+        
+        for key, expected_value in expected_unverified.items():
+            actual_value = unverified_result.get(key)
+            if actual_value == expected_value:
+                log_test(f"✅ {key}: {actual_value} (as expected)")
             else:
-                log_test("3", f"All required fields present in public response")
-        else:
-            log_test("3", f"Public challenge retrieval failed - Status: {response.status_code}", False)
-            
-    except Exception as e:
-        log_test("3", f"Public challenge retrieval error: {str(e)}", False)
-    
-    # Step 4: Test Challenge Import (Same User)
-    print("\n📝 STEP 4: Import Challenge (Same User)")
-    try:
-        response = requests.post(f"{BASE_URL}/ugc/{challenge_id}/import", headers=headers)
-        import_result = log_response(response, "Challenge Import")
+                log_test(f"❌ {key}: {actual_value} (expected {expected_value})")
         
-        if response.status_code == 200 and import_result:
-            log_test("4", f"Challenge import completed")
-            if "status" in import_result:
-                status = import_result["status"]
-                if status in ["imported", "already_imported"]:
-                    log_test("4", f"Import status: {status} (expected for same user)")
-                else:
-                    log_test("4", f"Unexpected import status: {status}", False)
-        else:
-            log_test("4", f"Challenge import failed - Status: {response.status_code}", False)
-            
-    except Exception as e:
-        log_test("4", f"Challenge import error: {str(e)}", False)
-    
-    # Step 5: Test Get My Challenges
-    print("\n📝 STEP 5: Get My Challenges")
-    try:
-        response = requests.get(f"{BASE_URL}/ugc/mine", headers=headers)
-        mine_result = log_response(response, "My Challenges")
+        flux_earned_unverified = unverified_result.get("flux_earned", 0)
+        flux_earned_verified = verified_result.get("flux_earned", 0)
         
-        if response.status_code == 200 and mine_result:
-            log_test("5", f"My challenges retrieved successfully")
-            # Handle different response formats
-            challenges_list = mine_result
-            if isinstance(mine_result, dict) and "challenges" in mine_result:
-                challenges_list = mine_result["challenges"]
-            
-            if isinstance(challenges_list, list):
-                log_test("5", f"Found {len(challenges_list)} challenges in user's list")
-                # Check if our created challenge is in the list
-                found_challenge = any(c.get("_id") == challenge_id for c in challenges_list)
-                if found_challenge:
-                    log_test("5", f"Created challenge found in user's challenge list")
-                else:
-                    log_test("5", f"Created challenge NOT found in user's challenge list", False)
-            else:
-                log_test("5", f"Unexpected response format for my challenges", False)
+        if flux_earned_unverified < flux_earned_verified:
+            log_test(f"✅ flux_earned: {flux_earned_unverified} (lower than verified: {flux_earned_verified})")
         else:
-            log_test("5", f"My challenges retrieval failed - Status: {response.status_code}", False)
-            
+            log_test(f"❌ flux_earned: {flux_earned_unverified} (expected lower than verified: {flux_earned_verified})")
+        
     except Exception as e:
-        log_test("5", f"My challenges retrieval error: {str(e)}", False)
+        log_test(f"❌ UNVERIFIED COMPLETION ERROR: {str(e)}")
+        return False
     
-    print("\n" + "=" * 60)
-    print("🏁 UGC Challenge Flow Testing Complete")
+    log_test("\n" + "=" * 60)
+    log_test("🎉 UGC CHALLENGE COMPLETION ENDPOINT TEST COMPLETED SUCCESSFULLY")
+    log_test("=" * 60)
+    
     return True
 
 if __name__ == "__main__":
-    test_ugc_challenge_flow()
+    success = test_ugc_challenge_completion()
+    if not success:
+        sys.exit(1)

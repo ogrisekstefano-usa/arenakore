@@ -411,7 +411,19 @@ export default function KoreTab() {
                   key={ch._id}
                   challenge={ch}
                   userFlux={flux}
-                  onStart={() => router.push('/(tabs)/nexus-trigger')}
+                  onStart={() => {
+                    // Navigate to NÈXUS with UGC challenge data
+                    router.push({
+                      pathname: '/(tabs)/nexus-trigger',
+                      params: {
+                        ugcChallengeId: ch._id || ch.id,
+                        ugcTitle: ch.title || ch.name,
+                        ugcExercises: JSON.stringify(ch.exercises || []),
+                        ugcTemplateType: ch.template_type || 'CUSTOM',
+                        ugcFluxReward: String(ch.flux_reward || 15),
+                      },
+                    });
+                  }}
                   onInvite={() => {}}
                   onLive={() => router.push('/live-events')}
                   onShare={() => { setShareChallenge(ch); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}

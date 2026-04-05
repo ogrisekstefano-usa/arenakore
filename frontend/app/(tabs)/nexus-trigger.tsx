@@ -41,6 +41,7 @@ import { ProUnlockModal } from '../../components/nexus/ProUnlockModal';
 import { PvPPendingCard } from '../../components/pvp/PvPPendingCard';
 import { TrainingTemplateCard } from '../../components/training/TrainingTemplateCard';
 import { BioFeedbackHUD, BioFeedbackState } from '../../components/training/BioFeedbackHUD';
+import { UGCWorkoutHUD, UGCExercise } from '../../components/training/UGCWorkoutHUD';
 import { EfficiencyGhostHUD } from '../../components/training/EfficiencyGhostHUD';
 import { AKBadge } from '../../components/KoreVault';
 import { CertifiedByPros } from '../../components/training/CertifiedByPros';
@@ -1513,11 +1514,24 @@ export default function NexusTriggerScreen() {
     trainingPushId?: string; trainingExercise?: string;
     trainingTargetReps?: string; trainingTargetTime?: string;
     trainingName?: string; trainingFlux?: string; dnaPotential?: string;
+    ugcChallengeId?: string; ugcTitle?: string; ugcExercises?: string;
+    ugcTemplateType?: string; ugcFluxReward?: string;
   }>();
   const isTrainingMode = !!params.trainingPushId;
   const trainingTargetReps = parseInt(params.trainingTargetReps || '20', 10);
   const trainingTargetTime = parseInt(params.trainingTargetTime || '60', 10);
   const dnaPotential = parseFloat(params.dnaPotential || '70');
+
+  // ─── UGC CHALLENGE MODE ───
+  const isUGCMode = !!params.ugcChallengeId;
+  const ugcExercises: UGCExercise[] = React.useMemo(() => {
+    try { return params.ugcExercises ? JSON.parse(params.ugcExercises) : []; }
+    catch { return []; }
+  }, [params.ugcExercises]);
+  const [ugcExerciseIndex, setUgcExerciseIndex] = useState(0);
+  const [ugcExerciseReps, setUgcExerciseReps] = useState(0);
+  const [ugcAllCompleted, setUgcAllCompleted] = useState(false);
+  const ugcRepsPerExercise = useRef<{ name: string; reps_done: number; quality: number }[]>([]);
   // Dopamine layer: FLUX Rain + Victory
   const [showDropsRain, setShowDropsRain] = useState(false);
   const [dropsEarned, setDropsEarned] = useState(0);
@@ -1529,6 +1543,42 @@ export default function NexusTriggerScreen() {
   const lastRepRef = useRef(0);
   const accelSubRef = useRef<any>(null);
   const motionTimeoutRef = useRef<any>(null);
+
+  // ═══ UGC DYNAMIC REPS TRACKER — Auto-advance between exercises ═══
+  useEffect(() => {
+    if (!isUGCMode || phase !== 'scanning' || ugcExercises.length === 0) return;
+    const currentEx = ugcExercises[ugcExerciseIndex];
+    if (!currentEx) return;
+
+    const totalReps = motionState?.reps || 0;
+    // Calculate reps for the CURRENT exercise only
+    const previousExReps = ugcRepsPerExercise.current.reduce((sum, e) => sum + e.reps_done, 0);
+    const currentExReps = Math.max(0, totalReps - previousExReps);
+    setUgcExerciseReps(currentExReps);
+
+    // Auto-advance when target reached
+    if (currentEx.target_reps > 0 && currentExReps >= currentEx.target_reps) {
+      // Record this exercise
+      ugcRepsPerExercise.current.push({
+        name: currentEx.name,
+        reps_done: currentExReps,
+        quality: motionState?.quality || 0,
+      });
+
+      if (ugcExerciseIndex < ugcExercises.length - 1) {
+        // Move to next exercise
+        setUgcExerciseIndex(prev => prev + 1);
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+        }
+      } else {
+        // All exercises completed!
+        setUgcAllCompleted(true);
+        // Auto-stop after 1.5s for dopamine moment
+        setTimeout(() => handleStop(), 1500);
+      }
+    }
+  }, [motionState?.reps, phase, ugcExerciseIndex, isUGCMode]);
 
   // ═══ VOICE COMMAND ENGINE ═══
   const isVoiceActive = ['body_lock', 'countdown', 'scanning', 'tilt_setup', 'bioscan'].includes(phase);
@@ -1627,6 +1677,25 @@ export default function NexusTriggerScreen() {
     setForgeMode('personal');
     setPhase('tilt_setup'); // Go through tilt guide even for training sessions
   }, [isTrainingMode]);
+
+  // ═══ UGC CHALLENGE: Auto-start scan flow when arriving with UGC params ═══
+  useEffect(() => {
+    if (!isUGCMode || ugcExercises.length === 0) return;
+    // Reset UGC tracking state
+    setUgcExerciseIndex(0);
+    setUgcExerciseReps(0);
+    setUgcAllCompleted(false);
+    ugcRepsPerExercise.current = [];
+    // Set exercise type based on first UGC exercise name heuristic
+    const firstName = (ugcExercises[0]?.name || '').toLowerCase();
+    if (firstName.includes('squat') || firstName.includes('lunge') || firstName.includes('jump')) {
+      setExercise('squat');
+    } else {
+      setExercise('punch');
+    }
+    setForgeMode('personal');
+    setPhase('tilt_setup'); // Go through tilt → body_lock → countdown → scanning
+  }, [isUGCMode]);
 
   // Web camera & motion detection — SPRINT 5: Camera VISIBLE, overlay reduced
   useEffect(() => {
@@ -1758,6 +1827,67 @@ export default function NexusTriggerScreen() {
         setScanResult({ training_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: 0 });
         playAcceptPing();
       }
+      setPhase('results');
+      return;
+    }
+
+    // ═══ UGC CHALLENGE MODE: Submit to /ugc/{id}/complete with validation ═══
+    if (isUGCMode && token && params.ugcChallengeId) {
+      // Record the final exercise if not already recorded
+      const currentEx = ugcExercises[ugcExerciseIndex];
+      if (currentEx) {
+        const previousExReps = ugcRepsPerExercise.current.reduce((sum, e) => sum + e.reps_done, 0);
+        const currentExReps = Math.max(0, reps - previousExReps);
+        ugcRepsPerExercise.current.push({
+          name: currentEx.name,
+          reps_done: currentExReps,
+          quality: qual,
+        });
+      }
+      const totalTargetReps = ugcExercises.reduce((sum, e) => sum + (e.target_reps || 0), 0);
+      const isMotionTracked = reps > 0 && qual > 0;
+      try {
+        const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+        const res = await fetch(`${backendUrl}/api/ugc/${params.ugcChallengeId}/complete`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            exercises_completed: ugcRepsPerExercise.current,
+            total_reps: reps,
+            avg_quality: qual,
+            duration_seconds: dur,
+            motion_tracked: isMotionTracked,
+          }),
+        });
+        const r = await res.json();
+        setScanResult({
+          ...r,
+          ugc_mode: true,
+          ugc_title: params.ugcTitle,
+          ugc_template: params.ugcTemplateType,
+          exercise_type: exercise,
+          reps_completed: reps,
+          quality_score: qual,
+          xp_earned: r.flux_earned || 0,
+          is_verified: r.is_verified,
+          flux_earned: r.flux_earned,
+        });
+        if (r.user) updateUser(r.user);
+        // FLUX Rain + Victory based on verification
+        const ugcDrops = r.flux_earned || Math.max(Math.round(reps * 0.5), 3);
+        setDropsEarned(ugcDrops); setShowDropsRain(true);
+        setIsVictory(r.is_verified === true);
+        setTimeout(() => setShowDropsRain(false), 3000);
+        if (r.is_verified) playRecordBroken(); else playAcceptPing();
+      } catch (_) {
+        setScanResult({ ugc_mode: true, ugc_title: params.ugcTitle, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: 0 });
+        playAcceptPing();
+      }
+      // Reset UGC state
+      setUgcExerciseIndex(0);
+      setUgcExerciseReps(0);
+      setUgcAllCompleted(false);
+      ugcRepsPerExercise.current = [];
       setPhase('results');
       return;
     }
@@ -2014,6 +2144,21 @@ export default function NexusTriggerScreen() {
           dnaPotential,
           isActive: true,
         }} />
+      )}
+
+      {/* ═══ UGC CHALLENGE DYNAMIC HUD — Exercise-by-exercise tracking ═══ */}
+      {phase === 'scanning' && isUGCMode && ugcExercises.length > 0 && (
+        <UGCWorkoutHUD
+          exercises={ugcExercises}
+          currentExerciseIndex={ugcExerciseIndex}
+          currentReps={ugcExerciseReps}
+          currentQuality={motionState?.quality || 0}
+          elapsedSeconds={timer}
+          challengeTitle={params.ugcTitle || 'UGC CHALLENGE'}
+          templateType={params.ugcTemplateType || 'CUSTOM'}
+          isActive={true}
+          isVerified={(motionState?.reps || 0) > 0 && (motionState?.quality || 0) >= 50}
+        />
       )}
 
       {/* SPRINT NEXUS: EFFICIENCY GHOST HUD — DNA-Relative Live Ratio */}

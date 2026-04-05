@@ -940,6 +940,18 @@ backend:
           agent: "testing"
           comment: "COMPREHENSIVE TEST PASSED: GET /api/ugc/mine working correctly. Returns challenges object with array of user's challenges and total count. Created challenge found in user's challenge list. Response includes both original and imported challenges with proper metadata."
 
+  - task: "UGC Challenge Complete API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/ugc/{challenge_id}/complete working correctly for both VERIFIED and UNVERIFIED scenarios. VERIFIED scenario (45/50 reps, 90% completion, motion_tracked=true, avg_quality=85) returns is_verified=true, status='VERIFIED', flux_earned=28. UNVERIFIED scenario (5/50 reps, 10% completion, motion_tracked=false, avg_quality=30) returns is_verified=false, status='UNVERIFIED', flux_earned=1 (lower than verified). Validation logic working correctly: requires >=80% completion + motion_tracked=true + avg_quality>=50 for VERIFIED status. Fixed ObjectId serialization issue by using user_to_response function."
+
 frontend:
   - task: "KORE Card Wallet Integration (Apple + Google)"
     implemented: true
@@ -2062,4 +2074,4 @@ agent_communication:
     - agent: "testing"
       message: "UNIVERSAL DATA AGGREGATOR TESTING COMPLETED: ALL 8 NEW HEALTH/CONNECTIVITY ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Test results using credentials d.rose@chicago.kore / Seed@Chicago1: ✅ Health Ingest API - BLE_SENSOR BPM (source_trust=0.92, 5 data points) and APPLE_HEALTH GPS (source_trust=0.85, 2 data points) ingestion working correctly ✅ Invalid source rejection (400 error) ✅ Health Connections API - returns all 4 expected connections (APPLE_HEALTH, GOOGLE_HEALTH, STRAVA, BLE_SENSOR) with proper metadata ✅ Health Connect/Disconnect API - toggle behavior working correctly ✅ Recent Health Data API - returns proper data structure with all required fields ✅ Strava Demo Sync API - creates 3 activities (ACTIVITY_SUMMARY, GPS_TRACK, BPM) with demo_mode=true ✅ Source Meta API (NO AUTH) - returns all 6 sources with proper structure and numeric trust levels ✅ Strava Webhook Verify API - correctly validates and echoes hub.challenge. All Universal Data Aggregator features are production-ready. Auto-correlation, timestamp parsing, data validation, and webhook verification all functional."
     - agent: "testing"
-      message: "UGC CHALLENGE FLOW TESTING COMPLETED: ALL 4 NEW UGC ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Test results using admin credentials ogrisek.stefano@gmail.com / Founder@KORE2026!: ✅ POST /api/ugc/create - Challenge creation working correctly with title='TEST SHARE FLOW', template_type='AMRAP', discipline='Fitness', exercises=[Push-ups, Squats], flux_reward=25. Returns challenge object with _id and all required fields. ✅ GET /api/ugc/{challenge_id}/public (NO AUTH) - Public endpoint accessible without authentication, returns all required fields: title, template_type, discipline, exercises, flux_reward, creator_name, creator_level. ✅ POST /api/ugc/{challenge_id}/import - Same user import returns status='imported' and creates new challenge with imported_from field pointing to original challenge. Challenge cloning functionality working correctly. ✅ GET /api/ugc/mine - Returns challenges object with array of user's challenges and total count. Created challenge found in user's challenge list with both original and imported challenges. All UGC Challenge share flow features are production-ready."
+      message: "UGC CHALLENGE COMPLETION ENDPOINT TESTING COMPLETED: POST /api/ugc/{challenge_id}/complete tested successfully with both VERIFIED and UNVERIFIED scenarios. ✅ VERIFIED scenario (45/50 reps, 90% completion, motion_tracked=true, avg_quality=85) returns is_verified=true, status='VERIFIED', flux_earned=28 ✅ UNVERIFIED scenario (5/50 reps, 10% completion, motion_tracked=false, avg_quality=30) returns is_verified=false, status='UNVERIFIED', flux_earned=1 (lower than verified) ✅ Validation logic working correctly: requires >=80% completion + motion_tracked=true + avg_quality>=50 for VERIFIED status ✅ Fixed ObjectId serialization issue by using user_to_response function ✅ Challenge creation and completion flow fully functional. All UGC Challenge endpoints are production-ready."
