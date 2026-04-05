@@ -2046,7 +2046,7 @@ export default function NexusTriggerScreen() {
           ai_feedback_score: aiFeedbackScore,
           performance_score: qual,
         }, token);
-        setScanResult({ ...r, training_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, ai_feedback_score: aiFeedbackScore, training_name: params.trainingName });
+        setScanResult({ ...r, training_mode: true, is_master_template: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, ai_feedback_score: aiFeedbackScore, training_name: params.trainingName });
         if (r.user) updateUser(r.user);
         // FLUX Rain — connected to real server value
         const realDrops = r.ak_drops_earned || r.ak_credits_earned || Math.max(Math.round(reps * 0.8), 5);
@@ -2055,7 +2055,7 @@ export default function NexusTriggerScreen() {
         setTimeout(() => setShowDropsRain(false), 3000);
         if (r.coach_notified) playBioMatchPing(); else playAcceptPing();
       } catch (_) {
-        setScanResult({ training_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: 0 });
+        setScanResult({ training_mode: true, is_master_template: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: 0 });
         playAcceptPing();
       }
       setPhase('results');
@@ -2398,6 +2398,8 @@ export default function NexusTriggerScreen() {
           targetTime: trainingTargetTime,
           dnaPotential,
           isActive: true,
+          isMasterTemplate: true,
+          exerciseName: params.trainingExercise || params.trainingName || '',
         }} />
       )}
 
@@ -2412,7 +2414,7 @@ export default function NexusTriggerScreen() {
           challengeTitle={params.ugcTitle || 'UGC CHALLENGE'}
           templateType={params.ugcTemplateType || 'CUSTOM'}
           isActive={true}
-          isVerified={(motionState?.reps || 0) > 0 && (motionState?.quality || 0) >= 50}
+          isVerified={(motionState?.reps || 0) > 0 && (motionState?.quality || 0) >= (params.ugcIsMaster === 'true' ? 80 : 50)}
           isMasterTemplate={params.ugcIsMaster === 'true'}
           creatorRole={params.ugcCreatorRole || 'ATHLETE'}
         />

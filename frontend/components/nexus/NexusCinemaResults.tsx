@@ -75,9 +75,11 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
   if (!visible || !result) return null;
   const isFounder = user?.is_founder || user?.is_admin;
   const isUGC = !!result.ugc_mode;
+  const isTraining = !!result.training_mode;
   const isMaster = result.is_master_template === true;
   const validationMode = result.validation_mode || (isMaster ? 'STRICT' : 'PERMISSIVE');
-  const creatorRole = result.creator_role || 'ATHLETE';
+  const creatorRole = result.creator_role || (isTraining ? 'COACH' : 'ATHLETE');
+  const showCoachBadge = isMaster || isTraining;
 
   return (
     <Modal transparent visible={visible} animationType="none">
@@ -105,6 +107,17 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
                   <Text style={[cin$.roleBadgeText, { color: isMaster ? '#00FF87' : '#FF9500' }]}>
                     {isMaster ? 'COACH CERTIFIED' : 'COMMUNITY CHALLENGE'}
                   </Text>
+                </View>
+              </Animated.View>
+            )}
+
+            {/* Training: Coach Certified Badge + Training Name */}
+            {isTraining && !isUGC && (
+              <Animated.View entering={FadeInDown.duration(300)} style={cin$.ugcHeader}>
+                {result.training_name && <Text style={cin$.ugcTitle}>{result.training_name.toUpperCase()}</Text>}
+                <View style={[cin$.roleBadge, cin$.coachRoleBadge]}>
+                  <Ionicons name="shield-checkmark" size={10} color="#00FF87" />
+                  <Text style={[cin$.roleBadgeText, { color: '#00FF87' }]}>COACH CERTIFIED</Text>
                 </View>
               </Animated.View>
             )}

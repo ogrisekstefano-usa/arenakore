@@ -7,8 +7,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Animated, {
   FadeIn, FadeOut, useSharedValue, withTiming, withSequence,
-  useAnimatedStyle, Easing,
+  useAnimatedStyle, Easing, withRepeat,
 } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width: SW } = Dimensions.get('window');
 
@@ -20,6 +21,8 @@ export interface BioFeedbackState {
   targetTime: number;
   dnaPotential: number;
   isActive: boolean;
+  isMasterTemplate?: boolean;
+  exerciseName?: string;
 }
 
 type AIStatus = 'idle' | 'optimal' | 'increase' | 'fatigue' | 'posture' | 'almost' | 'last' | 'go';
@@ -120,6 +123,23 @@ export function BioFeedbackHUD({ state }: { state: BioFeedbackState }) {
 
   const remaining = Math.max(0, state.targetTime - state.elapsedSeconds);
   const dynColor = getDynamicColor(state.currentQuality, state.dnaPotential);
+  const isMaster = state.isMasterTemplate === true;
+
+  // ── "COACH CERTIFIED" aura pulse ──
+  const auraGlow = useSharedValue(0.5);
+  useEffect(() => {
+    if (isMaster) {
+      auraGlow.value = withRepeat(
+        withSequence(
+          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+          withTiming(0.5, { duration: 1200, easing: Easing.inOut(Easing.ease) })
+        ), -1, false
+      );
+    }
+  }, [isMaster]);
+  const auraStyle = useAnimatedStyle(() => ({
+    opacity: auraGlow.value,
+  }));
 
   useEffect(() => {
     const status = getAIStatus(state);
@@ -140,8 +160,23 @@ export function BioFeedbackHUD({ state }: { state: BioFeedbackState }) {
 
   return (
     <View style={bf$.container} pointerEvents="none">
-      {/* Top row: TIME (left) */}
+      {/* ── TOP: COACH CERTIFIED BADGE + Exercise Name ── */}
       <View style={bf$.topRow}>
+        <View style={bf$.topLeft}>
+          {/* Coach Certified Badge with green aura */}
+          {isMaster && (
+            <Animated.View style={[bf$.coachBadge, auraStyle]}>
+              <View style={bf$.coachBadgeInner}>
+                <Ionicons name="shield-checkmark" size={12} color="#00FF87" />
+                <Text style={bf$.coachBadgeText}>COACH CERTIFIED</Text>
+              </View>
+            </Animated.View>
+          )}
+          {/* Exercise Name */}
+          {state.exerciseName ? (
+            <Text style={bf$.exerciseName}>{state.exerciseName.toUpperCase()}</Text>
+          ) : null}
+        </View>
         <TimeDisplay remaining={remaining} targetTime={state.targetTime} />
       </View>
 
@@ -157,8 +192,16 @@ export function BioFeedbackHUD({ state }: { state: BioFeedbackState }) {
         </Animated.View>
       )}
 
-      {/* Bottom-right: REP COUNTER (huge) */}
+      {/* ── BOTTOM: REP COUNTER (huge) + Quality indicator for Coach ── */}
       <View style={bf$.bottomRow}>
+        {isMaster && (
+          <View style={bf$.qualityRow}>
+            <View style={[bf$.qualDot, { backgroundColor: state.currentQuality >= 80 ? '#00FF87' : state.currentQuality >= 50 ? '#FF9500' : '#FF3B30' }]} />
+            <Text style={[bf$.qualText, { color: state.currentQuality >= 80 ? '#00FF87' : state.currentQuality >= 50 ? '#FF9500' : '#FF3B30' }]}>
+              {state.currentQuality >= 80 ? 'VALID' : 'STRICT'}
+            </Text>
+          </View>
+        )}
         <RepCounter
           reps={state.currentReps}
           targetReps={state.targetReps}
@@ -177,7 +220,27 @@ const bf$ = StyleSheet.create({
   },
   topRow: {
     position: 'absolute', top: 80, left: 20, right: 20,
-    flexDirection: 'row', justifyContent: 'flex-end',
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
+  },
+  topLeft: {
+    gap: 6,
+  },
+  // ── Coach Certified Badge ──
+  coachBadge: {
+    borderRadius: 8, overflow: 'hidden',
+  },
+  coachBadgeInner: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: 'rgba(0,255,135,0.12)',
+    borderWidth: 1, borderColor: 'rgba(0,255,135,0.40)',
+    borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5,
+  },
+  coachBadgeText: {
+    color: '#00FF87', fontSize: 10, fontWeight: '900', letterSpacing: 2,
+  },
+  exerciseName: {
+    color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '800',
+    letterSpacing: 3, marginTop: 2,
   },
   msgOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -192,6 +255,18 @@ const bf$ = StyleSheet.create({
   },
   bottomRow: {
     position: 'absolute', bottom: 220, right: 24,
-    alignItems: 'flex-end',
+    alignItems: 'flex-end', gap: 6,
+  },
+  // ── Quality indicator for Coach Strict mode ──
+  qualityRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: 'rgba(0,0,0,0.40)', borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 3,
+  },
+  qualDot: {
+    width: 6, height: 6, borderRadius: 3,
+  },
+  qualText: {
+    fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
   },
 });
