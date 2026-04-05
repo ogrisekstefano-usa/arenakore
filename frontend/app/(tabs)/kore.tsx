@@ -20,6 +20,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { KoreIDModal } from '../../components/KoreIDModal';
 import { ControlCenter } from '../../components/ControlCenter';
 import { ChallengeCreator } from '../../components/ChallengeCreator';
+import { FluxGenerator } from '../../components/FluxGenerator';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -162,6 +163,7 @@ export default function KoreTab() {
   const [koreIdVisible, setKoreIdVisible] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [creatorVisible, setCreatorVisible] = useState(false);
+  const [shopVisible, setShopVisible] = useState(false);
   const [myChallenges, setMyChallenges] = useState<any[]>([]);
   const [activeDiscipline, setActiveDiscipline] = useState<string | null>(null);
 
@@ -257,10 +259,13 @@ export default function KoreTab() {
           <Text style={hdr.sub}>pronto a superarti?</Text>
         </View>
         <View style={hdr.right}>
-          <Animated.View style={[hdr.fluxBadge, fluxBadgeStyle]}>
-            <Ionicons name="flash" size={13} color="#FFD700" />
-            <Text style={hdr.fluxVal}>{flux.toLocaleString()}</Text>
-          </Animated.View>
+          <TouchableOpacity onPress={() => { setShopVisible(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); }}>
+            <Animated.View style={[hdr.fluxBadge, fluxBadgeStyle]}>
+              <Ionicons name="flash" size={13} color="#FFD700" />
+              <Text style={hdr.fluxVal}>{flux.toLocaleString()}</Text>
+              <Ionicons name="add-circle" size={13} color="rgba(255,215,0,0.4)" />
+            </Animated.View>
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setSidebarOpen(true)}
             style={hdr.menuBtn}
@@ -394,6 +399,7 @@ export default function KoreTab() {
                 <UGCCard
                   key={ch._id}
                   challenge={ch}
+                  userFlux={flux}
                   onStart={() => router.push('/(tabs)/nexus-trigger')}
                   onInvite={() => {}}
                   onLive={() => router.push('/live-events')}
@@ -426,11 +432,17 @@ export default function KoreTab() {
         onClose={() => setCreatorVisible(false)}
         onCreated={() => fetchMyChallenges()}
       />
+      <FluxGenerator
+        visible={shopVisible}
+        onClose={() => setShopVisible(false)}
+        onPurchased={() => {}}
+      />
     </View>
   );
 }
 
 // ─── UGC Card (Horizontal Scroll) ──────────────────────────────────
+const PUBLISH_FEES: Record<string, number> = { solo: 0, ranked: 50, friend: 25, live: 100 };
 const TEMPLATE_COLORS: Record<string, string> = {
   AMRAP: '#FF3B30', EMOM: '#00E5FF', FOR_TIME: '#FFD700', TABATA: '#00FF87', CUSTOM: '#FF9500',
 };
@@ -438,11 +450,16 @@ const TEMPLATE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   AMRAP: 'flame', EMOM: 'timer', FOR_TIME: 'speedometer', TABATA: 'pulse', CUSTOM: 'construct',
 };
 
-function UGCCard({ challenge, onStart, onInvite, onLive }: {
-  challenge: any; onStart: () => void; onInvite: () => void; onLive: () => void;
+function UGCCard({ challenge, onStart, onInvite, onLive, userFlux }: {
+  challenge: any; onStart: () => void; onInvite: () => void; onLive: () => void; userFlux: number;
 }) {
   const color = TEMPLATE_COLORS[challenge.template_type] || '#00E5FF';
   const icon = TEMPLATE_ICONS[challenge.template_type] || 'flash';
+  const inviteFee = PUBLISH_FEES['friend'];
+  const liveFee = PUBLISH_FEES['live'];
+  const canInvite = userFlux >= inviteFee;
+  const canLive = userFlux >= liveFee;
+
   return (
     <View style={[ugc.card, { borderColor: color + '25' }]}>
       <LinearGradient colors={[color + '0A', '#0A0A0A']} style={ugc.cardGrad}>
@@ -462,11 +479,29 @@ function UGCCard({ challenge, onStart, onInvite, onLive }: {
             <Ionicons name="play" size={12} color={color} />
             <Text style={[ugc.actionText, { color }]}>AVVIA</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[ugc.actionBtn, { backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }]} onPress={onInvite}>
+          <TouchableOpacity
+            style={[ugc.actionBtn, {
+              backgroundColor: canInvite ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)',
+              borderColor: canInvite ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
+              opacity: canInvite ? 1 : 0.4,
+            }]}
+            onPress={canInvite ? onInvite : undefined}
+            disabled={!canInvite}
+          >
             <Ionicons name="person-add" size={11} color="rgba(255,255,255,0.4)" />
+            <Text style={[ugc.actionText, { color: 'rgba(255,255,255,0.3)', fontSize: 8 }]}>{inviteFee}⚡</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[ugc.actionBtn, { backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }]} onPress={onLive}>
+          <TouchableOpacity
+            style={[ugc.actionBtn, {
+              backgroundColor: canLive ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)',
+              borderColor: canLive ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
+              opacity: canLive ? 1 : 0.4,
+            }]}
+            onPress={canLive ? onLive : undefined}
+            disabled={!canLive}
+          >
             <Ionicons name="radio" size={11} color="rgba(255,255,255,0.4)" />
+            <Text style={[ugc.actionText, { color: 'rgba(255,255,255,0.3)', fontSize: 8 }]}>{liveFee}⚡</Text>
           </TouchableOpacity>
         </View>
       </LinearGradient>

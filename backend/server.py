@@ -9591,6 +9591,135 @@ async def ugc_delete_challenge(challenge_id: str, current_user: dict = Depends(g
     return {"status": "deleted"}
 
 
+# ═══════════════════════════════════════════════════════════
+#  FLUX ECONOMY — Shop, Crew Boost, Publishing Fees
+# ═══════════════════════════════════════════════════════════
+
+FLUX_TIERS = {
+    "SPARK":      {"flux": 1000,  "crew_pct": 0,    "label": "SPARK",      "price_tag": "Base"},
+    "KINETIC":    {"flux": 3000,  "crew_pct": 5,    "label": "KINETIC",    "price_tag": "+5% Crew Bonus"},
+    "CORE":       {"flux": 7500,  "crew_pct": 10,   "label": "CORE",       "price_tag": "+10% Crew Bonus"},
+    "DOMINATION": {"flux": 20000, "crew_pct": 15,   "label": "DOMINATION", "price_tag": "+Sponsor Slot"},
+}
+
+PUBLISH_FEES = {
+    "solo": 0,
+    "ranked": 50,
+    "friend": 25,
+    "live": 100,
+}
+
+@api_router.get("/flux/tiers")
+async def flux_get_tiers():
+    """Return all FLUX purchase tiers."""
+    return {"tiers": FLUX_TIERS, "publish_fees": PUBLISH_FEES}
+
+
+@api_router.post("/flux/purchase")
+async def flux_purchase(body: dict = Body(...), current_user: dict = Depends(get_current_user)):
+    """Purchase a FLUX tier. Crew members get a squad boost."""
+    tier_key = body.get("tier", "").upper()
+    if tier_key not in FLUX_TIERS:
+        raise HTTPException(400, f"Tier non valido. Scegli: {list(FLUX_TIERS.keys())}")
+
+    tier = FLUX_TIERS[tier_key]
+    flux_amount = tier["flux"]
+    crew_pct = tier["crew_pct"]
+    user_id = current_user["_id"]
+    username = current_user.get("username", "Kore")
+
+    # Credit FLUX to user
+    await db.users.update_one({"_id": user_id}, {"$inc": {"flux": flux_amount}})
+
+    # Record transaction
+    await db.flux_transactions.insert_one({
+        "user_id": user_id,
+        "type": "purchase",
+        "tier": tier_key,
+        "amount": flux_amount,
+        "created_at": datetime.now(timezone.utc),
+    })
+
+    # Squad Boost: credit crew members
+    crew_bonus_total = 0
+    if crew_pct > 0:
+        crew_bonus = int(flux_amount * crew_pct / 100)
+        # Find user's gym/crew mates
+        user_doc = await db.users.find_one({"_id": user_id})
+        gym_id = user_doc.get("gym_id")
+        if gym_id:
+            crew_members = await db.users.find(
+                {"gym_id": gym_id, "_id": {"$ne": user_id}}
+            ).to_list(100)
+            if crew_members:
+                per_member = max(1, crew_bonus // len(crew_members))
+                member_ids = [m["_id"] for m in crew_members]
+                await db.users.update_many(
+                    {"_id": {"$in": member_ids}},
+                    {"$inc": {"flux": per_member}}
+                )
+                crew_bonus_total = per_member * len(crew_members)
+                # Notify crew
+                for m in crew_members:
+                    await db.notifications.insert_one({
+                        "user_id": str(m["_id"]),
+                        "type": "squad_boost",
+                        "title": f"⚡ SQUAD BOOST!",
+                        "body": f"{username} ha iniettato energia per la Crew! +{per_member} FLUX",
+                        "read": False,
+                        "created_at": datetime.now(timezone.utc),
+                    })
+
+    updated = await db.users.find_one({"_id": user_id})
+    return {
+        "status": "purchased",
+        "tier": tier_key,
+        "flux_added": flux_amount,
+        "new_balance": updated.get("flux", 0),
+        "crew_bonus_total": crew_bonus_total,
+        "crew_pct": crew_pct,
+    }
+
+
+@api_router.post("/flux/check-fee")
+async def flux_check_fee(body: dict = Body(...), current_user: dict = Depends(get_current_user)):
+    """Check if user has enough FLUX for a publishing action."""
+    destination = body.get("destination", "solo")
+    fee = PUBLISH_FEES.get(destination, 0)
+    user_flux = current_user.get("flux", 0)
+    return {
+        "destination": destination,
+        "fee": fee,
+        "user_flux": user_flux,
+        "can_afford": user_flux >= fee,
+    }
+
+
+@api_router.post("/flux/deduct")
+async def flux_deduct(body: dict = Body(...), current_user: dict = Depends(get_current_user)):
+    """Deduct FLUX for publishing fees."""
+    amount = body.get("amount", 0)
+    reason = body.get("reason", "publish")
+    if amount <= 0:
+        return {"status": "ok", "deducted": 0}
+    user_flux = current_user.get("flux", 0)
+    if user_flux < amount:
+        raise HTTPException(402, f"FLUX insufficienti. Hai {user_flux}, servono {amount}.")
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$inc": {"flux": -amount}}
+    )
+    await db.flux_transactions.insert_one({
+        "user_id": current_user["_id"],
+        "type": "deduct",
+        "reason": reason,
+        "amount": -amount,
+        "created_at": datetime.now(timezone.utc),
+    })
+    updated = await db.users.find_one({"_id": current_user["_id"]})
+    return {"status": "deducted", "amount": amount, "new_balance": updated.get("flux", 0)}
+
+
 # Register all routes (must be AFTER all @api_router decorators)
 app.include_router(api_router)
 
