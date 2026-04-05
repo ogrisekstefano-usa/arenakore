@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Share, Alert, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Dimensions } from 'react-native';
 import Svg, { Polygon, Circle, Line } from 'react-native-svg';
 import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { User, DNAStats } from '../contexts/AuthContext';
+import { shareText } from '../utils/shareHelper';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -81,10 +82,7 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
     const xpText = xpEarned ? `\n+${xpEarned} FLUX guadagnati!` : '';
 
     try {
-      await Share.share({
-        message: `ARENAKORE TALENT CARD\n${'━'.repeat(15)}\n${user.username?.toUpperCase()}\nLVL ${user.level} | ${user.xp} FLUX\n${user.sport?.toUpperCase() || 'KORE'}${xpText}${recordText}\n\n${statsText}\n\nOVR: ${avgStat}/100\n${'━'.repeat(15)}\n#ArenaKore #${user.sport} #Performance`,
-        title: `${user.username} - ArenaKore Talent Card`
-      });
+      await shareText(`ARENAKORE TALENT CARD\n${'━'.repeat(15)}\n${user.username?.toUpperCase()}\nLVL ${user.level} | ${user.ak_credits || 0} FLUX\n${user.sport?.toUpperCase() || 'KORE'}${xpText}${recordText}\n\n${statsText}\n\nOVR: ${avgStat}/100\n${'━'.repeat(15)}\n#ArenaKore #${user.sport} #Performance`, `${user.username} - ArenaKore Talent Card`);
     } catch (e) {
       Alert.alert('Condivisione non disponibile');
     }
@@ -121,7 +119,7 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
           <Text style={styles.sport}>{user.sport?.toUpperCase() || 'KORE'}</Text>
           <View style={styles.levelRow}>
             <Text style={styles.levelBadge}>LVL {user.level}</Text>
-            <Text style={styles.xpBadge}>{user.xp} FLUX</Text>
+            <Text style={styles.xpBadge}>{user.ak_credits || 0} FLUX</Text>
           </View>
         </View>
         <View style={styles.ovrCircle}>

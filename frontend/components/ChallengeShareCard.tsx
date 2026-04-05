@@ -5,7 +5,7 @@
  */
 import React, { useRef, useCallback, useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Modal, Platform, Share, Alert,
+  View, Text, StyleSheet, TouchableOpacity, Modal, Platform, Alert,
   ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,6 +14,7 @@ import QRCode from 'react-native-qrcode-svg';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import { shareImageWithText, shareText } from '../utils/shareHelper';
 
 const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
 const FONT_M = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });
@@ -47,18 +48,14 @@ export function ChallengeShareCard({ visible, challenge, onClose }: Props) {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     try {
       if (Platform.OS === 'web') {
-        await Share.share({
-          message: `🔥 ${challenge.title} — Sfida creata su ARENAKORE!\n\nEsercizi: ${exercises}\nFLUX Reward: +${challenge.flux_reward}⚡\n\nScansiona il QR nell'app per importarla!`
-        });
+        await shareText(`🔥 ${challenge.title} — Sfida creata su ARENAKORE!\n\nEsercizi: ${exercises}\nFLUX Reward: +${challenge.flux_reward}⚡\n\nScansiona il QR nell'app per importarla!`);
       } else {
         const uri = await captureRef(viewRef, { format: 'png', quality: 0.9 });
-        await Share.share({ url: uri, message: `🔥 ${challenge.title} — Sfida ARENAKORE` });
+        await shareImageWithText(uri, `🔥 ${challenge.title} — Sfida ARENAKORE`, 'ARENA KORE — Sfida');
       }
     } catch (e) {
       // Fallback to text sharing
-      await Share.share({
-        message: `🔥 ${challenge.title}\n${exercises}\n+${challenge.flux_reward}⚡ FLUX\n\nSfida su ARENAKORE!`
-      });
+      await shareText(`🔥 ${challenge.title}\n${exercises}\n+${challenge.flux_reward}⚡ FLUX\n\nSfida su ARENAKORE!`);
     } finally {
       setSharing(false);
     }

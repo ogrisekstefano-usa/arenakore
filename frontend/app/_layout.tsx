@@ -80,12 +80,63 @@ function DeepLinkHandler() {
   const processDeepLink = (url: string) => {
     try {
       const parsed = Linking.parse(url);
+      const path = parsed.path || '';
+      const params = parsed.queryParams || {};
+
       // Handle arenakore://join/{code} or https://arenakore.com/join/{code}
-      if (parsed.path?.startsWith('join/')) {
-        const code = parsed.path.replace('join/', '');
+      if (path.startsWith('join/')) {
+        const code = path.replace('join/', '');
         if (code) {
           router.push(`/join/${code}`);
         }
+        return;
+      }
+
+      // Handle arenakore://challenge/{id} — open NÈXUS tab with specific challenge
+      if (path.startsWith('challenge/')) {
+        const challengeId = path.replace('challenge/', '');
+        if (challengeId) {
+          router.push({ pathname: '/(tabs)/nexus-trigger', params: { pvpChallengeId: challengeId } });
+        }
+        return;
+      }
+
+      // Handle arenakore://profile/{username} — open KORE tab with user profile
+      if (path.startsWith('profile/')) {
+        const username = path.replace('profile/', '');
+        if (username) {
+          router.push({ pathname: '/(tabs)/kore', params: { viewUsername: username } });
+        }
+        return;
+      }
+
+      // Handle arenakore://nexus — open NÈXUS tab
+      if (path === 'nexus' || path === 'nexus-trigger') {
+        router.push('/(tabs)/nexus-trigger');
+        return;
+      }
+
+      // Handle arenakore://kore — open KORE tab
+      if (path === 'kore') {
+        router.push('/(tabs)/kore');
+        return;
+      }
+
+      // Handle arenakore://rank — open RANK tab
+      if (path === 'rank' || path === 'hall') {
+        router.push('/(tabs)/hall');
+        return;
+      }
+
+      // Handle generic query params on tabs
+      if (params.challenge_id) {
+        router.push({ pathname: '/(tabs)/nexus-trigger', params: { pvpChallengeId: params.challenge_id as string } });
+        return;
+      }
+
+      if (params.user_id) {
+        router.push({ pathname: '/(tabs)/kore', params: { viewUserId: params.user_id as string } });
+        return;
       }
     } catch {}
   };

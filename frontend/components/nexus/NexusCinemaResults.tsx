@@ -6,11 +6,12 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Dimensions,
-  Share, Platform, Alert, Image
+  Platform, Alert, Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import { TalentCardTemplate } from '../kore/TalentCardTemplate';
+import { shareImageWithText } from '../../utils/shareHelper';
 import Animated, {
   useSharedValue, withSpring, withTiming, useAnimatedStyle,
   withSequence, withDelay, withRepeat, Easing, FadeInDown
@@ -56,16 +57,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
     setSharing(true);
     try {
       const uri = await captureRef(victoryRef, { format: 'png', quality: 1 });
-      if (Platform.OS === 'web') {
-        const w = window.open();
-        if (w) w.document.write(`<img src="${uri}" style="max-width:100%"/>`);
-      } else {
-        await Share.share({
-          url: uri,
-          message: 'Sfidami su ARENA KORE! https://arenakore.app',
-          title: 'ARENAKORE — Risultato Sessione'
-        });
-      }
+      await shareImageWithText(uri, 'Sfidami su ARENA KORE! https://arenakore.app', 'ARENAKORE — Risultato Sessione');
     } catch (e) {
       Alert.alert('Errore', 'Impossibile condividere');
     } finally {
@@ -75,18 +67,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
 
   const handleShareSnap = useCallback(async (dataUri: string, label: string) => {
     try {
-      if (Platform.OS === 'web') {
-        const link = document.createElement('a');
-        link.href = dataUri;
-        link.download = `ARENAKORE_${label}_${Date.now()}.jpg`;
-        link.click();
-      } else {
-        await Share.share({
-          url: dataUri,
-          message: `${label} — La mia sfida su ARENA KORE! 🔥 https://arenakore.app`,
-          title: `ARENA KORE — ${label}`
-        });
-      }
+      await shareImageWithText(dataUri, `${label} — La mia sfida su ARENA KORE! 🔥 https://arenakore.app`, `ARENA KORE — ${label}`);
     } catch {
       Alert.alert('Errore', 'Impossibile condividere lo scatto');
     }
@@ -99,18 +80,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
     setSharing(true);
     try {
       const uri = await captureRef(talentRef, { format: 'png', quality: 1 });
-      if (Platform.OS === 'web') {
-        const link = document.createElement('a');
-        link.href = uri;
-        link.download = `ARENAKORE_TALENT_${Date.now()}.png`;
-        link.click();
-      } else {
-        await Share.share({
-          url: uri,
-          message: 'La mia Talent Card su ARENA KORE! 🏆 https://arenakore.app',
-          title: 'ARENAKORE — Talent Card'
-        });
-      }
+      await shareImageWithText(uri, 'La mia Talent Card su ARENA KORE! 🏆 https://arenakore.app', 'ARENAKORE — Talent Card');
     } catch {
       Alert.alert('Errore', 'Impossibile generare la Talent Card');
     }

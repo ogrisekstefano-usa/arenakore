@@ -1,14 +1,15 @@
 import { TAB_BACKGROUNDS } from '../../utils/images';
 /**
- * ARENAKORE — NEXUS TRIGGER TAB v3.0 (Refactored)
+ * ARENAKORE — NEXUS TRIGGER TAB v3.1 (Camera Native Fix)
  * Nike Elite Aesthetic — Motion tracking, Bio-scan, Challenge Forge
  * Heavy sub-components extracted to /components/nexus/
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, TouchableOpacity,
-  Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput, Image, Share
+  Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput, Image
 } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, {
@@ -1724,6 +1725,8 @@ export default function NexusTriggerScreen() {
   const { user, token, logout, activeRole, setActiveRole, updateUser } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  // ═══ NATIVE CAMERA PERMISSION ═══
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'challenge_engine' | 'tilt_setup' | 'body_lock' | 'countdown' | 'stabilizing' | 'scanning' | 'results' | 'live_queue' | 'qr_validation'>('console');
   const [exercise, setExercise] = useState<ExerciseType>('squat');
   const [forgeMode, setForgeMode] = useState<ForgeMode>('personal');
@@ -1959,6 +1962,16 @@ export default function NexusTriggerScreen() {
   }, []);
 
   useEffect(() => { const dp = profileDevice(); setDeviceTier(dp.tier); }, []);
+
+  // ═══ AUTO-REQUEST CAMERA PERMISSION on native when entering active scan phases ═══
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    if (['tilt_setup', 'body_lock', 'countdown', 'stabilizing', 'scanning'].includes(phase)) {
+      if (!cameraPermission?.granted) {
+        requestCameraPermission().catch(() => {});
+      }
+    }
+  }, [phase, cameraPermission?.granted]);
 
   // SPRINT 7: Fetch bio-scan eligibility on mount
   useEffect(() => {
@@ -2460,6 +2473,14 @@ export default function NexusTriggerScreen() {
     return (
       <View style={main$.container}>
         <StatusBar barStyle="light-content" />
+        {/* ═══ NATIVE CAMERA PREVIEW — Body Lock Phase ═══ */}
+        {Platform.OS !== 'web' && cameraPermission?.granted && (
+          <CameraView
+            style={StyleSheet.absoluteFillObject}
+            facing={cameraFacing === 'user' ? 'front' : 'back'}
+            mode="video"
+          />
+        )}
         <View style={main$.cameraOverlay} />
         <CyberGrid intensity={0.3} />
         <BodyLockOverlay
@@ -2544,9 +2565,21 @@ export default function NexusTriggerScreen() {
   // Scanning / Countdown / BioScan / Results
   const skeleton: SkeletonPose = motionState?.skeletonPose || { torsoTilt: 0, kneeAngle: 0, armExtension: 0, shoulderRotation: 0, hipDrop: 0, intensity: 0.15 };
 
+  // ═══ NATIVE CAMERA FACING MAPPING ═══
+  const nativeCamFacing = cameraFacing === 'user' ? 'front' as const : 'back' as const;
+  const showNativeCamera = Platform.OS !== 'web' && cameraPermission?.granted && ['scanning', 'countdown', 'stabilizing'].includes(phase);
+
   return (
     <View style={main$.container}>
       <StatusBar barStyle="light-content" />
+      {/* ═══ NATIVE CAMERA PREVIEW — Scanning/Countdown/Stabilizing Phases ═══ */}
+      {showNativeCamera && (
+        <CameraView
+          style={StyleSheet.absoluteFillObject}
+          facing={nativeCamFacing}
+          mode="video"
+        />
+      )}
       {/* SPRINT 5: Camera-transparent dark overlay at 0.3 opacity */}
       <View style={main$.cameraOverlay} />
       {/* ⌚ Live BPM Telemetry — Shows during active scan phases */}

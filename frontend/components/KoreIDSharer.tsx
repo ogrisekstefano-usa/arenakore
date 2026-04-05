@@ -7,12 +7,13 @@
  */
 import React, { useRef, useCallback, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Platform, Share, Alert
+  View, Text, StyleSheet, TouchableOpacity, Platform, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import Svg, { Polygon, Circle, Line, Text as SvgText } from 'react-native-svg';
+import { shareImageWithText } from '../utils/shareHelper';
 
 interface KoreIDSharerProps {
   user: any;
@@ -107,17 +108,7 @@ export function KoreIDSharer({ user, onShareStart, onShareEnd }: KoreIDSharerPro
     onShareStart?.();
     try {
       const uri = await captureRef(viewRef, { format: 'png', quality: 1 });
-      if (Platform.OS === 'web') {
-        // Web fallback: open image in new tab
-        const w = window.open();
-        if (w) w.document.write(`<img src="${uri}" style="max-width:100%"/>`);
-      } else {
-        await Share.share({
-          url: uri,
-          message: 'Sfidami su ARENA KORE! https://arenakore.app',
-          title: 'ARENAKORE — KORE ID'
-        });
-      }
+      await shareImageWithText(uri, 'Sfidami su ARENA KORE! https://arenakore.app', 'ARENAKORE — KORE ID');
     } catch (e) {
       Alert.alert('Errore', 'Impossibile generare l\'immagine');
     } finally {

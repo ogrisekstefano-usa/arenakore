@@ -6,13 +6,14 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, Modal, ScrollView, TouchableOpacity,
-  Image, Platform, ActivityIndicator, Share, Dimensions, Alert
+  Image, Platform, ActivityIndicator, Dimensions, Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
+import { shareImageWithText, shareText } from '../../utils/shareHelper';
 import { useRouter } from 'expo-router';
 import { api } from '../../utils/api';
 import ViewShot, { captureRef } from 'react-native-view-shot';
@@ -128,10 +129,7 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
         `#ArenaKore #Performance`,
       ].filter(Boolean).join('\n');
 
-      await Share.share({
-        message: shareData,
-        title: 'ARENA KORE Performance'
-      });
+      await shareText(shareData, 'ARENA KORE Performance');
     } catch {}
     setExporting(false);
   }, [record]);
@@ -158,18 +156,7 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
     setExporting(true);
     try {
       const uri = await captureRef(talentCardRef, { format: 'png', quality: 1 });
-      if (Platform.OS === 'web') {
-        const link = document.createElement('a');
-        link.href = uri;
-        link.download = `ARENAKORE_TALENT_${Date.now()}.png`;
-        link.click();
-      } else {
-        await Share.share({
-          url: uri,
-          message: 'La mia Talent Card su ARENA KORE! 🏆',
-          title: 'ARENA KORE — Talent Card'
-        });
-      }
+      await shareImageWithText(uri, 'La mia Talent Card su ARENA KORE! 🏆', 'ARENA KORE — Talent Card');
     } catch {
       Alert.alert('Errore', 'Impossibile generare la Talent Card');
     }
