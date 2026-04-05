@@ -11088,6 +11088,122 @@ async def get_performance_record_detail(
     }
 
 
+# ═══════════════════════════════════════════════════════════
+#  SILO IDENTITY & ATHLETE PROFILING
+# ═══════════════════════════════════════════════════════════
+
+SILO_COLORS = {
+    "Fitness":  "#FF3B30",
+    "Golf":     "#00FF87",
+    "Padel":    "#00B4D8",
+    "Calcio":   "#06D6A0",
+    "Tennis":   "#FFD700",
+    "Basket":   "#FF9500",
+    "Running":  "#A855F7",
+    "Nuoto":    "#0096C7",
+    "Yoga":     "#C77DFF",
+    "CrossFit": "#FF6B6B",
+    "Boxing":   "#E63946",
+    "MMA":      "#D62828",
+    "Ciclismo": "#48CAE4",
+}
+
+
+@api_router.get("/kore/silo-profile")
+async def get_silo_profile(current_user: dict = Depends(get_current_user)):
+    """
+    Calculates the Silo Dominance, Dynamic Title, and Silo Radar
+    based on the last 30 days of performance records.
+    """
+    user_id = current_user["_id"]
+    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+
+    # ── Per-silo aggregation (last 30 days) ──
+    pipeline_silo = [
+        {"$match": {"user_id": user_id, "completed_at": {"$gte": thirty_days_ago}}},
+        {"$group": {
+            "_id": "$disciplina",
+            "count": {"$sum": 1},
+            "total_flux": {"$sum": "$flux_earned"},
+            "avg_quality": {"$avg": "$kpi.quality_score"},
+            "max_quality": {"$max": "$kpi.quality_score"},
+            "avg_value": {"$avg": "$kpi.primary_result.value"},
+            "max_value": {"$max": "$kpi.primary_result.value"},
+            "certified_count": {"$sum": {"$cond": ["$is_certified", 1, 0]}},
+        }},
+        {"$sort": {"count": -1}},
+    ]
+    silo_data = await db.performance_records.aggregate(pipeline_silo).to_list(20)
+
+    total_challenges = sum(s["count"] for s in silo_data)
+
+    # ── Determine dominant silo ──
+    dominant = silo_data[0] if silo_data else None
+    dominant_silo = dominant["_id"] if dominant else "Fitness"
+    dominant_count = dominant["count"] if dominant else 0
+    dominant_pct = round((dominant_count / total_challenges * 100), 1) if total_challenges > 0 else 0
+
+    # ── Dynamic Title ──
+    title = "Rookie"
+    title_tier = "rookie"
+    if dominant_count >= 30:
+        title = f"Master of {dominant_silo}"
+        title_tier = "master"
+    elif dominant_count >= 10:
+        title = "Contender"
+        title_tier = "contender"
+
+    # Boost to Master if avg quality in dominant silo > 85
+    if dominant and (dominant.get("avg_quality") or 0) >= 85 and dominant_count >= 15:
+        title = f"Master of {dominant_silo}"
+        title_tier = "master"
+
+    # ── Aura color ──
+    aura_color = SILO_COLORS.get(dominant_silo, "#00E5FF")
+
+    # ── Radar data (per silo competency) ──
+    radar = []
+    for s in silo_data:
+        silo_name = s["_id"] or "Fitness"
+        quality = s.get("avg_quality") or 0
+        volume = s["count"]
+        vol_score = min(volume / 50 * 100, 100)
+        comp_score = round(vol_score * 0.4 + quality * 0.6, 1)
+        radar.append({
+            "silo": silo_name,
+            "color": SILO_COLORS.get(silo_name, "#00E5FF"),
+            "count": volume,
+            "avg_quality": round(quality, 1),
+            "max_quality": round(s.get("max_quality") or 0, 1),
+            "avg_value": round(s.get("avg_value") or 0, 1),
+            "max_value": round(s.get("max_value") or 0, 1),
+            "flux": s.get("total_flux", 0),
+            "certified": s.get("certified_count", 0),
+            "competency": comp_score,
+        })
+
+    # ── All-time totals for context ──
+    pipeline_alltime = [
+        {"$match": {"user_id": user_id}},
+        {"$group": {"_id": None, "total_all": {"$sum": 1}, "total_flux_all": {"$sum": "$flux_earned"}}},
+    ]
+    alltime = await db.performance_records.aggregate(pipeline_alltime).to_list(1)
+    alltime_data = alltime[0] if alltime else {}
+
+    return {
+        "dominant_silo": dominant_silo,
+        "dominant_pct": dominant_pct,
+        "dominant_count": dominant_count,
+        "aura_color": aura_color,
+        "title": title,
+        "title_tier": title_tier,
+        "total_challenges_30d": total_challenges,
+        "total_challenges_all": alltime_data.get("total_all", 0),
+        "total_flux_all": alltime_data.get("total_flux_all", 0),
+        "radar": radar,
+    }
+
+
 app.include_router(api_router)
 
 

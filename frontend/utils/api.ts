@@ -491,4 +491,6 @@ export const api = {
 
   getPerformanceDetail: (token: string, recordId: string) =>
     request(`/kore/record/${recordId}`, {}, token),
+
+  getSiloProfile: (token: string) => request('/kore/silo-profile', {}, token),
 };

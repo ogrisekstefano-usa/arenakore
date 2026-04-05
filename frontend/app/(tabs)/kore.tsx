@@ -25,6 +25,7 @@ import { ChallengeShareCard } from '../../components/ChallengeShareCard';
 import { ChallengePreviewModal } from '../../components/ChallengePreviewModal';
 import { QRScannerModal } from '../../components/QRScannerModal';
 import { PerformanceDetailModal } from '../../components/kore/PerformanceDetailModal';
+import { SiloRadar } from '../../components/kore/SiloRadar';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -181,6 +182,7 @@ export default function KoreTab() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [loadingWarLog, setLoadingWarLog] = useState(false);
   const [selectedPerformance, setSelectedPerformance] = useState<any>(null);
+  const [siloProfile, setSiloProfile] = useState<any>(null);
 
   useEffect(() => {
     (globalThis as any).__openKoreIdModal = () => setKoreIdVisible(true);
@@ -230,15 +232,22 @@ export default function KoreTab() {
 
   useEffect(() => { if (token) fetchMyChallenges(); }, [token, fetchMyChallenges]);
   useEffect(() => { if (token) fetchWarLog(); }, [token, fetchWarLog]);
+  useEffect(() => {
+    if (!token) return;
+    (async () => {
+      try { const sp = await api.getSiloProfile(token); setSiloProfile(sp); } catch {}
+    })();
+  }, [token]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       if (refreshUser) await refreshUser();
       await Promise.all([fetchMyChallenges(), fetchWarLog()]);
+      try { const sp = await api.getSiloProfile(token); setSiloProfile(sp); } catch {}
     } catch (_) {}
     finally { setRefreshing(false); }
-  }, [refreshUser, fetchMyChallenges, fetchWarLog]);
+  }, [refreshUser, fetchMyChallenges, fetchWarLog, token]);
 
   // FLUX badge glow
   const fluxGlow = useSharedValue(0);
@@ -381,6 +390,12 @@ export default function KoreTab() {
             <Text style={hero.greeting}>
               Ciao, <Text style={hero.name}>{firstName}</Text>
             </Text>
+            {siloProfile?.title && (
+              <Animated.View entering={FadeIn.delay(200).duration(500)} style={[hero.titleChip, { borderColor: (siloProfile.aura_color || '#00E5FF') + '35' }]}>
+                <View style={[hero.titleDot, { backgroundColor: siloProfile.aura_color || '#00E5FF' }]} />
+                <Text style={[hero.titleText, { color: siloProfile.aura_color || '#00E5FF' }]}>{siloProfile.title.toUpperCase()}</Text>
+              </Animated.View>
+            )}
             <Text style={hero.tagline}>IL TUO CORPO. LA TUA ARENA.</Text>
           </View>
         </View>
@@ -452,6 +467,45 @@ export default function KoreTab() {
               </View>
             </View>
           </Animated.View>
+
+          {/* ═══ SILO IDENTITY — Competency Radar ═══ */}
+          {siloProfile && siloProfile.radar && siloProfile.radar.length > 0 && (
+            <Animated.View entering={FadeInDown.delay(250).duration(400)} style={si.section}>
+              <View style={[si.card, { borderColor: (siloProfile.aura_color || '#00E5FF') + '12' }]}>
+                <LinearGradient
+                  colors={[(siloProfile.aura_color || '#00E5FF') + '06', 'transparent']}
+                  style={StyleSheet.absoluteFillObject}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                />
+                <View style={si.header}>
+                  <View>
+                    <Text style={si.title}>SILO RADAR</Text>
+                    <Text style={si.sub}>Competenza per disciplina · Ultimi 30 giorni</Text>
+                  </View>
+                  <View style={si.domBadge}>
+                    <View style={[si.domDot, { backgroundColor: siloProfile.aura_color }]} />
+                    <Text style={[si.domText, { color: siloProfile.aura_color }]}>{siloProfile.dominant_silo}</Text>
+                    <Text style={si.domPct}>{siloProfile.dominant_pct}%</Text>
+                  </View>
+                </View>
+                <SiloRadar data={siloProfile.radar} auraColor={siloProfile.aura_color} size={240} />
+                <View style={si.statsRow}>
+                  <View style={si.statItem}>
+                    <Text style={si.statVal}>{siloProfile.total_challenges_30d}</Text>
+                    <Text style={si.statLabel}>30 GIORNI</Text>
+                  </View>
+                  <View style={si.statItem}>
+                    <Text style={[si.statVal, { color: '#FFD700' }]}>{siloProfile.total_flux_all}</Text>
+                    <Text style={si.statLabel}>FLUX TOTALI</Text>
+                  </View>
+                  <View style={si.statItem}>
+                    <Text style={[si.statVal, { color: siloProfile.aura_color }]}>{siloProfile.radar.length}</Text>
+                    <Text style={si.statLabel}>SILO ATTIVI</Text>
+                  </View>
+                </View>
+              </View>
+            </Animated.View>
+          )}
 
           {/* ═══ WAR LOG — PERFORMANCE CARDS ═══ */}
           <Animated.View entering={FadeInDown.delay(300).duration(400)} style={wl.section}>
@@ -912,6 +966,15 @@ const hero = StyleSheet.create({
     color: 'rgba(255,255,255,0.75)', fontSize: 28, fontWeight: '400', fontFamily: FONT_M,
   },
   name: { color: '#FFFFFF', fontWeight: '900' },
+  titleChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderWidth: 1, borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 5, marginTop: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  titleDot: { width: 8, height: 8, borderRadius: 4 },
+  titleText: { fontSize: 11, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
   tagline: {
     color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '900',
     letterSpacing: 4, fontFamily: FONT_M, marginTop: 4,
@@ -1192,4 +1255,33 @@ const pc = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 3,
   },
   modeText: { color: 'rgba(255,255,255,0.30)', fontSize: 8, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_J },
+});
+
+
+// ── SILO IDENTITY ──
+const si = StyleSheet.create({
+  section: { marginBottom: 16 },
+  card: {
+    borderRadius: 20, overflow: 'hidden', padding: 16,
+    borderWidth: 1.2, position: 'relative',
+    backgroundColor: 'rgba(255,255,255,0.015)',
+  },
+  header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 },
+  title: { color: '#FFF', fontSize: 14, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
+  sub: { color: 'rgba(255,255,255,0.20)', fontSize: 10, fontWeight: '500', fontFamily: FONT_M, marginTop: 2 },
+  domBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 10,
+    paddingHorizontal: 10, paddingVertical: 5,
+  },
+  domDot: { width: 8, height: 8, borderRadius: 4 },
+  domText: { fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J },
+  domPct: { color: 'rgba(255,255,255,0.30)', fontSize: 9, fontWeight: '800', fontFamily: FONT_J },
+  statsRow: {
+    flexDirection: 'row', justifyContent: 'space-around', marginTop: 16,
+    paddingTop: 14, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.04)',
+  },
+  statItem: { alignItems: 'center' },
+  statVal: { color: '#FFF', fontSize: 18, fontWeight: '900', fontFamily: FONT_J },
+  statLabel: { color: 'rgba(255,255,255,0.20)', fontSize: 8, fontWeight: '800', letterSpacing: 1.5, marginTop: 2 },
 });
