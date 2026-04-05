@@ -65,7 +65,7 @@ export function FluxGenerator({ visible, onClose, onPurchased }: FluxGeneratorPr
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [successTier, setSuccessTier] = useState<any>(null);
 
-  const userFlux = user?.flux ?? user?.xp ?? 0;
+  const userFlux = user?.ak_credits ?? user?.flux ?? 0;
 
   const handlePurchase = async (tier: typeof TIERS[0]) => {
     if (purchasing) return;

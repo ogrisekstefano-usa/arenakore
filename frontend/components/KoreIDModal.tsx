@@ -47,7 +47,7 @@ export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
   const uid = user?.id || user?._id || 'unknown';
   const username = (user?.username || 'KORE').toUpperCase();
   const isFounder = user?.is_founder || user?.is_admin;
-  const flux = user?.flux ?? user?.xp ?? user?.ak_credits ?? 0;
+  const flux = user?.ak_credits ?? user?.flux ?? 0;
   const level = user?.level || 1;
   const isCertified = user?.is_nexus_certified;
 

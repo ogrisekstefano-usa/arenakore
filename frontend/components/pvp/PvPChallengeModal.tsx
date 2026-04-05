@@ -42,12 +42,12 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
   if (!opponent) return null;
 
   const selectedDisc = DISCIPLINES.find(d => d.key === discipline)!;
-  const canAfford = (user?.xp || 0) >= stake;
+  const canAfford = (user?.ak_credits || 0) >= stake;
 
   const handleSend = async () => {
     if (!token) return;
     if (!canAfford) {
-      Alert.alert('XP INSUFFICIENTI', `Ti servono ${stake} XP. Hai ${user?.xp || 0} FLUX.`);
+      Alert.alert('FLUX INSUFFICIENTI', `Ti servono ${stake} FLUX. Hai ${user?.ak_credits || 0} FLUX.`);
       return;
     }
     setSending(true);
@@ -90,7 +90,7 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
                   <Text style={m$.faceLetter}>{(user?.username || 'TU')[0].toUpperCase()}</Text>
                 </View>
                 <Text style={m$.faceName} numberOfLines={1}>{(user?.username || 'TU').toUpperCase()}</Text>
-                <Text style={m$.faceXp}>{user?.xp?.toLocaleString()} FLUX</Text>
+                <Text style={m$.faceXp}>{user?.ak_credits?.toLocaleString()} FLUX</Text>
               </View>
 
               {/* VS */}
@@ -137,7 +137,7 @@ export function PvPChallengeModal({ visible, opponent, onClose, onChallengeSent 
                   style={[
                     m$.stakeBtn,
                     stake === s.xp && m$.stakeBtnActive,
-                    (user?.xp || 0) < s.xp && m$.stakeBtnDisabled,
+                    (user?.ak_credits || 0) < s.xp && m$.stakeBtnDisabled,
                   ]}
                   onPress={() => setStake(s.xp)}
                   activeOpacity={0.8}

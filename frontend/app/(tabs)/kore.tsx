@@ -194,7 +194,7 @@ export default function KoreTab() {
     };
   }, []);
 
-  const flux = user?.flux ?? user?.xp ?? 0;
+  const flux = user?.ak_credits ?? user?.flux ?? 0;
   const firstName = user?.first_name || user?.username || 'Kore';
   const level = user?.level || 1;
   const totalScans = user?.total_scans || 0;

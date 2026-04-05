@@ -2350,7 +2350,7 @@ export default function NexusTriggerScreen() {
         break;
       case 'coach_hub':
         // Navigate to coach discovery / master templates
-        router.push('/reward-store');
+        router.push('/coach-connect');
         break;
       case 'scan_sync':
         // Open Universal QR Scanner from NÈXUS
@@ -2391,7 +2391,7 @@ export default function NexusTriggerScreen() {
         <FluxStoreModal
           visible={showFluxStore}
           onClose={() => setShowFluxStore(false)}
-          userFlux={user?.xp || 0}
+          userFlux={user?.ak_credits || 0}
           onPurchase={(res: any) => {
             if (res.user) {
               // Refresh user state would be done via AuthContext
