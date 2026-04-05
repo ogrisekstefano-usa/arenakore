@@ -2478,6 +2478,20 @@ export default function NexusTriggerScreen() {
         />
         <ExitButton onExit={handleEmergencyExit} />
 
+        {/* ═══ DUAL-CAM TOGGLE — Pre-Scan Camera Switch ═══ */}
+        <View style={main$.preScanCamToggle}>
+          <TouchableOpacity
+            style={main$.dualCamBtn}
+            onPress={() => setCameraFacing(prev => prev === 'user' ? 'environment' : 'user')}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="camera-reverse" size={24} color="#00E5FF" />
+            <Text style={main$.dualCamLabel}>
+              {cameraFacing === 'user' ? 'FRONTALE' : 'POSTERIORE'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* ═══ Voice prompt — 2-step: "PRONTO" → "VIA" ═══ */}
         {bodyLockedUI && !isProntoConfirmed && (
           <View style={main$.voicePrompt}>
@@ -2820,6 +2834,30 @@ const main$ = StyleSheet.create({
     fontSize: 16,
     fontWeight: '900',
     letterSpacing: 3,
+  },
+  // ═══ PRE-SCAN DUAL-CAM TOGGLE ═══
+  preScanCamToggle: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 20,
+    right: 16,
+    zIndex: 999,
+  },
+  dualCamBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(0,229,255,0.10)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(0,229,255,0.35)',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  dualCamLabel: {
+    color: '#00E5FF',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 2,
   },
 });
 
