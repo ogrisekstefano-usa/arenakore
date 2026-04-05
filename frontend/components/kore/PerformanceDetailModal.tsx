@@ -3,10 +3,10 @@
  * Full-screen detail view for a WAR LOG performance record.
  * Gallery (3 snapshots swipe), Comparative Bar Chart vs PR, Social Export, Re-Challenge.
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, Modal, ScrollView, TouchableOpacity,
-  Image, Platform, ActivityIndicator, Share, Dimensions,
+  Image, Platform, ActivityIndicator, Share, Dimensions, Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { api } from '../../utils/api';
+import ViewShot, { captureRef } from 'react-native-view-shot';
 
 const FONT_J = Platform.select({ ios: 'PlusJakartaSans-ExtraBold', android: 'PlusJakartaSans-ExtraBold', default: 'Plus Jakarta Sans' });
 const FONT_M = Platform.select({ ios: 'Montserrat-Regular', android: 'Montserrat-Regular', default: 'Montserrat' });
@@ -49,6 +50,7 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
   const [loadingPr, setLoadingPr] = useState(false);
   const [activeSnap, setActiveSnap] = useState(0);
   const [exporting, setExporting] = useState(false);
+  const talentCardRef = useRef<any>(null);
 
   const cfg = TIPO_CONFIG[record?.tipo] || TIPO_CONFIG['ALLENAMENTO'];
   const kpi = record?.kpi || {};
@@ -142,6 +144,30 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
       });
     }, 300);
   }, [record]);
+
+  // Handle Talent Card Export
+  const handleTalentCardExport = useCallback(async () => {
+    if (!talentCardRef.current) return;
+    setExporting(true);
+    try {
+      const uri = await captureRef(talentCardRef, { format: 'png', quality: 1 });
+      if (Platform.OS === 'web') {
+        const link = document.createElement('a');
+        link.href = uri;
+        link.download = `ARENAKORE_TALENT_${Date.now()}.png`;
+        link.click();
+      } else {
+        await Share.share({
+          url: uri,
+          message: 'La mia Talent Card su ARENA KORE! 🏆',
+          title: 'ARENA KORE — Talent Card',
+        });
+      }
+    } catch {
+      Alert.alert('Errore', 'Impossibile generare la Talent Card');
+    }
+    setExporting(false);
+  }, []);
 
   if (!record) return null;
 
@@ -310,6 +336,21 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
               <Text style={ds.actionBtnText}>SFIDA DI NUOVO</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              style={ds.talentCardBtn}
+              onPress={handleTalentCardExport}
+              disabled={exporting}
+              activeOpacity={0.85}
+            >
+              {exporting ? (
+                <ActivityIndicator color="#FFD700" size="small" />
+              ) : (
+                <>
+                  <Ionicons name="card" size={15} color="#FFD700" />
+                  <Text style={ds.talentCardBtnText}>GENERA TALENT CARD</Text>
+                </>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
               style={[ds.actionBtnOutline, { borderColor: '#00E5FF' }]}
               onPress={handleSocialExport}
               disabled={exporting}
@@ -326,6 +367,60 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
             </TouchableOpacity>
           </Animated.View>
         </ScrollView>
+
+        {/* ═══ HIDDEN TALENT CARD — 9:16 Format for Export ═══ */}
+        <View style={ds.offscreen}>
+          <ViewShot ref={talentCardRef} options={{ format: 'png', quality: 1 }} style={{ width: 360, height: 640 }}>
+            <View style={{ flex: 1, backgroundColor: '#0A0A0A', position: 'relative' }}>
+              {record?.snapshots?.peak && (
+                <Image source={{ uri: record.snapshots.peak }} style={{ position: 'absolute', width: 360, height: 640 }} resizeMode="cover" />
+              )}
+              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.55)' }} />
+              {/* Top watermark */}
+              <View style={{ position: 'absolute', top: 20, left: 20, right: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row', gap: 4 }}>
+                  <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '900', letterSpacing: 5 }}>ARENA</Text>
+                  <Text style={{ color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 5 }}>KORE</Text>
+                </View>
+                {record?.is_certified && (
+                  <View style={{ backgroundColor: 'rgba(0,255,135,0.15)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(0,255,135,0.30)' }}>
+                    <Text style={{ color: '#00FF87', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 }}>CERTIFIED</Text>
+                  </View>
+                )}
+              </View>
+              {/* Center result */}
+              <View style={{ position: 'absolute', top: 200, left: 0, right: 0, alignItems: 'center' }}>
+                <Text style={{ color: '#FFFFFF', fontSize: 96, fontWeight: '900', lineHeight: 100 }}>{primaryDisplay}</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.30)', fontSize: 18, fontWeight: '900', letterSpacing: 8, marginTop: -4 }}>{primaryUnit}</Text>
+                <View style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: cfg.color, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', marginTop: 16 }}>
+                  <Text style={{ color: cfg.color, fontSize: 20, fontWeight: '900' }}>{myQual || '—'}</Text>
+                  <Text style={{ color: cfg.color + '80', fontSize: 8, fontWeight: '800', letterSpacing: 2 }}>Q</Text>
+                </View>
+              </View>
+              {/* KPI row */}
+              <View style={{ position: 'absolute', bottom: 130, left: 20, right: 20, flexDirection: 'row', justifyContent: 'space-around' }}>
+                <View style={{ alignItems: 'center', gap: 2 }}>
+                  <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900' }}>{Math.round(kpi.rom_pct || 0)}%</Text>
+                  <Text style={{ color: 'rgba(255,255,255,0.30)', fontSize: 9, fontWeight: '800', letterSpacing: 2 }}>ROM</Text>
+                </View>
+                <View style={{ alignItems: 'center', gap: 2 }}>
+                  <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900' }}>{Math.round(kpi.explosivity_pct || 0)}%</Text>
+                  <Text style={{ color: 'rgba(255,255,255,0.30)', fontSize: 9, fontWeight: '800', letterSpacing: 2 }}>EXPL</Text>
+                </View>
+                <View style={{ alignItems: 'center', gap: 2 }}>
+                  <Text style={{ color: '#FFD700', fontSize: 22, fontWeight: '900' }}>+{record?.flux_earned || 0}</Text>
+                  <Text style={{ color: 'rgba(255,255,255,0.30)', fontSize: 9, fontWeight: '800', letterSpacing: 2 }}>FLUX</Text>
+                </View>
+              </View>
+              {/* Bottom identity */}
+              <View style={{ position: 'absolute', bottom: 30, left: 20, right: 20, alignItems: 'center' }}>
+                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1 }}>{discIcon} {record?.disciplina || 'Fitness'}</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '800', letterSpacing: 2, marginTop: 6 }}>NEXUS AI VALIDATED</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.12)', fontSize: 10, fontWeight: '800', letterSpacing: 3, marginTop: 4 }}>arenakore.app</Text>
+              </View>
+            </View>
+          </ViewShot>
+        </View>
       </View>
     </Modal>
   );
@@ -488,6 +583,14 @@ const ds = StyleSheet.create({
     borderWidth: 1.5, backgroundColor: 'rgba(0,229,255,0.04)',
   },
   actionBtnOutlineText: { fontSize: 13, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
+  offscreen: { position: 'absolute', left: -9999, top: -9999, opacity: 1 },
+  talentCardBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    paddingVertical: 14, borderRadius: 14,
+    borderWidth: 1.5, borderColor: 'rgba(255,215,0,0.30)',
+    backgroundColor: 'rgba(255,215,0,0.06)',
+  },
+  talentCardBtnText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
 });
 
 const bar = StyleSheet.create({

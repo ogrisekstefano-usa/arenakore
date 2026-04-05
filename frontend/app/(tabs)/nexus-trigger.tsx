@@ -443,10 +443,11 @@ const ghost$ = StyleSheet.create({
 });
 
 // ========== NEXUS CONSOLE ==========
-function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligibility, myRank, myCrews, onTemplateReq, onCategoryProposal, onFluxStore }: {
+function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligibility, myRank, myCrews, onTemplateReq, onCategoryProposal, onFluxStore, cameraFacing, setCameraFacing }: {
   user: any; onScan: () => void; onForge: () => void; onPillarAction: (key: string) => void;
   deviceTier: DeviceTier; eligibility: any; myRank: any; myCrews: any[];
   onTemplateReq: (disc: string) => void; onCategoryProposal: () => void; onFluxStore: () => void;
+  cameraFacing: 'user' | 'environment'; setCameraFacing: (fn: any) => void;
 }) {
   const router = useRouter();
   const { width: screenWidth } = Dimensions.get('window');
@@ -561,6 +562,12 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
 
           {/* ═══ QUICK ACTION BAR ═══ */}
           <View style={cn$.quickBar}>
+            <TouchableOpacity style={cn$.quickBtn} onPress={() => setCameraFacing(prev => prev === 'user' ? 'environment' : 'user')} activeOpacity={0.8}>
+              <View style={[cn$.quickIcon, { backgroundColor: 'rgba(0,229,255,0.10)', borderWidth: 1, borderColor: 'rgba(0,229,255,0.25)' }]}>
+                <Ionicons name="camera-reverse" size={16} color="#00E5FF" />
+              </View>
+              <Text style={[cn$.quickLabel, { color: '#00E5FF' }]}>{cameraFacing === 'user' ? 'FRONT' : 'REAR'}</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={cn$.quickBtn} onPress={onScan} activeOpacity={0.8}>
               <View style={[cn$.quickIcon, { backgroundColor: 'rgba(0,122,255,0.08)' }]}>
                 <Ionicons name="scan" size={16} color="#007AFF" />
@@ -2369,6 +2376,8 @@ export default function NexusTriggerScreen() {
           onTemplateReq={(disc: string) => { setTemplateReqDiscipline(disc); setShowTemplateReq(true); }}
           onCategoryProposal={() => setShowCategoryProposal(true)}
           onFluxStore={() => setShowFluxStore(true)}
+          cameraFacing={cameraFacing}
+          setCameraFacing={setCameraFacing}
         />
         <TemplateRequestModal
           visible={showTemplateReq}
@@ -2690,7 +2699,7 @@ export default function NexusTriggerScreen() {
               onPress={() => setCameraFacing(prev => prev === 'user' ? 'environment' : 'user')}
               activeOpacity={0.7}
             >
-              <Ionicons name="camera-reverse" size={20} color="#fff" />
+              <Ionicons name="camera-reverse" size={22} color="#00E5FF" />
               <Text style={hud$.camToggleText}>
                 {cameraFacing === 'user' ? 'FRONT' : 'REAR'}
               </Text>
@@ -2925,12 +2934,12 @@ const hud$ = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,59,48,0.35)',
   },
   camToggle: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.12)', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: 'rgba(0,229,255,0.10)', paddingHorizontal: 18, paddingVertical: 14, borderRadius: 16,
+    borderWidth: 1.5, borderColor: 'rgba(0,229,255,0.30)',
   },
   camToggleText: {
-    color: '#fff', fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
+    color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 2,
   },
   stopDot: {
     width: 10, height: 10, borderRadius: 5, backgroundColor: '#FF3B30',

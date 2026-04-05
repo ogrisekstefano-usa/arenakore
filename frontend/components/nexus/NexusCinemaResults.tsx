@@ -75,7 +75,6 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
   const handleShareSnap = useCallback(async (dataUri: string, label: string) => {
     try {
       if (Platform.OS === 'web') {
-        // Download or open in new tab
         const link = document.createElement('a');
         link.href = dataUri;
         link.download = `ARENAKORE_${label}_${Date.now()}.jpg`;
@@ -90,6 +89,31 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
     } catch {
       Alert.alert('Errore', 'Impossibile condividere lo scatto');
     }
+  }, []);
+
+  const talentRef = useRef<any>(null);
+
+  const handleTalentCardExport = useCallback(async () => {
+    if (!talentRef.current) return;
+    setSharing(true);
+    try {
+      const uri = await captureRef(talentRef, { format: 'png', quality: 1 });
+      if (Platform.OS === 'web') {
+        const link = document.createElement('a');
+        link.href = uri;
+        link.download = `ARENAKORE_TALENT_${Date.now()}.png`;
+        link.click();
+      } else {
+        await Share.share({
+          url: uri,
+          message: 'La mia Talent Card su ARENA KORE! 🏆 https://arenakore.app',
+          title: 'ARENAKORE — Talent Card',
+        });
+      }
+    } catch {
+      Alert.alert('Errore', 'Impossibile generare la Talent Card');
+    }
+    setSharing(false);
   }, []);
 
   if (!visible || !result) return null;
@@ -256,6 +280,19 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
               </Text>
             </TouchableOpacity>
 
+            {/* ═══ GENERA TALENT CARD — 9:16 Stories Format ═══ */}
+            <TouchableOpacity
+              style={[cin$.talentCardBtn]}
+              onPress={handleTalentCardExport}
+              activeOpacity={0.85}
+              disabled={sharing}
+            >
+              <Ionicons name="card" size={16} color="#FFD700" />
+              <Text style={cin$.talentCardBtnText}>
+                {sharing ? 'GENERAZIONE...' : 'GENERA TALENT CARD'}
+              </Text>
+            </TouchableOpacity>
+
             <TouchableOpacity style={cin$.closeBtn} onPress={onClose}><Text style={cin$.closeBtnText}>CHIUDI</Text></TouchableOpacity>
           </ScrollView>
         </Animated.View>
@@ -264,26 +301,17 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
         <View style={vic$.offscreen}>
           <ViewShot ref={victoryRef} options={{ format: 'png', quality: 1 }} style={vic$.card}>
             <View style={[vic$.bg, { backgroundColor: mood.bg }]}>
-              {/* Mood accent line */}
               <View style={[vic$.accentLine, { backgroundColor: mood.accent }]} />
-
-              {/* Brand */}
               <View style={vic$.brandRow}>
                 <Text style={vic$.brandA}>ARENA</Text>
                 <Text style={[vic$.brandK, { color: mood.accent }]}>KORE</Text>
               </View>
-
-              {/* Username */}
               <Text style={vic$.username}>{(user?.username || 'KORE').toUpperCase()}</Text>
               {isFounder && <Text style={vic$.founderTag}>FOUNDER #{user?.founder_number || '?'}</Text>}
-
-              {/* Giant Result */}
               <View style={vic$.resultSection}>
                 <Text style={[vic$.resultBig, { color: mood.accent }]}>{result.reps_completed || '0'}</Text>
                 <Text style={vic$.resultUnit}>REPS</Text>
               </View>
-
-              {/* Quality Score */}
               <View style={vic$.qualRow}>
                 <View style={[vic$.qualCircle, { borderColor: mood.accent }]}>
                   <Text style={[vic$.qualVal, { color: mood.accent }]}>{result.quality_score || '—'}</Text>
@@ -293,23 +321,80 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
                   <Text style={[vic$.moodLabel, { color: mood.accent }]}>{mood.label}</Text>
                 </View>
               </View>
-
-              {/* FLUX earned */}
               <View style={vic$.fluxRow}>
                 <Text style={vic$.fluxPlus}>+</Text>
                 <Text style={[vic$.fluxVal, { color: mood.accent }]}>{result.xp_earned || 0}</Text>
                 <Text style={vic$.fluxUnit}>FLUX</Text>
               </View>
-
-              {/* Validation */}
               <View style={vic$.validRow}>
                 <Ionicons name="eye" size={14} color="rgba(255,255,255,0.3)" />
                 <Text style={vic$.validText}>NEXUS VALIDATED</Text>
               </View>
-
-              {/* Footer */}
               <Text style={vic$.tagline}>Sfidami su ARENA KORE!</Text>
               <Text style={vic$.footer}>arenakore.app</Text>
+            </View>
+          </ViewShot>
+        </View>
+
+        {/* ═══ HIDDEN TALENT CARD — 9:16 STORIES FORMAT ═══ */}
+        <View style={tc$.offscreen}>
+          <ViewShot ref={talentRef} options={{ format: 'png', quality: 1 }} style={tc$.card}>
+            <View style={tc$.bg}>
+              {/* PEAK snapshot background */}
+              {result.snapshots?.peak && (
+                <Image source={{ uri: result.snapshots.peak }} style={tc$.bgImage} resizeMode="cover" />
+              )}
+              {/* Dark overlay */}
+              <View style={tc$.overlay} />
+
+              {/* Top brand watermark */}
+              <View style={tc$.topSection}>
+                <View style={tc$.brandRow}>
+                  <Text style={tc$.brandA}>ARENA</Text>
+                  <Text style={tc$.brandK}>KORE</Text>
+                </View>
+                {showCoachBadge && (
+                  <View style={tc$.certBadge}>
+                    <Text style={tc$.certText}>COACH CERTIFIED</Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Middle — Giant result */}
+              <View style={tc$.centerSection}>
+                <Text style={tc$.resultBig}>{result.reps_completed || '0'}</Text>
+                <Text style={tc$.resultUnit}>REPS</Text>
+                <View style={tc$.qualCircle}>
+                  <Text style={tc$.qualVal}>{result.quality_score || '—'}</Text>
+                  <Text style={tc$.qualLabel}>Q</Text>
+                </View>
+              </View>
+
+              {/* KPI row */}
+              <View style={tc$.kpiRow}>
+                <View style={tc$.kpiItem}>
+                  <Text style={tc$.kpiVal}>{Math.round(result.rom_pct || 0)}%</Text>
+                  <Text style={tc$.kpiLabel}>ROM</Text>
+                </View>
+                <View style={tc$.kpiItem}>
+                  <Text style={tc$.kpiVal}>{Math.round(result.explosivity_pct || 0)}%</Text>
+                  <Text style={tc$.kpiLabel}>EXPL</Text>
+                </View>
+                <View style={tc$.kpiItem}>
+                  <Text style={tc$.kpiVal}>+{result.xp_earned || 0}</Text>
+                  <Text style={tc$.kpiLabel}>FLUX</Text>
+                </View>
+              </View>
+
+              {/* Bottom — Username + Title + Watermark */}
+              <View style={tc$.bottomSection}>
+                <Text style={tc$.username}>{(user?.username || 'KORE').toUpperCase()}</Text>
+                {isFounder && <Text style={tc$.founderTag}>FOUNDER #{user?.founder_number || '?'}</Text>}
+                <View style={tc$.validRow}>
+                  <Text style={tc$.validText}>NEXUS AI VALIDATED</Text>
+                </View>
+                <Text style={tc$.footer}>arenakore.app</Text>
+              </View>
             </View>
           </ViewShot>
         </View>
@@ -364,8 +449,23 @@ const cin$ = StyleSheet.create({
   dnaLabel: { color: '#555', fontSize: 7, fontWeight: '700' },
   shareBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 10, paddingVertical: 14, marginTop: 6, borderWidth: 1 },
   shareBtnText: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  // Gallery styles
+  gallerySection: { width: '100%', marginVertical: 12 },
+  galleryTitle: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '900', letterSpacing: 3, marginBottom: 10, textAlign: 'center' as const },
+  galleryScroll: { gap: 10, paddingHorizontal: 2 },
+  snapCard: { width: 140, height: 200, borderRadius: 14, overflow: 'hidden', position: 'relative' as const, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.10)' },
+  snapImg: { width: '100%', height: '100%' },
+  snapOverlay: { position: 'absolute' as const, bottom: 0, left: 0, right: 0, paddingVertical: 6, paddingHorizontal: 10, backgroundColor: 'rgba(0,0,0,0.65)' },
+  snapLabel: { color: '#FFD700', fontSize: 10, fontWeight: '900', letterSpacing: 2, textAlign: 'center' as const },
+  snapShareBtn: { position: 'absolute' as const, top: 8, right: 8, width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(0,0,0,0.50)', alignItems: 'center' as const, justifyContent: 'center' as const, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
   closeBtn: { width: '100%', backgroundColor: '#00E5FF', borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: 10 },
   closeBtnText: { color: '#000000', fontSize: 16, fontWeight: '800', letterSpacing: 2 },
+  talentCardBtn: {
+    width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 10, paddingVertical: 14, marginTop: 6,
+    borderWidth: 1.5, borderColor: 'rgba(255,215,0,0.25)',
+  },
+  talentCardBtnText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
 });
 
 const vic$ = StyleSheet.create({
@@ -395,4 +495,63 @@ const vic$ = StyleSheet.create({
   validText: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '800', letterSpacing: 2 },
   tagline: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '600', textAlign: 'center', fontStyle: 'italic' },
   footer: { color: 'rgba(255,255,255,0.1)', fontSize: 10, fontWeight: '800', letterSpacing: 3, textAlign: 'center' },
+});
+
+// ═══ TALENT CARD — 9:16 Stories Format (1080×1920 ratio at 360×640) ═══
+const tc$ = StyleSheet.create({
+  offscreen: { position: 'absolute', left: -9999, top: -9999, opacity: 1 },
+  card: { width: 360, height: 640 },
+  bg: { flex: 1, position: 'relative', backgroundColor: '#0A0A0A' },
+  bgImage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: 360, height: 640 },
+  overlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+  },
+  topSection: {
+    position: 'absolute', top: 20, left: 20, right: 20,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+  },
+  brandRow: { flexDirection: 'row', gap: 4 },
+  brandA: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '900', letterSpacing: 5 },
+  brandK: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 5 },
+  certBadge: {
+    backgroundColor: 'rgba(0,255,135,0.15)', borderRadius: 6,
+    paddingHorizontal: 8, paddingVertical: 4,
+    borderWidth: 1, borderColor: 'rgba(0,255,135,0.30)',
+  },
+  certText: { color: '#00FF87', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  centerSection: {
+    position: 'absolute', top: 200, left: 0, right: 0,
+    alignItems: 'center',
+  },
+  resultBig: { color: '#FFFFFF', fontSize: 96, fontWeight: '900', lineHeight: 100 },
+  resultUnit: { color: 'rgba(255,255,255,0.30)', fontSize: 18, fontWeight: '900', letterSpacing: 8, marginTop: -4 },
+  qualCircle: {
+    width: 52, height: 52, borderRadius: 26,
+    borderWidth: 2, borderColor: '#00E5FF',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    alignItems: 'center', justifyContent: 'center',
+    marginTop: 16,
+  },
+  qualVal: { color: '#00E5FF', fontSize: 20, fontWeight: '900' },
+  qualLabel: { color: 'rgba(0,229,255,0.5)', fontSize: 8, fontWeight: '800', letterSpacing: 2 },
+  kpiRow: {
+    position: 'absolute', bottom: 130, left: 20, right: 20,
+    flexDirection: 'row', justifyContent: 'space-around',
+  },
+  kpiItem: { alignItems: 'center', gap: 2 },
+  kpiVal: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
+  kpiLabel: { color: 'rgba(255,255,255,0.30)', fontSize: 9, fontWeight: '800', letterSpacing: 2 },
+  bottomSection: {
+    position: 'absolute', bottom: 20, left: 20, right: 20,
+    alignItems: 'center',
+  },
+  username: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
+  founderTag: { color: '#FFD700', fontSize: 10, fontWeight: '900', letterSpacing: 2, marginTop: 2 },
+  validRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 6, marginTop: 8,
+  },
+  validText: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '800', letterSpacing: 2 },
+  footer: { color: 'rgba(255,255,255,0.12)', fontSize: 10, fontWeight: '800', letterSpacing: 3, textAlign: 'center', marginTop: 6 },
 });
