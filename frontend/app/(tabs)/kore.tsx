@@ -365,10 +365,10 @@ export default function KoreTab() {
           <Animated.View style={[hero.imgLayer, heroStyleB]}>
             <Image source={{ uri: heroImgB }} style={hero.img} resizeMode="cover" />
           </Animated.View>
-          {/* Heavy gradient vignette */}
+          {/* Heavy gradient vignette — VELINA NERA */}
           <LinearGradient
-            colors={['rgba(10,10,10,0.3)', 'rgba(10,10,10,0.15)', 'rgba(10,10,10,0.6)', '#0A0A0A']}
-            locations={[0, 0.3, 0.7, 1]}
+            colors={['rgba(0,0,0,0.55)', 'rgba(0,0,0,0.45)', 'rgba(0,0,0,0.70)', '#0A0A0A']}
+            locations={[0, 0.25, 0.65, 1]}
             style={StyleSheet.absoluteFillObject}
           />
           {/* Top row: QR + FLUX + Menu */}

@@ -13,34 +13,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
+import { SPORTS_LIST, getSportIcon } from '../../utils/sportAssets';
 import * as ImagePicker from 'expo-image-picker';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const FONT_J = Platform.select({ ios: 'PlusJakartaSans-ExtraBold', android: 'PlusJakartaSans-ExtraBold', default: 'Plus Jakarta Sans' });
 const FONT_M = Platform.select({ ios: 'Montserrat-Regular', android: 'Montserrat-Regular', default: 'Montserrat' });
-
-// ── 30+ Discipline List ──
-const SPORTS_LIST = [
-  'Fitness', 'CrossFit', 'Bodybuilding', 'Calisthenics', 'Powerlifting', 'Weightlifting',
-  'Golf', 'Padel', 'Tennis', 'Basket', 'Calcio', 'Pallavolo',
-  'Running', 'Trail Running', 'Ciclismo', 'Mountain Bike', 'Nuoto', 'Triathlon',
-  'Yoga', 'Pilates', 'Functional Training', 'HIIT',
-  'Boxing', 'Kickboxing', 'MMA', 'Jiu-Jitsu', 'Karate', 'Taekwondo', 'Judo',
-  'Arrampicata', 'Surf', 'Sci', 'Snowboard', 'Skateboard',
-  'Danza', 'Ginnastica', 'Atletica Leggera', 'Canottaggio',
-  'Rugby', 'Cricket', 'Baseball', 'Hockey',
-  'Scherma', 'Tiro con l\'Arco', 'Equitazione',
-];
-
-const SPORT_ICONS: Record<string, string> = {
-  'Fitness': '🏋️', 'CrossFit': '💪', 'Bodybuilding': '🏋️', 'Calisthenics': '🤸', 'Powerlifting': '🏋️',
-  'Golf': '⛳', 'Padel': '🏓', 'Tennis': '🎾', 'Basket': '🏀', 'Calcio': '⚽', 'Pallavolo': '🏐',
-  'Running': '🏃', 'Trail Running': '🏔️', 'Ciclismo': '🚴', 'Mountain Bike': '🚵', 'Nuoto': '🏊',
-  'Yoga': '🧘', 'Boxing': '🥊', 'MMA': '🥋', 'Arrampicata': '🧗', 'Surf': '🏄', 'Sci': '⛷️',
-  'Rugby': '🏉', 'Danza': '💃', 'Ginnastica': '🤸', 'Atletica Leggera': '🏃', 'Scherma': '🤺',
-  'Triathlon': '🏊', 'HIIT': '⚡', 'Kickboxing': '🥊', 'Jiu-Jitsu': '🥋', 'Karate': '🥋',
-  'Weightlifting': '🏋️', 'Skateboard': '🛹', 'Snowboard': '🏂', 'Canottaggio': '🚣',
-};
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -223,7 +201,7 @@ export default function SettingsScreen() {
           <Animated.View entering={FadeInDown.delay(150).duration(400)} style={s.section}>
             <Text style={s.sectionTitle}>SPORT PRIMARIO</Text>
             <TouchableOpacity style={s.sportPicker} onPress={() => setShowSportPicker(true)} activeOpacity={0.8}>
-              <Text style={s.sportIcon}>{SPORT_ICONS[selectedSport] || '🏅'}</Text>
+              <Text style={s.sportIcon}>{getSportIcon(selectedSport)}</Text>
               <Text style={s.sportName}>{selectedSport}</Text>
               <Ionicons name="chevron-down" size={18} color="rgba(255,255,255,0.35)" />
             </TouchableOpacity>
@@ -320,7 +298,7 @@ export default function SettingsScreen() {
                     onPress={() => { setSelectedSport(item); setShowSportPicker(false); setSportSearch(''); }}
                     activeOpacity={0.7}
                   >
-                    <Text style={sp.itemIcon}>{SPORT_ICONS[item] || '🏅'}</Text>
+                    <Text style={sp.itemIcon}>{getSportIcon(item)}</Text>
                     <Text style={[sp.itemText, isSelected && sp.itemTextActive]}>{item}</Text>
                     {isSelected && <Ionicons name="checkmark-circle" size={18} color="#00E5FF" />}
                   </TouchableOpacity>
