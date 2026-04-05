@@ -1778,12 +1778,82 @@ export default function NexusTriggerScreen() {
   const [dropsEarned, setDropsEarned] = useState(0);
   const [isVictory, setIsVictory] = useState(false);
 
+  // ═══ AUTO-SNAPSHOT: PEAK capture at ~50% reps ═══
+  useEffect(() => {
+    if (phase !== 'scanning' || Platform.OS !== 'web') return;
+    const reps = motionState?.reps || 0;
+    const targetReps = isUGCMode
+      ? ugcExercises.reduce((s, e) => s + (e.target_reps || 0), 0)
+      : (trainingTargetReps || 20);
+    const midpoint = Math.max(3, Math.floor(targetReps / 2));
+
+    if (!snapshotTakenRef.current.peak && reps >= midpoint && videoElRef.current) {
+      const base64 = captureSnapshot(videoElRef.current, 'PEAK');
+      if (base64) {
+        setSnapshots(prev => ({ ...prev, peak: base64 }));
+        snapshotTakenRef.current.peak = true;
+      }
+    }
+  }, [motionState?.reps, phase]);
+
+  // ═══ Reset snapshots when starting a new scan ═══
+  useEffect(() => {
+    if (phase === 'countdown' || phase === 'stabilizing') {
+      setSnapshots({});
+      snapshotTakenRef.current = { start: false, peak: false, finish: false };
+    }
+  }, [phase]);
+
   const analyzerRef = useRef<MotionAnalyzer | null>(null);
   const startTimeRef = useRef(0);
   const timerRef = useRef<any>(null);
   const lastRepRef = useRef(0);
   const accelSubRef = useRef<any>(null);
   const motionTimeoutRef = useRef<any>(null);
+
+  // ═══ DUAL-CAM SYSTEM ═══
+  const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('user');
+  const videoElRef = useRef<any>(null);
+  const streamRef = useRef<any>(null);
+
+  // ═══ AUTO-SNAPSHOT ENGINE — 3 shots per challenge ═══
+  const [snapshots, setSnapshots] = useState<{ start?: string; peak?: string; finish?: string }>({});
+  const snapshotTakenRef = useRef<{ start: boolean; peak: boolean; finish: boolean }>({ start: false, peak: false, finish: false });
+  const peakThreshold = useRef(0); // midpoint rep count for peak capture
+
+  // ── Snapshot capture: draw video frame to canvas + watermark ──
+  const captureSnapshot = useCallback((videoEl: any, label: string): string | null => {
+    if (Platform.OS !== 'web' || !videoEl || videoEl.readyState < 2) return null;
+    try {
+      const w = 720; const h = 960;
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      const ctx = cv.getContext('2d');
+      if (!ctx) return null;
+      // Draw video frame (cropped to fill)
+      const vw = videoEl.videoWidth || 640;
+      const vh = videoEl.videoHeight || 480;
+      const scale = Math.max(w / vw, h / vh);
+      const sw = w / scale; const sh = h / scale;
+      const sx = (vw - sw) / 2; const sy = (vh - sh) / 2;
+      ctx.drawImage(videoEl, sx, sy, sw, sh, 0, 0, w, h);
+      // Watermark: ARENA KORE bottom-right
+      ctx.save();
+      ctx.font = '700 16px Montserrat, sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.textAlign = 'right';
+      ctx.fillText('ARENA KORE', w - 20, h - 20);
+      // Shot label top-left
+      ctx.font = '900 12px Montserrat, sans-serif';
+      ctx.fillStyle = 'rgba(0,229,255,0.6)';
+      ctx.textAlign = 'left';
+      ctx.fillText(label, 20, 30);
+      ctx.restore();
+      return cv.toDataURL('image/jpeg', 0.85);
+    } catch {
+      return null;
+    }
+  }, []);
 
   // ═══ UGC DYNAMIC REPS TRACKER — Auto-advance between exercises ═══
   useEffect(() => {
@@ -1938,22 +2008,41 @@ export default function NexusTriggerScreen() {
     setPhase('tilt_setup'); // Go through tilt → body_lock → countdown → scanning
   }, [isUGCMode]);
 
-  // Web camera & motion detection — SPRINT 5: Camera VISIBLE, overlay reduced
+  // Web camera & motion detection — DUAL-CAM + AUTO-SNAPSHOT ENGINE
   useEffect(() => {
     if (phase !== 'scanning' || Platform.OS !== 'web') return;
-    let stream: any; let videoEl: any; let motionIv: any; let prevFrame: any;
+    let localStream: any; let videoEl: any; let motionIv: any; let prevFrame: any;
+    const isFront = cameraFacing === 'user';
     (async () => {
       try {
-        stream = await (navigator as any).mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } });
+        localStream = await (navigator as any).mediaDevices.getUserMedia({
+          video: { facingMode: cameraFacing, width: 640, height: 480 }
+        });
         videoEl = document.createElement('video');
-        videoEl.srcObject = stream; videoEl.muted = true; videoEl.playsInline = true;
-        // SPRINT 5: Make camera VISIBLE as full-screen background (mirrored)
-        videoEl.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:cover;z-index:0;transform:scaleX(-1);opacity:1;';
+        videoEl.srcObject = localStream; videoEl.muted = true; videoEl.playsInline = true;
+        // Front camera: mirrored. Rear camera: normal
+        videoEl.style.cssText = `position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:cover;z-index:0;${isFront ? 'transform:scaleX(-1);' : ''}opacity:1;`;
+        videoEl.id = 'nexus-video-el';
         const c = document.getElementById('nexus-cam');
         if (c) c.appendChild(videoEl);
         else document.body.prepend(videoEl);
         await videoEl.play();
-        // Motion detection canvas (hidden, uses low-res for performance)
+        // Store refs for snapshot access
+        videoElRef.current = videoEl;
+        streamRef.current = localStream;
+
+        // ── AUTO-SNAPSHOT: START shot (after 1.5s to let camera stabilize) ──
+        setTimeout(() => {
+          if (!snapshotTakenRef.current.start && videoEl && videoEl.readyState >= 2) {
+            const base64 = captureSnapshot(videoEl, 'START');
+            if (base64) {
+              setSnapshots(prev => ({ ...prev, start: base64 }));
+              snapshotTakenRef.current.start = true;
+            }
+          }
+        }, 1500);
+
+        // Motion detection canvas
         const cv = document.createElement('canvas'); cv.width = 160; cv.height = 120; const ctx = cv.getContext('2d');
         motionIv = setInterval(() => {
           if (!videoEl || videoEl.readyState < 2 || !ctx) return;
@@ -1975,10 +2064,13 @@ export default function NexusTriggerScreen() {
     })();
     return () => {
       if (motionIv) clearInterval(motionIv);
-      if (stream) stream.getTracks().forEach((t: any) => t.stop());
-      if (videoEl?.parentNode) videoEl.parentNode.removeChild(videoEl);
+      if (localStream) localStream.getTracks().forEach((t: any) => t.stop());
+      const oldVid = document.getElementById('nexus-video-el');
+      if (oldVid?.parentNode) oldVid.parentNode.removeChild(oldVid);
+      videoElRef.current = null;
+      streamRef.current = null;
     };
-  }, [phase]);
+  }, [phase, cameraFacing]);
 
   const handleForgeSelect = (mode: ForgeMode, ex: ExerciseType) => { setForgeMode(mode); setExercise(ex); setPhase('tilt_setup'); };
 
@@ -2043,6 +2135,15 @@ export default function NexusTriggerScreen() {
     const reps = motionState?.reps || 0, qual = motionState?.quality || 50, peak = motionState?.peakAcceleration || 0, avg = motionState?.avgAmplitude || 0;
     if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
+    // ── AUTO-SNAPSHOT: FINISH shot ──
+    if (Platform.OS === 'web' && !snapshotTakenRef.current.finish && videoElRef.current) {
+      const base64 = captureSnapshot(videoElRef.current, 'FINISH');
+      if (base64) {
+        setSnapshots(prev => ({ ...prev, finish: base64 }));
+        snapshotTakenRef.current.finish = true;
+      }
+    }
+
     // Training Session Mode: submit to /challenges/complete with template data
     if (isTrainingMode && token && params.trainingPushId) {
       const repEff = Math.min(1, reps / Math.max(trainingTargetReps, 1));
@@ -2056,7 +2157,7 @@ export default function NexusTriggerScreen() {
           ai_feedback_score: aiFeedbackScore,
           performance_score: qual,
         }, token);
-        setScanResult({ ...r, training_mode: true, is_master_template: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, ai_feedback_score: aiFeedbackScore, training_name: params.trainingName });
+        setScanResult({ ...r, training_mode: true, is_master_template: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, ai_feedback_score: aiFeedbackScore, training_name: params.trainingName, snapshots });
         if (r.user) updateUser(r.user);
         // FLUX Rain — connected to real server value
         const realDrops = r.ak_drops_earned || r.ak_credits_earned || Math.max(Math.round(reps * 0.8), 5);
@@ -2065,7 +2166,7 @@ export default function NexusTriggerScreen() {
         setTimeout(() => setShowDropsRain(false), 3000);
         if (r.coach_notified) playBioMatchPing(); else playAcceptPing();
       } catch (_) {
-        setScanResult({ training_mode: true, is_master_template: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: 0 });
+        setScanResult({ training_mode: true, is_master_template: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: 0, snapshots });
         playAcceptPing();
       }
       setPhase('results');
@@ -2112,6 +2213,7 @@ export default function NexusTriggerScreen() {
           xp_earned: r.flux_earned || 0,
           is_verified: r.is_verified,
           flux_earned: r.flux_earned,
+          snapshots,
         });
         if (r.user) updateUser(r.user);
         // FLUX Rain + Victory based on verification
@@ -2121,7 +2223,7 @@ export default function NexusTriggerScreen() {
         setTimeout(() => setShowDropsRain(false), 3000);
         if (r.is_verified) playRecordBroken(); else playAcceptPing();
       } catch (_) {
-        setScanResult({ ugc_mode: true, ugc_title: params.ugcTitle, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: 0 });
+        setScanResult({ ugc_mode: true, ugc_title: params.ugcTitle, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: 0, snapshots });
         playAcceptPing();
       }
       // Reset UGC state
@@ -2539,8 +2641,19 @@ export default function NexusTriggerScreen() {
             <Text style={hud$.qualityUnit}>AVG SCORE</Text>
           </View>
 
-          {/* BOTTOM-CENTER: Stop Button */}
+          {/* BOTTOM-CENTER: Cam Toggle + Stop Button */}
           <View style={hud$.stopWrap}>
+            {/* DUAL-CAM TOGGLE */}
+            <TouchableOpacity
+              style={hud$.camToggle}
+              onPress={() => setCameraFacing(prev => prev === 'user' ? 'environment' : 'user')}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="camera-reverse" size={20} color="#fff" />
+              <Text style={hud$.camToggleText}>
+                {cameraFacing === 'user' ? 'FRONT' : 'REAR'}
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity style={hud$.stopBtn} onPress={handleStop} activeOpacity={0.85}>
               <View style={hud$.stopDot} />
               <Text style={hud$.stopText}>STOP SESSION</Text>
@@ -2763,11 +2876,20 @@ const hud$ = StyleSheet.create({
   // BOTTOM: Stop Button
   stopWrap: {
     position: 'absolute', bottom: 20, left: 20, right: 20,
+    flexDirection: 'row', gap: 10, alignItems: 'center',
   },
   stopBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: 'rgba(255,59,48,0.12)', borderRadius: 14, paddingVertical: 18,
+    backgroundColor: 'rgba(255,59,48,0.12)', borderRadius: 14, paddingVertical: 18, flex: 1,
     borderWidth: 1, borderColor: 'rgba(255,59,48,0.35)',
+  },
+  camToggle: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.12)', paddingHorizontal: 16, paddingVertical: 14, borderRadius: 14,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
+  },
+  camToggleText: {
+    color: '#fff', fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
   },
   stopDot: {
     width: 10, height: 10, borderRadius: 5, backgroundColor: '#FF3B30',

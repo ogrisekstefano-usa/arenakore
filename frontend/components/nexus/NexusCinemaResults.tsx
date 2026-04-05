@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Dimensions,
-  Share, Platform, Alert,
+  Share, Platform, Alert, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ViewShot, { captureRef } from 'react-native-view-shot';
@@ -69,6 +69,26 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
       Alert.alert('Errore', 'Impossibile condividere');
     } finally {
       setSharing(false);
+    }
+  }, []);
+
+  const handleShareSnap = useCallback(async (dataUri: string, label: string) => {
+    try {
+      if (Platform.OS === 'web') {
+        // Download or open in new tab
+        const link = document.createElement('a');
+        link.href = dataUri;
+        link.download = `ARENAKORE_${label}_${Date.now()}.jpg`;
+        link.click();
+      } else {
+        await Share.share({
+          url: dataUri,
+          message: `${label} — La mia sfida su ARENA KORE! 🔥 https://arenakore.app`,
+          title: `ARENA KORE — ${label}`,
+        });
+      }
+    } catch {
+      Alert.alert('Errore', 'Impossibile condividere lo scatto');
     }
   }, []);
 
@@ -179,6 +199,48 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
               <View style={cin$.dnaRow}>{Object.entries(result.dna).map(([k, v]: [string, any]) => (
                 <View key={k} style={cin$.dnaItem}><Text style={cin$.dnaVal}>{Math.round(v)}</Text><Text style={cin$.dnaLabel}>{k.slice(0, 3).toUpperCase()}</Text></View>
               ))}</View>
+            )}
+
+            {/* ═══ AUTO-SNAPSHOT GALLERY — 3 Challenge Moments ═══ */}
+            {result.snapshots && (result.snapshots.start || result.snapshots.peak || result.snapshots.finish) && (
+              <View style={cin$.gallerySection}>
+                <Text style={cin$.galleryTitle}>I TUOI MOMENTI</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={cin$.galleryScroll}>
+                  {result.snapshots.start && (
+                    <View style={cin$.snapCard}>
+                      <Image source={{ uri: result.snapshots.start }} style={cin$.snapImg} resizeMode="cover" />
+                      <View style={cin$.snapOverlay}>
+                        <Text style={cin$.snapLabel}>START</Text>
+                      </View>
+                      <TouchableOpacity style={cin$.snapShareBtn} onPress={() => handleShareSnap(result.snapshots.start, 'START')} activeOpacity={0.7}>
+                        <Ionicons name="share-social" size={12} color="#00E5FF" />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  {result.snapshots.peak && (
+                    <View style={cin$.snapCard}>
+                      <Image source={{ uri: result.snapshots.peak }} style={cin$.snapImg} resizeMode="cover" />
+                      <View style={cin$.snapOverlay}>
+                        <Text style={cin$.snapLabel}>PEAK</Text>
+                      </View>
+                      <TouchableOpacity style={cin$.snapShareBtn} onPress={() => handleShareSnap(result.snapshots.peak, 'PEAK')} activeOpacity={0.7}>
+                        <Ionicons name="share-social" size={12} color="#FFD700" />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  {result.snapshots.finish && (
+                    <View style={cin$.snapCard}>
+                      <Image source={{ uri: result.snapshots.finish }} style={cin$.snapImg} resizeMode="cover" />
+                      <View style={cin$.snapOverlay}>
+                        <Text style={cin$.snapLabel}>FINISH</Text>
+                      </View>
+                      <TouchableOpacity style={cin$.snapShareBtn} onPress={() => handleShareSnap(result.snapshots.finish, 'FINISH')} activeOpacity={0.7}>
+                        <Ionicons name="share-social" size={12} color="#00FF87" />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </ScrollView>
+              </View>
             )}
 
             {/* SHARE VICTORY CARD BUTTON */}
