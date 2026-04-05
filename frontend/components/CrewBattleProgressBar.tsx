@@ -59,9 +59,9 @@ export function CrewBattleProgressBar({ battleId, isExpanded = false, onToggleEx
   const [loading, setLoading] = useState(true);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Animated progress bar
-  const progressA = useSharedValue(50);
-  const progressB = useSharedValue(50);
+  // Animated progress bar — use flex instead of percentage width for native compatibility
+  const progressA = useSharedValue(0.5);
+  const progressB = useSharedValue(0.5);
   const pulse = useSharedValue(0.8);
 
   useEffect(() => {
@@ -74,10 +74,10 @@ export function CrewBattleProgressBar({ battleId, isExpanded = false, onToggleEx
   }, []);
 
   const barStyleA = useAnimatedStyle(() => ({
-    width: `${progressA.value}%` as any,
+    flex: progressA.value,
   }));
   const barStyleB = useAnimatedStyle(() => ({
-    width: `${progressB.value}%` as any,
+    flex: progressB.value,
   }));
   const pulseStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
 
@@ -85,8 +85,8 @@ export function CrewBattleProgressBar({ battleId, isExpanded = false, onToggleEx
     try {
       const data = await apiClient(`/api/battles/crew/${battleId}/live-state`);
       setState(data);
-      progressA.value = withSpring(data.crew_a.pct, { damping: 20, stiffness: 100 });
-      progressB.value = withSpring(data.crew_b.pct, { damping: 20, stiffness: 100 });
+      progressA.value = withSpring(data.crew_a.pct / 100, { damping: 20, stiffness: 100 });
+      progressB.value = withSpring(data.crew_b.pct / 100, { damping: 20, stiffness: 100 });
     } catch (e) {
       console.log('Battle state fetch failed', e);
     } finally {

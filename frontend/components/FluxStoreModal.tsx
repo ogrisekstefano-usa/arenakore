@@ -213,7 +213,7 @@ export function FluxStoreModal({ visible, onClose, userFlux, onPurchase }: Props
 
 const s = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.92)', justifyContent: 'center', alignItems: 'center' },
-  card: { width: SW * 0.92, maxHeight: '85%', backgroundColor: '#0A0A0A', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)', overflow: 'hidden' },
+  card: { width: SW * 0.92, maxHeight: SW * 1.6, backgroundColor: '#0A0A0A', borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)', overflow: 'hidden' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 18, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   title: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 4, fontFamily: FONT_M },
@@ -223,7 +223,7 @@ const s = StyleSheet.create({
   balanceUnit: { color: 'rgba(255,215,0,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   crewBanner: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 18, paddingVertical: 8, backgroundColor: 'rgba(0,229,255,0.05)', marginHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(0,229,255,0.10)' },
   crewText: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '700' },
-  crewBoostLabel: { color: '#00E5FF', fontSize: 9, fontWeight: '900', letterSpacing: 1, marginLeft: 'auto' as any },
+  crewBoostLabel: { color: '#00E5FF', fontSize: 9, fontWeight: '900', letterSpacing: 1, flex: 1, textAlign: 'right' as const },
   scroll: { flex: 1, paddingHorizontal: 14, paddingBottom: 20 },
   pkgCard: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, borderWidth: 1, marginTop: 12, overflow: 'hidden' },
   pkgTop: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },

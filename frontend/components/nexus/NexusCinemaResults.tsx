@@ -276,7 +276,7 @@ const cin$ = StyleSheet.create({
   verifiedBanner: { backgroundColor: 'rgba(0,255,135,0.06)', borderColor: 'rgba(0,255,135,0.20)' },
   failedBanner: { backgroundColor: 'rgba(255,59,48,0.06)', borderColor: 'rgba(255,59,48,0.20)' },
   validationText: { fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  validationMode: { color: 'rgba(255,255,255,0.20)', fontSize: 9, fontWeight: '700', letterSpacing: 1, marginLeft: 'auto' as any },
+  validationMode: { color: 'rgba(255,255,255,0.20)', fontSize: 9, fontWeight: '700', letterSpacing: 1, flex: 1, textAlign: 'right' as const },
   // UGC stats
   ugcStatsRow: { flexDirection: 'row', width: '100%', justifyContent: 'space-around', marginBottom: 10, marginTop: 4 },
   username: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 1, marginBottom: 12 },
