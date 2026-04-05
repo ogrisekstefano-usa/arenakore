@@ -19,6 +19,7 @@ import Animated, {
 import { useAuth } from '../../contexts/AuthContext';
 import { KoreIDModal } from '../../components/KoreIDModal';
 import { ControlCenter } from '../../components/ControlCenter';
+import { ChallengeCreator } from '../../components/ChallengeCreator';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -125,6 +126,8 @@ export default function KoreTab() {
   const [refreshing, setRefreshing] = useState(false);
   const [koreIdVisible, setKoreIdVisible] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [creatorVisible, setCreatorVisible] = useState(false);
+  const [myChallenges, setMyChallenges] = useState<any[]>([]);
 
   // Wire global callbacks
   useEffect(() => {
@@ -141,11 +144,29 @@ export default function KoreTab() {
   const level = user?.level || 1;
   const totalScans = user?.total_scans || 0;
 
+  const fetchMyChallenges = useCallback(async () => {
+    try {
+      const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+      const res = await fetch(`${backendUrl}/api/ugc/mine`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMyChallenges(data.challenges || []);
+      }
+    } catch {}
+  }, [token]);
+
+  useEffect(() => { if (token) fetchMyChallenges(); }, [token, fetchMyChallenges]);
+
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    try { if (refreshUser) await refreshUser(); } catch (_) {}
+    try {
+      if (refreshUser) await refreshUser();
+      await fetchMyChallenges();
+    } catch (_) {}
     finally { setRefreshing(false); }
-  }, [refreshUser]);
+  }, [refreshUser, fetchMyChallenges]);
 
   // ═══ Shimmer for FOUNDER chip ═══
   const shimmer = useSharedValue(0.5);
@@ -331,6 +352,44 @@ export default function KoreTab() {
           </LinearGradient>
         </Animated.View>
 
+        {/* ═══ LE MIE SFIDE — UGC Catalog ═══ */}
+        <Animated.View entering={FadeInDown.delay(550).duration(400)} style={ugc.section}>
+          <View style={ugc.headerRow}>
+            <View>
+              <Text style={ugc.title}>LE MIE SFIDE</Text>
+              <Text style={ugc.sub}>{myChallenges.length} sfide create</Text>
+            </View>
+            <TouchableOpacity
+              style={ugc.createBtn}
+              onPress={() => { setCreatorVisible(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="add" size={16} color="#0A0A0A" />
+              <Text style={ugc.createBtnText}>CREA</Text>
+            </TouchableOpacity>
+          </View>
+
+          {myChallenges.length === 0 ? (
+            <TouchableOpacity style={ugc.emptyCard} onPress={() => setCreatorVisible(true)} activeOpacity={0.8}>
+              <Ionicons name="construct-outline" size={28} color="rgba(255,255,255,0.15)" />
+              <Text style={ugc.emptyText}>Crea la tua prima sfida</Text>
+              <Text style={ugc.emptySub}>Diventa il protagonista dell'Arena.</Text>
+            </TouchableOpacity>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ugc.listScroll}>
+              {myChallenges.slice(0, 10).map((ch) => (
+                <UGCCard
+                  key={ch._id}
+                  challenge={ch}
+                  onStart={() => router.push('/(tabs)/nexus-trigger')}
+                  onInvite={() => {}}
+                  onLive={() => router.push('/live-events')}
+                />
+              ))}
+            </ScrollView>
+          )}
+        </Animated.View>
+
         {/* ═══ QUICK NAV LINKS ═══ */}
         <Animated.View entering={FadeInUp.delay(600).duration(400)} style={lnk.section}>
           <QuickLink icon="analytics" color="#00E5FF" label="DNA PROFILE" onPress={() => router.push('/(tabs)/dna')} />
@@ -344,6 +403,55 @@ export default function KoreTab() {
       {/* ═══ MODALS ═══ */}
       <KoreIDModal visible={koreIdVisible} onClose={() => setKoreIdVisible(false)} />
       <ControlCenter visible={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <ChallengeCreator
+        visible={creatorVisible}
+        onClose={() => setCreatorVisible(false)}
+        onCreated={() => fetchMyChallenges()}
+      />
+    </View>
+  );
+}
+
+// ─── UGC Challenge Card (Horizontal Scroll) ────────────────────────
+const TEMPLATE_COLORS: Record<string, string> = {
+  AMRAP: '#FF3B30', EMOM: '#00E5FF', FOR_TIME: '#FFD700', TABATA: '#00FF87', CUSTOM: '#FF9500',
+};
+const TEMPLATE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
+  AMRAP: 'flame', EMOM: 'timer', FOR_TIME: 'speedometer', TABATA: 'pulse', CUSTOM: 'construct',
+};
+
+function UGCCard({ challenge, onStart, onInvite, onLive }: {
+  challenge: any; onStart: () => void; onInvite: () => void; onLive: () => void;
+}) {
+  const color = TEMPLATE_COLORS[challenge.template_type] || '#00E5FF';
+  const icon = TEMPLATE_ICONS[challenge.template_type] || 'flash';
+  return (
+    <View style={[ugc.card, { borderColor: color + '25' }]}>
+      <LinearGradient colors={[color + '0A', '#0A0A0A']} style={ugc.cardGrad}>
+        <View style={ugc.cardTop}>
+          <View style={[ugc.cardBadge, { backgroundColor: color + '15' }]}>
+            <Ionicons name={icon} size={12} color={color} />
+            <Text style={[ugc.cardBadgeText, { color }]}>{challenge.template_type}</Text>
+          </View>
+          <Text style={[ugc.cardFlux, { color: '#FFD700' }]}>+{challenge.flux_reward}⚡</Text>
+        </View>
+        <Text style={[ugc.cardTitle, { color }]} numberOfLines={1}>{challenge.title}</Text>
+        <Text style={ugc.cardExercises} numberOfLines={1}>
+          {(challenge.exercises || []).map((e: any) => e.name).join(' · ') || '—'}
+        </Text>
+        <View style={ugc.cardActions}>
+          <TouchableOpacity style={[ugc.actionBtn, { backgroundColor: color + '15', borderColor: color + '30' }]} onPress={onStart}>
+            <Ionicons name="play" size={12} color={color} />
+            <Text style={[ugc.actionText, { color }]}>AVVIA</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[ugc.actionBtn, { backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }]} onPress={onInvite}>
+            <Ionicons name="person-add" size={11} color="rgba(255,255,255,0.4)" />
+          </TouchableOpacity>
+          <TouchableOpacity style={[ugc.actionBtn, { backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }]} onPress={onLive}>
+            <Ionicons name="radio" size={11} color="rgba(255,255,255,0.4)" />
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
     </View>
   );
 }
@@ -525,4 +633,47 @@ const lnk = StyleSheet.create({
     flex: 1, fontSize: 13, fontWeight: '800', letterSpacing: 1.5,
     fontFamily: FONT_MONT,
   },
+});
+
+
+// ── UGC CHALLENGES ──
+const ugc = StyleSheet.create({
+  section: { marginBottom: 20 },
+  headerRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14,
+  },
+  title: { color: '#FFF', fontSize: 16, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_JAKARTA },
+  sub: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '500', fontFamily: FONT_MONT, marginTop: 2 },
+  createBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: '#00E5FF', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8,
+  },
+  createBtnText: { color: '#0A0A0A', fontSize: 12, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_JAKARTA },
+  emptyCard: {
+    alignItems: 'center', justifyContent: 'center', paddingVertical: 30, borderRadius: 16,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.05)', borderStyle: 'dashed',
+    backgroundColor: 'rgba(255,255,255,0.015)',
+  },
+  emptyText: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '700', fontFamily: FONT_JAKARTA, marginTop: 10 },
+  emptySub: { color: 'rgba(255,255,255,0.15)', fontSize: 11, fontWeight: '500', fontFamily: FONT_MONT, marginTop: 3 },
+  listScroll: { gap: 10, paddingRight: 20 },
+  card: {
+    width: 200, borderRadius: 16, overflow: 'hidden',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)',
+  },
+  cardGrad: { padding: 14, minHeight: 140, justifyContent: 'space-between' },
+  cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+  cardBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8,
+  },
+  cardBadgeText: { fontSize: 9, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_JAKARTA },
+  cardFlux: { fontSize: 12, fontWeight: '900', fontFamily: FONT_JAKARTA },
+  cardTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 0.5, fontFamily: FONT_JAKARTA, marginBottom: 3 },
+  cardExercises: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '500', fontFamily: FONT_MONT, marginBottom: 10 },
+  cardActions: { flexDirection: 'row', gap: 6 },
+  actionBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1,
+  },
+  actionText: { fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_JAKARTA },
 });

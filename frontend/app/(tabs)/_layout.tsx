@@ -12,12 +12,11 @@ function getTabConfig(activeRole: UserRole) {
   const isCoach = activeRole === 'COACH';
   const isGym   = activeRole === 'GYM_OWNER';
   const tabs = [
-    { name: 'arena', icon: 'map-outline', iconBold: 'map', label: 'ARENA' },
-    // GYM role: replace 'kore' with 'gym-hub'
     isGym
       ? { name: 'gym-hub', icon: 'business-outline', iconBold: 'business', label: 'GYM HUB' }
       : { name: 'kore', icon: 'shield-outline', iconBold: 'shield', label: 'KORE' },
-    { name: 'nexus-trigger', icon: 'flash', iconBold: 'flash-sharp', label: 'NEXUS', isCenter: true },
+    { name: 'arena', icon: 'map-outline', iconBold: 'map', label: 'ARENA' },
+    { name: 'nexus-trigger', icon: 'flash', iconBold: 'flash-sharp', label: 'NÈXUS', isCenter: true },
     { name: 'dna', icon: 'analytics', iconBold: 'analytics-sharp', label: 'DNA' },
     { name: 'hall', icon: 'trophy', iconBold: 'trophy-sharp', label: 'RANK' },
     // COACH role: add extra tab
@@ -125,8 +124,8 @@ export default function TabsLayout() {
 
   return (
     <Tabs tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false }}>
-      <Tabs.Screen name="arena" />
       <Tabs.Screen name="kore" />
+      <Tabs.Screen name="arena" />
       <Tabs.Screen name="gym-hub" options={{ href: null }} />
       <Tabs.Screen name="nexus-trigger" />
       <Tabs.Screen name="dna" />
@@ -162,10 +161,10 @@ const $ = StyleSheet.create({
   },
   centerLabel: {
     color: '#AAAAAA', fontSize: 11, fontWeight: '900',
-    letterSpacing: 2, marginTop: 35,
+    letterSpacing: 2, marginTop: 38,
   },
   nexusWrap: {
-    position: 'absolute', top: -28, alignSelf: 'center',
+    position: 'absolute', top: -31, alignSelf: 'center',
   },
   goldBtn: {
     width: 64, height: 64, borderRadius: 32,

@@ -155,7 +155,7 @@ export default function Login() {
             ) : (
               <>
                 <Ionicons name="flash" size={18} color="#000" />
-                <Text style={s$.mainBtnText}>RECLAMA IL TUO DNA</Text>
+                <Text style={s$.mainBtnText}>RIENTRA NELL'ARENA</Text>
               </>
             )}
           </TouchableOpacity>

@@ -9434,6 +9434,158 @@ async def force_health_sync(body: dict = Body(...), current_user: dict = Depends
     return {"status": "synced", "source": source, "timestamp": datetime.now(timezone.utc).isoformat()}
 
 
+# ═══════════════════════════════════════════════════════════
+#  UGC CHALLENGE ENGINE — User-Generated Challenges
+# ═══════════════════════════════════════════════════════════
+
+UGC_TEMPLATES = ["AMRAP", "EMOM", "FOR_TIME", "TABATA", "CUSTOM"]
+UGC_DESTINATIONS = ["solo", "ranked", "friend", "live"]
+UGC_CERTIFICATIONS = ["nexus_ai", "self", "peer", "device"]
+
+class UGCCreate(BaseModel):
+    title: str
+    template_type: str  # AMRAP, EMOM, FOR_TIME, TABATA, CUSTOM
+    exercises: list      # [{name, target_reps, target_seconds, rest_seconds}]
+    destination: str     # solo, ranked, friend, live
+    certification: str   # nexus_ai, self, peer, device
+    time_cap_seconds: Optional[int] = 600
+    rounds: Optional[int] = None
+    invited_user_ids: Optional[list] = []
+
+@api_router.post("/ugc/create")
+async def ugc_create_challenge(data: UGCCreate, current_user: dict = Depends(get_current_user)):
+    """Create a User-Generated Challenge (UGC)."""
+    if data.template_type not in UGC_TEMPLATES:
+        raise HTTPException(400, f"Template non valido. Usa: {UGC_TEMPLATES}")
+    if data.destination not in UGC_DESTINATIONS:
+        raise HTTPException(400, f"Destinazione non valida. Usa: {UGC_DESTINATIONS}")
+    if data.certification not in UGC_CERTIFICATIONS:
+        raise HTTPException(400, f"Certificazione non valida. Usa: {UGC_CERTIFICATIONS}")
+    if not data.exercises or len(data.exercises) == 0:
+        raise HTTPException(400, "Devi aggiungere almeno 1 esercizio.")
+
+    doc = {
+        "creator_id": current_user["_id"],
+        "creator_name": current_user.get("username", "Kore"),
+        "title": data.title.strip()[:60],
+        "template_type": data.template_type,
+        "exercises": data.exercises[:10],  # max 10
+        "destination": data.destination,
+        "certification": data.certification,
+        "time_cap_seconds": data.time_cap_seconds or 600,
+        "rounds": data.rounds,
+        "invited_user_ids": [str(uid) for uid in (data.invited_user_ids or [])],
+        "status": "active",
+        "times_completed": 0,
+        "times_shared": 0,
+        "flux_reward": 15 + len(data.exercises) * 5,
+        "created_at": datetime.now(timezone.utc),
+    }
+    result = await db.ugc_challenges.insert_one(doc)
+    doc["_id"] = str(result.inserted_id)
+    doc["creator_id"] = str(doc["creator_id"])
+
+    # If destination is 'live', auto-create a live event
+    if data.destination == "live":
+        await db.live_events.insert_one({
+            "title": f"🔥 {doc['title']}",
+            "host_id": current_user["_id"],
+            "host_name": current_user.get("username", "Kore"),
+            "ugc_challenge_id": str(result.inserted_id),
+            "participants": [str(current_user["_id"])],
+            "status": "active",
+            "created_at": datetime.now(timezone.utc),
+        })
+
+    return {"status": "created", "challenge": doc}
+
+
+@api_router.get("/ugc/mine")
+async def ugc_my_challenges(current_user: dict = Depends(get_current_user)):
+    """Get all challenges created by the current user."""
+    challenges = await db.ugc_challenges.find(
+        {"creator_id": current_user["_id"]}
+    ).sort("created_at", -1).to_list(100)
+
+    for c in challenges:
+        c["_id"] = str(c["_id"])
+        c["creator_id"] = str(c["creator_id"])
+    return {"challenges": challenges, "total": len(challenges)}
+
+
+@api_router.post("/ugc/{challenge_id}/launch")
+async def ugc_launch_challenge(challenge_id: str, body: dict = Body({}), current_user: dict = Depends(get_current_user)):
+    """Launch a UGC challenge: invite friend, make live, or start solo."""
+    try:
+        oid = ObjectId(challenge_id)
+    except Exception:
+        raise HTTPException(400, "ID sfida non valido")
+
+    ch = await db.ugc_challenges.find_one({"_id": oid, "creator_id": current_user["_id"]})
+    if not ch:
+        raise HTTPException(404, "Sfida non trovata o non sei il creatore")
+
+    action = body.get("action", "start")  # start, invite, go_live
+
+    if action == "invite":
+        target_id = body.get("target_user_id")
+        if not target_id:
+            raise HTTPException(400, "target_user_id richiesto per l'invito")
+        await db.ugc_challenges.update_one(
+            {"_id": oid},
+            {"$addToSet": {"invited_user_ids": target_id}}
+        )
+        # Create notification
+        await db.notifications.insert_one({
+            "user_id": target_id,
+            "type": "ugc_invite",
+            "title": f"⚔️ {current_user.get('username')} ti sfida!",
+            "body": f"'{ch['title']}' — Accetti la sfida?",
+            "challenge_id": challenge_id,
+            "read": False,
+            "created_at": datetime.now(timezone.utc),
+        })
+        return {"status": "invited", "target": target_id}
+
+    elif action == "go_live":
+        await db.ugc_challenges.update_one({"_id": oid}, {"$set": {"destination": "live", "status": "live"}})
+        await db.live_events.insert_one({
+            "title": f"🔥 {ch['title']}",
+            "host_id": current_user["_id"],
+            "host_name": current_user.get("username", "Kore"),
+            "ugc_challenge_id": challenge_id,
+            "participants": [str(current_user["_id"])],
+            "status": "active",
+            "created_at": datetime.now(timezone.utc),
+        })
+        return {"status": "live", "challenge_id": challenge_id}
+
+    else:  # start
+        await db.ugc_challenges.update_one({"_id": oid}, {"$inc": {"times_completed": 1}})
+        return {"status": "started", "challenge": {
+            "id": challenge_id,
+            "title": ch["title"],
+            "template_type": ch["template_type"],
+            "exercises": ch["exercises"],
+            "time_cap_seconds": ch.get("time_cap_seconds", 600),
+            "rounds": ch.get("rounds"),
+            "certification": ch.get("certification", "self"),
+        }}
+
+
+@api_router.delete("/ugc/{challenge_id}")
+async def ugc_delete_challenge(challenge_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a UGC challenge."""
+    try:
+        oid = ObjectId(challenge_id)
+    except Exception:
+        raise HTTPException(400, "ID sfida non valido")
+    result = await db.ugc_challenges.delete_one({"_id": oid, "creator_id": current_user["_id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(404, "Sfida non trovata o non sei il creatore")
+    return {"status": "deleted"}
+
+
 # Register all routes (must be AFTER all @api_router decorators)
 app.include_router(api_router)
 
