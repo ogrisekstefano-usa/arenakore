@@ -9982,6 +9982,156 @@ async def flux_deduct(body: dict = Body(...), current_user: dict = Depends(get_c
 
 
 # Register all routes (must be AFTER all @api_router decorators)
+
+# ═══════════════════════════════════════════════════════════
+#  GOVERNANCE & REQUEST ROUTING SYSTEM
+# ═══════════════════════════════════════════════════════════
+
+class TemplateRequestBody(BaseModel):
+    discipline: str
+    description: str
+
+class CategoryProposalBody(BaseModel):
+    category_name: str
+    motivation: str = ""
+
+# ── Template Request (Athlete → Category Coaches) ──
+@api_router.post("/requests/template")
+async def create_template_request(body: TemplateRequestBody, current_user: dict = Depends(get_current_user)):
+    """Athlete requests a template from coaches in a specific discipline."""
+    doc = {
+        "type": "template",
+        "discipline": body.discipline,
+        "description": body.description,
+        "user_id": str(current_user["_id"]),
+        "username": current_user.get("username", ""),
+        "status": "open",  # open, in_progress, fulfilled, closed
+        "votes": [],
+        "vote_count": 0,
+        "responses": [],
+        "created_at": datetime.now(timezone.utc),
+    }
+    result = await db.requests.insert_one(doc)
+    doc["_id"] = str(result.inserted_id)
+    return {"ok": True, "request": doc}
+
+# ── Category Proposal (User/Coach → Admin) ──
+@api_router.post("/requests/category")
+async def create_category_proposal(body: CategoryProposalBody, current_user: dict = Depends(get_current_user)):
+    """Propose a new discipline/category — routed to Admin Panopticon."""
+    existing = await db.requests.find_one({
+        "type": "category",
+        "category_name": {"$regex": f"^{body.category_name}$", "$options": "i"},
+        "status": {"$ne": "closed"},
+    })
+    if existing:
+        raise HTTPException(409, f"La disciplina '{body.category_name}' è già stata proposta. Usa il voto +1!")
+
+    doc = {
+        "type": "category",
+        "category_name": body.category_name,
+        "motivation": body.motivation,
+        "user_id": str(current_user["_id"]),
+        "username": current_user.get("username", ""),
+        "status": "pending",  # pending, approved, rejected
+        "votes": [str(current_user["_id"])],  # auto-vote by proposer
+        "vote_count": 1,
+        "created_at": datetime.now(timezone.utc),
+    }
+    result = await db.requests.insert_one(doc)
+    doc["_id"] = str(result.inserted_id)
+    return {"ok": True, "request": doc}
+
+# ── List Template Requests (by discipline, sorted by votes) ──
+@api_router.get("/requests/template")
+async def list_template_requests(discipline: str = None, current_user: dict = Depends(get_current_user)):
+    query: dict = {"type": "template", "status": {"$ne": "closed"}}
+    if discipline:
+        query["discipline"] = discipline
+    cursor = db.requests.find(query).sort("vote_count", -1).limit(50)
+    results = []
+    uid = str(current_user["_id"])
+    async for r in cursor:
+        r["_id"] = str(r["_id"])
+        r["user_voted"] = uid in r.get("votes", [])
+        results.append(r)
+    return results
+
+# ── List Category Proposals (sorted by votes) ──
+@api_router.get("/requests/category")
+async def list_category_proposals(current_user: dict = Depends(get_current_user)):
+    cursor = db.requests.find({"type": "category", "status": {"$ne": "closed"}}).sort("vote_count", -1).limit(50)
+    results = []
+    uid = str(current_user["_id"])
+    async for r in cursor:
+        r["_id"] = str(r["_id"])
+        r["user_voted"] = uid in r.get("votes", [])
+        results.append(r)
+    return results
+
+# ── Upvote Toggle ──
+@api_router.post("/requests/{request_id}/upvote")
+async def toggle_upvote(request_id: str, current_user: dict = Depends(get_current_user)):
+    try:
+        oid = ObjectId(request_id)
+    except Exception:
+        raise HTTPException(400, "ID non valido")
+    req = await db.requests.find_one({"_id": oid})
+    if not req:
+        raise HTTPException(404, "Richiesta non trovata")
+
+    uid = str(current_user["_id"])
+    votes = req.get("votes", [])
+    if uid in votes:
+        votes.remove(uid)
+        action = "removed"
+    else:
+        votes.append(uid)
+        action = "added"
+
+    await db.requests.update_one({"_id": oid}, {"$set": {"votes": votes, "vote_count": len(votes)}})
+    return {"ok": True, "action": action, "vote_count": len(votes)}
+
+# ── Coach Market Opportunities (requests for coach's disciplines) ──
+@api_router.get("/coach/market-opportunities")
+async def coach_market_opportunities(current_user: dict = Depends(get_current_user)):
+    role = current_user.get("role", "")
+    if role not in ("COACH", "GYM_OWNER", "ADMIN"):
+        raise HTTPException(403, "Solo i Coach possono visualizzare le opportunità")
+    coach_disciplines = current_user.get("disciplines", [])
+    query: dict = {"type": "template", "status": "open"}
+    if coach_disciplines and role == "COACH":
+        query["discipline"] = {"$in": coach_disciplines}
+    cursor = db.requests.find(query).sort("vote_count", -1).limit(30)
+    results = []
+    async for r in cursor:
+        r["_id"] = str(r["_id"])
+        results.append(r)
+    return results
+
+# ── Admin: All Governance Requests (Panopticon) ──
+@api_router.get("/admin/governance")
+async def admin_governance(current_user: dict = Depends(get_current_user)):
+    role = current_user.get("role", "")
+    is_admin = current_user.get("is_admin") or current_user.get("is_founder")
+    if role != "ADMIN" and not is_admin:
+        raise HTTPException(403, "Solo Admin")
+    template_reqs = []
+    async for r in db.requests.find({"type": "template"}).sort("vote_count", -1).limit(50):
+        r["_id"] = str(r["_id"])
+        template_reqs.append(r)
+    category_reqs = []
+    async for r in db.requests.find({"type": "category"}).sort("vote_count", -1).limit(50):
+        r["_id"] = str(r["_id"])
+        category_reqs.append(r)
+    return {
+        "template_requests": template_reqs,
+        "category_proposals": category_reqs,
+        "total_template": len(template_reqs),
+        "total_category": len(category_reqs),
+    }
+
+
 app.include_router(api_router)
 
 

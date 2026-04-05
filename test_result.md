@@ -2025,6 +2025,90 @@ backend:
           agent: "testing"
           comment: "COMPREHENSIVE TEST PASSED: Validation breakdown endpoint working correctly. Returns total_challenges=15, trust_score=67, primary_method='NEXUS_VERIFIED', and complete breakdown structure with all validation methods (NEXUS_VERIFIED, GPS_VERIFIED, BPM_CORRELATED, AUDIO_CORRELATED, PROXIMITY_WITNESS, PEER_CONFIRMED, MANUAL_ENTRY). Trust scoring and validation analytics fully functional."
 
+  - task: "Governance Template Request API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/requests/template working correctly. Admin login successful with ogrisek.stefano@gmail.com / Founder@KORE2026!. Template request creation with discipline='Golf' and description successful. Returns request object with _id, type='template', vote_count=0 as expected."
+
+  - task: "Governance Category Proposal API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/requests/category working correctly. Category proposal creation with category_name='Padel_394581' and motivation successful. Returns request object with auto-vote functionality working (vote_count=1). Duplicate prevention working correctly."
+
+  - task: "Governance List Template Requests API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/requests/template?discipline=Golf working correctly. Returns array with 3 template requests, all with proper structure including _id, type, discipline, description, user_id, username, status, votes, vote_count, responses, created_at, user_voted fields."
+
+  - task: "Governance List Category Proposals API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/requests/category working correctly. Returns array with 2 category proposals including our created 'Padel_394581' proposal. All proposals have proper structure with category_name, motivation, vote tracking, and user_voted fields."
+
+  - task: "Governance Upvote System API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/requests/{request_id}/upvote working correctly. First upvote returns action='added', vote_count=1. Second upvote (toggle off) returns action='removed', vote_count=0. Toggle functionality working perfectly."
+
+  - task: "Admin Governance Dashboard API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/admin/governance working correctly. Returns object with template_requests (3 items) and category_proposals (2 items) arrays. Includes total_template and total_category counts. Admin access control working properly."
+
+  - task: "Coach Market Opportunities API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/coach/market-opportunities working correctly. Returns array with 3 Golf template requests as market opportunities. All requests have proper structure and filtering by discipline working correctly."
+
 metadata:
   created_by: "main_agent"
   version: "4.0"
@@ -2074,4 +2158,4 @@ agent_communication:
     - agent: "testing"
       message: "UNIVERSAL DATA AGGREGATOR TESTING COMPLETED: ALL 8 NEW HEALTH/CONNECTIVITY ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Test results using credentials d.rose@chicago.kore / Seed@Chicago1: ✅ Health Ingest API - BLE_SENSOR BPM (source_trust=0.92, 5 data points) and APPLE_HEALTH GPS (source_trust=0.85, 2 data points) ingestion working correctly ✅ Invalid source rejection (400 error) ✅ Health Connections API - returns all 4 expected connections (APPLE_HEALTH, GOOGLE_HEALTH, STRAVA, BLE_SENSOR) with proper metadata ✅ Health Connect/Disconnect API - toggle behavior working correctly ✅ Recent Health Data API - returns proper data structure with all required fields ✅ Strava Demo Sync API - creates 3 activities (ACTIVITY_SUMMARY, GPS_TRACK, BPM) with demo_mode=true ✅ Source Meta API (NO AUTH) - returns all 6 sources with proper structure and numeric trust levels ✅ Strava Webhook Verify API - correctly validates and echoes hub.challenge. All Universal Data Aggregator features are production-ready. Auto-correlation, timestamp parsing, data validation, and webhook verification all functional."
     - agent: "testing"
-      message: "UGC CHALLENGE COMPLETION ENDPOINT TESTING COMPLETED: POST /api/ugc/{challenge_id}/complete tested successfully with both VERIFIED and UNVERIFIED scenarios. ✅ VERIFIED scenario (45/50 reps, 90% completion, motion_tracked=true, avg_quality=85) returns is_verified=true, status='VERIFIED', flux_earned=28 ✅ UNVERIFIED scenario (5/50 reps, 10% completion, motion_tracked=false, avg_quality=30) returns is_verified=false, status='UNVERIFIED', flux_earned=1 (lower than verified) ✅ Validation logic working correctly: requires >=80% completion + motion_tracked=true + avg_quality>=50 for VERIFIED status ✅ Fixed ObjectId serialization issue by using user_to_response function ✅ Challenge creation and completion flow fully functional. All UGC Challenge endpoints are production-ready."
+      message: "GOVERNANCE & REQUEST ROUTING SYSTEM TESTING COMPLETED: ALL 8 NEW ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test flow executed as specified in review request: ✅ Admin login with ogrisek.stefano@gmail.com / Founder@KORE2026! ✅ Template request creation (POST /api/requests/template) with Golf discipline and swing analysis description ✅ Category proposal creation (POST /api/requests/category) with auto-vote functionality (vote_count=1) ✅ Template requests listing (GET /api/requests/template?discipline=Golf) returns 3 Golf requests ✅ Category proposals listing (GET /api/requests/category) returns 2 proposals including our created one ✅ Upvote system (POST /api/requests/{id}/upvote) working correctly with toggle functionality (added→removed) ✅ Admin governance dashboard (GET /api/admin/governance) returns template_requests and category_proposals arrays ✅ Coach market opportunities (GET /api/coach/market-opportunities) returns 3 Golf template requests. All governance and request routing features are production-ready. Response structures match expected format with proper nested request objects, auto-voting, duplicate prevention, and admin access control all functional."
