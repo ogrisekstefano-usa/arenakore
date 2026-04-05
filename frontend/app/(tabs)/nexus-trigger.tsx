@@ -50,6 +50,7 @@ import { ChallengeEngine } from '../../components/challenge/ChallengeEngine';
 import { PostRaceValidation } from '../../components/challenge/PostRaceValidation';
 import { QRScannerModal } from '../../components/QRScannerModal';
 import { ChallengePreviewModal } from '../../components/ChallengePreviewModal';
+import { TemplateRequestModal, CategoryProposalModal } from '../../components/GovernanceModals';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -451,6 +452,11 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
   useEffect(() => { founderShimmer.value = withRepeat(withSequence(withTiming(1, { duration: 1500 }), withTiming(0.7, { duration: 1500 })), -1, false); }, []);
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: founderShimmer.value }));
 
+  // ─── Governance state (local to NexusConsole) ───
+  const [govDiscipline, setGovDiscipline] = useState('');
+  const [showGovTemplate, setShowGovTemplate] = useState(false);
+  const [showGovCategory, setShowGovCategory] = useState(false);
+
   // ─── 4 DEFINITIVE CARDS ───
   const NEXUS_CARDS = [
     {
@@ -578,6 +584,58 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
           </View>
 
           <NexusProactiveCTAs user={user} eligibility={eligibility} myRank={myRank} myCrews={myCrews} onScan={onScan} onNavigate={(r) => router.push(r as any)} />
+
+          {/* ═══ DISCIPLINE EXPLORER + GOVERNANCE CTAs ═══ */}
+          <View style={cn$.discSection}>
+            <View style={cn$.discHeader}>
+              <Text style={cn$.discTitle}>DISCIPLINE</Text>
+              <Text style={cn$.discSub}>Filtra o richiedi</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={cn$.discScroll}>
+              {[
+                { key: 'Fitness', icon: 'barbell' as keyof typeof Ionicons.glyphMap, color: '#FF3B30' },
+                { key: 'Golf', icon: 'golf' as keyof typeof Ionicons.glyphMap, color: '#00FF87' },
+                { key: 'Basket', icon: 'basketball' as keyof typeof Ionicons.glyphMap, color: '#FF9500' },
+                { key: 'Calcio', icon: 'football' as keyof typeof Ionicons.glyphMap, color: '#34C759' },
+                { key: 'Tennis', icon: 'tennisball' as keyof typeof Ionicons.glyphMap, color: '#FFD700' },
+                { key: 'Nuoto', icon: 'water' as keyof typeof Ionicons.glyphMap, color: '#007AFF' },
+              ].map(d => (
+                <TouchableOpacity
+                  key={d.key}
+                  style={cn$.discChip}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setGovDiscipline(d.key);
+                    setShowGovTemplate(true);
+                    Haptics.selectionAsync().catch(() => {});
+                  }}
+                >
+                  <Ionicons name={d.icon} size={14} color={d.color} />
+                  <Text style={[cn$.discChipText, { color: d.color }]}>{d.key.toUpperCase()}</Text>
+                </TouchableOpacity>
+              ))}
+              {/* + PROPONI NUOVA DISCIPLINA */}
+              <TouchableOpacity
+                style={[cn$.discChip, cn$.proposeChip]}
+                activeOpacity={0.7}
+                onPress={() => { setShowGovCategory(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}
+              >
+                <Ionicons name="add-circle" size={14} color="#00E5FF" />
+                <Text style={[cn$.discChipText, { color: '#00E5FF' }]}>+ PROPONI</Text>
+              </TouchableOpacity>
+            </ScrollView>
+            {/* CTA: Manca un template? */}
+            <TouchableOpacity
+              style={cn$.templateCTA}
+              activeOpacity={0.8}
+              onPress={() => { onTemplateReq('Fitness'); }}
+            >
+              <Ionicons name="help-circle" size={16} color="rgba(255,255,255,0.30)" />
+              <Text style={cn$.templateCTAText}>Manca un Template? Chiedilo ai Coach</Text>
+              <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.15)" />
+            </TouchableOpacity>
+          </View>
+
           <PvPPendingCard />
           <TrainingTemplateCard />
           <CertifiedByPros />
@@ -788,6 +846,32 @@ const cn$ = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 1.5,
   },
+
+  // ═══ DISCIPLINE EXPLORER + GOVERNANCE ═══
+  discSection: { marginTop: 16 },
+  discHeader: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 },
+  discTitle: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  discSub: { color: 'rgba(255,255,255,0.15)', fontSize: 10, fontWeight: '600' },
+  discScroll: { gap: 8, paddingBottom: 8 },
+  discChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 14, paddingVertical: 9, borderRadius: 12,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+  },
+  proposeChip: {
+    backgroundColor: 'rgba(0,229,255,0.04)', borderColor: 'rgba(0,229,255,0.12)',
+    borderStyle: 'dashed' as any,
+  },
+  discChipText: { fontSize: 11, fontWeight: '800', letterSpacing: 1 },
+  templateCTA: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 14, paddingVertical: 12,
+    borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)',
+    marginTop: 8,
+  },
+  templateCTAText: { flex: 1, color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '700' },
 
   // BIO-SCAN ELIGIBILITY BANNER
   eligBanner: {
@@ -1680,6 +1764,9 @@ export default function NexusTriggerScreen() {
   const ugcRepsPerExercise = useRef<{ name: string; reps_done: number; quality: number }[]>([]);
   const [scannerFromNexus, setScannerFromNexus] = useState(false);
   const [nexusChallengePreview, setNexusChallengePreview] = useState<any>(null);
+  const [templateReqDiscipline, setTemplateReqDiscipline] = useState('');
+  const [showTemplateReq, setShowTemplateReq] = useState(false);
+  const [showCategoryProposal, setShowCategoryProposal] = useState(false);
   // Dopamine layer: FLUX Rain + Victory
   const [showDropsRain, setShowDropsRain] = useState(false);
   const [dropsEarned, setDropsEarned] = useState(0);
@@ -2120,16 +2207,29 @@ export default function NexusTriggerScreen() {
 
   if (phase === 'console') {
     return (
-      <NexusConsole
-        user={user}
-        onScan={() => { setSessionMode('scan'); setPhase('bioscan'); }}
-        onForge={() => { setSessionMode('scan'); setPhase('forge'); }}
-        onPillarAction={handlePillarAction}
-        deviceTier={deviceTier}
-        eligibility={eligibility}
-        myRank={myRank}
-        myCrews={myCrews}
-      />
+      <View style={{ flex: 1 }}>
+        <NexusConsole
+          user={user}
+          onScan={() => { setSessionMode('scan'); setPhase('bioscan'); }}
+          onForge={() => { setSessionMode('scan'); setPhase('forge'); }}
+          onPillarAction={handlePillarAction}
+          deviceTier={deviceTier}
+          eligibility={eligibility}
+          myRank={myRank}
+          myCrews={myCrews}
+          onTemplateReq={(disc: string) => { setTemplateReqDiscipline(disc); setShowTemplateReq(true); }}
+          onCategoryProposal={() => setShowCategoryProposal(true)}
+        />
+        <TemplateRequestModal
+          visible={showTemplateReq}
+          onClose={() => setShowTemplateReq(false)}
+          discipline={templateReqDiscipline}
+        />
+        <CategoryProposalModal
+          visible={showCategoryProposal}
+          onClose={() => setShowCategoryProposal(false)}
+        />
+      </View>
     );
   }
 
@@ -2457,6 +2557,15 @@ export default function NexusTriggerScreen() {
         challengeData={nexusChallengePreview}
         onClose={() => setNexusChallengePreview(null)}
         onImported={() => { setNexusChallengePreview(null); }}
+      />
+      <TemplateRequestModal
+        visible={showTemplateReq}
+        onClose={() => setShowTemplateReq(false)}
+        discipline={templateReqDiscipline}
+      />
+      <CategoryProposalModal
+        visible={showCategoryProposal}
+        onClose={() => setShowCategoryProposal(false)}
       />
     </View>
   );
