@@ -37,6 +37,8 @@ export default function SettingsScreen() {
   const [height, setHeight] = useState(user?.height_cm ? String(user.height_cm) : '');
   const [selectedSport, setSelectedSport] = useState(user?.preferred_sport || user?.sport || 'Fitness');
   const [profilePic, setProfilePic] = useState(user?.profile_picture || null);
+  const [coverPhoto, setCoverPhoto] = useState(user?.cover_photo || null);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -47,6 +49,7 @@ export default function SettingsScreen() {
       setHeight(user.height_cm ? String(user.height_cm) : '');
       setSelectedSport(user.preferred_sport || user.sport || 'Fitness');
       setProfilePic(user.profile_picture || null);
+      setCoverPhoto(user.cover_photo || null);
     }
   }, [user]);
 
@@ -110,6 +113,52 @@ export default function SettingsScreen() {
       Alert.alert('Errore', 'Impossibile scattare la foto.');
     }
     setUploading(false);
+  }, [token, refreshUser]);
+
+  // ── Cover Photo Upload (Separate from Avatar) ──
+  const handlePickCover = useCallback(async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permesso negato', 'Serve il permesso per accedere alla galleria.');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 0.7,
+        base64: true
+      });
+      if (!result.canceled && result.assets[0]?.base64) {
+        setUploadingCover(true);
+        const base64 = `data:image/jpeg;base64,${result.assets[0].base64}`;
+        setCoverPhoto(base64);
+        await api.uploadCoverPhoto(token, base64);
+        if (refreshUser) await refreshUser();
+        Alert.alert('Fatto!', 'Foto copertina KORE aggiornata.');
+      }
+    } catch (err) {
+      Alert.alert('Errore', 'Impossibile caricare la foto copertina.');
+    }
+    setUploadingCover(false);
+  }, [token, refreshUser]);
+
+  const handleDeleteCover = useCallback(async () => {
+    Alert.alert('Rimuovi Copertina', 'Vuoi eliminare la foto copertina del KORE?', [
+      { text: 'Annulla', style: 'cancel' },
+      {
+        text: 'Elimina', style: 'destructive', onPress: async () => {
+          try {
+            setUploadingCover(true);
+            await api.deleteCoverPhoto(token);
+            setCoverPhoto(null);
+            if (refreshUser) await refreshUser();
+          } catch {}
+          setUploadingCover(false);
+        }
+      }
+    ]);
   }, [token, refreshUser]);
 
   // ── Save Profile ──
@@ -194,6 +243,45 @@ export default function SettingsScreen() {
                   <Text style={s.avatarBtnText}>SCATTA</Text>
                 </TouchableOpacity>
               </View>
+            </View>
+          </Animated.View>
+
+          {/* ═══ COVER PHOTO KORE (Separate from Avatar) ═══ */}
+          <Animated.View entering={FadeInDown.delay(120).duration(400)} style={s.section}>
+            <Text style={s.sectionTitle}>FOTO COPERTINA KORE</Text>
+            <Text style={[s.sportHint, { marginBottom: 10 }]}>Questa foto verrà usata come sfondo nel tuo profilo KORE (diversa dall'avatar).</Text>
+            {coverPhoto ? (
+              <View style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }}>
+                <Image source={{ uri: coverPhoto }} style={{ width: '100%', height: 140 }} resizeMode="cover" />
+                {uploadingCover && (
+                  <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}>
+                    <ActivityIndicator color="#00E5FF" size="small" />
+                  </View>
+                )}
+              </View>
+            ) : (
+              <TouchableOpacity onPress={handlePickCover} style={{ height: 100, borderRadius: 12, borderWidth: 1.5, borderColor: 'rgba(0,229,255,0.2)', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,229,255,0.03)' }} activeOpacity={0.7}>
+                {uploadingCover ? (
+                  <ActivityIndicator color="#00E5FF" size="small" />
+                ) : (
+                  <>
+                    <Ionicons name="image-outline" size={28} color="rgba(0,229,255,0.4)" />
+                    <Text style={{ color: 'rgba(0,229,255,0.5)', fontSize: 11, fontWeight: '700', marginTop: 6, fontFamily: FONT_M }}>CARICA FOTO COPERTINA</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+              <TouchableOpacity style={s.avatarBtn} onPress={handlePickCover} activeOpacity={0.7}>
+                <Ionicons name="images" size={16} color="#00E5FF" />
+                <Text style={s.avatarBtnText}>{coverPhoto ? 'CAMBIA' : 'GALLERIA'}</Text>
+              </TouchableOpacity>
+              {coverPhoto && (
+                <TouchableOpacity style={[s.avatarBtn, { borderColor: 'rgba(255,59,48,0.3)' }]} onPress={handleDeleteCover} activeOpacity={0.7}>
+                  <Ionicons name="trash-outline" size={16} color="#FF3B30" />
+                  <Text style={[s.avatarBtnText, { color: '#FF3B30' }]}>ELIMINA</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </Animated.View>
 

@@ -23,7 +23,7 @@ export const HALL_OF_KORE_BG = 'https://images.pexels.com/photos/15830350/pexels
 export const TAB_BACKGROUNDS: Record<string, string> = {
   arena:   'https://images.pexels.com/photos/17956257/pexels-photo-17956257.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60', // athlete silhouette dramatic
   kore:    'https://images.pexels.com/photos/3621106/pexels-photo-3621106.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60',  // dark gym silhouette
-  nexus:   'https://images.pexels.com/photos/4397840/pexels-photo-4397840.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60',  // dark fitness tech
+  nexus:   'https://images.pexels.com/photos/8721318/pexels-photo-8721318.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60',  // dark futuristic tech scanner
   crews:   'https://images.pexels.com/photos/3622622/pexels-photo-3622622.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60',  // team training dark
   hall:    'https://images.pexels.com/photos/15830350/pexels-photo-15830350.jpeg?auto=compress&cs=tinysrgb&w=1200&q=60', // city night competitive
   dna:     DNA_HERO_IMAGE,

@@ -539,7 +539,7 @@ const gl$ = StyleSheet.create({
   },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
   tabActive: { backgroundColor: 'rgba(255,215,0,0.15)' },
-  tabText: { color: '#AAAAAA', fontSize: 15, fontWeight: '900', letterSpacing: 1.5 },
+  tabText: { color: '#AAAAAA', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
   tabTextActive: { color: '#FFD700' },
   // Verified Only toggle
   verifiedToggle: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: '#00E5FF22', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 6, backgroundColor: 'rgba(0,229,255,0.04)' },
@@ -554,14 +554,14 @@ const gl$ = StyleSheet.create({
     borderWidth: 1, borderColor: '#2A2A2A'
   },
   catChipActive: { borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.1)' },
-  catChipText: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
+  catChipText: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
   catChipTextActive: { color: '#FFD700' },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 24, paddingTop: 16, paddingBottom: 10
   },
   sectionTitle: {
-    color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 2
+    color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2
   },
   giantsRow: { flexDirection: 'row', paddingHorizontal: 12, gap: 8 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
@@ -574,15 +574,15 @@ const sw$ = StyleSheet.create({
   row: { flexDirection: 'row', marginHorizontal: 24, marginBottom: 12, gap: 4 },
   btn: { flex: 1, paddingVertical: 9, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', alignItems: 'center' },
   btnActive: { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: '#00E5FF' },
-  text: { color: '#AAAAAA', fontSize: 14, fontWeight: '700', letterSpacing: 1.5 },
+  text: { color: '#AAAAAA', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
   textActive: { color: '#00E5FF', fontWeight: '900' }
 });
 
 const cr2$ = StyleSheet.create({
   card: { marginHorizontal: 24, marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   info: { flex: 1, gap: 2 },
-  label: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
-  sub: { color: '#AAAAAA', fontSize: 14, fontWeight: '400' },
+  label: { color: '#FFFFFF', fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
+  sub: { color: '#AAAAAA', fontSize: 11, fontWeight: '400' },
   btn: { backgroundColor: '#00E5FF', borderRadius: 8, paddingHorizontal: 24, paddingVertical: 9 },
   btnText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 }
 });

@@ -283,8 +283,9 @@ export default function KoreTab() {
   const userSport = user?.preferred_sport || user?.sport || 'Fitness';
   const sportHeroImages = getSportHeroImages(userSport);
   const userProfilePic = user?.profile_picture;
-  const HERO_IMAGES = userProfilePic
-    ? [userProfilePic]
+  const userCoverPhoto = user?.cover_photo;
+  const HERO_IMAGES = userCoverPhoto
+    ? [userCoverPhoto]
     : sportHeroImages;
   const DNA_BG = sportHeroImages[2] || 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800&q=40';
   const sportAura = getSportAuraColor(userSport);

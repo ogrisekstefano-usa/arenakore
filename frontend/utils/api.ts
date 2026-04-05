@@ -496,4 +496,10 @@ export const api = {
 
   uploadProfilePicture: (token: string, imageBase64: string) =>
     request('/user/profile-picture', { method: 'POST', body: JSON.stringify({ image_base64: imageBase64 }) }, token),
+
+  uploadCoverPhoto: (token: string, imageBase64: string) =>
+    request('/user/cover-photo', { method: 'POST', body: JSON.stringify({ image_base64: imageBase64 }) }, token),
+
+  deleteCoverPhoto: (token: string) =>
+    request('/user/cover-photo', { method: 'DELETE' }, token),
 };

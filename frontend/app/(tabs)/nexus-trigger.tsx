@@ -72,6 +72,7 @@ const CONSOLE_IMAGES = {
 
 // ========== BIO-SCAN TRIGGER ==========
 function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => void }) {
+  const router = useRouter();
   const laserY = useSharedValue(0);
   const laserGlow = useSharedValue(0.5);
   const [progress, setProgress] = useState(0);
@@ -126,6 +127,13 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
 
   return (
     <ImageBackground source={{ uri: TAB_BACKGROUNDS.nexus }} style={bio$.overlay} imageStyle={{ opacity: 0.10 }}>
+      <TouchableOpacity 
+        style={{ position: 'absolute', top: 12, right: 16, zIndex: 99, width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }}
+        onPress={() => router.back()}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="close" size={18} color="rgba(255,255,255,0.7)" />
+      </TouchableOpacity>
       <Animated.View style={[bio$.laserWrap, ls]}>
         <Animated.View style={[bio$.laserGlow, gs]} />
         <View style={bio$.laserLine} />

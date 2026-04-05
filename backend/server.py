@@ -701,6 +701,7 @@ def user_to_response(user: dict) -> dict:
         "bmi": user.get("bmi"),
         "bio_coefficient": user.get("bio_coefficient"),
         "profile_picture": user.get("profile_picture"),
+        "cover_photo": user.get("cover_photo"),
         "preferred_sport": user.get("preferred_sport") or user.get("sport"),
     }
 
@@ -978,9 +979,36 @@ async def upload_profile_picture(body: ProfilePictureBody, current_user: dict = 
     return {"detail": "Foto profilo aggiornata", "user": user_to_response(updated)}
 
 
-# ================================================================
-# USER LOOKUP — Universal QR Scanner resolution
-# ================================================================
+# ── COVER PHOTO (Separate Hero Background for KORE Tab) ──
+
+class CoverPhotoBody(BaseModel):
+    image_base64: str
+
+@api_router.post("/user/cover-photo")
+async def upload_cover_photo(body: CoverPhotoBody, current_user: dict = Depends(get_current_user)):
+    """Upload/update KORE hero cover photo (separate from avatar)."""
+    raw = body.image_base64.strip()
+    if len(raw) > 3_000_000:
+        raise HTTPException(status_code=400, detail="Immagine troppo grande (max 2MB)")
+    if not raw.startswith("data:image"):
+        raw = f"data:image/jpeg;base64,{raw}"
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": {"cover_photo": raw, "cover_photo_updated_at": datetime.now(timezone.utc)}},
+    )
+    updated = await db.users.find_one({"_id": current_user["_id"]})
+    return {"detail": "Foto copertina aggiornata", "user": user_to_response(updated)}
+
+
+@api_router.delete("/user/cover-photo")
+async def delete_cover_photo(current_user: dict = Depends(get_current_user)):
+    """Delete KORE hero cover photo."""
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$unset": {"cover_photo": "", "cover_photo_updated_at": ""}},
+    )
+    updated = await db.users.find_one({"_id": current_user["_id"]})
+    return {"detail": "Foto copertina rimossa", "user": user_to_response(updated)}
 
 @api_router.get("/user/lookup/{user_id}")
 async def user_lookup(user_id: str, current_user: dict = Depends(get_current_user)):

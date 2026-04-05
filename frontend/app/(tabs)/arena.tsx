@@ -128,16 +128,18 @@ function KoreOfTheDay() {
           </View>
 
           <View style={kotd$.bottom}>
-            <View style={kotd$.avatar}>
-              <Text style={kotd$.avatarLetter}>T</Text>
-            </View>
-            <View style={kotd$.info}>
-              <Text style={kotd$.name}>{KORE_OF_DAY.username}</Text>
-              <Text style={kotd$.sport}>{KORE_OF_DAY.sport} · RANK {KORE_OF_DAY.rank}</Text>
-            </View>
-            <View style={kotd$.record}>
-              <Text style={kotd$.recordVal}>{KORE_OF_DAY.value}</Text>
-              <Text style={kotd$.recordLabel}>{KORE_OF_DAY.achievement}</Text>
+            <Text style={kotd$.name} numberOfLines={1}>{KORE_OF_DAY.username}</Text>
+            <View style={kotd$.detailsRow}>
+              <View style={kotd$.avatar}>
+                <Text style={kotd$.avatarLetter}>T</Text>
+              </View>
+              <View style={kotd$.info}>
+                <Text style={kotd$.sport}>{KORE_OF_DAY.sport} · RANK {KORE_OF_DAY.rank}</Text>
+              </View>
+              <View style={kotd$.record}>
+                <Text style={kotd$.recordVal}>{KORE_OF_DAY.value}</Text>
+                <Text style={kotd$.recordLabel}>{KORE_OF_DAY.achievement}</Text>
+              </View>
             </View>
           </View>
         </LinearGradient>
@@ -154,11 +156,12 @@ const kotd$ = StyleSheet.create({
   livePill: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
   liveDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FF3B30' },
   liveText: { color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  bottom: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
-  avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center' },
-  avatarLetter: { color: '#FFFFFF', fontSize: 24, fontWeight: '900' },
-  info: { flex: 1, gap: 3 },
-  name: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', letterSpacing: 1 },
+  bottom: { gap: 8 },
+  detailsRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center' },
+  avatarLetter: { color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
+  info: { flex: 1, gap: 2 },
+  name: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 1 },
   sport: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '300', letterSpacing: 1.5 },
   record: { alignItems: 'flex-end' },
   recordVal: { color: '#FFFFFF', fontSize: 26, fontWeight: '900', letterSpacing: 0.5 },
