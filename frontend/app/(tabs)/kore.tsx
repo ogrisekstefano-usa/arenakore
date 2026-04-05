@@ -30,6 +30,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../../utils/api';
+import { getSportHeroImages, getSportAuraColor, getSportIcon, getSportDisplayName } from '../../utils/sportAssets';
 
 const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
 const FONT_M = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });
@@ -290,13 +291,18 @@ export default function KoreTab() {
       onPress: () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); router.push('/reward-store'); } },
   ];
 
-  // ─── HERO IMAGES (Cross-fade Nike style) ───
-  const HERO_IMAGES = [
-    'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=60',
-    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=60',
-    'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=60',
-  ];
-  const DNA_BG = 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800&q=40';
+  // ─── HERO IMAGES: Sport-Coherent with Profile Picture Priority ───
+  const userSport = user?.preferred_sport || user?.sport || 'Fitness';
+  const sportHeroImages = getSportHeroImages(userSport);
+  const userProfilePic = user?.profile_picture;
+  // If user has a profile picture, show it as the primary hero with sport images as secondary
+  const HERO_IMAGES = userProfilePic
+    ? [userProfilePic, sportHeroImages[0], sportHeroImages[1]]
+    : sportHeroImages;
+  const DNA_BG = sportHeroImages[2] || 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800&q=40';
+  const sportAura = getSportAuraColor(userSport);
+  const sportIcon = getSportIcon(userSport);
+  const sportDisplayName = getSportDisplayName(userSport);
 
   const [heroIdx, setHeroIdx] = useState(0);
   const heroFadeA = useSharedValue(1);
@@ -368,6 +374,24 @@ export default function KoreTab() {
           </View>
           {/* Hero content */}
           <View style={hero.content}>
+            {/* Mini Avatar + Sport Badge Row */}
+            <Animated.View entering={FadeIn.duration(500)} style={hero.identityRow}>
+              {/* Mini Avatar */}
+              <TouchableOpacity onPress={() => router.push('/settings')} activeOpacity={0.8}>
+                {userProfilePic ? (
+                  <Image source={{ uri: userProfilePic }} style={hero.miniAvatar} />
+                ) : (
+                  <View style={[hero.miniAvatarPlaceholder, { backgroundColor: sportAura + '40', borderColor: sportAura + '60' }]}>
+                    <Text style={hero.miniAvatarText}>{sportIcon}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              {/* Sport identity chip */}
+              <View style={[hero.sportChip, { borderColor: sportAura + '40', backgroundColor: sportAura + '10' }]}>
+                <Text style={hero.sportChipIcon}>{sportIcon}</Text>
+                <Text style={[hero.sportChipText, { color: sportAura }]}>{sportDisplayName.toUpperCase()}</Text>
+              </View>
+            </Animated.View>
             {/* Status chips */}
             <Animated.View entering={FadeIn.duration(500)} style={hero.chips}>
               <View style={hero.lvlChip}>
@@ -391,9 +415,9 @@ export default function KoreTab() {
               Ciao, <Text style={hero.name}>{firstName}</Text>
             </Text>
             {siloProfile?.title && (
-              <Animated.View entering={FadeIn.delay(200).duration(500)} style={[hero.titleChip, { borderColor: (siloProfile.aura_color || '#00E5FF') + '35' }]}>
-                <View style={[hero.titleDot, { backgroundColor: siloProfile.aura_color || '#00E5FF' }]} />
-                <Text style={[hero.titleText, { color: siloProfile.aura_color || '#00E5FF' }]}>{siloProfile.title.toUpperCase()}</Text>
+              <Animated.View entering={FadeIn.delay(200).duration(500)} style={[hero.titleChip, { borderColor: (siloProfile.aura_color || sportAura) + '35' }]}>
+                <View style={[hero.titleDot, { backgroundColor: siloProfile.aura_color || sportAura }]} />
+                <Text style={[hero.titleText, { color: siloProfile.aura_color || sportAura }]}>{siloProfile.title.toUpperCase()}</Text>
               </Animated.View>
             )}
             <Text style={hero.tagline}>IL TUO CORPO. LA TUA ARENA.</Text>
@@ -979,6 +1003,29 @@ const hero = StyleSheet.create({
     color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '900',
     letterSpacing: 4, fontFamily: FONT_M, marginTop: 4,
   },
+  // Sport Identity elements
+  identityRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10,
+  },
+  miniAvatar: {
+    width: 44, height: 44, borderRadius: 22,
+    borderWidth: 2, borderColor: 'rgba(255,255,255,0.25)',
+  },
+  miniAvatarPlaceholder: {
+    width: 44, height: 44, borderRadius: 22,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1.5,
+  },
+  miniAvatarText: {
+    fontSize: 20,
+  },
+  sportChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    borderWidth: 1, borderRadius: 10,
+    paddingHorizontal: 10, paddingVertical: 5,
+  },
+  sportChipIcon: { fontSize: 14 },
+  sportChipText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
 });
 
 // ── DYNAMIC CARDS ──

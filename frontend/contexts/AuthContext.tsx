@@ -28,6 +28,8 @@ export interface User {
   id: string;
   username: string;
   email: string;
+  first_name?: string;
+  last_name?: string;
   role?: string;
   is_nexus_certified?: boolean;
   scout_visible?: boolean;
@@ -36,18 +38,28 @@ export interface User {
   ak_credits?: number;
   unlocked_tools?: string[];
   sport?: string;
+  preferred_sport?: string;
   xp: number;
+  flux?: number;
   level: number;
+  total_scans?: number;
   onboarding_completed: boolean;
   dna?: DNAStats;
   avatar_color: string;
   is_admin?: boolean;
   is_founder?: boolean;
   founder_number?: number;
-  ghost_mode?: boolean;        // Privacy: hide real name in public rankings
+  ghost_mode?: boolean;
   camera_enabled?: boolean;
   mic_enabled?: boolean;
   city?: string;
+  weight_kg?: number;
+  height_cm?: number;
+  age?: number;
+  gender?: string;
+  profile_picture?: string | null;
+  bmi?: number;
+  bio_coefficient?: number;
 }
 
 interface AuthContextType {
