@@ -465,6 +465,8 @@ export default function KoreTab() {
                           ugcExercises: JSON.stringify(ch.exercises || []),
                           ugcTemplateType: ch.template_type || 'CUSTOM',
                           ugcFluxReward: String(ch.flux_reward || 15),
+                          ugcCreatorRole: ch.creator_role || 'ATHLETE',
+                          ugcIsMaster: ch.is_master_template ? 'true' : 'false',
                         },
                       });
                     }}

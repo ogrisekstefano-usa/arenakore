@@ -74,6 +74,10 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
 
   if (!visible || !result) return null;
   const isFounder = user?.is_founder || user?.is_admin;
+  const isUGC = !!result.ugc_mode;
+  const isMaster = result.is_master_template === true;
+  const validationMode = result.validation_mode || (isMaster ? 'STRICT' : 'PERMISSIVE');
+  const creatorRole = result.creator_role || 'ATHLETE';
 
   return (
     <Modal transparent visible={visible} animationType="none">
@@ -83,18 +87,77 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
             <View style={cin$.titleRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Ionicons name="flash" size={18} color="#00E5FF" />
-                <Text style={cin$.title}>SESSIONE COMPLETATA</Text>
+                <Text style={cin$.title}>{isUGC ? 'SFIDA COMPLETATA' : 'SESSIONE COMPLETATA'}</Text>
               </View>
               {isFounder && <Animated.View style={[cin$.founderBadge, ss]}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Ionicons name="star" size={10} color="#FFD700" /><Text style={cin$.founderText}>FOUNDER</Text></View></Animated.View>}
             </View>
+
+            {/* UGC: Challenge title + Creator Role Badge */}
+            {isUGC && (
+              <Animated.View entering={FadeInDown.duration(300)} style={cin$.ugcHeader}>
+                {result.ugc_title && <Text style={cin$.ugcTitle}>{result.ugc_title.toUpperCase()}</Text>}
+                <View style={[cin$.roleBadge, isMaster ? cin$.coachRoleBadge : cin$.communityRoleBadge]}>
+                  <Ionicons
+                    name={isMaster ? 'shield-checkmark' : 'people'}
+                    size={10}
+                    color={isMaster ? '#00FF87' : '#FF9500'}
+                  />
+                  <Text style={[cin$.roleBadgeText, { color: isMaster ? '#00FF87' : '#FF9500' }]}>
+                    {isMaster ? 'COACH CERTIFIED' : 'COMMUNITY CHALLENGE'}
+                  </Text>
+                </View>
+              </Animated.View>
+            )}
+
             <Text style={cin$.username}>{user?.username || 'Kore'}</Text>
+
+            {/* Validation Status Badge */}
+            {isUGC && (
+              <View style={[cin$.validationBanner, result.is_verified ? cin$.verifiedBanner : cin$.failedBanner]}>
+                <Ionicons
+                  name={result.is_verified ? 'checkmark-circle' : 'alert-circle'}
+                  size={16}
+                  color={result.is_verified ? '#00FF87' : '#FF3B30'}
+                />
+                <Text style={[cin$.validationText, { color: result.is_verified ? '#00FF87' : '#FF3B30' }]}>
+                  {result.status || (result.is_verified ? 'VERIFIED' : 'UNVERIFIED')}
+                </Text>
+                <Text style={cin$.validationMode}>
+                  {validationMode === 'STRICT' ? 'MODO SEVERO' : 'MODO STANDARD'}
+                </Text>
+              </View>
+            )}
+
             <View style={cin$.scoreCircle}><Text style={cin$.scoreVal}>{result.quality_score || '\u2014'}</Text><Text style={cin$.scoreLabel}>QUALIT{'\u00c0'}</Text></View>
             <View style={cin$.xpWrap}><Text style={cin$.xpPlus}>+</Text><Text style={cin$.xpVal}>{displayXP}</Text><Text style={cin$.xpUnit}>FLUX</Text></View>
-            <View style={cin$.statsRow}>
-              <View style={cin$.stat}><Text style={cin$.statVal}>{result.reps_completed}</Text><Text style={cin$.statLabel}>REPS</Text></View>
-              <View style={cin$.stat}><Text style={[cin$.statVal, { color: '#FFD700' }]}>x{result.quality_multiplier}</Text><Text style={cin$.statLabel}>MULTI</Text></View>
-              <View style={cin$.stat}><Text style={cin$.statVal}>{result.base_xp}</Text><Text style={cin$.statLabel}>BASE</Text></View>
-            </View>
+
+            {/* UGC: Completion Ratio + Discipline Ranking */}
+            {isUGC && (
+              <View style={cin$.ugcStatsRow}>
+                <View style={cin$.stat}>
+                  <Text style={cin$.statVal}>{Math.round((result.completion_ratio || 0) * 100)}%</Text>
+                  <Text style={cin$.statLabel}>COMPLETAMENTO</Text>
+                </View>
+                <View style={cin$.stat}>
+                  <Text style={cin$.statVal}>{result.total_reps || result.reps_completed || 0}</Text>
+                  <Text style={cin$.statLabel}>REPS VALIDE</Text>
+                </View>
+                {result.discipline_rank > 0 && (
+                  <View style={cin$.stat}>
+                    <Text style={[cin$.statVal, { color: '#FFD700' }]}>#{result.discipline_rank}</Text>
+                    <Text style={cin$.statLabel}>{(result.discipline || 'SILO').toUpperCase()}</Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {!isUGC && (
+              <View style={cin$.statsRow}>
+                <View style={cin$.stat}><Text style={cin$.statVal}>{result.reps_completed}</Text><Text style={cin$.statLabel}>REPS</Text></View>
+                <View style={cin$.stat}><Text style={[cin$.statVal, { color: '#FFD700' }]}>x{result.quality_multiplier}</Text><Text style={cin$.statLabel}>MULTI</Text></View>
+                <View style={cin$.stat}><Text style={cin$.statVal}>{result.base_xp}</Text><Text style={cin$.statLabel}>BASE</Text></View>
+              </View>
+            )}
             {result.records_broken?.length > 0 && (
               <View style={cin$.record}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' }}><Ionicons name="trophy" size={16} color="#FFD700" /><Text style={cin$.recordTitle}>RECORD INFRANTI!</Text></View><Text style={cin$.recordList}>{result.records_broken.join(' \u00b7 ')}</Text></View>
             )}
@@ -188,6 +251,21 @@ const cin$ = StyleSheet.create({
   title: { color: '#00E5FF', fontSize: 13, fontWeight: '800', letterSpacing: 4 },
   founderBadge: { backgroundColor: 'rgba(255,215,0,0.2)', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: '#FFD700' },
   founderText: { color: '#FFD700', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  // UGC Header
+  ugcHeader: { alignItems: 'center', gap: 6, marginBottom: 8, marginTop: 4 },
+  ugcTitle: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '800', letterSpacing: 2, textAlign: 'center' },
+  roleBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1 },
+  coachRoleBadge: { backgroundColor: 'rgba(0,255,135,0.10)', borderColor: 'rgba(0,255,135,0.30)' },
+  communityRoleBadge: { backgroundColor: 'rgba(255,149,0,0.08)', borderColor: 'rgba(255,149,0,0.20)' },
+  roleBadgeText: { fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  // Validation Banner
+  validationBanner: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, borderWidth: 1, marginBottom: 10, marginTop: 4 },
+  verifiedBanner: { backgroundColor: 'rgba(0,255,135,0.06)', borderColor: 'rgba(0,255,135,0.20)' },
+  failedBanner: { backgroundColor: 'rgba(255,59,48,0.06)', borderColor: 'rgba(255,59,48,0.20)' },
+  validationText: { fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  validationMode: { color: 'rgba(255,255,255,0.20)', fontSize: 9, fontWeight: '700', letterSpacing: 1, marginLeft: 'auto' as any },
+  // UGC stats
+  ugcStatsRow: { flexDirection: 'row', width: '100%', justifyContent: 'space-around', marginBottom: 10, marginTop: 4 },
   username: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 1, marginBottom: 12 },
   scoreCircle: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#00E5FF22', borderWidth: 3, borderColor: '#00E5FF', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
   scoreVal: { color: '#FFFFFF', fontSize: 36, fontWeight: '900' },

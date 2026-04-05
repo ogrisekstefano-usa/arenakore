@@ -441,9 +441,10 @@ const ghost$ = StyleSheet.create({
 });
 
 // ========== NEXUS CONSOLE ==========
-function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligibility, myRank, myCrews }: {
+function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligibility, myRank, myCrews, onTemplateReq, onCategoryProposal }: {
   user: any; onScan: () => void; onForge: () => void; onPillarAction: (key: string) => void;
   deviceTier: DeviceTier; eligibility: any; myRank: any; myCrews: any[];
+  onTemplateReq: (disc: string) => void; onCategoryProposal: () => void;
 }) {
   const router = useRouter();
   const { width: screenWidth } = Dimensions.get('window');
@@ -451,11 +452,6 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
   const founderShimmer = useSharedValue(0.7);
   useEffect(() => { founderShimmer.value = withRepeat(withSequence(withTiming(1, { duration: 1500 }), withTiming(0.7, { duration: 1500 })), -1, false); }, []);
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: founderShimmer.value }));
-
-  // ─── Governance state (local to NexusConsole) ───
-  const [govDiscipline, setGovDiscipline] = useState('');
-  const [showGovTemplate, setShowGovTemplate] = useState(false);
-  const [showGovCategory, setShowGovCategory] = useState(false);
 
   // ─── 4 DEFINITIVE CARDS ───
   const NEXUS_CARDS = [
@@ -605,8 +601,7 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
                   style={cn$.discChip}
                   activeOpacity={0.7}
                   onPress={() => {
-                    setGovDiscipline(d.key);
-                    setShowGovTemplate(true);
+                    onTemplateReq(d.key);
                     Haptics.selectionAsync().catch(() => {});
                   }}
                 >
@@ -618,7 +613,7 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
               <TouchableOpacity
                 style={[cn$.discChip, cn$.proposeChip]}
                 activeOpacity={0.7}
-                onPress={() => { setShowGovCategory(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}
+                onPress={() => { onCategoryProposal(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}
               >
                 <Ionicons name="add-circle" size={14} color="#00E5FF" />
                 <Text style={[cn$.discChipText, { color: '#00E5FF' }]}>+ PROPONI</Text>
@@ -1746,6 +1741,7 @@ export default function NexusTriggerScreen() {
     trainingName?: string; trainingFlux?: string; dnaPotential?: string;
     ugcChallengeId?: string; ugcTitle?: string; ugcExercises?: string;
     ugcTemplateType?: string; ugcFluxReward?: string;
+    ugcCreatorRole?: string; ugcIsMaster?: string;
   }>();
   const isTrainingMode = !!params.trainingPushId;
   const trainingTargetReps = parseInt(params.trainingTargetReps || '20', 10);
@@ -2417,6 +2413,8 @@ export default function NexusTriggerScreen() {
           templateType={params.ugcTemplateType || 'CUSTOM'}
           isActive={true}
           isVerified={(motionState?.reps || 0) > 0 && (motionState?.quality || 0) >= 50}
+          isMasterTemplate={params.ugcIsMaster === 'true'}
+          creatorRole={params.ugcCreatorRole || 'ATHLETE'}
         />
       )}
 

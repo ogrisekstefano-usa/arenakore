@@ -32,6 +32,8 @@ interface Props {
   templateType: string;
   isActive: boolean;
   isVerified: boolean;
+  isMasterTemplate?: boolean;
+  creatorRole?: string;
 }
 
 const TEMPLATE_COLORS: Record<string, string> = {
@@ -41,6 +43,7 @@ const TEMPLATE_COLORS: Record<string, string> = {
 export function UGCWorkoutHUD({
   exercises, currentExerciseIndex, currentReps, currentQuality,
   elapsedSeconds, challengeTitle, templateType, isActive, isVerified,
+  isMasterTemplate = false, creatorRole = 'ATHLETE',
 }: Props) {
   const color = TEMPLATE_COLORS[templateType] || '#00E5FF';
   const ex = exercises[currentExerciseIndex];
@@ -50,6 +53,10 @@ export function UGCWorkoutHUD({
   const progress = isRepBased
     ? Math.min(1, currentReps / Math.max(target, 1))
     : Math.min(1, elapsedSeconds / Math.max(target, 1));
+
+  // ── Master Template "strictness" visual cue ──
+  const isCoachMode = isMasterTemplate;
+  const strictColor = isCoachMode ? '#00FF87' : '#FF9500';
 
   // ── Rep flash animation ──
   const flashScale = useSharedValue(1);
@@ -153,26 +160,47 @@ export function UGCWorkoutHUD({
         )}
       </Animated.View>
 
-      {/* ═══ BOTTOM: Quality + Verification Badge ═══ */}
+      {/* ═══ BOTTOM: Quality + Verification Badge + Creator Badge ═══ */}
       <View style={s.bottomBar}>
-        <View style={s.qualBox}>
-          <Text style={s.qualLabel}>QUALITÀ</Text>
-          <Text style={[s.qualValue, currentQuality >= 80 && { color: '#FFD700' }]}>
-            {currentQuality}
+        {/* Creator Role Badge — COACH CERTIFIED or COMMUNITY */}
+        <View style={[s.creatorBadge, isCoachMode ? s.coachBadge : s.communityBadge]}>
+          <Ionicons
+            name={isCoachMode ? 'shield-checkmark' : 'people'}
+            size={10}
+            color={isCoachMode ? '#00FF87' : '#FF9500'}
+          />
+          <Text style={[s.creatorBadgeText, { color: isCoachMode ? '#00FF87' : '#FF9500' }]}>
+            {isCoachMode ? 'COACH CERTIFIED' : 'COMMUNITY'}
           </Text>
         </View>
-        <View style={s.divider} />
-        <View style={s.qualBox}>
-          <Text style={s.qualLabel}>STATO</Text>
-          <View style={[s.verifyBadge, isVerified ? s.verifiedBadge : s.trackingBadge]}>
-            <Ionicons
-              name={isVerified ? 'shield-checkmark' : 'radio'}
-              size={10}
-              color={isVerified ? '#00FF87' : '#FF9500'}
-            />
-            <Text style={[s.verifyText, { color: isVerified ? '#00FF87' : '#FF9500' }]}>
-              {isVerified ? 'VERIFIED' : 'TRACKING'}
+
+        <View style={s.statsRow2}>
+          <View style={s.qualBox}>
+            <Text style={s.qualLabel}>QUALIT{'\u00c0'}</Text>
+            <Text style={[s.qualValue, currentQuality >= (isCoachMode ? 80 : 50) && { color: '#FFD700' }]}>
+              {currentQuality}
             </Text>
+          </View>
+          <View style={s.divider} />
+          <View style={s.qualBox}>
+            <Text style={s.qualLabel}>MODO</Text>
+            <Text style={[s.modeText2, { color: strictColor }]}>
+              {isCoachMode ? 'STRICT' : 'STANDARD'}
+            </Text>
+          </View>
+          <View style={s.divider} />
+          <View style={s.qualBox}>
+            <Text style={s.qualLabel}>STATO</Text>
+            <View style={[s.verifyBadge, isVerified ? s.verifiedBadge : s.trackingBadge]}>
+              <Ionicons
+                name={isVerified ? 'shield-checkmark' : 'radio'}
+                size={10}
+                color={isVerified ? '#00FF87' : '#FF9500'}
+              />
+              <Text style={[s.verifyText, { color: isVerified ? '#00FF87' : '#FF9500' }]}>
+                {isVerified ? 'VERIFIED' : 'TRACKING'}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -268,10 +296,29 @@ const s = StyleSheet.create({
 
   // ── BOTTOM ──
   bottomBar: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 20,
+    alignItems: 'center', gap: 8,
     paddingVertical: 12, paddingHorizontal: 16,
     backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 14,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)',
+  },
+  creatorBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, borderWidth: 1,
+  },
+  coachBadge: {
+    backgroundColor: 'rgba(0,255,135,0.10)', borderColor: 'rgba(0,255,135,0.30)',
+  },
+  communityBadge: {
+    backgroundColor: 'rgba(255,149,0,0.08)', borderColor: 'rgba(255,149,0,0.20)',
+  },
+  creatorBadgeText: {
+    fontSize: 9, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J,
+  },
+  statsRow2: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14,
+  },
+  modeText2: {
+    fontSize: 12, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J,
   },
   qualBox: { alignItems: 'center', gap: 3 },
   qualLabel: {

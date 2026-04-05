@@ -9561,9 +9561,15 @@ async def ugc_create_challenge(data: UGCCreate, current_user: dict = Depends(get
     if not data.exercises or len(data.exercises) == 0:
         raise HTTPException(400, "Devi aggiungere almeno 1 esercizio.")
 
+    # ── Determine creator role for AI validation strictness ──
+    user_role = current_user.get("role", "ATHLETE")
+    is_master_template = user_role in ("COACH", "GYM_OWNER", "ADMIN")
+
     doc = {
         "creator_id": current_user["_id"],
         "creator_name": current_user.get("username", "Kore"),
+        "creator_role": user_role,
+        "is_master_template": is_master_template,
         "title": data.title.strip()[:60],
         "template_type": data.template_type,
         "discipline": data.discipline if data.discipline in SPORT_DISCIPLINES else "Fitness",
@@ -9576,7 +9582,7 @@ async def ugc_create_challenge(data: UGCCreate, current_user: dict = Depends(get
         "status": "active",
         "times_completed": 0,
         "times_shared": 0,
-        "flux_reward": 15 + len(data.exercises) * 5,
+        "flux_reward": (20 + len(data.exercises) * 8) if is_master_template else (15 + len(data.exercises) * 5),
         "created_at": datetime.now(timezone.utc),
     }
     result = await db.ugc_challenges.insert_one(doc)
@@ -9775,7 +9781,7 @@ class UGCCompleteBody(BaseModel):
 
 @api_router.post("/ugc/{challenge_id}/complete")
 async def ugc_complete_challenge(challenge_id: str, body: UGCCompleteBody, current_user: dict = Depends(get_current_user)):
-    """Complete a UGC challenge — validate and award FLUX based on tracking quality."""
+    """Complete a UGC challenge — validate and award FLUX based on tracking quality and creator role strictness."""
     try:
         oid = ObjectId(challenge_id)
     except Exception:
@@ -9787,29 +9793,44 @@ async def ugc_complete_challenge(challenge_id: str, body: UGCCompleteBody, curre
 
     exercises = ch.get("exercises", [])
     base_flux = ch.get("flux_reward", 15)
+    creator_role = ch.get("creator_role", "ATHLETE")
+    is_master_template = ch.get("is_master_template", False)
 
-    # ── VALIDATION ENGINE ──
-    # Check how many exercises were completed vs target
+    # ── VALIDATION ENGINE — ROLE-BASED STRICTNESS ──
     total_target_reps = sum(e.get("target_reps", 0) for e in exercises)
     total_done_reps = body.total_reps
     completion_ratio = min(1.0, total_done_reps / max(total_target_reps, 1))
     quality_factor = body.avg_quality / 100.0 if body.avg_quality > 0 else 0.5
 
-    # VERIFIED = motion tracked + >=80% completion + avg quality >= 50
-    is_verified = (
-        body.motion_tracked
-        and completion_ratio >= 0.80
-        and body.avg_quality >= 50
-    )
-
-    # Flux calculation: verified gets full reward + quality bonus
-    if is_verified:
-        flux_earned = base_flux + int(base_flux * quality_factor * 0.5)
-        validation_status = "VERIFIED"
+    if is_master_template:
+        # ── COACH (MASTER TEMPLATE): STRICT — 100% completion + quality >= 80 ──
+        is_verified = (
+            body.motion_tracked
+            and completion_ratio >= 1.0
+            and body.avg_quality >= 80
+        )
+        validation_mode = "STRICT"
+        # Strict: verified gets premium reward, unverified gets minimal
+        if is_verified:
+            flux_earned = base_flux + int(base_flux * quality_factor * 0.8)
+            validation_status = "COACH_VERIFIED"
+        else:
+            flux_earned = max(1, int(base_flux * completion_ratio * 0.25))
+            validation_status = "COACH_FAILED"
     else:
-        # Unverified: partial reward based on completion
-        flux_earned = max(1, int(base_flux * completion_ratio * 0.4))
-        validation_status = "UNVERIFIED"
+        # ── ATHLETE (UGC): PERMISSIVE — 80% completion + quality >= 50 ──
+        is_verified = (
+            body.motion_tracked
+            and completion_ratio >= 0.80
+            and body.avg_quality >= 50
+        )
+        validation_mode = "PERMISSIVE"
+        if is_verified:
+            flux_earned = base_flux + int(base_flux * quality_factor * 0.5)
+            validation_status = "VERIFIED"
+        else:
+            flux_earned = max(1, int(base_flux * completion_ratio * 0.4))
+            validation_status = "UNVERIFIED"
 
     # Award FLUX to user
     await db.users.update_one(
@@ -9832,9 +9853,35 @@ async def ugc_complete_challenge(challenge_id: str, body: UGCCompleteBody, curre
         "is_verified": is_verified,
         "flux_earned": flux_earned,
         "completion_ratio": completion_ratio,
+        "validation_mode": validation_mode,
+        "creator_role": creator_role,
+        "is_master_template": is_master_template,
+        "discipline": ch.get("discipline", "Fitness"),
         "created_at": datetime.now(timezone.utc),
     }
     await db.ugc_completions.insert_one(completion_doc)
+
+    # ── DISCIPLINE SILO RANKING ──
+    discipline = ch.get("discipline", "Fitness")
+
+    # Get discipline ranking via aggregation on completions
+    pipeline = [
+        {"$match": {"discipline": discipline, "is_verified": True}},
+        {"$group": {"_id": "$user_id", "total_flux": {"$sum": "$flux_earned"}}},
+        {"$sort": {"total_flux": -1}},
+    ]
+    rankings = []
+    async for r in db.ugc_completions.aggregate(pipeline):
+        rankings.append(r)
+    user_rank = 0
+    total_in_silo = len(rankings)
+    for idx, r in enumerate(rankings):
+        if str(r["_id"]) == str(current_user["_id"]):
+            user_rank = idx + 1
+            break
+    if user_rank == 0:
+        user_rank = total_in_silo + 1
+        total_in_silo += 1
 
     # Refresh user
     updated_user = await db.users.find_one({"_id": current_user["_id"]})
@@ -9848,6 +9895,12 @@ async def ugc_complete_challenge(challenge_id: str, body: UGCCompleteBody, curre
         "avg_quality": round(body.avg_quality, 1),
         "total_reps": body.total_reps,
         "duration_seconds": body.duration_seconds,
+        "validation_mode": validation_mode,
+        "creator_role": creator_role,
+        "is_master_template": is_master_template,
+        "discipline": discipline,
+        "discipline_rank": user_rank,
+        "discipline_total": total_in_silo,
         "user": user_response,
     }
 
