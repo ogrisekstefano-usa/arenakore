@@ -53,20 +53,23 @@ function GlitchOverlay({ active }: { active: boolean }) {
   }, [active]);
 
   const overlayStyle = useAnimatedStyle(() => ({ opacity: glitchOpacity.value }));
+  const screenH = Dimensions.get('window').height;
   const scanLineStyle = useAnimatedStyle(() => ({
-    top: `${scanY.value * 100}%` as any,
+    top: scanY.value * screenH,
     opacity: 1 - scanY.value * 0.8
   }));
   const stripesStyle = useAnimatedStyle(() => ({ opacity: stripesOpacity.value }));
 
   if (!active) return null;
+
+  const parentH = Dimensions.get('window').height;
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       <Animated.View style={[gStyles.tint, overlayStyle]} />
       <Animated.View style={[gStyles.scanLine, scanLineStyle]} />
       <Animated.View style={[gStyles.stripes, stripesStyle]}>
         {[0.15, 0.32, 0.48, 0.65, 0.78, 0.91].map((pos, i) => (
-          <View key={i} style={[gStyles.stripe, { top: `${pos * 100}%` as any, height: i % 2 === 0 ? 2 : 1 }]} />
+          <View key={i} style={[gStyles.stripe, { top: pos * parentH, height: i % 2 === 0 ? 2 : 1 }]} />
         ))}
       </Animated.View>
     </View>

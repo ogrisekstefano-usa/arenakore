@@ -228,8 +228,9 @@ export function NexusSimulatorModal({ visible, onClose, onEventInjected }: Nexus
     opacity: 0.4 + skeletonPulse.value * 0.6
   }));
 
+  const scanHeight = Dimensions.get('window').height;
   const scanStyle = useAnimatedStyle(() => ({
-    top: `${scanLineY.value}%` as any
+    top: scanLineY.value * scanHeight / 100,
   }));
 
   const borderStyle = useAnimatedStyle(() => ({

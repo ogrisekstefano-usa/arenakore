@@ -461,7 +461,7 @@ export default function Register() {
       {/* Background grid lines */}
       <View style={styles.gridBg} pointerEvents="none">
         {[...Array(6)].map((_, i) => (
-          <View key={i} style={[styles.gridLine, { left: `${(i + 1) * 16}%` as any }]} />
+          <View key={i} style={[styles.gridLine, { left: (i + 1) * 16 * Dimensions.get('window').width / 100 }]} />
         ))}
       </View>
 

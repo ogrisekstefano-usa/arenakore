@@ -272,9 +272,9 @@ export default function TalentReportPage() {
                   <Text style={[rp$.axisLabel, MONT('600'), { color: AXIS_COLORS[i % AXIS_COLORS.length] }]}>{DNA_LABELS[i]}</Text>
                   <View style={rp$.axisBarBg}>
                     {/* World avg line */}
-                    <View style={[rp$.axisWorldLine, { left: `${worldVal}%` as any }]} />
+                    <View style={[rp$.axisWorldLine, { left: worldVal * 2.5 }]} />
                     {/* Athlete fill */}
-                    <View style={[rp$.axisBarFill, { width: `${val}%` as any, backgroundColor: AXIS_COLORS[i % AXIS_COLORS.length] }]} />
+                    <View style={[rp$.axisBarFill, { width: val * 2.5, backgroundColor: AXIS_COLORS[i % AXIS_COLORS.length] }]} />
                   </View>
                   <Text style={[rp$.axisVal, MONT('700'), { color: AXIS_COLORS[i % AXIS_COLORS.length] }]}>{val}</Text>
                   <Text style={[rp$.axisDiff, MONT('300'), { color: diff >= 0 ? '#00FF87' : '#FF3B30' }]}>

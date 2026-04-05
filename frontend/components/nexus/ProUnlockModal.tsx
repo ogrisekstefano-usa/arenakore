@@ -90,13 +90,13 @@ export function ProUnlockModal({ visible, onClose, avgDna }: ProUnlockModalProps
     <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
       <View style={styles.overlay}>
 
-        {/* Subtle background grid */}
+        {/* Subtle background grid — use numeric positions for native compatibility */}
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
           {Array.from({ length: 7 }).map((_, i) => (
-            <View key={`h${i}`} style={[styles.gridLine, { top: `${(i + 1) * 12.5}%` as any }]} />
+            <View key={`h${i}`} style={[styles.gridLine, { top: (i + 1) * 12.5 * Dimensions.get('window').height / 100 }]} />
           ))}
           {Array.from({ length: 5 }).map((_, i) => (
-            <View key={`v${i}`} style={[styles.gridLineV, { left: `${(i + 1) * 16.6}%` as any }]} />
+            <View key={`v${i}`} style={[styles.gridLineV, { left: (i + 1) * 16.6 * Dimensions.get('window').width / 100 }]} />
           ))}
         </View>
 
