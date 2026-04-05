@@ -21,6 +21,8 @@ import { KoreIDModal } from '../../components/KoreIDModal';
 import { ControlCenter } from '../../components/ControlCenter';
 import { ChallengeCreator } from '../../components/ChallengeCreator';
 import { FluxGenerator } from '../../components/FluxGenerator';
+import { ChallengeShareCard } from '../../components/ChallengeShareCard';
+import { ChallengePreviewModal } from '../../components/ChallengePreviewModal';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -166,6 +168,8 @@ export default function KoreTab() {
   const [shopVisible, setShopVisible] = useState(false);
   const [myChallenges, setMyChallenges] = useState<any[]>([]);
   const [activeDiscipline, setActiveDiscipline] = useState<string | null>(null);
+  const [shareChallenge, setShareChallenge] = useState<any>(null);
+  const [previewChallenge, setPreviewChallenge] = useState<any>(null);
 
   useEffect(() => {
     (globalThis as any).__openKoreIdModal = () => setKoreIdVisible(true);

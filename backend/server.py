@@ -9686,6 +9686,81 @@ async def ugc_delete_challenge(challenge_id: str, current_user: dict = Depends(g
     return {"status": "deleted"}
 
 
+@api_router.get("/ugc/{challenge_id}/public")
+async def ugc_public_detail(challenge_id: str):
+    """Public endpoint: get challenge details for QR scan preview. No auth required."""
+    try:
+        oid = ObjectId(challenge_id)
+    except Exception:
+        raise HTTPException(400, "ID sfida non valido")
+    ch = await db.ugc_challenges.find_one({"_id": oid})
+    if not ch:
+        raise HTTPException(404, "Sfida non trovata")
+    creator = await db.users.find_one({"_id": ch["creator_id"]})
+    return {
+        "id": str(ch["_id"]),
+        "title": ch.get("title", ""),
+        "template_type": ch.get("template_type", "CUSTOM"),
+        "discipline": ch.get("discipline", "Fitness"),
+        "exercises": ch.get("exercises", []),
+        "time_cap_seconds": ch.get("time_cap_seconds", 600),
+        "rounds": ch.get("rounds"),
+        "destination": ch.get("destination", "solo"),
+        "certification": ch.get("certification", "self"),
+        "flux_reward": ch.get("flux_reward", 0),
+        "times_completed": ch.get("times_completed", 0),
+        "times_shared": ch.get("times_shared", 0),
+        "creator_name": creator.get("username", "Kore") if creator else ch.get("creator_name", "Kore"),
+        "creator_level": creator.get("level", 1) if creator else 1,
+    }
+
+
+@api_router.post("/ugc/{challenge_id}/import")
+async def ugc_import_challenge(challenge_id: str, current_user: dict = Depends(get_current_user)):
+    """Import/clone another user's challenge into the current user's collection."""
+    try:
+        oid = ObjectId(challenge_id)
+    except Exception:
+        raise HTTPException(400, "ID sfida non valido")
+    original = await db.ugc_challenges.find_one({"_id": oid})
+    if not original:
+        raise HTTPException(404, "Sfida originale non trovata")
+    # Check if already imported
+    existing = await db.ugc_challenges.find_one({
+        "creator_id": current_user["_id"],
+        "imported_from": challenge_id,
+    })
+    if existing:
+        return {"status": "already_imported", "challenge_id": str(existing["_id"])}
+    # Clone
+    clone = {
+        "creator_id": current_user["_id"],
+        "creator_name": current_user.get("username", "Kore"),
+        "title": original["title"],
+        "template_type": original.get("template_type", "CUSTOM"),
+        "discipline": original.get("discipline", "Fitness"),
+        "exercises": original.get("exercises", []),
+        "time_cap_seconds": original.get("time_cap_seconds", 600),
+        "rounds": original.get("rounds"),
+        "destination": "solo",
+        "certification": original.get("certification", "self"),
+        "status": "active",
+        "times_completed": 0,
+        "times_shared": 0,
+        "flux_reward": original.get("flux_reward", 15),
+        "imported_from": challenge_id,
+        "original_creator": original.get("creator_name", "Kore"),
+        "invited_user_ids": [],
+        "created_at": datetime.now(timezone.utc),
+    }
+    result = await db.ugc_challenges.insert_one(clone)
+    # Increment share count on original
+    await db.ugc_challenges.update_one({"_id": oid}, {"$inc": {"times_shared": 1}})
+    clone["_id"] = str(result.inserted_id)
+    clone["creator_id"] = str(clone["creator_id"])
+    return {"status": "imported", "challenge": clone}
+
+
 # ═══════════════════════════════════════════════════════════
 #  FLUX ECONOMY — Shop, Crew Boost, Publishing Fees
 # ═══════════════════════════════════════════════════════════
