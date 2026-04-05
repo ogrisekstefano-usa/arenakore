@@ -30,7 +30,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../../utils/api';
-import { getSportHeroImages, getSportAuraColor, getSportIcon, getSportDisplayName } from '../../utils/sportAssets';
+import { getSportHeroImages, getSportAuraColor, getSportIcon, getSportDisplayName, getSportAvatarPlaceholder } from '../../utils/sportAssets';
 
 const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
 const FONT_M = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });
@@ -279,6 +279,38 @@ export default function KoreTab() {
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: shimmer.value }));
   const isFounder = user?.is_founder || user?.is_admin;
 
+  // ─── SPORT IDENTITY DATA (must be before avatarPulse animation) ───
+  const userSport = user?.preferred_sport || user?.sport || 'Fitness';
+  const sportHeroImages = getSportHeroImages(userSport);
+  const userProfilePic = user?.profile_picture;
+  const HERO_IMAGES = userProfilePic
+    ? [userProfilePic, sportHeroImages[0], sportHeroImages[1]]
+    : sportHeroImages;
+  const DNA_BG = sportHeroImages[2] || 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800&q=40';
+  const sportAura = getSportAuraColor(userSport);
+  const sportIcon = getSportIcon(userSport);
+  const sportDisplayName = getSportDisplayName(userSport);
+  // Avatar: User Photo > Sport Placeholder > Abstract Fallback
+  const avatarSource = userProfilePic || getSportAvatarPlaceholder(userSport);
+
+  // Neon ring pulse for avatar
+  const avatarPulse = useSharedValue(0);
+  useEffect(() => {
+    avatarPulse.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 2800, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 2800, easing: Easing.inOut(Easing.ease) }),
+      ), -1, true,
+    );
+  }, []);
+  const avatarRingStyle = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(avatarPulse.value, [0, 1], [sportAura + '50', sportAura + 'CC']),
+    ...Platform.select({
+      web: { boxShadow: `0 0 ${4 + avatarPulse.value * 14}px ${sportAura}${Math.round(15 + avatarPulse.value * 35).toString(16).padStart(2, '0')}` },
+      default: {},
+    }),
+  }));
+
   // Card actions
   const CARDS = [
     { key: 'sfida', images: CARD_IMAGES.sfida, label: 'SFIDA ORA', sub: 'Mettiti alla prova.', color: '#FF3B30',
@@ -290,19 +322,6 @@ export default function KoreTab() {
     { key: 'coach', images: CARD_IMAGES.coach, label: 'COACH', sub: 'Preparati per le sfide.', color: '#00FF87',
       onPress: () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); router.push('/reward-store'); } },
   ];
-
-  // ─── HERO IMAGES: Sport-Coherent with Profile Picture Priority ───
-  const userSport = user?.preferred_sport || user?.sport || 'Fitness';
-  const sportHeroImages = getSportHeroImages(userSport);
-  const userProfilePic = user?.profile_picture;
-  // If user has a profile picture, show it as the primary hero with sport images as secondary
-  const HERO_IMAGES = userProfilePic
-    ? [userProfilePic, sportHeroImages[0], sportHeroImages[1]]
-    : sportHeroImages;
-  const DNA_BG = sportHeroImages[2] || 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800&q=40';
-  const sportAura = getSportAuraColor(userSport);
-  const sportIcon = getSportIcon(userSport);
-  const sportDisplayName = getSportDisplayName(userSport);
 
   const [heroIdx, setHeroIdx] = useState(0);
   const heroFadeA = useSharedValue(1);
@@ -372,28 +391,37 @@ export default function KoreTab() {
               </TouchableOpacity>
             </View>
           </View>
-          {/* Hero content */}
+          {/* Hero content — IDENTITY BLOCK */}
           <View style={hero.content}>
-            {/* Mini Avatar + Sport Badge Row */}
-            <Animated.View entering={FadeIn.duration(500)} style={hero.identityRow}>
-              {/* Mini Avatar */}
-              <TouchableOpacity onPress={() => router.push('/settings')} activeOpacity={0.8}>
-                {userProfilePic ? (
-                  <Image source={{ uri: userProfilePic }} style={hero.miniAvatar} />
-                ) : (
-                  <View style={[hero.miniAvatarPlaceholder, { backgroundColor: sportAura + '40', borderColor: sportAura + '60' }]}>
-                    <Text style={hero.miniAvatarText}>{sportIcon}</Text>
+            {/* ── AVATAR + IDENTITY ROW ── */}
+            <Animated.View entering={FadeIn.duration(600)} style={hero.identityBlock}>
+              {/* Circular Avatar with Neon Ring */}
+              <TouchableOpacity onPress={() => router.push('/settings')} activeOpacity={0.85}>
+                <Animated.View style={[hero.avatarRing, avatarRingStyle]}>
+                  <Image source={{ uri: avatarSource }} style={hero.avatarImg} resizeMode="cover" />
+                  {/* Sport icon overlay badge */}
+                  <View style={[hero.avatarBadge, { backgroundColor: sportAura }]}>
+                    <Text style={hero.avatarBadgeText}>{sportIcon}</Text>
                   </View>
-                )}
+                </Animated.View>
               </TouchableOpacity>
-              {/* Sport identity chip */}
-              <View style={[hero.sportChip, { borderColor: sportAura + '40', backgroundColor: sportAura + '10' }]}>
-                <Text style={hero.sportChipIcon}>{sportIcon}</Text>
-                <Text style={[hero.sportChipText, { color: sportAura }]}>{sportDisplayName.toUpperCase()}</Text>
+              {/* Name + Title + Sport column */}
+              <View style={hero.identityInfo}>
+                <Text style={hero.heroName} numberOfLines={1}>{firstName}</Text>
+                {siloProfile?.title ? (
+                  <View style={[hero.titleChip, { borderColor: (siloProfile.aura_color || sportAura) + '40' }]}>
+                    <View style={[hero.titleDot, { backgroundColor: siloProfile.aura_color || sportAura }]} />
+                    <Text style={[hero.titleText, { color: siloProfile.aura_color || sportAura }]}>{siloProfile.title.toUpperCase()}</Text>
+                  </View>
+                ) : null}
+                <View style={[hero.sportChip, { borderColor: sportAura + '35', backgroundColor: sportAura + '10' }]}>
+                  <Text style={hero.sportChipIcon}>{sportIcon}</Text>
+                  <Text style={[hero.sportChipText, { color: sportAura }]}>{sportDisplayName.toUpperCase()}</Text>
+                </View>
               </View>
             </Animated.View>
             {/* Status chips */}
-            <Animated.View entering={FadeIn.duration(500)} style={hero.chips}>
+            <Animated.View entering={FadeIn.delay(150).duration(400)} style={hero.chips}>
               <View style={hero.lvlChip}>
                 <Ionicons name="shield-checkmark" size={10} color="#00E5FF" />
                 <Text style={hero.chipText}>LVL {level}</Text>
@@ -411,15 +439,6 @@ export default function KoreTab() {
                 </Animated.View>
               )}
             </Animated.View>
-            <Text style={hero.greeting}>
-              Ciao, <Text style={hero.name}>{firstName}</Text>
-            </Text>
-            {siloProfile?.title && (
-              <Animated.View entering={FadeIn.delay(200).duration(500)} style={[hero.titleChip, { borderColor: (siloProfile.aura_color || sportAura) + '35' }]}>
-                <View style={[hero.titleDot, { backgroundColor: siloProfile.aura_color || sportAura }]} />
-                <Text style={[hero.titleText, { color: siloProfile.aura_color || sportAura }]}>{siloProfile.title.toUpperCase()}</Text>
-              </Animated.View>
-            )}
             <Text style={hero.tagline}>IL TUO CORPO. LA TUA ARENA.</Text>
           </View>
         </View>
@@ -986,46 +1005,54 @@ const hero = StyleSheet.create({
   chipText: {
     color: '#00E5FF', fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J,
   },
-  greeting: {
-    color: 'rgba(255,255,255,0.75)', fontSize: 28, fontWeight: '400', fontFamily: FONT_M,
+  tagline: {
+    color: 'rgba(255,255,255,0.30)', fontSize: 11, fontWeight: '900',
+    letterSpacing: 4, fontFamily: FONT_M, marginTop: 6,
   },
-  name: { color: '#FFFFFF', fontWeight: '900' },
+  // ═══ IDENTITY BLOCK (Avatar + Name + Title) ═══
+  identityBlock: {
+    flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 12,
+  },
+  avatarRing: {
+    width: 76, height: 76, borderRadius: 38,
+    borderWidth: 2.5,
+    alignItems: 'center', justifyContent: 'center',
+    overflow: 'visible',
+  },
+  avatarImg: {
+    width: 68, height: 68, borderRadius: 34,
+  },
+  avatarBadge: {
+    position: 'absolute', bottom: -2, right: -2,
+    width: 24, height: 24, borderRadius: 12,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: '#0A0A0A',
+  },
+  avatarBadgeText: { fontSize: 12 },
+  identityInfo: {
+    flex: 1, gap: 4,
+  },
+  heroName: {
+    color: '#FFFFFF', fontSize: 26, fontWeight: '900', fontFamily: FONT_M,
+    letterSpacing: -0.5,
+  },
   titleChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     borderWidth: 1, borderRadius: 8,
-    paddingHorizontal: 10, paddingVertical: 5, marginTop: 6,
+    paddingHorizontal: 9, paddingVertical: 4,
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.35)',
   },
-  titleDot: { width: 8, height: 8, borderRadius: 4 },
-  titleText: { fontSize: 11, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
-  tagline: {
-    color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '900',
-    letterSpacing: 4, fontFamily: FONT_M, marginTop: 4,
-  },
-  // Sport Identity elements
-  identityRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10,
-  },
-  miniAvatar: {
-    width: 44, height: 44, borderRadius: 22,
-    borderWidth: 2, borderColor: 'rgba(255,255,255,0.25)',
-  },
-  miniAvatarPlaceholder: {
-    width: 44, height: 44, borderRadius: 22,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1.5,
-  },
-  miniAvatarText: {
-    fontSize: 20,
-  },
+  titleDot: { width: 7, height: 7, borderRadius: 4 },
+  titleText: { fontSize: 10, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
   sportChip: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    borderWidth: 1, borderRadius: 10,
-    paddingHorizontal: 10, paddingVertical: 5,
+    borderWidth: 1, borderRadius: 8,
+    paddingHorizontal: 9, paddingVertical: 4,
+    alignSelf: 'flex-start',
   },
-  sportChipIcon: { fontSize: 14 },
-  sportChipText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
+  sportChipIcon: { fontSize: 12 },
+  sportChipText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
 });
 
 // ── DYNAMIC CARDS ──

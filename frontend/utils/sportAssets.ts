@@ -413,3 +413,83 @@ export function getSportDisplayName(sport?: string | null): string {
   const aliased = SPORT_ALIASES[sport];
   return aliased || sport;
 }
+
+// ═══ SPORT AVATAR PLACEHOLDERS ═══
+// Tightly cropped, abstract/symbolic images that look great in circular frames.
+// RULE: Must UNMISTAKABLY represent the sport. NEVER show another sport.
+const SPORT_AVATAR_MAP: Record<string, string> = {
+  // Fitness / Strength
+  'Fitness':            'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&h=400&fit=crop&crop=faces',
+  'CrossFit':           'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=400&h=400&fit=crop&crop=center',
+  'Bodybuilding':       'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&h=400&fit=crop&crop=center',
+  'Calisthenics':       'https://images.unsplash.com/photo-1598971639058-fab3c3109a00?w=400&h=400&fit=crop&crop=center',
+  'Powerlifting':       'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=400&h=400&fit=crop&crop=center',
+  'Weightlifting':      'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=400&h=400&fit=crop&crop=center',
+  'Functional Training':'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=400&fit=crop&crop=center',
+  'HIIT':               'https://images.unsplash.com/photo-1599058917765-a780eda07a3e?w=400&h=400&fit=crop&crop=center',
+  // Golf
+  'Golf':               'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=400&h=400&fit=crop&crop=center',
+  // Racquet
+  'Padel':              'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400&h=400&fit=crop&crop=center',
+  'Tennis':             'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=400&h=400&fit=crop&crop=center',
+  // Ball
+  'Basket':             'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=400&fit=crop&crop=center',
+  'Calcio':             'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400&h=400&fit=crop&crop=center',
+  'Pallavolo':          'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=400&h=400&fit=crop&crop=center',
+  'Rugby':              'https://images.unsplash.com/photo-1574623452334-1e0ac2b3ccb4?w=400&h=400&fit=crop&crop=center',
+  'Baseball':           'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=400&h=400&fit=crop&crop=center',
+  'Hockey':             'https://images.unsplash.com/photo-1515703407324-5f753afd8be8?w=400&h=400&fit=crop&crop=center',
+  'Cricket':            'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=400&h=400&fit=crop&crop=center',
+  // Endurance
+  'Running':            'https://images.unsplash.com/photo-1461896836934-bd45ba8e6e64?w=400&h=400&fit=crop&crop=center',
+  'Trail Running':      'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=400&fit=crop&crop=center',
+  'Ciclismo':           'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=400&h=400&fit=crop&crop=center',
+  'Mountain Bike':      'https://images.unsplash.com/photo-1544191696-102dbdaeeaa0?w=400&h=400&fit=crop&crop=center',
+  'Atletica Leggera':   'https://images.unsplash.com/photo-1461896836934-bd45ba8e6e64?w=400&h=400&fit=crop&crop=center',
+  'Triathlon':          'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=400&fit=crop&crop=center',
+  // Water
+  'Nuoto':              'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=400&fit=crop&crop=center',
+  'Surf':               'https://images.unsplash.com/photo-1502680390548-bdbac40b0e9a?w=400&h=400&fit=crop&crop=center',
+  'Canottaggio':        'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=400&fit=crop&crop=center',
+  // Mind/Body
+  'Yoga':               'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=400&fit=crop&crop=center',
+  'Pilates':            'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=400&fit=crop&crop=center',
+  // Combat
+  'Boxing':             'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=400&fit=crop&crop=center',
+  'Kickboxing':         'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=400&fit=crop&crop=center',
+  'MMA':                'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=400&fit=crop&crop=center',
+  'Jiu-Jitsu':          'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=400&fit=crop&crop=center',
+  'Karate':             'https://images.unsplash.com/photo-1555430961-0255de69f8f2?w=400&h=400&fit=crop&crop=center',
+  'Taekwondo':          'https://images.unsplash.com/photo-1555430961-0255de69f8f2?w=400&h=400&fit=crop&crop=center',
+  'Judo':               'https://images.unsplash.com/photo-1555430961-0255de69f8f2?w=400&h=400&fit=crop&crop=center',
+  'Scherma':            'https://images.unsplash.com/photo-1555430961-0255de69f8f2?w=400&h=400&fit=crop&crop=center',
+  // Adventure / Outdoor
+  'Arrampicata':        'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=400&h=400&fit=crop&crop=center',
+  // Winter
+  'Sci':                'https://images.unsplash.com/photo-1551524559-8af4e6624178?w=400&h=400&fit=crop&crop=center',
+  'Snowboard':          'https://images.unsplash.com/photo-1518467946652-b194dd6dd321?w=400&h=400&fit=crop&crop=center',
+  // Urban
+  'Skateboard':         'https://images.unsplash.com/photo-1564277287253-934c868e54ea?w=400&h=400&fit=crop&crop=center',
+  // Elegance
+  'Danza':              'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=400&h=400&fit=crop&crop=center',
+  'Ginnastica':         'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=400&h=400&fit=crop&crop=center',
+  // Misc
+  "Tiro con l'Arco":    'https://images.unsplash.com/photo-1510925758641-869d353cecc7?w=400&h=400&fit=crop&crop=center',
+  'Equitazione':        'https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=400&h=400&fit=crop&crop=center',
+};
+
+// Abstract neutral fallback (dark athletic silhouette)
+const DEFAULT_AVATAR_PLACEHOLDER = 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=400&h=400&fit=crop&crop=center';
+
+/**
+ * Get circular avatar placeholder for a sport.
+ * Returns a URL for a tightly cropped, visually coherent sport image.
+ * RULE: NEVER returns an image from a different sport.
+ */
+export function getSportAvatarPlaceholder(sport?: string | null): string {
+  if (!sport) return DEFAULT_AVATAR_PLACEHOLDER;
+  if (SPORT_AVATAR_MAP[sport]) return SPORT_AVATAR_MAP[sport];
+  const aliased = SPORT_ALIASES[sport];
+  if (aliased && SPORT_AVATAR_MAP[aliased]) return SPORT_AVATAR_MAP[aliased];
+  return DEFAULT_AVATAR_PLACEHOLDER;
+}
