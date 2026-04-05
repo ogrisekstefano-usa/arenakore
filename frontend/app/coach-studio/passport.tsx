@@ -1,5 +1,5 @@
 /**
- * ATHLETE PASSPORT — Read-only profile for ATHLETE role
+ * KORE ID — Read-only profile for ATHLETE role
  * Shows their DNA, FLUX history, challenge history — no edit access
  */
 import React, { useEffect, useState } from 'react';
@@ -101,7 +101,7 @@ export default function AthletePasPport() {
           <View style={p$.infoCard}>
             <Ionicons name="lock-closed" size={18} color="rgba(255,255,255,0.2)" />
             <Text style={p$.infoTitle}>ACCESSO LIMITATO</Text>
-            <Text style={p$.infoText}>Come Kore, hai accesso in sola lettura al tuo Passport DNA.{'\n\n'}Per accedere agli strumenti di creazione e analisi, contatta il tuo Coach o il Manager della palestra per aggiornare il tuo ruolo.</Text>
+            <Text style={p$.infoText}>Come Kore, hai accesso in sola lettura al tuo KORE ID DNA.{'\n\n'}Per accedere agli strumenti di creazione e analisi, contatta il tuo Coach o il Manager della palestra per aggiornare il tuo ruolo.</Text>
           </View>
 
           {/* Quick stats */}

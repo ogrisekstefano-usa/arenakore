@@ -1,8 +1,8 @@
 /**
- * ARENAKORE — KORE DNA PASSPORT
- * Athlete Passport: trofeo digitale del biometric scan.
+ * ARENAKORE — KORE DNA ID
+ * KORE ID: trofeo digitale del biometric scan.
  * Layout: KORE ID · DNA SCORE gigante · Barre Stabilità/Ampiezza · Badge CERTIFIED IN CITY
- * CTA: DOWNLOAD PASSPORT (cattura il card come immagine) + CONTINUA REGISTRAZIONE
+ * CTA: DOWNLOAD KORE ID (cattura il card come immagine) + CONTINUA REGISTRAZIONE
  */
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
@@ -169,7 +169,7 @@ export default function PassportScreen() {
         </View>
       </Animated.View>
 
-      {/* ──────────────── PASSPORT CARD ──────────────── */}
+      {/* ──────────────── KORE ID CARD ──────────────── */}
       <Animated.View entering={FadeInDown.delay(200).springify()} style={[s.cardWrap, { width: W - 32 }]}>
         {/* The View ref for screenshot capture */}
         <View ref={cardRef} style={s.card} collapsable={false}>
@@ -253,7 +253,7 @@ export default function PassportScreen() {
 
       {/* ──────────────── CTAs ──────────────── */}
       <Animated.View entering={FadeInDown.delay(500)} style={s.ctaArea}>
-        {/* DOWNLOAD PASSPORT */}
+        {/* DOWNLOAD KORE ID */}
         <TouchableOpacity
           style={[s.downloadBtn, downloadOk && s.downloadOk]}
           onPress={handleDownload}

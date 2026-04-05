@@ -4042,7 +4042,7 @@ async def get_activity_heatmap(current_user: dict = Depends(require_role("COACH"
 
 @api_router.get("/coach/alerts")
 async def get_coach_alerts(current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
-    """AI Alert Center: underperforming athletes, expired passports, injury risks"""
+    """AI Alert Center: underperforming athletes, expired KORE IDs, injury risks"""
     coach_crews = await db.crews_v2.find({"owner_id": current_user["_id"]}).to_list(20)
     all_member_ids = list({mid for crew in coach_crews for mid in crew.get("members", [])})
     athletes = await db.users.find({"_id": {"$in": all_member_ids} if all_member_ids else {"$ne": current_user["_id"]}}).limit(12).to_list(12)
@@ -4059,7 +4059,7 @@ async def get_coach_alerts(current_user: dict = Depends(require_role("COACH", "G
         last_scan = await db.scan_results.find_one({"user_id": user["_id"]}, sort=[("scanned_at", -1)])
         days_inactive = (now - last_scan["scanned_at"]).days if last_scan and last_scan.get("scanned_at") else 30
         if days_inactive > 14:
-            alerts.append({"type": "passport_expired", "severity": "warning", "athlete": user.get("username"), "athlete_id": str(user["_id"]), "message": f"Nessun scan da {days_inactive} giorni — Passaporto DNA non certificato", "icon": "time", "color": "#FF9500"})
+            alerts.append({"type": "passport_expired", "severity": "warning", "athlete": user.get("username"), "athlete_id": str(user["_id"]), "message": f"Nessun scan da {days_inactive} giorni — KORE ID non certificato", "icon": "time", "color": "#FF9500"})
         if dna_values and (max_attr - min_attr) > 25:
             alerts.append({"type": "injury_risk", "severity": "danger", "athlete": user.get("username"), "athlete_id": str(user["_id"]), "message": f"Squilibrio DNA: {DNA_LABELS.get(max_key, max_key)} ({max_attr}) vs {DNA_LABELS.get(min_key, min_key)} ({min_attr}) — rischio infortunio", "icon": "warning", "color": "#FF453A"})
         if dna_avg < 55:
@@ -6884,7 +6884,7 @@ async def enforce_qr_timeouts():
 
 
 # ═══════════════════════════════════════════════════════════════════
-# PDF EXPORT ENGINE — "KORE PASSPORT" (Athlete Talent Card)
+# PDF EXPORT ENGINE — "KORE ID" (Athlete Talent Card)
 # ═══════════════════════════════════════════════════════════════════
 from io import BytesIO
 try:
@@ -6960,7 +6960,7 @@ def _draw_radar_on_pdf(c, cx, cy, r, six_axis, color_hex="#00E5FF"):
 
 @api_router.get("/report/athlete-pdf/{athlete_id}")
 async def generate_athlete_pdf(athlete_id: str, current_user: dict = Depends(require_role("COACH", "GYM_OWNER", "ADMIN"))):
-    """Generate a professional PDF 'Kore Passport' for an athlete."""
+    """Generate a professional PDF 'KORE ID Certificate' for an athlete."""
     if not PDF_AVAILABLE:
         raise HTTPException(status_code=500, detail="PDF generation non disponibile")
 
@@ -7001,7 +7001,7 @@ async def generate_athlete_pdf(athlete_id: str, current_user: dict = Depends(req
     c.drawString(30, h - 50, "ARENA KORE")
     c.setFillColor(HexColor("#888888"))
     c.setFont("Helvetica", 10)
-    c.drawString(30, h - 68, "KORE PASSPORT — OFFICIAL ATHLETIC REPORT")
+    c.drawString(30, h - 68, "KORE ID — OFFICIAL ATHLETIC REPORT")
     c.setFillColor(HexColor("#00E5FF"))
     c.setFont("Helvetica-Bold", 10)
     c.drawRightString(w - 30, h - 50, f"Generated: {datetime.utcnow().strftime('%Y-%m-%d')}")
@@ -7164,7 +7164,7 @@ async def generate_athlete_pdf(athlete_id: str, current_user: dict = Depends(req
     return StreamingResponse(
         buffer,
         media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename=KORE_PASSPORT_{username}.pdf"},
+        headers={"Content-Disposition": f"attachment; filename=KORE_ID_{username}.pdf"},
     )
 
 
@@ -8769,7 +8769,7 @@ async def generate_apple_pass(current_user: dict = Depends(get_current_user)):
         "serialNumber": f"KORE-{kore_number}",
         "teamIdentifier": "ARENADARE1",
         "organizationName": "ARENAKORE",
-        "description": "KORE ATHLETE PASSPORT",
+        "description": "KORE ID CERTIFICATE",
         "logoText": "ARENAKORE",
         "foregroundColor": "rgb(0, 242, 255)",
         "backgroundColor": "rgb(5, 5, 5)",
@@ -8872,7 +8872,7 @@ async def generate_google_pass(current_user: dict = Depends(get_current_user)):
                         "defaultValue": {"language": "it-IT", "value": "ARENAKORE"}
                     },
                     "subheader": {
-                        "defaultValue": {"language": "it-IT", "value": "KORE ATHLETE PASSPORT"}
+                        "defaultValue": {"language": "it-IT", "value": "KORE ID CERTIFICATE"}
                     },
                     "header": {
                         "defaultValue": {"language": "it-IT", "value": username}
@@ -8908,7 +8908,7 @@ async def generate_google_pass(current_user: dict = Depends(get_current_user)):
 
 
 # =====================================================================
-# KORE SOCIAL PASSPORT — City Rank + Affiliations + Action Center
+# KORE ID — City Rank + Affiliations + Action Center
 # =====================================================================
 
 class UpdateAffiliations(BaseModel):

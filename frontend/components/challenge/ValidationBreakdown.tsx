@@ -1,5 +1,5 @@
 /**
- * ARENAKORE — VALIDATION BREAKDOWN (KORE Passport)
+ * ARENAKORE — VALIDATION BREAKDOWN (KORE ID)
  * ═══════════════════════════════════════════════════
  * Trust reputation breakdown showing how challenges were validated.
  * Uses Plus Jakarta Sans 800 for percentages. Apple Fitness design.

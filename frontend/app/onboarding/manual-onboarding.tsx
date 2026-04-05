@@ -1,7 +1,7 @@
 /**
  * ARENAKORE — MANUAL ONBOARDING
  * Fallback biometrico: se MediaPipe crasha (OOM) l'atleta inserisce i dati a mano.
- * Genera un Passport con DNA values di default.
+ * Genera un KORE ID con DNA values di default.
  */
 import React, { useState, useCallback } from 'react';
 import {
@@ -79,7 +79,7 @@ export default function ManualOnboarding() {
             <Text style={s.alertTitle}>SCANNER NON DISPONIBILE</Text>
             <Text style={s.alertDesc}>
               Il motore biometrico richiede più risorse di quelle disponibili su questo dispositivo.
-              Inserisci i tuoi dati manualmente per generare il KORE Passport.
+              Inserisci i tuoi dati manualmente per generare il KORE ID.
             </Text>
           </View>
         </Animated.View>

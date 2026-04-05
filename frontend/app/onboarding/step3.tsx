@@ -1,7 +1,7 @@
 /**
  * ARENAKORE LEGACY INITIATION — STEP 3
  * KORE DNA PROFILING: Altezza, Peso, Età, Livello Allenamento
- * GPS: Detects real city on mount → overwrites CHICAGO in passport on next render
+ * GPS: Detects real city on mount → overwrites CHICAGO in KORE ID on next render
  * Visual: Gold outer-glow title · Off-white labels (#E0E0E0) · Cyan neon containers
  */
 import React, { useState, useCallback, useEffect } from 'react';
@@ -63,7 +63,7 @@ export default function LegacyStep3() {
   const [ghostMode, setGhostMode] = useState(false);
   const [detectedCity, setDetectedCity] = useState<string>('CHICAGO');
 
-  // ── GPS: detect real city on mount, update scan result for passport
+  // ── GPS: detect real city on mount, update scan result for KORE ID
   useEffect(() => {
     (async () => {
       try {
@@ -80,7 +80,7 @@ export default function LegacyStep3() {
 
         setDetectedCity(city);
 
-        // Update scan result with real city (passport will show it on next render)
+        // Update scan result with real city (KORE ID will show it on next render)
         const existing = await AsyncStorage.getItem('@kore_scan_result');
         if (existing) {
           const parsed = JSON.parse(existing);
