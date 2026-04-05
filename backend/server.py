@@ -2604,6 +2604,42 @@ async def contribute_to_crew_battle(battle_id: str, data: BattleContributeReques
     field = "crew_a_contribution" if in_a else "crew_b_contribution"
     await db.crew_battles.update_one({"_id": ObjectId(battle_id)}, {"$inc": {field: contribution_pts}})
 
+    # Record individual contribution for the live feed
+    crew_side = "A" if in_a else "B"
+    crew_name = battle["crew_a_name"] if in_a else battle["crew_b_name"]
+    await db.battle_feed.insert_one({
+        "battle_id": battle_id,
+        "user_id": str(current_user["_id"]),
+        "username": current_user.get("username", "Kore"),
+        "crew_side": crew_side,
+        "crew_name": crew_name,
+        "contribution_pts": contribution_pts,
+        "quality_score": data.quality_score,
+        "reps": getattr(data, 'reps', 0),
+        "created_at": now,
+    })
+
+    # Recalculate weighted averages for both crews
+    all_contribs_a = await db.battle_feed.find({"battle_id": battle_id, "crew_side": "A"}).to_list(200)
+    all_contribs_b = await db.battle_feed.find({"battle_id": battle_id, "crew_side": "B"}).to_list(200)
+
+    def weighted_avg(contribs):
+        if not contribs:
+            return 0
+        total_weight = sum(c.get("quality_score", 50) for c in contribs)
+        if total_weight == 0:
+            return 0
+        return sum(c["contribution_pts"] * (c.get("quality_score", 50) / total_weight) for c in contribs) * len(contribs)
+
+    new_a_contrib = round(weighted_avg(all_contribs_a), 2)
+    new_b_contrib = round(weighted_avg(all_contribs_b), 2)
+    await db.crew_battles.update_one(
+        {"_id": ObjectId(battle_id)},
+        {"$set": {"crew_a_contribution": new_a_contrib, "crew_b_contribution": new_b_contrib,
+                  "crew_a_active_members": len(set(c["user_id"] for c in all_contribs_a)),
+                  "crew_b_active_members": len(set(c["user_id"] for c in all_contribs_b))}}
+    )
+
     updated = await db.crew_battles.find_one({"_id": ObjectId(battle_id)})
     a_score = updated.get("crew_a_kore_score", 0) + updated.get("crew_a_contribution", 0)
     b_score = updated.get("crew_b_kore_score", 0) + updated.get("crew_b_contribution", 0)
@@ -2635,6 +2671,65 @@ async def contribute_to_crew_battle(battle_id: str, data: BattleContributeReques
         "crew_side": "A" if in_a else "B",
         "crew_a_score": round(a_score, 1),
         "crew_b_score": round(b_score, 1),
+    }
+
+
+@api_router.get("/battles/crew/{battle_id}/detail")
+async def get_crew_battle_detail(battle_id: str, current_user: dict = Depends(get_current_user)):
+    """Get full battle detail with power bar, weighted averages, and live feed."""
+    try:
+        battle = await db.crew_battles.find_one({"_id": ObjectId(battle_id)})
+    except Exception:
+        raise HTTPException(404, "Battle non trovata")
+    if not battle:
+        raise HTTPException(404, "Battle non trovata")
+
+    a_base = battle.get("crew_a_kore_score", 50)
+    b_base = battle.get("crew_b_kore_score", 50)
+    a_contrib = battle.get("crew_a_contribution", 0)
+    b_contrib = battle.get("crew_b_contribution", 0)
+    a_total = a_base + a_contrib
+    b_total = b_base + b_contrib
+    grand_total = a_total + b_total or 100
+
+    # Live feed (last 20 entries)
+    feed = await db.battle_feed.find(
+        {"battle_id": battle_id}
+    ).sort("created_at", -1).to_list(20)
+
+    feed_entries = []
+    for f in reversed(feed):
+        feed_entries.append({
+            "username": f.get("username", "Kore"),
+            "crew_side": f.get("crew_side"),
+            "crew_name": f.get("crew_name", ""),
+            "pts": round(f.get("contribution_pts", 0), 1),
+            "reps": f.get("reps", 0),
+            "quality": f.get("quality_score", 0),
+            "time": f.get("created_at").isoformat() if f.get("created_at") else None,
+        })
+
+    return {
+        "id": str(battle["_id"]),
+        "status": battle.get("status"),
+        "ends_at": battle.get("ends_at").isoformat() if battle.get("ends_at") else None,
+        "crew_a": {
+            "name": battle["crew_a_name"],
+            "base_score": round(a_base, 1),
+            "contribution": round(a_contrib, 1),
+            "total": round(a_total, 1),
+            "pct": round(a_total / grand_total * 100, 1),
+            "active_members": battle.get("crew_a_active_members", 0),
+        },
+        "crew_b": {
+            "name": battle["crew_b_name"],
+            "base_score": round(b_base, 1),
+            "contribution": round(b_contrib, 1),
+            "total": round(b_total, 1),
+            "pct": round(b_total / grand_total * 100, 1),
+            "active_members": battle.get("crew_b_active_members", 0),
+        },
+        "feed": feed_entries,
     }
 
 

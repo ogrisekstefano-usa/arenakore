@@ -18,6 +18,7 @@ import { Header } from '../../components/Header';
 import { TAB_BACKGROUNDS } from '../../utils/images';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
+import { CrewBattleDashboard } from '../../components/CrewBattleDashboard';
 import { ToolLock } from '../../components/KoreVault';
 import { ChallengeInviteModal } from '../../components/crew/ChallengeInviteModal';
 import { CertBadge } from '../../components/CertBadge';
@@ -305,7 +306,7 @@ const wb$ = StyleSheet.create({
   pct: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '700', letterSpacing: 1 },
 });
 
-function LiveBattleCard({ battle }: { battle: any }) {
+function LiveBattleCard({ battle, onOpenDashboard }: { battle: any; onOpenDashboard: (id: string) => void }) {
   const router = useRouter();
   const { remaining, minsLeft } = useCountdown(battle.ends_at);
   const { crew_a, crew_b } = battle;
@@ -373,6 +374,18 @@ function LiveBattleCard({ battle }: { battle: any }) {
           </Text>
         </TouchableOpacity>
       ) : null}
+
+      {/* Dashboard Button */}
+      {battle.user_in_battle && (
+        <TouchableOpacity
+          style={wrc$.dashBtn}
+          onPress={() => onOpenDashboard(battle.id)}
+          activeOpacity={0.75}
+        >
+          <Ionicons name="analytics" size={13} color="#00E5FF" />
+          <Text style={wrc$.dashBtnText}>DASHBOARD LIVE</Text>
+        </TouchableOpacity>
+      )}
     </Animated.View>
   );
 }
@@ -394,12 +407,15 @@ const wrc$ = StyleSheet.create({
   ctaText: { color: '#000000', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
   lastPush: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FF3B30', borderRadius: 10, paddingVertical: 14, shadowColor: '#FF3B30', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 16 },
   lastPushText: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
+  dashBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1, borderColor: 'rgba(0,229,255,0.2)', borderRadius: 10, paddingVertical: 10, backgroundColor: 'rgba(0,229,255,0.05)' },
+  dashBtnText: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
 });
 
 function LiveBattleDashboard() {
   const { token } = useAuth();
   const [battles, setBattles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dashboardBattleId, setDashboardBattleId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -412,7 +428,7 @@ function LiveBattleDashboard() {
 
   useEffect(() => {
     load();
-    const iv = setInterval(load, 30000); // refresh every 30s
+    const iv = setInterval(load, 30000);
     return () => clearInterval(iv);
   }, [load]);
 
@@ -435,8 +451,15 @@ function LiveBattleDashboard() {
           <Text style={lbd$.emptySub}>Usa il Matchmaking AI per trovare un avversario</Text>
         </View>
       ) : (
-        battles.map(b => <LiveBattleCard key={b.id} battle={b} />)
+        battles.map(b => (
+          <LiveBattleCard key={b.id} battle={b} onOpenDashboard={(id: string) => setDashboardBattleId(id)} />
+        ))
       )}
+      <CrewBattleDashboard
+        visible={!!dashboardBattleId}
+        battleId={dashboardBattleId}
+        onClose={() => setDashboardBattleId(null)}
+      />
     </View>
   );
 }
