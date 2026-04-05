@@ -252,115 +252,113 @@ export default function KoreTab() {
       onPress: () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); router.push('/reward-store'); } },
   ];
 
+  // ─── HERO IMAGES (Cross-fade Nike style) ───
+  const HERO_IMAGES = [
+    'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=60',
+    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=60',
+    'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=60',
+  ];
+  const DNA_BG = 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800&q=40';
+
+  const [heroIdx, setHeroIdx] = useState(0);
+  const heroFadeA = useSharedValue(1);
+  const heroFadeB = useSharedValue(0);
+  const heroShowA = useRef(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (heroShowA.current) {
+        heroFadeB.value = withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) });
+        heroFadeA.value = withTiming(0, { duration: 1200, easing: Easing.inOut(Easing.ease) });
+      } else {
+        heroFadeA.value = withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) });
+        heroFadeB.value = withTiming(0, { duration: 1200, easing: Easing.inOut(Easing.ease) });
+      }
+      heroShowA.current = !heroShowA.current;
+      setHeroIdx(p => (p + 1) % HERO_IMAGES.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const heroStyleA = useAnimatedStyle(() => ({ opacity: heroFadeA.value }));
+  const heroStyleB = useAnimatedStyle(() => ({ opacity: heroFadeB.value }));
+  const heroImgA = HERO_IMAGES[heroIdx];
+  const heroImgB = HERO_IMAGES[(heroIdx + 1) % HERO_IMAGES.length];
+
   return (
     <View style={s.root}>
       <StatusBar barStyle="light-content" />
-
-      {/* ═══ HEADER ═══ */}
-      <Animated.View entering={FadeIn.duration(400)} style={[hdr.container, { paddingTop: insets.top + 10 }]}>
-        <View style={hdr.left}>
-          <Text style={hdr.greeting} numberOfLines={1}>
-            Ciao <Text style={hdr.name}>{firstName}</Text>,
-          </Text>
-          <Text style={hdr.sub}>pronto a superarti?</Text>
-        </View>
-        <View style={hdr.right}>
-          <TouchableOpacity onPress={() => { setScannerVisible(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}>
-            <View style={hdr.scanBtn}>
-              <Ionicons name="qr-code" size={15} color="#00E5FF" />
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => { setShopVisible(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); }}>
-            <Animated.View style={[hdr.fluxBadge, fluxBadgeStyle]}>
-              <Ionicons name="flash" size={13} color="#FFD700" />
-              <Text style={hdr.fluxVal}>{flux.toLocaleString()}</Text>
-              <Ionicons name="add-circle" size={13} color="rgba(255,215,0,0.4)" />
-            </Animated.View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setSidebarOpen(true)}
-            style={hdr.menuBtn}
-            activeOpacity={0.6}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <Ionicons name="ellipsis-horizontal" size={18} color="rgba(255,255,255,0.40)" />
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#00E5FF" />}
-        contentContainerStyle={s.scroll}
+        contentContainerStyle={{ paddingBottom: 90 }}
       >
-        {/* ═══ STATUS CHIPS ═══ */}
-        <Animated.View entering={FadeInDown.delay(50).duration(400)} style={st.row}>
-          <View style={st.lvlChip}>
-            <Ionicons name="shield-checkmark" size={11} color="#00E5FF" />
-            <Text style={st.lvlText}>LVL {level}</Text>
-          </View>
-          {user?.is_nexus_certified && (
-            <View style={st.nexusChip}>
-              <Ionicons name="scan" size={10} color="#00FF87" />
-              <Text style={st.nexusText}>NEXUS</Text>
-            </View>
-          )}
-          {isFounder && (
-            <Animated.View style={[st.founderChip, shimmerStyle]}>
-              <Ionicons name="star" size={10} color="#FFD700" />
-              <Text style={st.founderText}>FOUNDER</Text>
-            </Animated.View>
-          )}
-        </Animated.View>
-
-        {/* ═══ DNA RADAR — Identità Biometrica ═══ */}
-        <Animated.View entering={FadeInDown.delay(70).duration(400)} style={dna.section}>
-          <View style={dna.radarCard}>
-            <LinearGradient colors={['rgba(0,229,255,0.04)', 'transparent']} style={StyleSheet.absoluteFillObject} />
-            <View style={dna.radarHeader}>
-              <View style={dna.radarBadge}>
-                <Ionicons name="analytics" size={14} color="#00E5FF" />
-                <Text style={dna.radarBadgeText}>DNA RADAR</Text>
-              </View>
-              <TouchableOpacity onPress={() => router.push('/(tabs)/dna')} activeOpacity={0.7}>
-                <Text style={dna.viewAll}>VEDI TUTTO →</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={dna.statsRow}>
-              <View style={dna.statItem}>
-                <Text style={dna.statValue}>{user?.dna?.avg_dna || '—'}</Text>
-                <Text style={dna.statLabel}>DNA SCORE</Text>
-              </View>
-              <View style={dna.statDivider} />
-              <View style={dna.statItem}>
-                <Text style={[dna.statValue, { color: '#FFD700' }]}>{user?.dna?.peak_power || '—'}</Text>
-                <Text style={dna.statLabel}>PEAK POWER</Text>
-              </View>
-              <View style={dna.statDivider} />
-              <View style={dna.statItem}>
-                <Text style={[dna.statValue, { color: '#00FF87' }]}>{user?.dna?.endurance || '—'}</Text>
-                <Text style={dna.statLabel}>ENDURANCE</Text>
-              </View>
-            </View>
-            <View style={dna.actionRow}>
-              <TouchableOpacity style={dna.scanBtn} onPress={() => router.push('/(tabs)/nexus-trigger')} activeOpacity={0.85}>
-                <Ionicons name="scan" size={14} color="#000" />
-                <Text style={dna.scanBtnText}>NUOVA SCANSIONE</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={dna.idBtn} onPress={() => setKoreIdVisible(true)} activeOpacity={0.85}>
-                <Ionicons name="person-circle" size={14} color="#00E5FF" />
-                <Text style={dna.idBtnText}>KORE ID</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Animated.View>
-
-        {/* ═══ QUICK STATS ═══ */}
-        <Animated.View entering={FadeInDown.delay(500).duration(400)} style={qs.container}>
+        {/* ═══ NIKE HERO BANNER ═══ */}
+        <View style={hero.container}>
+          {/* Cross-fading images */}
+          <Animated.View style={[hero.imgLayer, heroStyleA]}>
+            <Image source={{ uri: heroImgA }} style={hero.img} resizeMode="cover" />
+          </Animated.View>
+          <Animated.View style={[hero.imgLayer, heroStyleB]}>
+            <Image source={{ uri: heroImgB }} style={hero.img} resizeMode="cover" />
+          </Animated.View>
+          {/* Heavy gradient vignette */}
           <LinearGradient
-            colors={['rgba(255,255,255,0.03)', 'rgba(255,255,255,0.01)', 'transparent']}
-            style={qs.gradient}
-          >
+            colors={['rgba(10,10,10,0.3)', 'rgba(10,10,10,0.15)', 'rgba(10,10,10,0.6)', '#0A0A0A']}
+            locations={[0, 0.3, 0.7, 1]}
+            style={StyleSheet.absoluteFillObject}
+          />
+          {/* Top row: QR + FLUX + Menu */}
+          <View style={[hero.topRow, { paddingTop: insets.top + 8 }]}>
+            <View style={{ flex: 1 }} />
+            <View style={hero.topActions}>
+              <TouchableOpacity onPress={() => { setScannerVisible(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}>
+                <View style={hero.iconBtn}>
+                  <Ionicons name="qr-code" size={15} color="#00E5FF" />
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => { setShopVisible(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); }}>
+                <Animated.View style={[hero.fluxBadge, fluxBadgeStyle]}>
+                  <Ionicons name="flash" size={13} color="#FFD700" />
+                  <Text style={hero.fluxVal}>{flux.toLocaleString()}</Text>
+                </Animated.View>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setSidebarOpen(true)} style={hero.iconBtn}>
+                <Ionicons name="ellipsis-horizontal" size={18} color="rgba(255,255,255,0.50)" />
+              </TouchableOpacity>
+            </View>
+          </View>
+          {/* Hero content */}
+          <View style={hero.content}>
+            {/* Status chips */}
+            <Animated.View entering={FadeIn.duration(500)} style={hero.chips}>
+              <View style={hero.lvlChip}>
+                <Ionicons name="shield-checkmark" size={10} color="#00E5FF" />
+                <Text style={hero.chipText}>LVL {level}</Text>
+              </View>
+              {user?.is_nexus_certified && (
+                <View style={hero.nexusChip}>
+                  <Ionicons name="scan" size={9} color="#00FF87" />
+                  <Text style={[hero.chipText, { color: '#00FF87' }]}>NÈXUS</Text>
+                </View>
+              )}
+              {isFounder && (
+                <Animated.View style={[hero.founderChip, shimmerStyle]}>
+                  <Ionicons name="star" size={9} color="#FFD700" />
+                  <Text style={[hero.chipText, { color: '#FFD700' }]}>FOUNDER</Text>
+                </Animated.View>
+              )}
+            </Animated.View>
+            <Text style={hero.greeting}>
+              Ciao, <Text style={hero.name}>{firstName}</Text>
+            </Text>
+            <Text style={hero.tagline}>IL TUO CORPO. LA TUA ARENA.</Text>
+          </View>
+        </View>
+
+        <View style={s.body}>
+          {/* ═══ QUICK STATS ROW ═══ */}
+          <Animated.View entering={FadeInDown.delay(100).duration(400)} style={qs.container}>
             <View style={qs.item}>
               <Text style={qs.num}>{totalScans}</Text>
               <Text style={qs.label}>SCANS</Text>
@@ -375,77 +373,123 @@ export default function KoreTab() {
               <Text style={qs.num}>LVL {level}</Text>
               <Text style={qs.label}>LIVELLO</Text>
             </View>
-          </LinearGradient>
-        </Animated.View>
+          </Animated.View>
 
-        {/* ═══ LE MIE SFIDE ═══ */}
-        <Animated.View entering={FadeInDown.delay(550).duration(400)} style={ugc.section}>
-          <View style={ugc.headerRow}>
-            <View>
-              <Text style={ugc.title}>LE MIE SFIDE</Text>
-              <Text style={ugc.sub}>{myChallenges.length} sfide create</Text>
-            </View>
-            <TouchableOpacity
-              style={ugc.createBtn}
-              onPress={() => { setCreatorVisible(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="add" size={16} color="#0A0A0A" />
-              <Text style={ugc.createBtnText}>CREA</Text>
-            </TouchableOpacity>
-          </View>
-
-          {myChallenges.length === 0 ? (
-            <TouchableOpacity style={ugc.emptyCard} onPress={() => setCreatorVisible(true)} activeOpacity={0.8}>
-              <Ionicons name="construct-outline" size={28} color="rgba(255,255,255,0.15)" />
-              <Text style={ugc.emptyText}>Crea la tua prima sfida</Text>
-              <Text style={ugc.emptySub}>Diventa il protagonista dell'Arena.</Text>
-            </TouchableOpacity>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ugc.listScroll}>
-              {myChallenges
-                .filter(ch => !activeDiscipline || ch.discipline === activeDiscipline)
-                .slice(0, 10).map((ch) => (
-                <UGCCard
-                  key={ch._id}
-                  challenge={ch}
-                  userFlux={flux}
-                  onStart={() => {
-                    // Navigate to NÈXUS with UGC challenge data
-                    router.push({
-                      pathname: '/(tabs)/nexus-trigger',
-                      params: {
-                        ugcChallengeId: ch._id || ch.id,
-                        ugcTitle: ch.title || ch.name,
-                        ugcExercises: JSON.stringify(ch.exercises || []),
-                        ugcTemplateType: ch.template_type || 'CUSTOM',
-                        ugcFluxReward: String(ch.flux_reward || 15),
-                      },
-                    });
-                  }}
-                  onInvite={() => {}}
-                  onLive={() => router.push('/live-events')}
-                  onShare={() => { setShareChallenge(ch); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}
-                />
-              ))}
-              {myChallenges.filter(ch => !activeDiscipline || ch.discipline === activeDiscipline).length === 0 && (
-                <View style={ugc.emptyCard}>
-                  <Ionicons name="filter" size={22} color="rgba(255,255,255,0.15)" />
-                  <Text style={ugc.emptyText}>Nessuna sfida in questo silo</Text>
+          {/* ═══ DNA RADAR — Nike-style with BG image ═══ */}
+          <Animated.View entering={FadeInDown.delay(200).duration(400)} style={dna.section}>
+            <View style={dna.radarCard}>
+              <Image source={{ uri: DNA_BG }} style={dna.bgImage} resizeMode="cover" />
+              <LinearGradient
+                colors={['rgba(10,10,10,0.4)', 'rgba(10,10,10,0.75)', 'rgba(10,10,10,0.95)']}
+                locations={[0, 0.4, 1]}
+                style={StyleSheet.absoluteFillObject}
+              />
+              <View style={dna.inner}>
+                <View style={dna.radarHeader}>
+                  <View style={dna.radarBadge}>
+                    <Ionicons name="analytics" size={14} color="#00E5FF" />
+                    <Text style={dna.radarBadgeText}>DNA RADAR</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => router.push('/(tabs)/dna')} activeOpacity={0.7}>
+                    <Text style={dna.viewAll}>VEDI TUTTO →</Text>
+                  </TouchableOpacity>
                 </View>
-              )}
-            </ScrollView>
-          )}
-        </Animated.View>
+                <View style={dna.statsRow}>
+                  <View style={dna.statItem}>
+                    <Text style={dna.statValue}>{user?.dna?.avg_dna || '—'}</Text>
+                    <Text style={dna.statLabel}>DNA SCORE</Text>
+                  </View>
+                  <View style={dna.statDivider} />
+                  <View style={dna.statItem}>
+                    <Text style={[dna.statValue, { color: '#FFD700' }]}>{user?.dna?.peak_power || '—'}</Text>
+                    <Text style={dna.statLabel}>PEAK POWER</Text>
+                  </View>
+                  <View style={dna.statDivider} />
+                  <View style={dna.statItem}>
+                    <Text style={[dna.statValue, { color: '#00FF87' }]}>{user?.dna?.endurance || '—'}</Text>
+                    <Text style={dna.statLabel}>ENDURANCE</Text>
+                  </View>
+                </View>
+                <View style={dna.actionRow}>
+                  <TouchableOpacity style={dna.scanBtn} onPress={() => router.push('/(tabs)/nexus-trigger')} activeOpacity={0.85}>
+                    <Ionicons name="scan" size={14} color="#000" />
+                    <Text style={dna.scanBtnText}>NUOVA SCANSIONE</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={dna.idBtn} onPress={() => setKoreIdVisible(true)} activeOpacity={0.85}>
+                    <Ionicons name="person-circle" size={14} color="#00E5FF" />
+                    <Text style={dna.idBtnText}>KORE ID</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Animated.View>
 
-        {/* ═══ QUICK NAV LINKS ═══ */}
-        <Animated.View entering={FadeInUp.delay(600).duration(400)} style={lnk.section}>
-          <QuickLink icon="analytics" color="#00E5FF" label="DNA PROFILE" onPress={() => router.push('/(tabs)/dna')} />
-          <QuickLink icon="trophy" color="#FFD700" label="CLASSIFICHE" onPress={() => router.push('/(tabs)/hall')} />
-          <QuickLink icon="settings-sharp" color="rgba(255,255,255,0.35)" label="IMPOSTAZIONI" onPress={() => router.push('/settings')} />
-        </Animated.View>
+          {/* ═══ LE MIE SFIDE ═══ */}
+          <Animated.View entering={FadeInDown.delay(300).duration(400)} style={ugc.section}>
+            <View style={ugc.headerRow}>
+              <View>
+                <Text style={ugc.title}>LE MIE SFIDE</Text>
+                <Text style={ugc.sub}>{myChallenges.length} sfide create</Text>
+              </View>
+              <TouchableOpacity
+                style={ugc.createBtn}
+                onPress={() => { setCreatorVisible(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="add" size={16} color="#0A0A0A" />
+                <Text style={ugc.createBtnText}>CREA</Text>
+              </TouchableOpacity>
+            </View>
 
-        <View style={{ height: 44 }} />
+            {myChallenges.length === 0 ? (
+              <TouchableOpacity style={ugc.emptyCard} onPress={() => setCreatorVisible(true)} activeOpacity={0.8}>
+                <Ionicons name="construct-outline" size={28} color="rgba(255,255,255,0.15)" />
+                <Text style={ugc.emptyText}>Crea la tua prima sfida</Text>
+                <Text style={ugc.emptySub}>Diventa il protagonista dell'Arena.</Text>
+              </TouchableOpacity>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ugc.listScroll}>
+                {myChallenges
+                  .filter(ch => !activeDiscipline || ch.discipline === activeDiscipline)
+                  .slice(0, 10).map((ch) => (
+                  <UGCCard
+                    key={ch._id}
+                    challenge={ch}
+                    userFlux={flux}
+                    onStart={() => {
+                      router.push({
+                        pathname: '/(tabs)/nexus-trigger',
+                        params: {
+                          ugcChallengeId: ch._id || ch.id,
+                          ugcTitle: ch.title || ch.name,
+                          ugcExercises: JSON.stringify(ch.exercises || []),
+                          ugcTemplateType: ch.template_type || 'CUSTOM',
+                          ugcFluxReward: String(ch.flux_reward || 15),
+                        },
+                      });
+                    }}
+                    onInvite={() => {}}
+                    onLive={() => router.push('/live-events')}
+                    onShare={() => { setShareChallenge(ch); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}
+                  />
+                ))}
+                {myChallenges.filter(ch => !activeDiscipline || ch.discipline === activeDiscipline).length === 0 && (
+                  <View style={ugc.emptyCard}>
+                    <Ionicons name="filter" size={22} color="rgba(255,255,255,0.15)" />
+                    <Text style={ugc.emptyText}>Nessuna sfida in questo silo</Text>
+                  </View>
+                )}
+              </ScrollView>
+            )}
+          </Animated.View>
+
+          {/* ═══ QUICK NAV LINKS ═══ */}
+          <Animated.View entering={FadeInUp.delay(400).duration(400)} style={lnk.section}>
+            <QuickLink icon="analytics" color="#00E5FF" label="DNA PROFILE" onPress={() => router.push('/(tabs)/dna')} />
+            <QuickLink icon="trophy" color="#FFD700" label="CLASSIFICHE" onPress={() => router.push('/(tabs)/hall')} />
+            <QuickLink icon="settings-sharp" color="rgba(255,255,255,0.35)" label="IMPOSTAZIONI" onPress={() => router.push('/settings')} />
+          </Animated.View>
+        </View>
       </ScrollView>
 
       <KoreIDModal visible={koreIdVisible} onClose={() => setKoreIdVisible(false)} />
@@ -564,66 +608,78 @@ function QuickLink({ icon, color, label, onPress }: {
 // ═══════════════════════════════════════════════════════════
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#0A0A0A' },
-  scroll: { paddingHorizontal: 16, paddingTop: 12 },
+  body: { paddingHorizontal: 16 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between', marginBottom: 20 },
 });
 
-const hdr = StyleSheet.create({
+// ── NIKE HERO BANNER ──
+const hero = StyleSheet.create({
   container: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingBottom: 12,
-    backgroundColor: '#0A0A0A',
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)',
+    height: 280,
+    position: 'relative',
+    overflow: 'hidden',
+    marginBottom: 4,
   },
-  left: { flex: 1, gap: 2 },
-  greeting: { color: 'rgba(255,255,255,0.45)', fontSize: 17, fontFamily: FONT_J, fontWeight: '500' },
-  name: { color: '#FFFFFF', fontWeight: '800', fontSize: 18 },
-  sub: { color: 'rgba(255,255,255,0.20)', fontSize: 13, fontFamily: FONT_J, fontWeight: '800', letterSpacing: 0.3 },
-  right: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  scanBtn: {
+  imgLayer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
+  },
+  img: { width: '100%', height: '100%' },
+  topRow: {
+    position: 'absolute', top: 0, left: 0, right: 0,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 16,
+    zIndex: 10,
+  },
+  topActions: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+  },
+  iconBtn: {
     width: 36, height: 36, borderRadius: 10,
-    backgroundColor: 'rgba(0,229,255,0.06)',
+    backgroundColor: 'rgba(0,0,0,0.35)',
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
   },
   fluxBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: 'rgba(255,215,0,0.05)', borderRadius: 10,
+    backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 7,
-    borderWidth: 1.2, borderColor: 'rgba(255,215,0,0.12)',
+    borderWidth: 1.2, borderColor: 'rgba(255,215,0,0.18)',
   },
   fluxVal: { color: '#FFD700', fontSize: 15, fontWeight: '900', fontFamily: FONT_J, letterSpacing: 0.5 },
-  menuBtn: {
-    width: 36, height: 36, borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
+  content: {
+    position: 'absolute', bottom: 20, left: 20, right: 20,
+    zIndex: 10,
   },
-});
-
-const st = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 },
+  chips: {
+    flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10,
+  },
   lvlChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: 'rgba(0,229,255,0.07)', borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 6,
-    borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)',
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: 'rgba(0,229,255,0.12)', borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 4,
   },
-  lvlText: { color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
   nexusChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: 'rgba(0,255,135,0.05)', borderRadius: 10,
-    paddingHorizontal: 10, paddingVertical: 6,
-    borderWidth: 1, borderColor: 'rgba(0,255,135,0.15)',
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: 'rgba(0,255,135,0.10)', borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 4,
   },
-  nexusText: { color: '#00FF87', fontSize: 11, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_M },
   founderChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 10,
-    paddingHorizontal: 10, paddingVertical: 6,
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.18)',
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: 'rgba(255,215,0,0.10)', borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 4,
   },
-  founderText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_M },
+  chipText: {
+    color: '#00E5FF', fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J,
+  },
+  greeting: {
+    color: 'rgba(255,255,255,0.75)', fontSize: 28, fontWeight: '400', fontFamily: FONT_M,
+  },
+  name: { color: '#FFFFFF', fontWeight: '900' },
+  tagline: {
+    color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '900',
+    letterSpacing: 4, fontFamily: FONT_M, marginTop: 4,
+  },
 });
 
 // ── DYNAMIC CARDS ──
@@ -660,18 +716,22 @@ const cd = StyleSheet.create({
 
 const qs = StyleSheet.create({
   container: {
-    borderRadius: 16, overflow: 'hidden',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)',
-    marginBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
+    marginBottom: 16,
+    marginTop: 4,
   },
-  gradient: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
-    paddingVertical: 18,
-  },
-  item: { alignItems: 'center', gap: 3 },
+  item: { alignItems: 'center', gap: 3, flex: 1 },
   num: { color: '#00E5FF', fontSize: 22, fontWeight: '900', fontFamily: FONT_J },
-  label: { color: 'rgba(255,255,255,0.18)', fontSize: 9, fontWeight: '800', letterSpacing: 2.5, fontFamily: FONT_M },
-  divider: { width: 1, height: 30, backgroundColor: 'rgba(255,255,255,0.04)' },
+  label: { color: 'rgba(255,255,255,0.22)', fontSize: 9, fontWeight: '800', letterSpacing: 2, fontFamily: FONT_M },
+  divider: { width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.05)' },
 });
 
 const lnk = StyleSheet.create({
@@ -741,14 +801,21 @@ const dsc = StyleSheet.create({
   chipTextActive: { color: '#0A0A0A' },
 });
 
-// ── DNA RADAR ──
+// ── DNA RADAR (Nike-style with BG image) ──
 const dna = StyleSheet.create({
   section: { marginBottom: 16 },
   radarCard: {
     borderRadius: 18, overflow: 'hidden',
-    backgroundColor: '#121212',
+    position: 'relative',
     borderWidth: 1, borderColor: 'rgba(0,229,255,0.08)',
+  },
+  bgImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%', height: '100%',
+  },
+  inner: {
     padding: 16, gap: 14,
+    position: 'relative', zIndex: 5,
   },
   radarHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   radarBadge: {
