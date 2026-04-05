@@ -8,7 +8,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle, withRepeat, withTiming,
-  withSequence, withDelay, withSpring, Easing, FadeIn, FadeInDown,
+  withSequence, withDelay, withSpring, Easing, FadeIn, FadeInDown
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, Line } from 'react-native-svg';
@@ -82,16 +82,16 @@ function RadarPulse({ isScanning }: { isScanning: boolean }) {
   }, [isScanning]);
 
   const r1Style = useAnimatedStyle(() => ({
-    transform: [{ scale: ring1.value }], opacity: ring1Op.value,
+    transform: [{ scale: ring1.value }], opacity: ring1Op.value
   }));
   const r2Style = useAnimatedStyle(() => ({
-    transform: [{ scale: ring2.value }], opacity: ring2Op.value,
+    transform: [{ scale: ring2.value }], opacity: ring2Op.value
   }));
   const r3Style = useAnimatedStyle(() => ({
-    transform: [{ scale: ring3.value }], opacity: ring3Op.value,
+    transform: [{ scale: ring3.value }], opacity: ring3Op.value
   }));
   const sweepStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${sweep.value}deg` }],
+    transform: [{ rotate: `${sweep.value}deg` }]
   }));
 
   const size = 180;
@@ -137,7 +137,7 @@ function ConnectedCheck() {
 
   const style = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    opacity: opacity.value,
+    opacity: opacity.value
   }));
 
   return (
@@ -281,22 +281,22 @@ const rd = StyleSheet.create({
   radarSvg: { position: 'absolute' },
   ring: {
     position: 'absolute', width: 160, height: 160, borderRadius: 80,
-    borderWidth: 1.5, borderColor: '#00E5FF',
+    borderWidth: 1.5, borderColor: '#00E5FF'
   },
   sweepWrap: { position: 'absolute', width: 180, height: 180, justifyContent: 'center' },
   sweepLine: {
     width: 90, height: 1.5, backgroundColor: '#00E5FF', opacity: 0.6,
-    position: 'absolute', left: 90,
+    position: 'absolute', left: 90
   },
   checkWrap: { width: 180, height: 180, justifyContent: 'center', alignItems: 'center' },
   statusText: {
     color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '700',
-    textAlign: 'center', letterSpacing: 0.5,
+    textAlign: 'center', letterSpacing: 0.5
   },
   scanBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(0,229,255,0.12)', borderRadius: 12,
-    paddingHorizontal: 24, paddingVertical: 12,
+    paddingHorizontal: 24, paddingVertical: 12
   },
   scanBtnText: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   deviceList: { width: '100%', gap: 8 },
@@ -304,12 +304,12 @@ const rd = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 10,
     backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)', borderRadius: 12,
-    padding: 14,
+    padding: 14
   },
   deviceIcon: {
     width: 36, height: 36, borderRadius: 10,
     backgroundColor: 'rgba(255,45,85,0.12)',
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
   deviceInfo: { flex: 1, gap: 2 },
   deviceName: { color: '#FFF', fontSize: 13, fontWeight: '700' },
@@ -318,18 +318,18 @@ const rd = StyleSheet.create({
   rssiText: { color: 'rgba(255,255,255,0.35)', fontSize: 9, fontWeight: '700' },
   connectedCard: {
     width: '100%', gap: 10, backgroundColor: 'rgba(52,199,89,0.06)',
-    borderWidth: 1, borderColor: 'rgba(52,199,89,0.2)', borderRadius: 14, padding: 16,
+    borderWidth: 1, borderColor: 'rgba(52,199,89,0.2)', borderRadius: 14, padding: 16
   },
   connectedTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   connectedName: {
     color: '#34C759', fontSize: 15,
     fontFamily: "'Plus Jakarta Sans', 'Montserrat', sans-serif",
-    fontWeight: '800',
+    fontWeight: '800'
   },
   connectedType: { color: 'rgba(255,255,255,0.5)', fontSize: 12 },
   disconnectBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    alignSelf: 'flex-start', marginTop: 4,
+    alignSelf: 'flex-start', marginTop: 4
   },
-  disconnectText: { color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  disconnectText: { color: '#FF3B30', fontSize: 10, fontWeight: '900', letterSpacing: 1 }
 });

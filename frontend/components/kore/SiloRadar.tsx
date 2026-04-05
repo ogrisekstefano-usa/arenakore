@@ -27,7 +27,7 @@ interface Props {
 const DISC_ICONS: Record<string, string> = {
   'Golf': '⛳', 'Fitness': '🏋️', 'Padel': '🏓', 'Calcio': '⚽', 'Tennis': '🎾',
   'Basket': '🏀', 'Running': '🏃', 'Nuoto': '🏊', 'Yoga': '🧘', 'CrossFit': '💪',
-  'Boxing': '🥊', 'MMA': '🥋', 'Ciclismo': '🚴',
+  'Boxing': '🥊', 'MMA': '🥋', 'Ciclismo': '🚴'
 };
 
 export function SiloRadar({ data, size = 220, auraColor = '#00E5FF' }: Props) {
@@ -46,7 +46,7 @@ export function SiloRadar({ data, size = 220, auraColor = '#00E5FF' }: Props) {
         color: '#333',
         competency: 0,
         count: 0,
-        avg_quality: 0,
+        avg_quality: 0
       }))]
     : data;
 
@@ -61,7 +61,7 @@ export function SiloRadar({ data, size = 220, auraColor = '#00E5FF' }: Props) {
     const r = (value / 100) * maxR;
     return {
       x: center + r * Math.cos(angle),
-      y: center + r * Math.sin(angle),
+      y: center + r * Math.sin(angle)
     };
   };
 
@@ -164,12 +164,12 @@ const s = StyleSheet.create({
   emptyContainer: {
     height: 120, alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', borderStyle: 'dashed',
-    borderRadius: 16, marginVertical: 8,
+    borderRadius: 16, marginVertical: 8
   },
   emptyText: { color: 'rgba(255,255,255,0.15)', fontSize: 12, fontWeight: '600', fontFamily: FONT_M },
   legend: { marginTop: 8, gap: 6, width: '100%' },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
   legendSilo: { color: 'rgba(255,255,255,0.50)', fontSize: 11, fontWeight: '700', fontFamily: FONT_M, flex: 1 },
-  legendScore: { fontSize: 14, fontWeight: '900', fontFamily: FONT_J },
+  legendScore: { fontSize: 14, fontWeight: '900', fontFamily: FONT_J }
 });

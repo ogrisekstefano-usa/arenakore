@@ -153,5 +153,5 @@ const p$ = StyleSheet.create({
   statsCard: { backgroundColor: '#0A0A0A', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#1E1E1E', gap: 0 },
   statRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#111' },
   statLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  statVal: { fontSize: 22, fontWeight: '900' },
+  statVal: { fontSize: 22, fontWeight: '900' }
 });

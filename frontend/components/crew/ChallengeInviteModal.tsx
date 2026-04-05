@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, Modal, TouchableOpacity,
-  ActivityIndicator, ScrollView,
+  ActivityIndicator, ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
@@ -15,7 +15,7 @@ import { api } from '../../utils/api';
 const DNA_KEYS: Record<string, string> = {
   velocita: 'VEL', forza: 'FOR', resistenza: 'RES',
   agilita: 'AGI', tecnica: 'TEC', potenza: 'POT',
-  mentalita: 'MEN', flessibilita: 'FLE',
+  mentalita: 'MEN', flessibilita: 'FLE'
 };
 
 function weightedAvg(dna: Record<string, number> | undefined): number {
@@ -59,7 +59,7 @@ const dna$ = StyleSheet.create({
   barTheir: { backgroundColor: '#FF3B30', left: 0 },
   barWin: { opacity: 1 },
   val: { color: '#AAAAAA', fontSize: 14, fontWeight: '900', width: 26, textAlign: 'center' },
-  sep: { color: 'rgba(255,255,255,0.3)', fontSize: 12 },
+  sep: { color: 'rgba(255,255,255,0.3)', fontSize: 12 }
 });
 
 interface Props {
@@ -198,7 +198,7 @@ const m$ = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: '#0A0A0A', borderTopLeftRadius: 20, borderTopRightRadius: 20,
-    padding: 20, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
+    padding: 20, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)'
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -220,10 +220,9 @@ const m$ = StyleSheet.create({
   verdictText: { fontSize: 13, fontWeight: '700', letterSpacing: 0.5, flex: 1 },
   cta: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#FFD700', borderRadius: 10, paddingVertical: 16,
-    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 12,
+    backgroundColor: '#FFD700', borderRadius: 10, paddingVertical: 16
   },
   ctaText: { color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
   sentRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 16 },
-  sentText: { color: '#00FF87', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
+  sentText: { color: '#00FF87', fontSize: 15, fontWeight: '900', letterSpacing: 2 }
 });

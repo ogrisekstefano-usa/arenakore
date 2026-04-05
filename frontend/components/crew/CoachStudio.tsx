@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, TextInput,
-  ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform,
+  ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -284,7 +284,7 @@ const cs$ = StyleSheet.create({
   emptySub: { color: '#AAAAAA', fontSize: 17, fontWeight: '400' },
   card: {
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, gap: 10,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   cardTitleRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
@@ -301,13 +301,13 @@ const cs$ = StyleSheet.create({
   pushBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: 'rgba(255,215,0,0.12)', paddingHorizontal: 24, paddingVertical: 8,
-    borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
+    borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)'
   },
   pushText: { color: '#FFD700', fontSize: 15, fontWeight: '900', letterSpacing: 1.5 },
   pushCrewItem: {
     flexDirection: 'row', alignItems: 'center', paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.45)',
-  },
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.45)'
+  }
 });
 
 const ct$ = StyleSheet.create({
@@ -315,7 +315,7 @@ const ct$ = StyleSheet.create({
   scroll: { justifyContent: 'flex-end' },
   card: {
     backgroundColor: '#0A0A0A', borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    padding: 24, paddingBottom: 40, gap: 8, borderWidth: 1, borderColor: 'rgba(255,215,0,0.1)',
+    padding: 24, paddingBottom: 40, gap: 8, borderWidth: 1, borderColor: 'rgba(255,215,0,0.1)'
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   title: { color: '#FFD700', fontSize: 20, fontWeight: '900', letterSpacing: 3 },
@@ -323,19 +323,19 @@ const ct$ = StyleSheet.create({
   label: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
   input: {
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 12,
-    color: '#FFF', fontSize: 19, fontWeight: '400', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    color: '#FFF', fontSize: 19, fontWeight: '400', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   exRow: { flexDirection: 'row', gap: 10 },
   exBtn: {
     flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', gap: 4,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)'
   },
   exBtnActive: { borderColor: '#00E5FF', backgroundColor: '#00E5FF22' },
   exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
   diffRow: { flexDirection: 'row', gap: 6 },
   diffBtn: {
     flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', gap: 2,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)'
   },
   diffLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
   numRow: { flexDirection: 'row', gap: 10 },
@@ -344,5 +344,5 @@ const ct$ = StyleSheet.create({
   saveGrad: { paddingVertical: 16, alignItems: 'center' },
   saveText: { color: '#000000', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
   cancelBtn: { paddingVertical: 10, alignItems: 'center' },
-  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '700' },
+  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '700' }
 });

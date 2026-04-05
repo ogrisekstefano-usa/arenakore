@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, Modal, TouchableOpacity, ScrollView, StyleSheet,
-  Dimensions, ActivityIndicator, Alert,
+  Dimensions, ActivityIndicator, Alert
 } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
@@ -38,14 +38,14 @@ const PKG_ICONS: Record<string, string> = {
   spark: 'flash-outline',
   kinetic: 'flash',
   power: 'rocket',
-  ultra: 'diamond',
+  ultra: 'diamond'
 };
 
 const PKG_COLORS: Record<string, string> = {
   spark: '#888888',
   kinetic: '#00E5FF',
   power: '#FFD700',
-  ultra: '#FF2D55',
+  ultra: '#FF2D55'
 };
 
 export function FluxStoreModal({ visible, onClose, userFlux, onPurchase }: Props) {
@@ -82,7 +82,7 @@ export function FluxStoreModal({ visible, onClose, userFlux, onPurchase }: Props
     try {
       const res = await apiClient('/api/flux/purchase', {
         method: 'POST',
-        body: JSON.stringify({ package_id: pkgId }),
+        body: JSON.stringify({ package_id: pkgId })
       });
       if (res.status === 'purchased') {
         onPurchase(res);
@@ -239,5 +239,5 @@ const s = StyleSheet.create({
   feeTitle: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 10, textAlign: 'center' },
   feeRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, paddingHorizontal: 8 },
   feeDest: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  feeCost: { color: '#FFD700', fontSize: 12, fontWeight: '900', fontFamily: FONT_J },
+  feeCost: { color: '#FFD700', fontSize: 12, fontWeight: '900', fontFamily: FONT_J }
 });

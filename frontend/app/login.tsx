@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, StatusBar,
-  Dimensions, Alert,
+  Dimensions, Alert
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -237,7 +237,7 @@ const s$ = StyleSheet.create({
   inputWrap: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#0C0C0C', borderWidth: 1.5, borderColor: '#1A1A1A',
-    borderRadius: 12, overflow: 'hidden',
+    borderRadius: 12, overflow: 'hidden'
   },
   inputIcon: { paddingLeft: 14 },
   input: { flex: 1, paddingVertical: 16, paddingHorizontal: 10, color: '#FFFFFF', fontSize: 16 },
@@ -251,7 +251,7 @@ const s$ = StyleSheet.create({
   mainBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: '#00E5FF', borderRadius: 14,
-    paddingVertical: 18, marginTop: 4,
+    paddingVertical: 18, marginTop: 4
   },
   mainBtnText: { color: '#000000', fontSize: 17, fontWeight: '900', letterSpacing: 1.5 },
 
@@ -269,12 +269,12 @@ const s$ = StyleSheet.create({
   socialBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     backgroundColor: '#0C0C0C', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 12, paddingVertical: 16,
+    borderRadius: 12, paddingVertical: 16
   },
   socialBtnText: { color: '#FFF', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
 
   // Register
   registerBlock: { marginTop: 28, alignItems: 'center' },
   registerLink: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '500', textAlign: 'center' },
-  registerLinkBold: { color: '#00E5FF', fontWeight: '900', letterSpacing: 0.5 },
+  registerLinkBold: { color: '#00E5FF', fontWeight: '900', letterSpacing: 0.5 }
 });

@@ -55,7 +55,7 @@ const w$ = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
   title: { fontSize: 14, letterSpacing: 2 },
-  subtitle: { fontSize: 12, letterSpacing: 1, marginLeft: 4 },
+  subtitle: { fontSize: 12, letterSpacing: 1, marginLeft: 4 }
 });
 
 // ── KPI Card ──────────────────────────────────────────────────────────────────
@@ -86,7 +86,7 @@ const kp$ = StyleSheet.create({
   trend: { width: 22, height: 22, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
   value: { fontSize: 28, letterSpacing: 0.5, lineHeight: 30 },
   label: { fontSize: 11, letterSpacing: 2.5 },
-  sub: { fontSize: 12, letterSpacing: 0.5 },
+  sub: { fontSize: 12, letterSpacing: 0.5 }
 });
 
 // ── Quick Action ──────────────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ function QuickAction({ label, icon, color, onPress }: any) {
 }
 const qa$ = StyleSheet.create({
   btn: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 24, paddingVertical: 10, flex: 1 },
-  label: { fontSize: 13, letterSpacing: 1.5 },
+  label: { fontSize: 13, letterSpacing: 1.5 }
 });
 
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
@@ -273,7 +273,7 @@ export default function GlobalDashboard() {
               <View key={b.id} style={[pg$.battleRow, { borderBottomColor: theme.border }]}>
                 <View style={[pg$.resultPill, {
                   backgroundColor: b.my_result === 'win' ? theme.positive + '18' : b.my_result === 'loss' ? theme.negative + '18' : theme.surface2,
-                  borderColor: b.my_result === 'win' ? theme.positive + '40' : b.my_result === 'loss' ? theme.negative + '40' : theme.border,
+                  borderColor: b.my_result === 'win' ? theme.positive + '40' : b.my_result === 'loss' ? theme.negative + '40' : theme.border
                 }]}>
                   <Text style={[pg$.resultText, MONT('900'), {
                     color: b.my_result === 'win' ? theme.positive : b.my_result === 'loss' ? theme.negative : theme.textTer
@@ -340,5 +340,5 @@ const pg$ = StyleSheet.create({
   resultPill: { borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1, minWidth: 42, alignItems: 'center' },
   resultText: { fontSize: 11, letterSpacing: 1 },
   battleName: { fontSize: 14 },
-  battleDate: { fontSize: 12 },
+  battleDate: { fontSize: 12 }
 });

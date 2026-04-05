@@ -6,13 +6,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  ActivityIndicator, Alert,
+  ActivityIndicator, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeInDown, FadeIn,
   useSharedValue, withSequence, withTiming, withRepeat,
-  useAnimatedStyle, Easing,
+  useAnimatedStyle, Easing
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useAuth } from '../contexts/AuthContext';
@@ -57,7 +57,7 @@ const ak$ = StyleSheet.create({
   badgeVal: { color: '#FFD700', fontSize: 22, fontWeight: '900', letterSpacing: 1 },
   badgeLabel: { color: 'rgba(255,215,0,0.5)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   badgeCompact: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)' },
-  badgeValCompact: { color: '#FFD700', fontSize: 14, fontWeight: '900' },
+  badgeValCompact: { color: '#FFD700', fontSize: 14, fontWeight: '900' }
 });
 
 // ── Tool Card ─────────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ function ToolCard({ tool, ak, onUnlock, unlocking }: { tool: any; ak: number; on
   }, [isUnlocking]);
 
   const spinStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${spin.value * 360}deg` }],
+    transform: [{ rotate: `${spin.value * 360}deg` }]
   }));
 
   const canAfford = !tool.requires_pro && ak >= tool.cost_ak;
@@ -151,7 +151,7 @@ const tc$ = StyleSheet.create({
   unlockBtn: { alignItems: 'center', backgroundColor: '#FFD700', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, minWidth: 64 },
   unlockBtnOff: { backgroundColor: 'rgba(255,255,255,0.06)' },
   unlockCost: { color: '#000', fontSize: 14, fontWeight: '900' },
-  unlockLabel: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  unlockLabel: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 }
 });
 
 // ── Earn Guide ────────────────────────────────────────────────────────────────
@@ -183,7 +183,7 @@ const eg$ = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   item: { flex: 1, minWidth: '44%', flexDirection: 'row', alignItems: 'center', gap: 8 },
   label: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '400' },
-  ak: { fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+  ak: { fontSize: 14, fontWeight: '900', letterSpacing: 1 }
 });
 
 // ── Main KORE VAULT ───────────────────────────────────────────────────────────
@@ -268,10 +268,10 @@ const kv$ = StyleSheet.create({
   container: { marginHorizontal: 24, marginBottom: 16, gap: 14 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FFD700', shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
+  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FFD700' },
   title: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
   subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '300', marginTop: -4 },
-  toolsList: { gap: 8 },
+  toolsList: { gap: 8 }
 });
 
 // ── ToolLock Overlay (per lock sui singoli moduli) ─────────────────────────────
@@ -311,5 +311,5 @@ const tl$ = StyleSheet.create({
   proPill: { backgroundColor: 'rgba(255,149,0,0.1)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,149,0,0.3)' },
   proText: { color: '#FF9500', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   cta: { marginTop: 6, backgroundColor: 'rgba(255,215,0,0.12)', borderRadius: 8, paddingHorizontal: 24, paddingVertical: 8, borderWidth: 1, borderColor: '#FFD700' },
-  ctaText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  ctaText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 }
 });

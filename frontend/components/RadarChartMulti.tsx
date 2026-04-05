@@ -57,7 +57,7 @@ export function RadarChartMulti({ scans, size = 240 }: RadarChartMultiProps) {
       y2: cy + maxR * Math.sin(angle),
       lx: cx + (maxR + 14) * Math.cos(angle),
       ly: cy + (maxR + 14) * Math.sin(angle),
-      label: DNA_LABELS[i],
+      label: DNA_LABELS[i]
     };
   });
 
@@ -130,12 +130,12 @@ export function RadarMultiLegend({ scanCount }: { scanCount: number }) {
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', justifyContent: 'center' },
+  container: { alignItems: 'center', justifyContent: 'center' }
 });
 
 const legendStyles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 16, justifyContent: 'center', marginTop: 8 },
   item: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   dot: { width: 7, height: 7, borderRadius: 4 },
-  label: { color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '800', letterSpacing: 1 } as any,
+  label: { color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: '800', letterSpacing: 1 } as any
 });

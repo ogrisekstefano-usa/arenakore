@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Animated, {
   FadeIn, FadeOut, useSharedValue, withTiming, withSequence,
-  useAnimatedStyle, Easing, withRepeat,
+  useAnimatedStyle, Easing, withRepeat
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -44,7 +44,7 @@ const AI_MESSAGES: Record<AIStatus, string[]> = {
   posture:  ['SCHIENA!', 'POSTURA!', 'DRITTA!'],
   almost:   ['QUASI FATTA!', 'CI SIAMO!', 'ANCORA UN PO!'],
   last:     ['ULTIMA!', 'VAI!', 'FALLA!'],
-  go:       ['VIA!', 'GO!', 'INIZIA!'],
+  go:       ['VIA!', 'GO!', 'INIZIA!']
 };
 
 function pickRandom(arr: string[]): string {
@@ -93,8 +93,8 @@ function RepCounter({ reps, targetReps, dnaPotential, quality }: {
 
 const rc$ = StyleSheet.create({
   wrap: { alignItems: 'flex-end' },
-  reps: { fontSize: 72, fontWeight: '900', letterSpacing: -2, lineHeight: 72, textShadowColor: 'rgba(0,0,0,0.9)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 16 },
-  target: { color: 'rgba(255,255,255,0.2)', fontSize: 18, fontWeight: '300', letterSpacing: 1 },
+  reps: { fontSize: 72, fontWeight: '900', letterSpacing: -2, lineHeight: 72 },
+  target: { color: 'rgba(255,255,255,0.2)', fontSize: 18, fontWeight: '300', letterSpacing: 1 }
 });
 
 // ── Time Arc (top, minimal) ───────────────────────────────────────────────────
@@ -112,7 +112,7 @@ function TimeDisplay({ remaining, targetTime }: { remaining: number; targetTime:
 const td$ = StyleSheet.create({
   wrap: {},
   time: { fontSize: 32, fontWeight: '900', letterSpacing: 1 },
-  unit: { fontSize: 16, fontWeight: '300', color: 'rgba(255,255,255,0.3)' },
+  unit: { fontSize: 16, fontWeight: '300', color: 'rgba(255,255,255,0.3)' }
 });
 
 // ── Main HUD ──────────────────────────────────────────────────────────────────
@@ -138,7 +138,7 @@ export function BioFeedbackHUD({ state }: { state: BioFeedbackState }) {
     }
   }, [isMaster]);
   const auraStyle = useAnimatedStyle(() => ({
-    opacity: auraGlow.value,
+    opacity: auraGlow.value
   }));
 
   useEffect(() => {
@@ -216,57 +216,54 @@ export function BioFeedbackHUD({ state }: { state: BioFeedbackState }) {
 const bf$ = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 35,
+    zIndex: 35
   },
   topRow: {
     position: 'absolute', top: 80, left: 20, right: 20,
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start'
   },
   topLeft: {
-    gap: 6,
+    gap: 6
   },
   // ── Coach Certified Badge ──
   coachBadge: {
-    borderRadius: 8, overflow: 'hidden',
+    borderRadius: 8, overflow: 'hidden'
   },
   coachBadgeInner: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: 'rgba(0,255,135,0.12)',
     borderWidth: 1, borderColor: 'rgba(0,255,135,0.40)',
-    borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5,
+    borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5
   },
   coachBadgeText: {
-    color: '#00FF87', fontSize: 10, fontWeight: '900', letterSpacing: 2,
+    color: '#00FF87', fontSize: 10, fontWeight: '900', letterSpacing: 2
   },
   exerciseName: {
     color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: '800',
-    letterSpacing: 3, marginTop: 2,
+    letterSpacing: 3, marginTop: 2
   },
   msgOverlay: {
     ...StyleSheet.absoluteFillObject,
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
   msg: {
     fontSize: 52, fontWeight: '900', letterSpacing: 8,
-    textShadowColor: 'rgba(0,0,0,0.95)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 24,
-    textAlign: 'center',
+    textAlign: 'center'
   },
   bottomRow: {
     position: 'absolute', bottom: 220, right: 24,
-    alignItems: 'flex-end', gap: 6,
+    alignItems: 'flex-end', gap: 6
   },
   // ── Quality indicator for Coach Strict mode ──
   qualityRow: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: 'rgba(0,0,0,0.40)', borderRadius: 8,
-    paddingHorizontal: 8, paddingVertical: 3,
+    paddingHorizontal: 8, paddingVertical: 3
   },
   qualDot: {
-    width: 6, height: 6, borderRadius: 3,
+    width: 6, height: 6, borderRadius: 3
   },
   qualText: {
-    fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
-  },
+    fontSize: 10, fontWeight: '900', letterSpacing: 1.5
+  }
 });

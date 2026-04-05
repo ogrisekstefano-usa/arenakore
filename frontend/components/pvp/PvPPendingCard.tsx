@@ -4,7 +4,7 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert,
+  View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -162,7 +162,7 @@ export function PvPPendingCard() {
 const p$ = StyleSheet.create({
   section: { marginTop: 10, marginBottom: 4 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, marginBottom: 8 },
-  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FF3B30', shadowColor: '#FF3B30', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
+  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FF3B30' },
   sectionTitle: { flex: 1, color: '#AAAAAA', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
   badgeCount: { backgroundColor: '#FF3B30', borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2 },
   badgeText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
@@ -192,5 +192,5 @@ const p$ = StyleSheet.create({
   waitingRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   waitingText: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '400' },
   sentRow: { marginHorizontal: 24, flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6 },
-  sentText: { color: 'rgba(255,255,255,0.25)', fontSize: 13, fontWeight: '400' },
+  sentText: { color: 'rgba(255,255,255,0.25)', fontSize: 13, fontWeight: '400' }
 });

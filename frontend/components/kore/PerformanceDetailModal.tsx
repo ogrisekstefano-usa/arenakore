@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, Modal, ScrollView, TouchableOpacity,
-  Image, Platform, ActivityIndicator, Share, Dimensions, Alert,
+  Image, Platform, ActivityIndicator, Share, Dimensions, Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,13 +29,13 @@ const TIPO_CONFIG: Record<string, { color: string; label: string; icon: keyof ty
   'ALLENAMENTO':  { color: '#00FF87', label: 'TRAINING',    icon: 'barbell' },
   'COACH_PROGRAM':{ color: '#00FF87', label: 'COACH',       icon: 'school' },
   'CREW_BATTLE':  { color: '#A855F7', label: 'CREW',        icon: 'people' },
-  'DUELLO':       { color: '#FF9500', label: 'DUELLO',      icon: 'flash' },
+  'DUELLO':       { color: '#FF9500', label: 'DUELLO',      icon: 'flash' }
 };
 
 const DISC_ICONS: Record<string, string> = {
   'Golf': '⛳', 'Fitness': '🏋️', 'Padel': '🏓', 'Calcio': '⚽', 'Tennis': '🎾',
   'Basket': '🏀', 'Running': '🏃', 'Nuoto': '🏊', 'Yoga': '🧘', 'CrossFit': '💪',
-  'Boxing': '🥊', 'MMA': '🥋', 'Ciclismo': '🚴',
+  'Boxing': '🥊', 'MMA': '🥋', 'Ciclismo': '🚴'
 };
 
 interface Props {
@@ -130,7 +130,7 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
 
       await Share.share({
         message: shareData,
-        title: 'ARENA KORE Performance',
+        title: 'ARENA KORE Performance'
       });
     } catch {}
     setExporting(false);
@@ -146,8 +146,8 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
           reChallengeExercise: record?.exercise_type || 'squat',
           reChallengeDisciplina: record?.disciplina || 'Fitness',
           reChallengeTemplate: record?.template_name || '',
-          reChallengeTipo: record?.tipo || 'ALLENAMENTO',
-        },
+          reChallengeTipo: record?.tipo || 'ALLENAMENTO'
+        }
       });
     }, 300);
   }, [record]);
@@ -167,7 +167,7 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
         await Share.share({
           url: uri,
           message: 'La mia Talent Card su ARENA KORE! 🏆',
-          title: 'ARENA KORE — Talent Card',
+          title: 'ARENA KORE — Talent Card'
         });
       }
     } catch {
@@ -395,7 +395,7 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
               isFounder: user?.is_admin,
               founderNumber: user?.founder_number,
               tipo: record?.tipo || 'ALLENAMENTO',
-              validationStatus: record?.validation_status,
+              validationStatus: record?.validation_status
             }} />
           </ViewShot>
         </View>
@@ -457,22 +457,22 @@ const ds = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#0A0A0A' },
   topBar: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingHorizontal: 16, paddingVertical: 12,
+    paddingHorizontal: 16, paddingVertical: 12
   },
   backBtn: {
     width: 40, height: 40, borderRadius: 12,
     backgroundColor: 'rgba(255,255,255,0.06)',
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)'
   },
   tipoBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, borderWidth: 1,
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, borderWidth: 1
   },
   tipoBadgeText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.2, fontFamily: FONT_J },
   discBadgeTop: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    flex: 1, justifyContent: 'flex-end',
+    flex: 1, justifyContent: 'flex-end'
   },
   discIconTop: { fontSize: 16 },
   discTextTop: { color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: '700', letterSpacing: 1, fontFamily: FONT_M },
@@ -481,14 +481,14 @@ const ds = StyleSheet.create({
   gallerySection: { marginBottom: 16, paddingHorizontal: 16 },
   snapItem: {
     width: SCREEN_W - 32, height: 220, borderRadius: 16, overflow: 'hidden',
-    position: 'relative',
+    position: 'relative'
   },
   snapImg: { width: '100%', height: '100%' },
   snapGrad: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 80 },
   snapLabel: {
     position: 'absolute', bottom: 10, left: 14,
     backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 6,
-    paddingHorizontal: 10, paddingVertical: 4,
+    paddingHorizontal: 10, paddingVertical: 4
   },
   snapLabelText: { color: '#FFF', fontSize: 10, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 10 },
@@ -500,7 +500,7 @@ const ds = StyleSheet.create({
     height: 140, marginHorizontal: 16, marginBottom: 16, borderRadius: 16,
     alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', borderStyle: 'dashed',
-    position: 'relative',
+    position: 'relative'
   },
   noSnapGrad: { ...StyleSheet.absoluteFillObject },
   noSnapText: { color: 'rgba(255,255,255,0.15)', fontSize: 12, fontWeight: '600', marginTop: 8, fontFamily: FONT_M },
@@ -510,7 +510,7 @@ const ds = StyleSheet.create({
     marginHorizontal: 16, marginBottom: 16,
     alignItems: 'center', paddingVertical: 20,
     borderRadius: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-    backgroundColor: 'rgba(255,255,255,0.02)',
+    backgroundColor: 'rgba(255,255,255,0.02)'
   },
   resultLabel: { color: 'rgba(255,255,255,0.20)', fontSize: 10, fontWeight: '900', letterSpacing: 3, fontFamily: FONT_M, marginBottom: 4 },
   resultRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
@@ -520,7 +520,7 @@ const ds = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8,
     backgroundColor: 'rgba(0,255,135,0.10)', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 5,
-    borderWidth: 1, borderColor: 'rgba(0,255,135,0.20)',
+    borderWidth: 1, borderColor: 'rgba(0,255,135,0.20)'
   },
   certText: { color: '#00FF87', fontSize: 9, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
   dateText: { color: 'rgba(255,255,255,0.18)', fontSize: 11, fontWeight: '600', fontFamily: FONT_M, marginTop: 8 },
@@ -528,12 +528,12 @@ const ds = StyleSheet.create({
   // KPI Grid
   kpiGrid: {
     flexDirection: 'row', flexWrap: 'wrap', gap: 8,
-    paddingHorizontal: 16, marginBottom: 16,
+    paddingHorizontal: 16, marginBottom: 16
   },
   kpiBox: {
     flex: 1, minWidth: 90, alignItems: 'center', paddingVertical: 14,
     borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.025)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)'
   },
   kpiBoxVal: { color: '#00E5FF', fontSize: 20, fontWeight: '900', fontFamily: FONT_J },
   kpiBoxLabel: { color: 'rgba(255,255,255,0.20)', fontSize: 8, fontWeight: '800', letterSpacing: 2, marginTop: 3 },
@@ -542,7 +542,7 @@ const ds = StyleSheet.create({
   chartSection: {
     marginHorizontal: 16, marginBottom: 20, paddingVertical: 16, paddingHorizontal: 14,
     borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.02)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)'
   },
   chartTitle: { color: '#FFF', fontSize: 12, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J, marginBottom: 16 },
   chartGrid: { gap: 20 },
@@ -552,13 +552,13 @@ const ds = StyleSheet.create({
   actionsSection: { paddingHorizontal: 16, gap: 10, marginTop: 4 },
   actionBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    paddingVertical: 16, borderRadius: 14,
+    paddingVertical: 16, borderRadius: 14
   },
   actionBtnText: { color: '#000', fontSize: 14, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
   actionBtnOutline: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     paddingVertical: 14, borderRadius: 14,
-    borderWidth: 1.5, backgroundColor: 'rgba(0,229,255,0.04)',
+    borderWidth: 1.5, backgroundColor: 'rgba(0,229,255,0.04)'
   },
   actionBtnOutlineText: { fontSize: 13, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
   offscreen: { position: 'absolute', left: -9999, top: -9999, opacity: 1 },
@@ -566,9 +566,9 @@ const ds = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     paddingVertical: 14, borderRadius: 14,
     borderWidth: 1.5, borderColor: 'rgba(255,215,0,0.30)',
-    backgroundColor: 'rgba(255,215,0,0.06)',
+    backgroundColor: 'rgba(255,215,0,0.06)'
   },
-  talentCardBtnText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
+  talentCardBtnText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J }
 });
 
 const bar = StyleSheet.create({
@@ -577,7 +577,7 @@ const bar = StyleSheet.create({
   label: { color: 'rgba(255,255,255,0.45)', fontSize: 10, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
   prBadge: {
     backgroundColor: 'rgba(255,215,0,0.15)', borderRadius: 5,
-    paddingHorizontal: 6, paddingVertical: 2,
+    paddingHorizontal: 6, paddingVertical: 2
   },
   prBadgeText: { color: '#FFD700', fontSize: 8, fontWeight: '900', letterSpacing: 1 },
   barRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -585,8 +585,8 @@ const bar = StyleSheet.create({
   barTrack: {
     flex: 1, height: 8, borderRadius: 4,
     backgroundColor: 'rgba(255,255,255,0.05)',
-    overflow: 'hidden',
+    overflow: 'hidden'
   },
   barFill: { height: '100%', borderRadius: 4 },
-  barVal: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '900', width: 32, textAlign: 'right', fontFamily: FONT_J },
+  barVal: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '900', width: 32, textAlign: 'right', fontFamily: FONT_J }
 });

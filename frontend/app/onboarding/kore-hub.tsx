@@ -5,7 +5,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
-  KeyboardAvoidingView, Platform, ScrollView, StatusBar, Modal,
+  KeyboardAvoidingView, Platform, ScrollView, StatusBar, Modal
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -290,5 +290,5 @@ const s = StyleSheet.create({
   cityOption: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
   cityOptionActive: { backgroundColor: '#00E5FF22', borderRadius: 8, paddingHorizontal: 8 },
   cityTxt: { flex: 1, color: '#AAAAAA', fontSize: 16, fontWeight: '400', letterSpacing: 1 },
-  cityTxtActive: { color: CYAN },
+  cityTxtActive: { color: CYAN }
 });

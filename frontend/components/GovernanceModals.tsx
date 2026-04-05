@@ -7,7 +7,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, Modal, TouchableOpacity, TextInput,
-  ScrollView, Platform, ActivityIndicator, KeyboardAvoidingView,
+  ScrollView, Platform, ActivityIndicator, KeyboardAvoidingView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -43,7 +43,7 @@ export function TemplateRequestModal({ visible, onClose, discipline }: TemplateR
     setLoadingList(true);
     try {
       const res = await fetch(`${BACKEND}/api/requests/template?discipline=${discipline}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setRequests(await res.json());
     } catch {}
@@ -59,7 +59,7 @@ export function TemplateRequestModal({ visible, onClose, discipline }: TemplateR
       const res = await fetch(`${BACKEND}/api/requests/template`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ discipline, description: description.trim() }),
+        body: JSON.stringify({ discipline, description: description.trim() })
       });
       if (res.ok) {
         setSent(true);
@@ -76,7 +76,7 @@ export function TemplateRequestModal({ visible, onClose, discipline }: TemplateR
     try {
       const res = await fetch(`${BACKEND}/api/requests/${id}/upvote`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) fetchRequests();
     } catch {}
@@ -205,7 +205,7 @@ export function CategoryProposalModal({ visible, onClose }: CategoryProposalProp
     setLoadingList(true);
     try {
       const res = await fetch(`${BACKEND}/api/requests/category`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setProposals(await res.json());
     } catch {}
@@ -222,7 +222,7 @@ export function CategoryProposalModal({ visible, onClose }: CategoryProposalProp
       const res = await fetch(`${BACKEND}/api/requests/category`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ category_name: name.trim(), motivation: motivation.trim() }),
+        body: JSON.stringify({ category_name: name.trim(), motivation: motivation.trim() })
       });
       if (res.ok) {
         setSent(true);
@@ -241,7 +241,7 @@ export function CategoryProposalModal({ visible, onClose }: CategoryProposalProp
     try {
       const res = await fetch(`${BACKEND}/api/requests/${id}/upvote`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) fetchProposals();
     } catch {}
@@ -361,19 +361,19 @@ const tm = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'flex-end' },
   sheet: {
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    overflow: 'hidden', maxHeight: '88%', paddingHorizontal: 20, paddingTop: 20,
+    overflow: 'hidden', maxHeight: '88%', paddingHorizontal: 20, paddingTop: 20
   },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   discBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, borderWidth: 1,
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, borderWidth: 1
   },
   discText: { fontSize: 10, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
   title: { color: '#FFF', fontSize: 16, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_M },
   closeBtn: {
     width: 36, height: 36, borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.04)', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.04)', alignItems: 'center', justifyContent: 'center'
   },
   subtitle: { color: 'rgba(255,255,255,0.35)', fontSize: 13, fontWeight: '500', lineHeight: 18, marginBottom: 16 },
   inputWrap: {},
@@ -381,14 +381,14 @@ const tm = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)', color: '#FFF', fontSize: 14, fontWeight: '500',
     paddingHorizontal: 16, paddingVertical: 12, minHeight: 80, textAlignVertical: 'top',
-    fontFamily: FONT_M,
+    fontFamily: FONT_M
   },
   inputFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
   charCount: { color: 'rgba(255,255,255,0.15)', fontSize: 11, fontWeight: '600' },
   sendBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: '#FF3B30', borderRadius: 10,
-    paddingHorizontal: 16, paddingVertical: 10,
+    paddingHorizontal: 16, paddingVertical: 10
   },
   sendText: { color: '#000', fontSize: 12, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
   sentBanner: {
@@ -396,13 +396,13 @@ const tm = StyleSheet.create({
     backgroundColor: 'rgba(0,255,135,0.06)', borderRadius: 14,
     paddingHorizontal: 16, paddingVertical: 14,
     borderWidth: 1, borderColor: 'rgba(0,255,135,0.15)',
-    marginBottom: 16,
+    marginBottom: 16
   },
   sentText: { color: '#00FF87', fontSize: 13, fontWeight: '700', flex: 1 },
   errorText: { color: '#FF3B30', fontSize: 12, fontWeight: '600', marginTop: 6 },
   listHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    marginTop: 20, marginBottom: 12,
+    marginTop: 20, marginBottom: 12
   },
   listTitle: { color: 'rgba(255,255,255,0.30)', fontSize: 11, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_M },
   listCount: { color: 'rgba(255,255,255,0.20)', fontSize: 12, fontWeight: '900', fontFamily: FONT_J },
@@ -413,7 +413,7 @@ const tm = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 14,
     padding: 14, marginBottom: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)'
   },
   reqContent: { flex: 1, gap: 3 },
   reqUser: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 0.5, fontFamily: FONT_J },
@@ -425,10 +425,10 @@ const tm = StyleSheet.create({
     paddingVertical: 8, paddingHorizontal: 12,
     borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.03)',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
-    marginLeft: 10,
+    marginLeft: 10
   },
   votedBtn: {
-    backgroundColor: 'rgba(0,229,255,0.06)', borderColor: 'rgba(0,229,255,0.15)',
+    backgroundColor: 'rgba(0,229,255,0.06)', borderColor: 'rgba(0,229,255,0.15)'
   },
-  voteCount: { color: 'rgba(255,255,255,0.30)', fontSize: 13, fontWeight: '900', fontFamily: FONT_J },
+  voteCount: { color: 'rgba(255,255,255,0.30)', fontSize: 13, fontWeight: '900', fontFamily: FONT_J }
 });

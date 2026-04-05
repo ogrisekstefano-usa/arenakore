@@ -6,7 +6,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, Modal, TouchableOpacity, ActivityIndicator,
-  Platform, Dimensions,
+  Platform, Dimensions
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
@@ -85,7 +85,7 @@ export function QRScannerModal({ visible, onClose, onUserFound, onChallengeFound
     setLookupLoading(true);
     try {
       const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/lookup/${userId}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -257,7 +257,7 @@ const qs$ = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: '#000' },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingHorizontal: 16, paddingTop: Platform.OS === 'ios' ? 56 : 40, paddingBottom: 12,
+    paddingHorizontal: 16, paddingTop: Platform.OS === 'ios' ? 56 : 40, paddingBottom: 12
   },
   backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' },
   headerTitle: { color: '#FFF', fontSize: 16, fontWeight: '800', letterSpacing: 2 },
@@ -303,5 +303,5 @@ const qs$ = StyleSheet.create({
   // Web fallback
   webFallback: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 40 },
   webFallbackText: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '800', letterSpacing: 1, textAlign: 'center' },
-  webFallbackSub: { color: 'rgba(255,255,255,0.15)', fontSize: 12, fontWeight: '400', textAlign: 'center' },
+  webFallbackSub: { color: 'rgba(255,255,255,0.15)', fontSize: 12, fontWeight: '400', textAlign: 'center' }
 });

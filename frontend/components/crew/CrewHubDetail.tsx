@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, TouchableOpacity,
-  Modal, ScrollView, ActivityIndicator, Dimensions,
+  Modal, ScrollView, ActivityIndicator, Dimensions
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,9 +28,9 @@ const badge$ = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 3,
     backgroundColor: 'rgba(255,215,0,0.15)',
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.4)',
-    borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
+    borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3
   },
-  text: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  text: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 }
 });
 
 export function CrewHubDetail({ crew, onClose, token }: { crew: any; onClose: () => void; token: string }) {
@@ -191,5 +191,5 @@ const hub$ = StyleSheet.create({
   feedDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00E5FF', marginTop: 4 },
   feedContent: { flex: 1, gap: 2 },
   feedMsg: { color: 'rgba(255,255,255,0.7)', fontSize: 18, fontWeight: '600' },
-  feedTime: { color: 'rgba(255,255,255,0.3)', fontSize: 15 },
+  feedTime: { color: 'rgba(255,255,255,0.3)', fontSize: 15 }
 });

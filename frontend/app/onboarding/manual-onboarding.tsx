@@ -6,7 +6,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
-  KeyboardAvoidingView, Platform, ScrollView, StatusBar,
+  KeyboardAvoidingView, Platform, ScrollView, StatusBar
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -44,14 +44,14 @@ export default function ManualOnboarding() {
       amplitude:  50,
       city:       'CHICAGO',
       scan_date:  new Date().toISOString(),
-      manual:     true,
+      manual:     true
     };
     await AsyncStorage.setItem('@kore_scan_result', JSON.stringify(manualResult));
 
     setError('');
     router.push({
       pathname: '/onboarding/step3',
-      params: { height_cm: h, weight_kg: w, age: a, training_level: 'LEGACY' },
+      params: { height_cm: h, weight_kg: w, age: a, training_level: 'LEGACY' }
     });
   }, [height, weight, age, router]);
 
@@ -153,7 +153,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', gap: 12, alignItems: 'flex-start',
     backgroundColor: 'rgba(255,215,0,0.06)',
     borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
-    marginBottom: 28,
+    marginBottom: 28
   },
   alertBody: { flex: 1, gap: 4 },
   alertTitle: { color: GOLD, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
@@ -162,7 +162,7 @@ const s = StyleSheet.create({
   header: { marginBottom: 28, gap: 4 },
   title:  { color: CYAN, fontSize: 16, fontWeight: '400', letterSpacing: 6 },
   titleBig: { color: '#FFFFFF', fontSize: 38, fontWeight: '400', letterSpacing: 0.5, lineHeight: 42 },
-  accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: {width:0,height:0}, shadowOpacity:0.8, shadowRadius:6 },
+  accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14 },
   subtitle: { color: 'rgba(255,255,255,0.30)', fontSize: 13, fontWeight: '700', letterSpacing: 1.5, lineHeight: 18 },
 
   form:  { gap: 16 },
@@ -173,8 +173,8 @@ const s = StyleSheet.create({
   errorBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,59,48,0.06)', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)' },
   errorTxt: { color: '#FF3B30', fontSize: 13, fontWeight: '800', letterSpacing: 1 },
 
-  cta: { backgroundColor: GOLD, borderRadius: 10, paddingVertical: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, shadowColor: GOLD, shadowOffset: {width:0,height:0}, shadowOpacity:0.5, shadowRadius:12, elevation: 8 },
+  cta: { backgroundColor: GOLD, borderRadius: 10, paddingVertical: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, elevation: 8 },
   ctaTxt: { color: BG, fontSize: 16, fontWeight: '900', letterSpacing: 2 },
 
-  note: { color: '#AAAAAA', fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 16 },
+  note: { color: '#AAAAAA', fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 16 }
 });

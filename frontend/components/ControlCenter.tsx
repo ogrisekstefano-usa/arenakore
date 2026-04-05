@@ -6,13 +6,13 @@
 import React, { useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Platform, Dimensions,
-  Pressable,
+  Pressable
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   SlideInRight, SlideOutRight, Easing,
-  useSharedValue, useAnimatedStyle, withRepeat, withTiming,
+  useSharedValue, useAnimatedStyle, withRepeat, withTiming
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useAuth, UserRole, ROLE_CONFIG } from '../contexts/AuthContext';
@@ -30,14 +30,14 @@ const ROLE_ICONS: Record<UserRole, keyof typeof Ionicons.glyphMap> = {
   ADMIN: 'shield-checkmark',
   GYM_OWNER: 'business',
   COACH: 'fitness',
-  ATHLETE: 'person',
+  ATHLETE: 'person'
 };
 
 const ROLE_LABELS: Record<UserRole, string> = {
   ADMIN: 'ADMIN',
   GYM_OWNER: 'GYM',
   COACH: 'COACH',
-  ATHLETE: 'ATHLETE',
+  ATHLETE: 'ATHLETE'
 };
 
 // ========== PULSE TICKER ==========
@@ -235,7 +235,7 @@ const st = StyleSheet.create({
   backdrop: { flex: 1, flexDirection: 'row' },
   blurLayer: {
     flex: 1, backgroundColor: 'rgba(0,12,18,0.7)',
-    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px) saturate(130%)', WebkitBackdropFilter: 'blur(20px) saturate(130%)' } as any : {}),
+    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px) saturate(130%)', WebkitBackdropFilter: 'blur(20px) saturate(130%)' } as any : {})
   },
   panel: { width: Math.min(SW * 0.78, 320), height: '100%' },
   panelInner: { flex: 1, borderLeftWidth: 1.5, borderLeftColor: '#00E5FF22' },
@@ -247,7 +247,7 @@ const st = StyleSheet.create({
   tierBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 18, marginBottom: 16,
     paddingVertical: 8, paddingHorizontal: 14, backgroundColor: '#00E5FF15',
-    borderRadius: 10, borderWidth: 1, borderColor: 'rgba(0,229,255,0.1)',
+    borderRadius: 10, borderWidth: 1, borderColor: 'rgba(0,229,255,0.1)'
   },
   tierLabel: { color: CYAN, fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
   tierSub: { color: DIM, fontSize: 10, fontWeight: '400', letterSpacing: 0.5 },
@@ -263,7 +263,7 @@ const st = StyleSheet.create({
   founderPride: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     marginHorizontal: 18, marginTop: 10, padding: 12, borderRadius: 10,
-    backgroundColor: 'rgba(255,215,0,0.03)', borderWidth: 1, borderColor: 'rgba(255,215,0,0.08)',
+    backgroundColor: 'rgba(255,215,0,0.03)', borderWidth: 1, borderColor: 'rgba(255,215,0,0.08)'
   },
   founderQuote: { flex: 1, color: GOLD, fontSize: 11, fontWeight: '700', letterSpacing: 0.3, lineHeight: 15, opacity: 0.8 },
   adminSection: { marginTop: 2, paddingHorizontal: 18 },
@@ -273,7 +273,7 @@ const st = StyleSheet.create({
   segGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10, width: '100%' },
   segBtn: {
     width: '47%', alignItems: 'center', gap: 3, paddingVertical: 12, borderRadius: 10,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.03)'
   },
   segBtnActive: { borderColor: GOLD, backgroundColor: 'rgba(255,215,0,0.06)' },
   segLabel: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5, color: '#999' },
@@ -282,7 +282,7 @@ const st = StyleSheet.create({
   activeBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
     paddingVertical: 6, borderRadius: 6, backgroundColor: 'rgba(255,215,0,0.03)',
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.08)', marginBottom: 6,
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.08)', marginBottom: 6
   },
   activeText: { fontSize: 10, fontWeight: '900', letterSpacing: 2, color: GOLD },
   logoutItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13, paddingHorizontal: 18, marginTop: 2 },
@@ -290,5 +290,5 @@ const st = StyleSheet.create({
   logoutSub: { color: 'rgba(255,59,48,0.25)', fontSize: 11 },
   ticker: { height: 18, overflow: 'hidden', borderTopWidth: 1, borderTopColor: '#00E5FF15', justifyContent: 'center' },
   tickerText: { color: CYAN, fontSize: 10, fontWeight: '400', letterSpacing: 0.3, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', opacity: 0.4 },
-  footer: { color: '#555', fontSize: 10, fontWeight: '400', letterSpacing: 1.5, paddingHorizontal: 18, paddingBottom: 24 },
+  footer: { color: '#555', fontSize: 10, fontWeight: '400', letterSpacing: 1.5, paddingHorizontal: 18, paddingBottom: 24 }
 });

@@ -11,13 +11,13 @@
  */
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Platform, Dimensions,
+  View, Text, StyleSheet, TouchableOpacity, Platform, Dimensions
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming, withSpring,
   useAnimatedStyle, Easing, FadeIn, FadeOut,
-  interpolate, Extrapolation,
+  interpolate, Extrapolation
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { DeviceMotion, DeviceMotionMeasurement } from 'expo-sensors';
@@ -78,10 +78,7 @@ function BubbleLevel({ tiltAngle, isCorrect }: { tiltAngle: number; isCorrect: b
 
   const bubbleStyle = useAnimatedStyle(() => ({
     left: bubbleX.value - BUBBLE_R,
-    backgroundColor: `rgba(${interpolate(bubbleColor.value, [0, 1], [255, 0])}, ${interpolate(bubbleColor.value, [0, 1], [149, 242])}, ${interpolate(bubbleColor.value, [0, 1], [0, 255])}, 0.9)`,
-    shadowColor: isCorrect ? CYAN : ORANGE,
-    shadowOpacity: 0.8,
-    shadowRadius: 12,
+    backgroundColor: `rgba(${interpolate(bubbleColor.value, [0, 1], [255, 0])}, ${interpolate(bubbleColor.value, [0, 1], [149, 242])}, ${interpolate(bubbleColor.value, [0, 1], [0, 255])}, 0.9)` ? CYAN : ORANGE
   }));
 
   // Target zone indicator
@@ -125,7 +122,7 @@ const bl$ = StyleSheet.create({
   labels: { flexDirection: 'row', justifyContent: 'space-between', width: 220, paddingHorizontal: 4 },
   labelSub: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '300', letterSpacing: 1 },
   angleVal: { fontSize: 18, fontWeight: '900', letterSpacing: 2 },
-  feedback: { fontSize: 14, fontWeight: '900', letterSpacing: 2, marginTop: 4 },
+  feedback: { fontSize: 14, fontWeight: '900', letterSpacing: 2, marginTop: 4 }
 });
 
 // ── ScreenFlash beacon ────────────────────────────────────────────────────────
@@ -427,12 +424,12 @@ const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#000000',
-    zIndex: 100,
+    zIndex: 100
   },
   content: { flex: 1, paddingHorizontal: 24, paddingTop: 60, gap: 24 },
 
   header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  headerDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: CYAN, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
+  headerDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: CYAN },
   headerTitle: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
   skipBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   skipText: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '700', letterSpacing: 1.5 },
@@ -461,5 +458,5 @@ const styles = StyleSheet.create({
   beaconRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   beaconText: { color: 'rgba(255,255,255,0.5)', fontSize: 15, fontWeight: '300', flex: 1 },
   startNowBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: CYAN, borderRadius: 14, paddingVertical: 16, paddingHorizontal: 40, alignSelf: 'stretch', marginTop: 8 },
-  startNowText: { color: '#000', fontSize: 17, fontWeight: '900', letterSpacing: 3 },
+  startNowText: { color: '#000', fontSize: 17, fontWeight: '900', letterSpacing: 3 }
 });

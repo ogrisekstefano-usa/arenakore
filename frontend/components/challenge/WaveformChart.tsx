@@ -21,7 +21,7 @@ interface WaveformProps {
 
 export function WaveformChart({
   waveformData, peakCount, declaredReps, repMatchPct, status,
-  width = 320, height = 120,
+  width = 320, height = 120
 }: WaveformProps) {
   if (!waveformData || waveformData.length === 0) {
     return (
@@ -126,15 +126,15 @@ const wf = StyleSheet.create({
   container: {
     backgroundColor: 'rgba(255,255,255,0.03)',
     borderWidth: 1, borderColor: 'rgba(255,149,0,0.15)',
-    borderRadius: 14, padding: 12, gap: 6,
+    borderRadius: 14, padding: 12, gap: 6
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   title: {
-    color: '#FF9500', fontSize: 11, fontWeight: '900', letterSpacing: 2, flex: 1,
+    color: '#FF9500', fontSize: 11, fontWeight: '900', letterSpacing: 2, flex: 1
   },
   betaPill: {
     backgroundColor: 'rgba(255,149,0,0.15)', borderRadius: 4,
-    paddingHorizontal: 6, paddingVertical: 2,
+    paddingHorizontal: 6, paddingVertical: 2
   },
   betaText: { color: '#FF9500', fontSize: 8, fontWeight: '900', letterSpacing: 1 },
   empty: { padding: 20, alignItems: 'center' },
@@ -144,7 +144,7 @@ const wf = StyleSheet.create({
   statLabel: { color: 'rgba(255,255,255,0.35)', fontSize: 8, fontWeight: '800', letterSpacing: 1 },
   statVal: { color: '#FFFFFF', fontSize: 16, fontWeight: '900' },
   statusPill: {
-    borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, marginLeft: 'auto' as any,
+    borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, marginLeft: 'auto' as any
   },
-  statusText: { fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  statusText: { fontSize: 9, fontWeight: '900', letterSpacing: 1 }
 });

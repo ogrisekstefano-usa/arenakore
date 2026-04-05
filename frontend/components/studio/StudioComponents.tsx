@@ -75,7 +75,7 @@ const h$ = StyleSheet.create({
   statSep: { color: 'rgba(255,255,255,0.2)' },
   legend: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-end' },
   legendLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: '400' },
-  legendCell: { width: 12, height: 12, borderRadius: 2 },
+  legendCell: { width: 12, height: 12, borderRadius: 2 }
 });
 
 // ── Line Chart (Historical DNA Trends) ────────────────────────────────────
@@ -155,7 +155,7 @@ export function KPICard({ label, value, sub, color = '#00E5FF', icon, trend }: a
         backgroundColor: theme.surface,
         borderColor: theme.border,
         borderRadius: theme.cardRadius,
-        ...(Platform.OS === 'web' && theme.cardShadow ? { boxShadow: theme.cardShadowCss } as any : {}),
+        ...(Platform.OS === 'web' && theme.cardShadow ? { boxShadow: theme.cardShadowCss } as any : {})
       }]}
       {...(Platform.OS === 'web' ? { 'data-nexus-card': '1' } as any : {})}
     >
@@ -182,7 +182,7 @@ const k$ = StyleSheet.create({
   label: { letterSpacing: 2 },
   sub: {},
   trendBadge: { borderRadius: 6, width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
-  trendText: { fontSize: 14, fontWeight: '900' },
+  trendText: { fontSize: 14, fontWeight: '900' }
 });
 
 // ── Alert Row ──────────────────────────────────────────────────────────────
@@ -205,7 +205,7 @@ const al$ = StyleSheet.create({
   left: { gap: 4, minWidth: 100 },
   badge: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5, borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, alignSelf: 'flex-start' },
   athlete: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', letterSpacing: 0.5 },
-  message: { flex: 1, color: '#AAAAAA', fontSize: 14, fontWeight: '300', lineHeight: 17 },
+  message: { flex: 1, color: '#AAAAAA', fontSize: 14, fontWeight: '300', lineHeight: 17 }
 });
 
 // ── Section Header ─────────────────────────────────────────────────────────
@@ -227,7 +227,7 @@ export function SectionHeader({ title, sub }: { title: string; sub?: string; act
 const sh$ = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 14 },
   title: {},
-  sub: { marginTop: 3 },
+  sub: { marginTop: 3 }
 });
 
 export { DNA_KEYS, DNA_SHORT, LINE_COLORS };

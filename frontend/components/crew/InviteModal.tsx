@@ -5,7 +5,7 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, TextInput,
-  ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform,
+  ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../utils/api';
@@ -85,13 +85,13 @@ const inv$ = StyleSheet.create({
   searchBox: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: '#1A1A1A', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)'
   },
   searchInput: { flex: 1, color: '#FFF', fontSize: 19, padding: 0 },
   results: { marginTop: 12 },
   userRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.45)',
+    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.45)'
   },
   avatar: { width: 36, height: 36, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#000000', fontSize: 19, fontWeight: '900' },
@@ -102,5 +102,5 @@ const inv$ = StyleSheet.create({
   inviteBtnText: { color: '#000000', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
   noResults: { color: 'rgba(255,255,255,0.4)', fontSize: 18, textAlign: 'center', padding: 20 },
   closeBtn: { marginTop: 12, alignItems: 'center', paddingVertical: 10 },
-  closeText: { color: 'rgba(255,255,255,0.4)', fontSize: 19, fontWeight: '600' },
+  closeText: { color: 'rgba(255,255,255,0.4)', fontSize: 19, fontWeight: '600' }
 });

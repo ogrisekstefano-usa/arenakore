@@ -5,12 +5,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, TextInput, Platform,
+  ActivityIndicator, TextInput, Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, {
   Polygon, Line, Circle, Text as SvgText,
-  Path, G,
+  Path, G
 } from 'react-native-svg';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -119,7 +119,7 @@ export default function TalentReportPage() {
       // Call real backend PDF endpoint
       const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL || '';
       const response = await fetch(`${backendUrl}/api/report/athlete-pdf/${athleteId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (!response.ok) throw new Error('PDF generation failed');
       const blob = await response.blob();
@@ -370,7 +370,7 @@ const rp$ = StyleSheet.create({
   topActions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   back: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   backText: { fontSize: 15, letterSpacing: 1 },
-  exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#FFD700', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 9, shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.35, shadowRadius: 10 },
+  exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: '#FFD700', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 9 },
   exportBtnText: { color: '#000', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   // Trading card
   card: { backgroundColor: '#000000', borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
@@ -428,5 +428,5 @@ const rp$ = StyleSheet.create({
   noteText: { fontSize: 14, lineHeight: 18 },
   // Footer
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', padding: 14, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.07)', backgroundColor: '#0A0A0A' },
-  footerText: { color: 'rgba(255,255,255,0.2)', fontSize: 12, letterSpacing: 0.5 },
+  footerText: { color: 'rgba(255,255,255,0.2)', fontSize: 12, letterSpacing: 0.5 }
 });

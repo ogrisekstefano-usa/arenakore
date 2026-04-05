@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, ImageBackground, RefreshControl,
+  ActivityIndicator, ImageBackground, RefreshControl
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeInDown, useSharedValue, withRepeat, withSequence,
-  withTiming, useAnimatedStyle, Easing, withDelay,
+  withTiming, useAnimatedStyle, Easing, withDelay
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,7 +22,7 @@ import { CertBadge } from './CertBadge';
 const MEDAL_COLORS: Record<number, { bg: string; border: string; text: string; glow: string }> = {
   1: { bg: 'rgba(255,215,0,0.2)', border: 'rgba(255,215,0,0.5)', text: '#FFD700', glow: '#FFD700' },
   2: { bg: 'rgba(192,192,192,0.15)', border: 'rgba(192,192,192,0.4)', text: '#C0C0C0', glow: '#C0C0C0' },
-  3: { bg: 'rgba(205,127,50,0.15)', border: 'rgba(205,127,50,0.4)', text: '#CD7F32', glow: '#CD7F32' },
+  3: { bg: 'rgba(205,127,50,0.15)', border: 'rgba(205,127,50,0.4)', text: '#CD7F32', glow: '#CD7F32' }
 };
 
 const SPORT_ICON_MAP: Record<string, { icon: keyof typeof Ionicons.glyphMap; color: string }> = {
@@ -33,12 +33,12 @@ const SPORT_ICON_MAP: Record<string, { icon: keyof typeof Ionicons.glyphMap; col
   fitness:  { icon: 'barbell', color: '#FFD700' },
   outdoor:  { icon: 'trail-sign', color: '#30B0C7' },
   mind_body: { icon: 'leaf', color: '#AF52DE' },
-  extreme:  { icon: 'flame', color: '#FF2D55' },
+  extreme:  { icon: 'flame', color: '#FF2D55' }
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
   atletica: 'ATLETICA', combat: 'COMBAT', acqua: 'ACQUA', team: 'TEAM',
-  fitness: 'FITNESS', outdoor: 'OUTDOOR', mind_body: 'MIND & BODY', extreme: 'EXTREME',
+  fitness: 'FITNESS', outdoor: 'OUTDOOR', mind_body: 'MIND & BODY', extreme: 'EXTREME'
 };
 
 type TabType = 'global' | 'sport' | 'crews';
@@ -55,7 +55,7 @@ function ShimmerName({ name, color }: { name: string; color: string }) {
     );
   }, []);
   const shimmerStyle = useAnimatedStyle(() => ({
-    opacity: 0.3 + Math.max(0, 1 - Math.abs(shimmerX.value)) * 0.7,
+    opacity: 0.3 + Math.max(0, 1 - Math.abs(shimmerX.value)) * 0.7
   }));
   return <Animated.Text style={[{ fontSize: 18, fontWeight: '900', letterSpacing: -0.3, color }, shimmerStyle]}>{name}</Animated.Text>;
 }
@@ -107,14 +107,13 @@ const giant$ = StyleSheet.create({
   card: {
     flex: 1, alignItems: 'center', gap: 4, paddingVertical: 16, paddingHorizontal: 6,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16,
-    borderWidth: 1, minHeight: 170,
+    borderWidth: 1, minHeight: 170
   },
   rankBadge: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   rankNum: { fontSize: 18, fontWeight: '400', letterSpacing: 1 },
   avatarWrap: {
     width: 52, height: 52, borderRadius: 26, borderWidth: 2,
-    alignItems: 'center', justifyContent: 'center',
-    shadowOffset: { width: 0, height: 0 }, shadowRadius: 12, elevation: 8,
+    alignItems: 'center', justifyContent: 'center', elevation: 8
   },
   avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: '#000000', fontSize: 20, fontWeight: '900' },
@@ -124,9 +123,9 @@ const giant$ = StyleSheet.create({
   xpText: { fontSize: 17, fontWeight: '900' },
   founderTag: {
     backgroundColor: 'rgba(255,215,0,0.15)', borderRadius: 4,
-    paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(255,215,0,0.35)',
+    paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(255,215,0,0.35)'
   },
-  founderText: { color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  founderText: { color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 1 }
 });
 
 // REGULAR LEADERBOARD ROW
@@ -176,7 +175,7 @@ const row$ = StyleSheet.create({
   container: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingHorizontal: 24, paddingVertical: 10,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)'
   },
   rank: { color: 'rgba(255,255,255,0.4)', fontSize: 19, fontWeight: '900', width: 30, textAlign: 'center' },
   avatar: { width: 36, height: 36, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
@@ -186,7 +185,7 @@ const row$ = StyleSheet.create({
   name: { color: '#FFFFFF', fontSize: 19, fontWeight: '800' },
   founderPill: {
     backgroundColor: 'rgba(255,215,0,0.2)', width: 16, height: 16,
-    borderRadius: 8, alignItems: 'center', justifyContent: 'center',
+    borderRadius: 8, alignItems: 'center', justifyContent: 'center'
   },
   founderPillText: { color: '#FFD700', fontSize: 13, fontWeight: '900' },
   certMini: { width: 14, height: 14, borderRadius: 7, backgroundColor: 'rgba(0,229,255,0.1)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#00E5FF22' },
@@ -195,7 +194,7 @@ const row$ = StyleSheet.create({
   right: { alignItems: 'flex-end', gap: 4 },
   xp: { color: '#FFD700', fontSize: 19, fontWeight: '900' },
   challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FF3B30', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
-  challengeText: { color: '#000000', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  challengeText: { color: '#000000', fontSize: 12, fontWeight: '900', letterSpacing: 1 }
 });
 
 // CREW LEADERBOARD ROW
@@ -243,7 +242,7 @@ const cr$ = StyleSheet.create({
   container: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingHorizontal: 24, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)'
   },
   rankWrap: { width: 32, alignItems: 'center' },
   rank: { color: 'rgba(255,255,255,0.4)', fontSize: 18, fontWeight: '900', textAlign: 'center' },
@@ -256,7 +255,7 @@ const cr$ = StyleSheet.create({
   right: { alignItems: 'flex-end', gap: 2 },
   xp: { color: '#FFD700', fontSize: 19, fontWeight: '900' },
   membersRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  members: { color: 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: '700' },
+  members: { color: 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: '700' }
 });
 
 // MY STATUS BAR (Sticky Footer)
@@ -274,7 +273,7 @@ function MyStatusBar({ rankData }: { rankData: any }) {
   }, [isTop10]);
 
   const borderStyle = useAnimatedStyle(() => ({
-    borderColor: isTop10 ? `rgba(0,229,255,${pulseOpacity.value})` : 'rgba(255,255,255,0.05)',
+    borderColor: isTop10 ? `rgba(0,229,255,${pulseOpacity.value})` : 'rgba(255,255,255,0.05)'
   }));
 
   if (!rankData) return null;
@@ -314,7 +313,7 @@ const status$ = StyleSheet.create({
   rankCircle: {
     width: 42, height: 42, borderRadius: 21,
     backgroundColor: 'rgba(255,215,0,0.12)', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.3)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.3)'
   },
   rankText: { color: '#FFD700', fontSize: 19, fontWeight: '900' },
   textCol: { flex: 1, gap: 2 },
@@ -322,9 +321,9 @@ const status$ = StyleSheet.create({
   sub: { color: 'rgba(255,255,255,0.4)', fontSize: 15, fontWeight: '400' },
   topBadge: {
     backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 8,
-    paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)',
+    paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)'
   },
-  topText: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
+  topText: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 1 }
 });
 
 // ===========================
@@ -529,14 +528,14 @@ const gl$ = StyleSheet.create({
   overlay: { flex: 1 },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 24, paddingBottom: 10,
+    paddingHorizontal: 24, paddingBottom: 10
   },
   titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   title: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: 4 },
   tabRow: {
     flexDirection: 'row', marginHorizontal: 24, gap: 4,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 3,
-    alignItems: 'center',
+    alignItems: 'center'
   },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
   tabActive: { backgroundColor: 'rgba(255,215,0,0.15)' },
@@ -552,23 +551,23 @@ const gl$ = StyleSheet.create({
   catChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
-    borderWidth: 1, borderColor: '#2A2A2A',
+    borderWidth: 1, borderColor: '#2A2A2A'
   },
   catChipActive: { borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.1)' },
   catChipText: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
   catChipTextActive: { color: '#FFD700' },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 24, paddingTop: 16, paddingBottom: 10,
+    paddingHorizontal: 24, paddingTop: 16, paddingBottom: 10
   },
   sectionTitle: {
-    color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 2,
+    color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 2
   },
   giantsRow: { flexDirection: 'row', paddingHorizontal: 12, gap: 8 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
   loadingText: { color: 'rgba(255,255,255,0.4)', fontSize: 17, marginTop: 8 },
   emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 18, fontWeight: '800' },
-  emptySub: { color: 'rgba(255,255,255,0.3)', fontSize: 18 },
+  emptySub: { color: 'rgba(255,255,255,0.3)', fontSize: 18 }
 });
 
 const sw$ = StyleSheet.create({
@@ -576,7 +575,7 @@ const sw$ = StyleSheet.create({
   btn: { flex: 1, paddingVertical: 9, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', alignItems: 'center' },
   btnActive: { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: '#00E5FF' },
   text: { color: '#AAAAAA', fontSize: 14, fontWeight: '700', letterSpacing: 1.5 },
-  textActive: { color: '#00E5FF', fontWeight: '900' },
+  textActive: { color: '#00E5FF', fontWeight: '900' }
 });
 
 const cr2$ = StyleSheet.create({
@@ -585,6 +584,6 @@ const cr2$ = StyleSheet.create({
   label: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
   sub: { color: '#AAAAAA', fontSize: 14, fontWeight: '400' },
   btn: { backgroundColor: '#00E5FF', borderRadius: 8, paddingHorizontal: 24, paddingVertical: 9 },
-  btnText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  btnText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 }
 });
 

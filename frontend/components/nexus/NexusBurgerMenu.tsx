@@ -5,13 +5,13 @@
 import React from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView,
-  Dimensions, Platform,
+  Dimensions, Platform
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useSharedValue, withRepeat, withTiming, useAnimatedStyle, Easing,
-  SlideInRight, SlideOutRight,
+  SlideInRight, SlideOutRight
 } from 'react-native-reanimated';
 import { UserRole, ROLE_CONFIG } from '../../contexts/AuthContext';
 import { DeviceTier, getTierLabel, getTrackingMode } from '../../utils/DeviceIntelligence';
@@ -122,7 +122,7 @@ export function BurgerMenu({ visible, onClose, user, onLogout, deviceTier, activ
                       const cfg = ROLE_CONFIG[role];
                       const isActive = activeRole === role;
                       const roleIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
-                        ADMIN: 'shield-checkmark', GYM_OWNER: 'business', COACH: 'fitness', ATHLETE: 'person',
+                        ADMIN: 'shield-checkmark', GYM_OWNER: 'business', COACH: 'fitness', ATHLETE: 'person'
                       };
                       return (
                         <TouchableOpacity key={role} style={[bm$.roleBtn, isActive && { borderColor: cfg.color, backgroundColor: `${cfg.color}15` }]} onPress={() => onRoleSwitch(role)} activeOpacity={0.7}>
@@ -163,7 +163,7 @@ const bm$ = StyleSheet.create({
   backdrop: { flex: 1, flexDirection: 'row' },
   blurLayer: {
     flex: 1, backgroundColor: 'rgba(0,18,25,0.65)',
-    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(18px) saturate(120%)', WebkitBackdropFilter: 'blur(18px) saturate(120%)' } as any : {}),
+    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(18px) saturate(120%)', WebkitBackdropFilter: 'blur(18px) saturate(120%)' } as any : {})
   },
   blurLayerLegacy: { flex: 1, backgroundColor: 'rgba(0,8,12,0.85)' },
   panel: { width: SW * 0.72, height: '100%' },
@@ -174,7 +174,7 @@ const bm$ = StyleSheet.create({
   tierBadge: {
     marginHorizontal: 20, marginBottom: 16, paddingVertical: 8, paddingHorizontal: 24,
     backgroundColor: '#00E5FF22', borderRadius: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', gap: 2,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', gap: 2
   },
   tierLabel: { color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   tierSub: { color: '#555', fontSize: 10, fontWeight: '600', letterSpacing: 1 },
@@ -184,12 +184,12 @@ const bm$ = StyleSheet.create({
   itemSub: { color: '#555', fontSize: 12 },
   founderPride: {
     margin: 20, backgroundColor: 'rgba(255,215,0,0.05)', borderRadius: 14,
-    padding: 18, borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)', alignItems: 'center', gap: 10,
+    padding: 18, borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)', alignItems: 'center', gap: 10
   },
   founderQuote: { color: '#FFD700', fontSize: 13, fontWeight: '600', fontStyle: 'italic', textAlign: 'center', lineHeight: 17, opacity: 0.85 },
   logoutBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 16,
-    paddingHorizontal: 20, marginTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(255,59,48,0.08)',
+    paddingHorizontal: 20, marginTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(255,59,48,0.08)'
   },
   logoutLabel: { color: 'rgba(255,59,48,0.7)', fontSize: 15, fontWeight: '800', letterSpacing: 2 },
   logoutSub: { color: 'rgba(255,59,48,0.35)', fontSize: 12 },
@@ -202,16 +202,16 @@ const bm$ = StyleSheet.create({
   roleBtn: {
     width: '47%' as any, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 10,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.02)',
-    alignItems: 'center', gap: 4, position: 'relative' as any,
+    alignItems: 'center', gap: 4, position: 'relative' as any
   },
   roleLabel: { color: '#888', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   roleDot: { position: 'absolute' as any, top: 6, right: 6, width: 6, height: 6, borderRadius: 3 },
   activeRoleBar: {
     marginTop: 12, padding: 10, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.02)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', alignItems: 'center', gap: 2,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', alignItems: 'center', gap: 2
   },
   activeRoleText: { fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   activeRoleDesc: { color: '#555', fontSize: 10, fontWeight: '600' },
   gymSection: { marginTop: 4 },
-  footer: { color: '#333', fontSize: 11, fontWeight: '600', letterSpacing: 1, paddingHorizontal: 20, paddingBottom: 30 },
+  footer: { color: '#333', fontSize: 11, fontWeight: '600', letterSpacing: 1, paddingHorizontal: 20, paddingBottom: 30 }
 });

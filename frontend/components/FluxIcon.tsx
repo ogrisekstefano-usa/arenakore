@@ -10,7 +10,7 @@ import { View, StyleSheet } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
   useSharedValue, useAnimatedStyle,
-  withTiming, withSequence, withRepeat, Easing,
+  withTiming, withSequence, withRepeat, Easing
 } from 'react-native-reanimated';
 
 // ── FLUX ICON (Two kinetic arrows → infinity loop) ──────────────────────────
@@ -66,11 +66,11 @@ export function FluxPulse({ children, active, color = '#00FFFF' }: FluxPulseProp
 
   const glowStyle = useAnimatedStyle(() => ({
     opacity: glowOpacity.value,
-    transform: [{ scale: 1.6 }],
+    transform: [{ scale: 1.6 }]
   }));
 
   const contentStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [{ scale: scale.value }]
   }));
 
   return (
@@ -85,5 +85,5 @@ export function FluxPulse({ children, active, color = '#00FFFF' }: FluxPulseProp
 
 const p$ = StyleSheet.create({
   wrap: { position: 'relative', alignItems: 'center', justifyContent: 'center' },
-  glow: { position: 'absolute', width: 32, height: 32, borderRadius: 16 },
+  glow: { position: 'absolute', width: 32, height: 32, borderRadius: 16 }
 });

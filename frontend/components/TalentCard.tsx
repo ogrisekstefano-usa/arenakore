@@ -83,7 +83,7 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
     try {
       await Share.share({
         message: `ARENAKORE TALENT CARD\n${'━'.repeat(15)}\n${user.username?.toUpperCase()}\nLVL ${user.level} | ${user.xp} FLUX\n${user.sport?.toUpperCase() || 'KORE'}${xpText}${recordText}\n\n${statsText}\n\nOVR: ${avgStat}/100\n${'━'.repeat(15)}\n#ArenaKore #${user.sport} #Performance`,
-        title: `${user.username} - ArenaKore Talent Card`,
+        title: `${user.username} - ArenaKore Talent Card`
       });
     } catch (e) {
       Alert.alert('Condivisione non disponibile');
@@ -209,14 +209,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0,229,255,0.22)',
     gap: 12,
-    shadowColor: '#00E5FF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 6,
+    elevation: 6
   },
   cardHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
   },
   cardBrand: { flexDirection: 'row', gap: 4 },
   brandArena: { color: '#FFFFFF', fontSize: 19, fontWeight: '900', letterSpacing: -0.5 },
@@ -227,7 +223,7 @@ const styles = StyleSheet.create({
   profileRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatar: {
     width: 48, height: 48, borderRadius: 24,
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
   avatarText: { color: '#000000', fontSize: 22, fontWeight: '900' },
   profileInfo: { flex: 1, gap: 2 },
@@ -236,7 +232,7 @@ const styles = StyleSheet.create({
   founderBadge: {
     backgroundColor: 'rgba(255,215,0,0.15)',
     borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2,
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.4)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.4)'
   },
   founderText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
   sport: { color: '#00E5FF', fontSize: 16, fontWeight: '700', letterSpacing: 2 },
@@ -247,7 +243,7 @@ const styles = StyleSheet.create({
     width: 52, height: 52, borderRadius: 26,
     backgroundColor: 'rgba(0,229,255,0.08)',
     borderWidth: 2, borderColor: '#00E5FF44',
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
   ovrVal: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
   ovrLabel: { color: '#00E5FF', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
@@ -255,7 +251,7 @@ const styles = StyleSheet.create({
   challengeRow: {
     backgroundColor: 'rgba(255,215,0,0.06)',
     borderRadius: 8, padding: 10,
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)'
   },
   challengeLabel: { color: '#888', fontSize: 13, fontWeight: '400', letterSpacing: 2 },
   challengeTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '400', marginTop: 2 },
@@ -265,7 +261,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(255,215,0,0.08)',
     borderRadius: 6, padding: 8,
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)'
   },
   recordIcon: { fontSize: 18 },
   recordText: { color: '#FFD700', fontSize: 16, fontWeight: '700', letterSpacing: 1 },
@@ -287,7 +283,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: 'rgba(0,0,0,0.7)',
     borderWidth: 1,
-    borderColor: '#00E5FF22',
+    borderColor: '#00E5FF22'
   },
 
   shareBtn: {
@@ -296,7 +292,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderColor: 'rgba(255,255,255,0.3)'
   },
-  shareBtnText: { color: '#00E5FF', fontSize: 16, fontWeight: '800', letterSpacing: 2 },
+  shareBtnText: { color: '#00E5FF', fontSize: 16, fontWeight: '800', letterSpacing: 2 }
 });

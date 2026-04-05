@@ -110,7 +110,7 @@ const ROLE_BADGE: Record<string, { color: string; bg: string; label: string }> =
   GYM_OWNER: { color: '#FFD700', bg: 'rgba(255,215,0,0.12)', label: 'OWNER' },
   COACH:     { color: '#00E5FF', bg: 'rgba(0,229,255,0.08)',   label: 'COACH' },
   ATHLETE:   { color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.05)', label: 'ATHLETE' },
-  ADMIN:     { color: '#AF52DE', bg: 'rgba(175,82,222,0.1)',   label: 'ADMIN' },
+  ADMIN:     { color: '#AF52DE', bg: 'rgba(175,82,222,0.1)',   label: 'ADMIN' }
 };
 
 function getNavItems(role: string | undefined) {
@@ -126,7 +126,7 @@ function ThemeToggle() {
       onPress={toggle}
       style={[tg$.wrap, {
         backgroundColor: theme.surface2,
-        borderColor: theme.border2,
+        borderColor: theme.border2
       }]}
       activeOpacity={0.8}
     >
@@ -138,7 +138,7 @@ function ThemeToggle() {
 }
 const tg$ = StyleSheet.create({
   wrap: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 6, position: 'relative' },
-  pill: { position: 'absolute', left: 4, top: 4, width: '46%' as any, bottom: 4, borderRadius: 16, backgroundColor: 'rgba(0,229,255,0.3)', transition: 'left 0.2s' } as any,
+  pill: { position: 'absolute', left: 4, top: 4, width: '46%' as any, bottom: 4, borderRadius: 16, backgroundColor: 'rgba(0,229,255,0.3)', transition: 'left 0.2s' } as any
 });
 
 // ── Nav Item ──────────────────────────────────────────────────────────────────
@@ -160,7 +160,7 @@ function NavItem({ item, isActive, theme, onPress }: any) {
       {/* Active bg */}
       <Animated.View
         style={[ni$.activeBg, {
-          backgroundColor: isActive ? theme.accent + '10' : 'transparent',
+          backgroundColor: isActive ? theme.accent + '10' : 'transparent'
         }]}
       />
       <Ionicons
@@ -185,7 +185,7 @@ const ni$ = StyleSheet.create({
   activeBg: { ...StyleSheet.absoluteFillObject, borderRadius: 10 },
   text: { flex: 1, gap: 1 },
   label: { fontSize: 13, letterSpacing: 1.5 },
-  sub: { fontSize: 11, letterSpacing: 0.5 },
+  sub: { fontSize: 11, letterSpacing: 0.5 }
 });
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
@@ -251,7 +251,7 @@ function CommandCenterInner() {
         { backgroundColor: theme.navBg, borderRightColor: theme.navBorder },
         Platform.OS === 'web' ? ({
           backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)'
         } as any) : {},
       ]}>
         {/* Brand */}
@@ -336,7 +336,7 @@ const l$ = StyleSheet.create({
   rolePill: { borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1, alignSelf: 'flex-start' },
   roleText: { fontSize: 10, letterSpacing: 2 },
   exitBtn: { padding: 4 },
-  main: { flex: 1 },
+  main: { flex: 1 }
 });
 
 const mob$ = StyleSheet.create({
@@ -344,5 +344,5 @@ const mob$ = StyleSheet.create({
   title: { fontSize: 20, letterSpacing: 3 },
   sub: { fontSize: 15, textAlign: 'center', lineHeight: 20 },
   btn: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 20, paddingVertical: 10 },
-  btnTxt: { fontSize: 14, letterSpacing: 2 },
+  btnTxt: { fontSize: 14, letterSpacing: 2 }
 });

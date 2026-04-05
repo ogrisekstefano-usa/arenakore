@@ -4,13 +4,13 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar,
-  TouchableOpacity, Dimensions, ImageBackground, ActivityIndicator, Alert,
+  TouchableOpacity, Dimensions, ImageBackground, ActivityIndicator, Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn, FadeInDown, useSharedValue,
-  withRepeat, withSequence, withTiming, useAnimatedStyle, Easing, withSpring,
+  withRepeat, withSequence, withTiming, useAnimatedStyle, Easing, withSpring
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -33,7 +33,7 @@ const KORE_OF_DAY = {
   exercise: 'DEEP SQUAT',
   xp: '+340 FLUX',
   rank: '#12',
-  level: 14,
+  level: 14
 };
 
 // DIVISION_UPDATES removed - EliteDivisionUpdates replaced by LiveBattleDashboard
@@ -87,7 +87,7 @@ const hero$ = StyleSheet.create({
   wrap: { marginHorizontal: 24, marginTop: 8, marginBottom: 16 },
   grad: {
     borderRadius: 20, overflow: 'hidden',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   tlBracket: { position: 'absolute', top: 12, left: 12, width: 20, height: 20, borderTopWidth: 2, borderLeftWidth: 2, borderColor: '#00E5FF', opacity: 0.5 },
   trBracket: { position: 'absolute', top: 12, right: 12, width: 20, height: 20, borderTopWidth: 2, borderRightWidth: 2, borderColor: '#00E5FF', opacity: 0.5 },
@@ -96,17 +96,17 @@ const hero$ = StyleSheet.create({
   inner: { paddingHorizontal: 24, paddingTop: 28, paddingBottom: 20, alignItems: 'center', gap: 8 },
   brandLine: { color: '#AAAAAA', fontSize: 13, fontWeight: '900', letterSpacing: 6 },
   titleLine: { color: '#FFFFFF', fontSize: 34, fontWeight: '800', letterSpacing: -0.5, textAlign: 'center', lineHeight: 41 },
-  cyanLine: { width: 60, height: 2, backgroundColor: '#00E5FF', borderRadius: 1, shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8 },
+  cyanLine: { width: 60, height: 2, backgroundColor: '#00E5FF', borderRadius: 1 },
   tagLine: { color: 'rgba(255,255,255,0.30)', fontSize: 14, fontWeight: '700', letterSpacing: 3, textAlign: 'center' },
   statsRow: {
-    flexDirection: 'row', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)',
+    flexDirection: 'row', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)'
   },
   statItem: {
     flex: 1, alignItems: 'center', gap: 3, paddingVertical: 12,
-    borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.04)',
+    borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.04)'
   },
   statVal: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 1 },
-  statLabel: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '700', letterSpacing: 1.5, textAlign: 'center' },
+  statLabel: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '700', letterSpacing: 1.5, textAlign: 'center' }
 });
 
 // ========== KORE OF THE DAY ==========
@@ -161,7 +161,7 @@ const kotd$ = StyleSheet.create({
   sport: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '300', letterSpacing: 1.5 },
   record: { alignItems: 'flex-end' },
   recordVal: { color: '#FFFFFF', fontSize: 26, fontWeight: '900', letterSpacing: 0.5 },
-  recordLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '300', letterSpacing: 1.5 },
+  recordLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '300', letterSpacing: 1.5 }
 });
 
 // ========== ELITE ACTIVITY FEED — Visual Cards ==========
@@ -178,7 +178,7 @@ const ACTION_COLORS: Record<string, string> = {
   'NUOVO RECORD': '#00E5FF',
   'LVL 12 RAGGIUNTO': '#AF52DE',
   'CREW BATTLE': '#FF3B30',
-  'DNA AGGIORNATO': '#00FF87',
+  'DNA AGGIORNATO': '#00FF87'
 };
 
 function EliteActivityFeed() {
@@ -257,7 +257,7 @@ const ef$ = StyleSheet.create({
   cardRight: { alignItems: 'flex-end', gap: 6 },
   xpText: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
   challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FFD700', borderRadius: 7, paddingHorizontal: 10, paddingVertical: 6 },
-  challengeText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
+  challengeText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1 }
 });
 
 // ========== WAR ROOM — ARENA BATTLE ENGINE ==========
@@ -303,7 +303,7 @@ const wb$ = StyleSheet.create({
   track: { height: 20, backgroundColor: '#222', borderRadius: 10, overflow: 'hidden' },
   fillMine: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 10 },
   pctRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  pct: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '700', letterSpacing: 1 },
+  pct: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '700', letterSpacing: 1 }
 });
 
 function LiveBattleCard({ battle, onOpenDashboard }: { battle: any; onOpenDashboard: (id: string) => void }) {
@@ -327,8 +327,7 @@ function LiveBattleCard({ battle, onOpenDashboard }: { battle: any; onOpenDashbo
     }
   }, [isLosing]);
   const borderStyle = useAnimatedStyle(() => ({
-    borderColor: isLosing ? `rgba(255,59,48,${borderGlow.value})` : 'rgba(255,255,255,0.06)',
-    shadowOpacity: isLosing ? borderGlow.value * 0.5 : 0,
+    borderColor: isLosing ? `rgba(255,59,48,${borderGlow.value})` : 'rgba(255,255,255,0.06)' ? borderGlow.value * 0.5 : 0
   }));
 
   return (
@@ -391,7 +390,7 @@ function LiveBattleCard({ battle, onOpenDashboard }: { battle: any; onOpenDashbo
 }
 
 const wrc$ = StyleSheet.create({
-  card: { marginHorizontal: 24, marginBottom: 10, borderRadius: 14, padding: 14, gap: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: '#000000', shadowColor: '#FF3B30', shadowOffset: { width: 0, height: 0 }, shadowRadius: 16 },
+  card: { marginHorizontal: 24, marginBottom: 10, borderRadius: 14, padding: 14, gap: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: '#000000' },
   teams: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   teamA: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
   teamB: { flex: 1, color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '900', letterSpacing: 1.5, textAlign: 'right' },
@@ -405,10 +404,10 @@ const wrc$ = StyleSheet.create({
   cta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#00E5FF', borderRadius: 10, paddingVertical: 12 },
   ctaLosing: { backgroundColor: '#FF3B30' },
   ctaText: { color: '#000000', fontSize: 14, fontWeight: '900', letterSpacing: 3 },
-  lastPush: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FF3B30', borderRadius: 10, paddingVertical: 14, shadowColor: '#FF3B30', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 16 },
+  lastPush: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FF3B30', borderRadius: 10, paddingVertical: 14 },
   lastPushText: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
   dashBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1, borderColor: 'rgba(0,229,255,0.2)', borderRadius: 10, paddingVertical: 10, backgroundColor: 'rgba(0,229,255,0.05)' },
-  dashBtnText: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
+  dashBtnText: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 2 }
 });
 
 function LiveBattleDashboard() {
@@ -473,7 +472,7 @@ const lbd$ = StyleSheet.create({
   loadWrap: { height: 60, alignItems: 'center', justifyContent: 'center' },
   emptyCard: { marginHorizontal: 24, backgroundColor: 'rgba(255,59,48,0.04)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,59,48,0.1)', gap: 4 },
   emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
-  emptySub: { color: 'rgba(255,255,255,0.25)', fontSize: 14, fontWeight: '400' },
+  emptySub: { color: 'rgba(255,255,255,0.25)', fontSize: 14, fontWeight: '400' }
 });
 
 // ========== MATCHMAKING AI PANEL ==========
@@ -623,7 +622,7 @@ const mp$ = StyleSheet.create({
   challengeBtnText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
   challenged: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   challengedText: { color: '#00FF87', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  footNote: { color: 'rgba(0,229,255,0.3)', fontSize: 12, fontWeight: '400', letterSpacing: 0.5, marginTop: 10, textAlign: 'center' },
+  footNote: { color: 'rgba(0,229,255,0.3)', fontSize: 12, fontWeight: '400', letterSpacing: 0.5, marginTop: 10, textAlign: 'center' }
 });
 
 
@@ -689,12 +688,12 @@ const s = StyleSheet.create({
   urgencyBanner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     backgroundColor: 'rgba(255,215,0,0.1)', paddingHorizontal: 24, paddingVertical: 10,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,215,0,0.25)', gap: 10,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,215,0,0.25)', gap: 10
   },
   urgencyLeft: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
   urgencyText: { color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: '300', flex: 1, lineHeight: 15 },
   urgencyCta: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#FFD700', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
-  urgencyCtaText: { color: '#000', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
+  urgencyCtaText: { color: '#000', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 }
 });
 
 const live$ = StyleSheet.create({ card: {} }); // legacy placeholder

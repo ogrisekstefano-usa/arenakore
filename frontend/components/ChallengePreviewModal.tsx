@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, Platform,
-  ActivityIndicator, Alert, ScrollView,
+  ActivityIndicator, Alert, ScrollView
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,7 +18,7 @@ const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default
 const FONT_M = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });
 
 const TEMPLATE_COLORS: Record<string, string> = {
-  AMRAP: '#FF3B30', EMOM: '#00E5FF', FOR_TIME: '#FFD700', TABATA: '#00FF87', CUSTOM: '#FF9500',
+  AMRAP: '#FF3B30', EMOM: '#00E5FF', FOR_TIME: '#FFD700', TABATA: '#00FF87', CUSTOM: '#FF9500'
 };
 
 interface Props {
@@ -47,7 +47,7 @@ export function ChallengePreviewModal({ visible, challengeData, onClose, onImpor
       const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
       const res = await fetch(`${backendUrl}/api/ugc/${challengeData.id}/import`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
       const data = await res.json();
       if (res.ok) {
@@ -195,5 +195,5 @@ const s = StyleSheet.create({
   statDivider: { width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.05)' },
   importBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 18, borderRadius: 16 },
   importedBtn: { backgroundColor: 'rgba(0,255,135,0.08)', borderWidth: 1, borderColor: 'rgba(0,255,135,0.2)' },
-  importBtnText: { color: '#0A0A0A', fontSize: 15, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
+  importBtnText: { color: '#0A0A0A', fontSize: 15, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J }
 });

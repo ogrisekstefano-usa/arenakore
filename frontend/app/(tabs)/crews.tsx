@@ -6,13 +6,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar, TouchableOpacity,
-  ActivityIndicator, Alert, RefreshControl, ImageBackground, Dimensions,
+  ActivityIndicator, Alert, RefreshControl, ImageBackground, Dimensions
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeInDown, SlideOutLeft,
-  Layout, Easing,
+  Layout, Easing
 } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
@@ -216,22 +216,22 @@ const s = StyleSheet.create({
   challengeBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     marginHorizontal: 4, marginTop: 6, marginBottom: 4,
-    backgroundColor: '#FFD700', borderRadius: 8, paddingVertical: 8,
+    backgroundColor: '#FFD700', borderRadius: 8, paddingVertical: 8
   },
   challengeBtnText: { color: '#000000', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 24, paddingTop: 20, paddingBottom: 10,
+    paddingHorizontal: 24, paddingTop: 20, paddingBottom: 10
   },
   sectionTitle: {
     color: '#FFFFFF', fontSize: 18, fontWeight: '900',
-    letterSpacing: 2, textTransform: 'uppercase',
+    letterSpacing: 2, textTransform: 'uppercase'
   },
   inviteCard: {
     marginHorizontal: 24, marginBottom: 10,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14,
-    padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    padding: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   inviteHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
   inviteInfo: { flex: 1, gap: 1 },
@@ -241,20 +241,20 @@ const s = StyleSheet.create({
   acceptBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: 'rgba(255,215,0,0.15)', borderRadius: 10, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.35)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.35)'
   },
   acceptText: { color: '#FFD700', fontSize: 17, fontWeight: '900', letterSpacing: 1 },
   declineBtn: {
     width: 44, backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 10, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   emptyState: { alignItems: 'center', padding: 40, gap: 8 },
   emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 18, fontWeight: '800' },
   emptySub: { color: 'rgba(255,255,255,0.3)', fontSize: 18, textAlign: 'center' },
   crewCard: {
     marginHorizontal: 24, marginBottom: 14, borderRadius: 20, overflow: 'hidden',
-    height: 180, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    height: 180, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   crewCardBg: { flex: 1 },
   crewCardImage: { borderRadius: 20 },
@@ -267,7 +267,7 @@ const s = StyleSheet.create({
   ownerBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: 'rgba(255,215,0,0.2)', borderRadius: 8,
-    paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: '#FFD700',
+    paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: '#FFD700'
   },
   ownerText: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   crewStats: { flexDirection: 'row', gap: 16, marginTop: 4 },
@@ -276,9 +276,7 @@ const s = StyleSheet.create({
   fab: {
     position: 'absolute', bottom: 90, left: 16, right: 16,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#FFD700', borderRadius: 14, paddingVertical: 16,
-    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4, shadowRadius: 12, elevation: 10,
+    backgroundColor: '#FFD700', borderRadius: 14, paddingVertical: 16, elevation: 10
   },
-  fabText: { color: '#000000', fontSize: 19, fontWeight: '900', letterSpacing: 2 },
+  fabText: { color: '#000000', fontSize: 19, fontWeight: '900', letterSpacing: 2 }
 });

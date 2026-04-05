@@ -33,7 +33,7 @@ const eb$ = StyleSheet.create({
     position: 'absolute',
     top: Platform.OS === 'ios' ? 56 : 16,
     right: 16,
-    zIndex: 999,
+    zIndex: 999
   },
   button: {
     width: 44,
@@ -43,6 +43,6 @@ const eb$ = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(255,59,48,0.4)',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center'
+  }
 });

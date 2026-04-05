@@ -21,11 +21,11 @@ const ATTRS = [
 
 const FONT_JAKARTA = Platform.select({
   web: "'Plus Jakarta Sans', 'Montserrat', -apple-system, sans-serif",
-  default: undefined,
+  default: undefined
 });
 const FONT_MONT = Platform.select({
   web: "'Montserrat', -apple-system, sans-serif",
-  default: undefined,
+  default: undefined
 });
 
 function polarToXY(cx: number, cy: number, r: number, angleDeg: number) {
@@ -82,7 +82,7 @@ export function RadarChart({ stats, size = 300, glowing = false, recordsBroken =
     return {
       left: LABEL_PAD + p.x,
       top: LABEL_PAD + p.y,
-      angle,
+      angle
     };
   });
 
@@ -122,7 +122,7 @@ export function RadarChart({ stats, size = 300, glowing = false, recordsBroken =
             {
               left: pos.left,
               top: pos.top,
-              transform: [{ translateX: -30 }, { translateY: -16 }],
+              transform: [{ translateX: -30 }, { translateY: -16 }]
             },
           ]}>
             <Text style={[
@@ -149,18 +149,18 @@ const r$ = StyleSheet.create({
     position: 'absolute',
     width: 60,
     alignItems: 'center',
-    gap: 1,
+    gap: 1
   },
   labelText: {
     fontSize: 10,
     fontWeight: '600',
     letterSpacing: 1,
-    textAlign: 'center',
+    textAlign: 'center'
   },
   valueText: {
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: -0.5,
-    textAlign: 'center',
-  },
+    textAlign: 'center'
+  }
 });

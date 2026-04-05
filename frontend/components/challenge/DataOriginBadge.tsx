@@ -14,7 +14,7 @@ const SOURCE_CONFIG: Record<string, { icon: string; emoji: string; label: string
   STRAVA:        { icon: 'bicycle',     emoji: '🏃‍♂️', label: 'STRAVA',        color: '#FC4C02', trust: 88,  glow: false },
   APPLE_HEALTH:  { icon: 'heart',       emoji: '🍎', label: 'HEALTHKIT',     color: '#FF2D55', trust: 85,  glow: false },
   GOOGLE_HEALTH: { icon: 'fitness',     emoji: '🤖', label: 'HEALTH CONNECT', color: '#4285F4', trust: 85, glow: false },
-  MANUAL:        { icon: 'create',      emoji: '⚠️', label: 'MANUALE',       color: '#8E8E93', trust: 30,  glow: false },
+  MANUAL:        { icon: 'create',      emoji: '⚠️', label: 'MANUALE',       color: '#8E8E93', trust: 30,  glow: false }
 };
 
 interface Props {
@@ -46,11 +46,11 @@ export function DataOriginBadge({ sources = ['MANUAL'], size = 'md', showLabel =
               db.badge,
               {
                 backgroundColor: cfg.color + (isFirst ? '18' : '0A'),
-                borderColor: cfg.color + (isFirst ? '40' : '20'),
+                borderColor: cfg.color + (isFirst ? '40' : '20')
               },
               cfg.glow && isFirst && Platform.OS === 'web' ? {
                 // @ts-ignore — Web boxShadow for NEXUS glow
-                boxShadow: `0 0 8px ${cfg.color}44, 0 0 16px ${cfg.color}22`,
+                boxShadow: `0 0 8px ${cfg.color}44, 0 0 16px ${cfg.color}22`
               } : {},
             ]}
           >
@@ -99,14 +99,14 @@ const db = StyleSheet.create({
   badge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     borderWidth: 1, borderRadius: 6,
-    paddingHorizontal: 7, paddingVertical: 3,
+    paddingHorizontal: 7, paddingVertical: 3
   },
   label: { fontWeight: '900', letterSpacing: 1 },
   lineWrap: { flexDirection: 'row', alignItems: 'center', gap: 5, flexWrap: 'wrap' },
   linePrefix: {
-    color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '800', letterSpacing: 1,
+    color: 'rgba(255,255,255,0.3)', fontSize: 8, fontWeight: '800', letterSpacing: 1
   },
   lineItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   lineLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
-  lineSep: { color: 'rgba(255,255,255,0.2)', fontSize: 9, marginHorizontal: 1 },
+  lineSep: { color: 'rgba(255,255,255,0.2)', fontSize: 9, marginHorizontal: 1 }
 });

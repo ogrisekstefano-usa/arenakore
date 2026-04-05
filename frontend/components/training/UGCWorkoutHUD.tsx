@@ -8,7 +8,7 @@ import { View, Text, StyleSheet, Platform } from 'react-native';
 import Animated, {
   FadeIn, FadeInDown, FadeInUp, FadeOut,
   useSharedValue, useAnimatedStyle, withSpring, withTiming, withSequence,
-  Easing,
+  Easing
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -37,13 +37,13 @@ interface Props {
 }
 
 const TEMPLATE_COLORS: Record<string, string> = {
-  AMRAP: '#FF3B30', EMOM: '#00E5FF', FOR_TIME: '#FFD700', TABATA: '#00FF87', CUSTOM: '#FF9500',
+  AMRAP: '#FF3B30', EMOM: '#00E5FF', FOR_TIME: '#FFD700', TABATA: '#00FF87', CUSTOM: '#FF9500'
 };
 
 export function UGCWorkoutHUD({
   exercises, currentExerciseIndex, currentReps, currentQuality,
   elapsedSeconds, challengeTitle, templateType, isActive, isVerified,
-  isMasterTemplate = false, creatorRole = 'ATHLETE',
+  isMasterTemplate = false, creatorRole = 'ATHLETE'
 }: Props) {
   const color = TEMPLATE_COLORS[templateType] || '#00E5FF';
   const ex = exercises[currentExerciseIndex];
@@ -76,7 +76,7 @@ export function UGCWorkoutHUD({
   }, [currentReps]);
 
   const repAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: flashScale.value }],
+    transform: [{ scale: flashScale.value }]
   }));
 
   // ── Progress bar animation ──
@@ -85,7 +85,7 @@ export function UGCWorkoutHUD({
     progressWidth.value = withTiming(progress * 100, { duration: 300, easing: Easing.out(Easing.ease) });
   }, [progress]);
   const progressStyle = useAnimatedStyle(() => ({
-    width: `${progressWidth.value}%` as any,
+    width: `${progressWidth.value}%` as any
   }));
 
   if (!ex || !isActive) return null;
@@ -215,83 +215,83 @@ const s = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: Platform.OS === 'ios' ? 120 : 100,
-    paddingHorizontal: 16,
+    paddingHorizontal: 16
   },
 
   // ── TOP ──
   topBar: {
-    alignItems: 'center', gap: 6,
+    alignItems: 'center', gap: 6
   },
   templateBadge: {
-    paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8, borderWidth: 1,
+    paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8, borderWidth: 1
   },
   templateText: {
-    fontSize: 10, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J,
+    fontSize: 10, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J
   },
   challengeTitle: {
     color: 'rgba(255,255,255,0.50)', fontSize: 13, fontWeight: '800',
-    letterSpacing: 2, fontFamily: FONT_M,
+    letterSpacing: 2, fontFamily: FONT_M
   },
   progressChips: {
-    flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4,
+    flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4
   },
   progressDot: {
     height: 4, width: 8, borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.12)'
   },
 
   // ── CENTER ──
   centerBlock: {
-    alignItems: 'center', gap: 4,
+    alignItems: 'center', gap: 4
   },
   exerciseLabel: {
     color: 'rgba(255,255,255,0.30)', fontSize: 11, fontWeight: '800',
-    letterSpacing: 3, fontFamily: FONT_M,
+    letterSpacing: 3, fontFamily: FONT_M
   },
   exerciseName: {
     fontSize: 26, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J,
-    marginBottom: 8,
+    marginBottom: 8
   },
   counterWrap: {
-    flexDirection: 'row', alignItems: 'baseline', gap: 4,
+    flexDirection: 'row', alignItems: 'baseline', gap: 4
   },
   counterValue: {
     fontSize: 72, fontWeight: '900', fontFamily: FONT_J,
-    lineHeight: 80,
+    lineHeight: 80
   },
   counterSlash: {
-    color: 'rgba(255,255,255,0.15)', fontSize: 36, fontWeight: '300',
+    color: 'rgba(255,255,255,0.15)', fontSize: 36, fontWeight: '300'
   },
   counterTarget: {
     color: 'rgba(255,255,255,0.25)', fontSize: 36, fontWeight: '800',
-    fontFamily: FONT_J,
+    fontFamily: FONT_J
   },
   counterUnit: {
     color: 'rgba(255,255,255,0.20)', fontSize: 11, fontWeight: '900',
-    letterSpacing: 4, fontFamily: FONT_M, marginTop: 2,
+    letterSpacing: 4, fontFamily: FONT_M, marginTop: 2
   },
   progressBarTrack: {
     width: '80%', height: 3, backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 2, overflow: 'hidden', marginTop: 12,
+    borderRadius: 2, overflow: 'hidden', marginTop: 12
   },
   progressBarFill: {
-    height: '100%', borderRadius: 2,
+    height: '100%', borderRadius: 2
   },
   nextExWrap: {
     flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 12,
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8,
-    backgroundColor: 'rgba(0,255,135,0.06)', borderWidth: 1, borderColor: 'rgba(0,255,135,0.15)',
+    backgroundColor: 'rgba(0,255,135,0.06)', borderWidth: 1, borderColor: 'rgba(0,255,135,0.15)'
   },
   nextExText: {
-    color: '#00FF87', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, fontFamily: FONT_M,
+    color: '#00FF87', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, fontFamily: FONT_M
   },
   completedWrap: {
     flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12,
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10,
-    backgroundColor: 'rgba(0,255,135,0.08)', borderWidth: 1, borderColor: 'rgba(0,255,135,0.25)',
+    backgroundColor: 'rgba(0,255,135,0.08)', borderWidth: 1, borderColor: 'rgba(0,255,135,0.25)'
   },
   completedText: {
-    color: '#00FF87', fontSize: 14, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J,
+    color: '#00FF87', fontSize: 14, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J
   },
 
   // ── BOTTOM ──
@@ -299,41 +299,41 @@ const s = StyleSheet.create({
     alignItems: 'center', gap: 8,
     paddingVertical: 12, paddingHorizontal: 16,
     backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)'
   },
   creatorBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, borderWidth: 1,
+    paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, borderWidth: 1
   },
   coachBadge: {
-    backgroundColor: 'rgba(0,255,135,0.10)', borderColor: 'rgba(0,255,135,0.30)',
+    backgroundColor: 'rgba(0,255,135,0.10)', borderColor: 'rgba(0,255,135,0.30)'
   },
   communityBadge: {
-    backgroundColor: 'rgba(255,149,0,0.08)', borderColor: 'rgba(255,149,0,0.20)',
+    backgroundColor: 'rgba(255,149,0,0.08)', borderColor: 'rgba(255,149,0,0.20)'
   },
   creatorBadgeText: {
-    fontSize: 9, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J,
+    fontSize: 9, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J
   },
   statsRow2: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14
   },
   modeText2: {
-    fontSize: 12, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J,
+    fontSize: 12, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J
   },
   qualBox: { alignItems: 'center', gap: 3 },
   qualLabel: {
     color: 'rgba(255,255,255,0.18)', fontSize: 8, fontWeight: '800',
-    letterSpacing: 2, fontFamily: FONT_M,
+    letterSpacing: 2, fontFamily: FONT_M
   },
   qualValue: {
-    color: '#00E5FF', fontSize: 28, fontWeight: '900', fontFamily: FONT_J,
+    color: '#00E5FF', fontSize: 28, fontWeight: '900', fontFamily: FONT_J
   },
   divider: { width: 1, height: 30, backgroundColor: 'rgba(255,255,255,0.06)' },
   verifyBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1,
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1
   },
   verifiedBadge: { backgroundColor: 'rgba(0,255,135,0.08)', borderColor: 'rgba(0,255,135,0.25)' },
   trackingBadge: { backgroundColor: 'rgba(255,149,0,0.08)', borderColor: 'rgba(255,149,0,0.25)' },
-  verifyText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
+  verifyText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J }
 });

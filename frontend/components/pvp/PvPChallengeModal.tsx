@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, Modal, TouchableOpacity,
-  ActivityIndicator, Alert,
+  ActivityIndicator, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
@@ -183,7 +183,7 @@ const m$ = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: '#000000', borderTopLeftRadius: 20, borderTopRightRadius: 20,
-    padding: 20, borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)',
+    padding: 20, borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)'
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -211,7 +211,7 @@ const m$ = StyleSheet.create({
   discCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 12,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginBottom: 8,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginBottom: 8
   },
   discInfo: { flex: 1 },
   discLabel: { color: 'rgba(255,255,255,0.75)', fontSize: 16, fontWeight: '900', letterSpacing: 1.5 },
@@ -219,7 +219,7 @@ const m$ = StyleSheet.create({
   stakesRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   stakeBtn: {
     flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   stakeBtnActive: { borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.08)' },
   stakeBtnDisabled: { opacity: 0.3 },
@@ -229,8 +229,8 @@ const m$ = StyleSheet.create({
   warningText: { color: '#FF9500', fontSize: 14, fontWeight: '700' },
   cta: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#FF3B30', borderRadius: 12, paddingVertical: 16, marginTop: 4,
+    backgroundColor: '#FF3B30', borderRadius: 12, paddingVertical: 16, marginTop: 4
   },
   ctaDisabled: { opacity: 0.4 },
-  ctaText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
+  ctaText: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 2 }
 });

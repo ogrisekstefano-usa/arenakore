@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
-  StatusBar, useWindowDimensions,
+  StatusBar, useWindowDimensions
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -265,7 +265,7 @@ export default function Recover() {
                 <View style={s.strengthBar}>
                   <View style={[s.strengthFill, {
                     width: `${Math.min(100, (newPassword.length / 12) * 100)}%` as any,
-                    backgroundColor: newPassword.length >= 8 ? '#00E5FF' : '#FF3B30',
+                    backgroundColor: newPassword.length >= 8 ? '#00E5FF' : '#FF3B30'
                   }]} />
                 </View>
               )}
@@ -362,21 +362,19 @@ const s = StyleSheet.create({
 
   header: { marginBottom: 8 },
   brand: {
-    color: GOLD, fontSize: 16, fontWeight: '400', letterSpacing: 8, marginBottom: 4,
+    color: GOLD, fontSize: 16, fontWeight: '400', letterSpacing: 8, marginBottom: 4
   },
   titleBig: {
     color: '#FFFFFF', fontSize: 42, fontWeight: '900', letterSpacing: 0.5,
-    lineHeight: 44,
+    lineHeight: 44
   },
   cyanLine: {
-    height: 3, width: 48, backgroundColor: CYAN, marginTop: 14,
-    shadowColor: CYAN, shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9, shadowRadius: 8,
+    height: 3, width: 48, backgroundColor: CYAN, marginTop: 14
   },
 
   stepLabel: {
     color: CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 4,
-    marginTop: 28, marginBottom: 24,
+    marginTop: 28, marginBottom: 24
   },
 
   form: { gap: 20 },
@@ -387,7 +385,7 @@ const s = StyleSheet.create({
   fieldLabel: { color: CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   input: {
     backgroundColor: '#111111', borderWidth: 1, borderColor: '#222',
-    borderRadius: 8, padding: 16, color: '#FFFFFF', fontSize: 18, fontWeight: '700',
+    borderRadius: 8, padding: 16, color: '#FFFFFF', fontSize: 18, fontWeight: '700'
   },
 
   // 6-Box OTP grid — neon cyan (width/height injected dynamically from otpBoxW)
@@ -395,18 +393,18 @@ const s = StyleSheet.create({
   otpBox: {
     borderRadius: 8,
     backgroundColor: '#1C1C1E', borderWidth: 2, borderColor: '#2A2A2A',
-    color: '#FFFFFF', fontSize: 28, fontWeight: '900', textAlign: 'center',
+    color: '#FFFFFF', fontSize: 28, fontWeight: '900', textAlign: 'center'
   },
   otpBoxFilled: {
     borderColor: '#00E5FF',
-    backgroundColor: '#1C1C1E',
+    backgroundColor: '#1C1C1E'
   },
 
   devBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(255,215,0,0.08)',
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
-    borderRadius: 8, paddingHorizontal: 24, paddingVertical: 10,
+    borderRadius: 8, paddingHorizontal: 24, paddingVertical: 10
   },
   devTxt: { color: GOLD, fontSize: 14, fontWeight: '700', letterSpacing: 1 },
 
@@ -415,7 +413,7 @@ const s = StyleSheet.create({
   cta: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 10, backgroundColor: CYAN, borderRadius: 8,
-    paddingVertical: 18, marginTop: 8,
+    paddingVertical: 18, marginTop: 8
   },
   ctaLoading: { opacity: 0.7 },
   ctaTxt: { color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
@@ -426,7 +424,7 @@ const s = StyleSheet.create({
   pwdRow: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#111111', borderWidth: 1, borderColor: '#222',
-    borderRadius: 8,
+    borderRadius: 8
   },
   pwdInput: { flex: 1, padding: 16, color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
   eye: { paddingHorizontal: 24 },
@@ -439,21 +437,17 @@ const s = StyleSheet.create({
   doneCard: {
     borderRadius: 20, padding: 32, alignItems: 'center', gap: 12,
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)',
-    overflow: 'hidden',
+    overflow: 'hidden'
   },
   doneGlow: {
     height: 3, width: '110%', backgroundColor: GOLD, opacity: 0.6,
-    marginHorizontal: -32, marginTop: -32, marginBottom: 8,
-    shadowColor: GOLD, shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1, shadowRadius: 12,
+    marginHorizontal: -32, marginTop: -32, marginBottom: 8
   },
   doneIconWrap: {
     width: 96, height: 96, borderRadius: 48,
     backgroundColor: 'rgba(255,215,0,0.06)',
     borderWidth: 2, borderColor: GOLD,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: GOLD, shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6, shadowRadius: 20,
+    alignItems: 'center', justifyContent: 'center'
   },
   doneTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 6 },
   doneTitleBig: { color: GOLD, fontSize: 36, fontWeight: '900', letterSpacing: 0.5, marginTop: -8 },
@@ -462,7 +456,7 @@ const s = StyleSheet.create({
   doneBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 10, backgroundColor: CYAN, borderRadius: 8,
-    paddingVertical: 16, width: '100%', marginTop: 8,
+    paddingVertical: 16, width: '100%', marginTop: 8
   },
-  doneBtnTxt: { color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
+  doneBtnTxt: { color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 2 }
 });

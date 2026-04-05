@@ -12,11 +12,11 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, Dimensions, Platform,
+  View, Text, StyleSheet, Dimensions, Platform
 } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle, withRepeat, withTiming,
-  withSequence, Easing, cancelAnimation,
+  withSequence, Easing, cancelAnimation
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { Gyroscope } from 'expo-sensors';
@@ -230,15 +230,15 @@ export function BodyLockOverlay({ onBodyLocked, onGuidance }: BodyLockOverlayPro
   const borderStyle = useAnimatedStyle(() => ({
     borderColor: borderHue.value > 0.5 ? '#00FFFF' : '#FF3B30',
     borderWidth: 2.5,
-    opacity: borderOpacity.value,
+    opacity: borderOpacity.value
   }));
 
   const flashStyle = useAnimatedStyle(() => ({
-    opacity: lockFlash.value,
+    opacity: lockFlash.value
   }));
 
   const warningStyle = useAnimatedStyle(() => ({
-    opacity: warningPulse.value,
+    opacity: warningPulse.value
   }));
 
   return (
@@ -301,7 +301,7 @@ export function BodyLockOverlay({ onBodyLocked, onGuidance }: BodyLockOverlayPro
         <View style={bl$.lockTrack}>
           <View style={[bl$.lockFill, {
             width: `${lockProgress}%` as any,
-            backgroundColor: lockProgress >= 100 ? '#00FFFF' : '#FFD700',
+            backgroundColor: lockProgress >= 100 ? '#00FFFF' : '#FFD700'
           }]} />
         </View>
         <Text style={bl$.lockLabel}>
@@ -335,23 +335,23 @@ const bl$ = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     zIndex: 80,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   flash: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#00FFFF',
-    zIndex: 90,
+    zIndex: 90
   },
   boundingBox: {
     width: SW * 0.65,
     height: SH * 0.60,
     borderRadius: 16,
-    position: 'relative',
+    position: 'relative'
   },
   corner: {
     position: 'absolute',
     width: 24,
-    height: 24,
+    height: 24
   },
   topLeft: { top: -2, left: -2, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: 10 },
   topRight: { top: -2, right: -2, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: 10 },
@@ -361,7 +361,7 @@ const bl$ = StyleSheet.create({
   guidanceWrap: {
     position: 'absolute',
     top: SH * 0.10,
-    alignSelf: 'center',
+    alignSelf: 'center'
   },
   guidanceBox: {
     flexDirection: 'row',
@@ -370,51 +370,51 @@ const bl$ = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 12,
-    borderWidth: 1.5,
+    borderWidth: 1.5
   },
   guidanceRed: {
     backgroundColor: 'rgba(255,59,48,0.15)',
-    borderColor: 'rgba(255,59,48,0.4)',
+    borderColor: 'rgba(255,59,48,0.4)'
   },
   guidanceOrange: {
     backgroundColor: 'rgba(255,149,0,0.15)',
-    borderColor: 'rgba(255,149,0,0.4)',
+    borderColor: 'rgba(255,149,0,0.4)'
   },
   guidanceYellow: {
     backgroundColor: 'rgba(255,215,0,0.10)',
-    borderColor: 'rgba(255,215,0,0.3)',
+    borderColor: 'rgba(255,215,0,0.3)'
   },
   guidanceCyan: {
     backgroundColor: 'rgba(0,255,255,0.10)',
-    borderColor: 'rgba(0,255,255,0.4)',
+    borderColor: 'rgba(0,255,255,0.4)'
   },
   guidanceTextRed: {
     color: '#FF3B30',
     fontSize: 15,
     fontWeight: '800',
     letterSpacing: 0.5,
-    ...Platform.select({ web: { fontFamily: "'Montserrat', sans-serif" }, default: {} }),
+    ...Platform.select({ web: { fontFamily: "'Montserrat', sans-serif" }, default: {} })
   },
   guidanceTextOrange: {
     color: '#FF9500',
     fontSize: 15,
     fontWeight: '800',
     letterSpacing: 0.5,
-    ...Platform.select({ web: { fontFamily: "'Montserrat', sans-serif" }, default: {} }),
+    ...Platform.select({ web: { fontFamily: "'Montserrat', sans-serif" }, default: {} })
   },
   guidanceTextYellow: {
     color: '#FFD700',
     fontSize: 15,
     fontWeight: '800',
     letterSpacing: 0.5,
-    ...Platform.select({ web: { fontFamily: "'Montserrat', sans-serif" }, default: {} }),
+    ...Platform.select({ web: { fontFamily: "'Montserrat', sans-serif" }, default: {} })
   },
   guidanceTextCyan: {
     color: '#00FFFF',
     fontSize: 15,
     fontWeight: '800',
     letterSpacing: 0.5,
-    ...Platform.select({ web: { fontFamily: "'Montserrat', sans-serif" }, default: {} }),
+    ...Platform.select({ web: { fontFamily: "'Montserrat', sans-serif" }, default: {} })
   },
 
   segmentRow: {
@@ -424,7 +424,7 @@ const bl$ = StyleSheet.create({
     gap: 6,
     flexWrap: 'wrap',
     justifyContent: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 16
   },
   segPill: {
     flexDirection: 'row',
@@ -435,20 +435,20 @@ const bl$ = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.08)'
   },
   segPillActive: {
     borderColor: 'rgba(0,255,255,0.3)',
-    backgroundColor: 'rgba(0,255,255,0.06)',
+    backgroundColor: 'rgba(0,255,255,0.06)'
   },
   segLabel: {
     color: '#666',
     fontSize: 9,
     fontWeight: '700',
-    letterSpacing: 0.5,
+    letterSpacing: 0.5
   },
   segLabelActive: {
-    color: '#00FFFF',
+    color: '#00FFFF'
   },
 
   lockProgressWrap: {
@@ -456,24 +456,24 @@ const bl$ = StyleSheet.create({
     bottom: SH * 0.14,
     width: SW * 0.7,
     alignItems: 'center',
-    gap: 4,
+    gap: 4
   },
   lockTrack: {
     width: '100%',
     height: 4,
     backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 2,
-    overflow: 'hidden',
+    overflow: 'hidden'
   },
   lockFill: {
     height: '100%',
-    borderRadius: 2,
+    borderRadius: 2
   },
   lockLabel: {
     color: 'rgba(255,255,255,0.4)',
     fontSize: 10,
     fontWeight: '600',
-    letterSpacing: 0.5,
+    letterSpacing: 0.5
   },
 
   statusRow: {
@@ -481,17 +481,17 @@ const bl$ = StyleSheet.create({
     bottom: SH * 0.09,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 6
   },
   statusDot: {
     width: 6,
     height: 6,
-    borderRadius: 3,
+    borderRadius: 3
   },
   statusText: {
     color: 'rgba(255,255,255,0.4)',
     fontSize: 10,
     fontWeight: '600',
-    letterSpacing: 0.3,
-  },
+    letterSpacing: 0.3
+  }
 });

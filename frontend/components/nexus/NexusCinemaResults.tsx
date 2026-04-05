@@ -6,14 +6,14 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Dimensions,
-  Share, Platform, Alert, Image,
+  Share, Platform, Alert, Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import { TalentCardTemplate } from '../kore/TalentCardTemplate';
 import Animated, {
   useSharedValue, withSpring, withTiming, useAnimatedStyle,
-  withSequence, withDelay, withRepeat, Easing, FadeInDown,
+  withSequence, withDelay, withRepeat, Easing, FadeInDown
 } from 'react-native-reanimated';
 
 const { width: SW, height: SH } = Dimensions.get('window');
@@ -63,7 +63,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
         await Share.share({
           url: uri,
           message: 'Sfidami su ARENA KORE! https://arenakore.app',
-          title: 'ARENAKORE — Risultato Sessione',
+          title: 'ARENAKORE — Risultato Sessione'
         });
       }
     } catch (e) {
@@ -84,7 +84,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
         await Share.share({
           url: dataUri,
           message: `${label} — La mia sfida su ARENA KORE! 🔥 https://arenakore.app`,
-          title: `ARENA KORE — ${label}`,
+          title: `ARENA KORE — ${label}`
         });
       }
     } catch {
@@ -108,7 +108,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
         await Share.share({
           url: uri,
           message: 'La mia Talent Card su ARENA KORE! 🏆 https://arenakore.app',
-          title: 'ARENAKORE — Talent Card',
+          title: 'ARENAKORE — Talent Card'
         });
       }
     } catch {
@@ -356,7 +356,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
               isFounder: isFounder,
               founderNumber: user?.founder_number,
               tipo: result.training_mode ? 'COACH_PROGRAM' : (result.ugc_mode ? 'SFIDA_UGC' : 'ALLENAMENTO'),
-              validationStatus: result.verification_status,
+              validationStatus: result.verification_status
             }} />
           </ViewShot>
         </View>
@@ -425,9 +425,9 @@ const cin$ = StyleSheet.create({
   talentCardBtn: {
     width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 10, paddingVertical: 14, marginTop: 6,
-    borderWidth: 1.5, borderColor: 'rgba(255,215,0,0.25)',
+    borderWidth: 1.5, borderColor: 'rgba(255,215,0,0.25)'
   },
-  talentCardBtnText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  talentCardBtnText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 }
 });
 
 const vic$ = StyleSheet.create({
@@ -456,7 +456,7 @@ const vic$ = StyleSheet.create({
   validRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginVertical: 4 },
   validText: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '800', letterSpacing: 2 },
   tagline: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '600', textAlign: 'center', fontStyle: 'italic' },
-  footer: { color: 'rgba(255,255,255,0.1)', fontSize: 10, fontWeight: '800', letterSpacing: 3, textAlign: 'center' },
+  footer: { color: 'rgba(255,255,255,0.1)', fontSize: 10, fontWeight: '800', letterSpacing: 3, textAlign: 'center' }
 });
 
 // ═══ TALENT CARD — 9:16 Stories Format (1080×1920 ratio at 360×640) ═══
@@ -467,11 +467,11 @@ const tc$ = StyleSheet.create({
   bgImage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: 360, height: 640 },
   overlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: 'rgba(0,0,0,0.55)'
   },
   topSection: {
     position: 'absolute', top: 20, left: 20, right: 20,
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
   },
   brandRow: { flexDirection: 'row', gap: 4 },
   brandA: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '900', letterSpacing: 5 },
@@ -479,12 +479,12 @@ const tc$ = StyleSheet.create({
   certBadge: {
     backgroundColor: 'rgba(0,255,135,0.15)', borderRadius: 6,
     paddingHorizontal: 8, paddingVertical: 4,
-    borderWidth: 1, borderColor: 'rgba(0,255,135,0.30)',
+    borderWidth: 1, borderColor: 'rgba(0,255,135,0.30)'
   },
   certText: { color: '#00FF87', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
   centerSection: {
     position: 'absolute', top: 200, left: 0, right: 0,
-    alignItems: 'center',
+    alignItems: 'center'
   },
   resultBig: { color: '#FFFFFF', fontSize: 96, fontWeight: '900', lineHeight: 100 },
   resultUnit: { color: 'rgba(255,255,255,0.30)', fontSize: 18, fontWeight: '900', letterSpacing: 8, marginTop: -4 },
@@ -493,27 +493,27 @@ const tc$ = StyleSheet.create({
     borderWidth: 2, borderColor: '#00E5FF',
     backgroundColor: 'rgba(0,0,0,0.5)',
     alignItems: 'center', justifyContent: 'center',
-    marginTop: 16,
+    marginTop: 16
   },
   qualVal: { color: '#00E5FF', fontSize: 20, fontWeight: '900' },
   qualLabel: { color: 'rgba(0,229,255,0.5)', fontSize: 8, fontWeight: '800', letterSpacing: 2 },
   kpiRow: {
     position: 'absolute', bottom: 130, left: 20, right: 20,
-    flexDirection: 'row', justifyContent: 'space-around',
+    flexDirection: 'row', justifyContent: 'space-around'
   },
   kpiItem: { alignItems: 'center', gap: 2 },
   kpiVal: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
   kpiLabel: { color: 'rgba(255,255,255,0.30)', fontSize: 9, fontWeight: '800', letterSpacing: 2 },
   bottomSection: {
     position: 'absolute', bottom: 20, left: 20, right: 20,
-    alignItems: 'center',
+    alignItems: 'center'
   },
   username: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', letterSpacing: 1 },
   founderTag: { color: '#FFD700', fontSize: 10, fontWeight: '900', letterSpacing: 2, marginTop: 2 },
   validRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, marginTop: 8,
+    gap: 6, marginTop: 8
   },
   validText: { color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: '800', letterSpacing: 2 },
-  footer: { color: 'rgba(255,255,255,0.12)', fontSize: 10, fontWeight: '800', letterSpacing: 3, textAlign: 'center', marginTop: 6 },
+  footer: { color: 'rgba(255,255,255,0.12)', fontSize: 10, fontWeight: '800', letterSpacing: 3, textAlign: 'center', marginTop: 6 }
 });

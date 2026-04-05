@@ -7,7 +7,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal,
   TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform,
-  Image, RefreshControl, Share,
+  Image, RefreshControl, Share
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,18 +22,18 @@ const DIFF_CFG: Record<string, { label: string; color: string; icon: keyof typeo
   easy:    { label: 'EASY',    color: '#00FF87', icon: 'star-outline' },
   medium:  { label: 'MEDIUM',  color: '#FF9500', icon: 'star-half' },
   hard:    { label: 'HARD',    color: '#FF3B30', icon: 'star' },
-  extreme: { label: 'EXTREME', color: '#AF52DE', icon: 'flame' },
+  extreme: { label: 'EXTREME', color: '#AF52DE', icon: 'flame' }
 };
 
 const EX_CFG: Record<string, { label: string; icon: keyof typeof Ionicons.glyphMap }> = {
   squat: { label: 'DEEP SQUAT', icon: 'barbell' },
-  punch: { label: 'EXPLOSIVE PUNCH', icon: 'hand-left' },
+  punch: { label: 'EXPLOSIVE PUNCH', icon: 'hand-left' }
 };
 
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string }> = {
   upcoming:  { label: 'PROSSIMO', color: '#FFD700', bg: 'rgba(255,215,0,0.15)' },
   live:      { label: 'LIVE',     color: '#FF3B30', bg: 'rgba(255,59,48,0.15)' },
-  completed: { label: 'CONCLUSO', color: '#AAAAAA', bg: 'rgba(255,255,255,0.45)' },
+  completed: { label: 'CONCLUSO', color: '#AAAAAA', bg: 'rgba(255,255,255,0.45)' }
 };
 
 // ============================
@@ -77,16 +77,16 @@ function CoachCard({ coach, onRemove }: { coach: any; onRemove: (id: string) => 
 const cc$ = StyleSheet.create({
   cardOuter: {
     borderRadius: 14, overflow: 'hidden', marginBottom: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   card: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 14,
+    padding: 14
   },
   avatar: {
     width: 48, height: 48, borderRadius: 24, backgroundColor: '#00E5FF',
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: 'rgba(255,255,255,0.4)',
+    borderWidth: 2, borderColor: 'rgba(255,255,255,0.4)'
   },
   avatarText: { color: '#000000', fontSize: 20, fontWeight: '900' },
   info: { flex: 1, gap: 3 },
@@ -95,14 +95,14 @@ const cc$ = StyleSheet.create({
   meta: { color: 'rgba(255,255,255,0.5)', fontSize: 15, fontWeight: '400', letterSpacing: 0.5 },
   right: { alignItems: 'flex-end', gap: 8 },
   xp: { color: '#FFD700', fontSize: 19, fontWeight: '900' },
-  removeBtn: { padding: 2 },
+  removeBtn: { padding: 2 }
 });
 
 // ============================
 // EVENT CARD (with QR)
 // ============================
 function EventCard({
-  event, onShowQR, onStatusChange, onShowDetail,
+  event, onShowQR, onStatusChange, onShowDetail
 }: { event: any; onShowQR: (e: any) => void; onStatusChange: (id: string, s: string) => void; onShowDetail: (e: any) => void }) {
   const statusCfg = STATUS_CFG[event.status] || STATUS_CFG.upcoming;
   const diffCfg = DIFF_CFG[event.difficulty] || DIFF_CFG.medium;
@@ -188,10 +188,10 @@ function EventCard({
 const ev$ = StyleSheet.create({
   cardOuter: {
     borderRadius: 16, overflow: 'hidden', marginBottom: 12,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   card: {
-    padding: 16, gap: 10,
+    padding: 16, gap: 10
   },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
@@ -212,21 +212,21 @@ const ev$ = StyleSheet.create({
   qrBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 10, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   qrBtnText: { color: '#00E5FF', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
   liveBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: 'rgba(255,59,48,0.1)', borderRadius: 10, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)',
+    borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)'
   },
   liveBtnText: { color: '#FF3B30', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
   endBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
-  endBtnText: { color: 'rgba(255,255,255,0.5)', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
+  endBtnText: { color: 'rgba(255,255,255,0.5)', fontSize: 16, fontWeight: '900', letterSpacing: 1 }
 });
 
 // ============================
@@ -238,7 +238,7 @@ function QRModal({ event, visible, onClose }: { event: any; visible: boolean; on
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `ARENAKORE EVENT\n${event.title}\n${event.event_date} ${event.event_time}\nJoin: ${event.join_url || `arenakore.com/join/${event.event_code}`}`,
+        message: `ARENAKORE EVENT\n${event.title}\n${event.event_date} ${event.event_time}\nJoin: ${event.join_url || `arenakore.com/join/${event.event_code}`}`
       });
     } catch {}
   };
@@ -312,7 +312,7 @@ const qr$ = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   card: {
     width: '100%', maxWidth: 340, backgroundColor: '#0A0A0A', borderRadius: 24, padding: 24,
-    alignItems: 'center', gap: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    alignItems: 'center', gap: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   title: { color: '#00E5FF', fontSize: 17, fontWeight: '900', letterSpacing: 3 },
@@ -322,12 +322,12 @@ const qr$ = StyleSheet.create({
   qrContainer: {
     width: 220, height: 220, alignItems: 'center', justifyContent: 'center',
     backgroundColor: '#00E5FF22', borderRadius: 16, padding: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginVertical: 8,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', marginVertical: 8
   },
   qrImage: { width: 200, height: 200, borderRadius: 8 },
   qrGlow: {
     position: 'absolute', width: 260, height: 260, borderRadius: 130,
-    backgroundColor: 'transparent',
+    backgroundColor: 'transparent'
   },
   qrPlaceholder: { width: 220, height: 220, alignItems: 'center', justifyContent: 'center' },
   codeContainer: { alignItems: 'center', gap: 3 },
@@ -338,11 +338,11 @@ const qr$ = StyleSheet.create({
   shareBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: 'rgba(255,215,0,0.12)', borderRadius: 12, paddingVertical: 12,
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)'
   },
   shareBtnText: { color: '#FFD700', fontSize: 17, fontWeight: '900', letterSpacing: 1 },
   closeBtn: { paddingVertical: 8, marginTop: 4 },
-  closeBtnText: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '700' },
+  closeBtnText: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '700' }
 });
 
 // ============================
@@ -374,7 +374,7 @@ function CreateEventModal({ visible, onClose, onCreated, token }: any) {
         event_date: eventDate.trim(),
         event_time: eventTime.trim(),
         max_participants: parseInt(maxPart) || 50,
-        xp_reward: parseInt(xpReward) || 100,
+        xp_reward: parseInt(xpReward) || 100
       }, token);
       resetForm();
       onCreated();
@@ -475,7 +475,7 @@ const ce$ = StyleSheet.create({
   scroll: { justifyContent: 'flex-end' },
   card: {
     backgroundColor: '#0A0A0A', borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    padding: 24, paddingBottom: 40, gap: 6, borderWidth: 1, borderColor: 'rgba(255,59,48,0.15)',
+    padding: 24, paddingBottom: 40, gap: 6, borderWidth: 1, borderColor: 'rgba(255,59,48,0.15)'
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   title: { color: '#FF3B30', fontSize: 20, fontWeight: '900', letterSpacing: 3 },
@@ -483,19 +483,19 @@ const ce$ = StyleSheet.create({
   label: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 2, marginTop: 6 },
   input: {
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 12,
-    color: '#FFF', fontSize: 19, fontWeight: '400', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    color: '#FFF', fontSize: 19, fontWeight: '400', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   exRow: { flexDirection: 'row', gap: 10 },
   exBtn: {
     flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', gap: 4,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)'
   },
   exBtnActive: { borderColor: '#00E5FF', backgroundColor: '#00E5FF22' },
   exLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
   diffRow: { flexDirection: 'row', gap: 6 },
   diffBtn: {
     flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', gap: 2,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', backgroundColor: 'rgba(255,255,255,0.05)'
   },
   diffLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
   dateRow: { flexDirection: 'row', gap: 10 },
@@ -505,7 +505,7 @@ const ce$ = StyleSheet.create({
   saveGrad: { paddingVertical: 16, alignItems: 'center', justifyContent: 'center' },
   saveText: { color: '#FFF', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
   cancelBtn: { paddingVertical: 10, alignItems: 'center' },
-  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '700' },
+  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 17, fontWeight: '700' }
 });
 
 // ============================
@@ -541,7 +541,7 @@ function AddCoachModal({ visible, onClose, onAdded, token }: any) {
           <TextInput
             style={{
               backgroundColor: '#1A1A1A', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14,
-              color: '#FFF', fontSize: 17, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+              color: '#FFF', fontSize: 17, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
             }}
             value={username}
             onChangeText={setUsername}
@@ -790,7 +790,7 @@ const hub$ = StyleSheet.create({
   gymIconWrap: {
     width: 64, height: 64, borderRadius: 32,
     backgroundColor: 'rgba(255,215,0,0.12)', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: 'rgba(255,215,0,0.3)',
+    borderWidth: 2, borderColor: 'rgba(255,215,0,0.3)'
   },
   gymName: { color: '#FFFFFF', fontSize: 24, fontWeight: '900', letterSpacing: 2 },
   gymAddress: { color: 'rgba(255,255,255,0.5)', fontSize: 17, fontWeight: '600' },
@@ -801,11 +801,11 @@ const hub$ = StyleSheet.create({
   gymStatDivider: { width: 1, height: 24, backgroundColor: 'rgba(255,255,255,0.05)' },
   tabRow: {
     flexDirection: 'row', marginHorizontal: 24, gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 3, marginBottom: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 3, marginBottom: 12
   },
   tab: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: 10, borderRadius: 10,
+    paddingVertical: 10, borderRadius: 10
   },
   tabActive: { backgroundColor: 'rgba(255,255,255,0.05)' },
   tabText: { color: '#AAAAAA', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
@@ -813,7 +813,7 @@ const hub$ = StyleSheet.create({
   section: { paddingHorizontal: 24 },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingTop: 16, paddingBottom: 10,
+    paddingTop: 16, paddingBottom: 10
   },
   sectionTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
   livePulse: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF3B30' },
@@ -826,5 +826,5 @@ const hub$ = StyleSheet.create({
   addCoachText: { color: '#00E5FF', fontSize: 17, fontWeight: '900', letterSpacing: 1.5 },
   emptyState: { alignItems: 'center', paddingTop: 60, gap: 8 },
   emptyTitle: { color: '#AAAAAA', fontSize: 19, fontWeight: '900', letterSpacing: 2 },
-  emptySub: { color: '#AAAAAA', fontSize: 17, fontWeight: '400', textAlign: 'center' },
+  emptySub: { color: '#AAAAAA', fontSize: 17, fontWeight: '400', textAlign: 'center' }
 });

@@ -14,7 +14,7 @@ export function AnimatedButton({ onPress, style, children, testID, disabled }: A
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [{ scale: scale.value }]
   }));
 
   return (

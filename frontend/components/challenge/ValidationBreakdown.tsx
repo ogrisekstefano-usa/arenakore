@@ -19,7 +19,7 @@ const METHODS: Record<string, { label: string; icon: string; color: string; glow
   AUDIO_CORRELATED:  { label: 'AUDIO MATCHED',      icon: 'mic',              color: '#FF9500', glow: false },
   PROXIMITY_WITNESS: { label: 'PROXIMITY WITNESS',  icon: 'people',           color: '#AF52DE', glow: false },
   PEER_CONFIRMED:    { label: 'PEER CONFIRMED',     icon: 'checkmark-done',   color: '#5AC8FA', glow: false },
-  MANUAL_ENTRY:      { label: 'MANUAL ENTRY',       icon: 'create',           color: 'rgba(255,255,255,0.35)', glow: false },
+  MANUAL_ENTRY:      { label: 'MANUAL ENTRY',       icon: 'create',           color: 'rgba(255,255,255,0.35)', glow: false }
 };
 
 // Trust Score Ring
@@ -154,14 +154,14 @@ const vb = StyleSheet.create({
   container: {
     backgroundColor: 'rgba(255,255,255,0.03)',
     borderWidth: 1, borderColor: 'rgba(0,229,255,0.1)',
-    borderRadius: 16, padding: 16, gap: 14,
+    borderRadius: 16, padding: 16, gap: 14
   },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   sectionTitle: {
-    color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 2, flex: 1,
+    color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 2, flex: 1
   },
   totalBadge: {
-    color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '700', letterSpacing: 1,
+    color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '700', letterSpacing: 1
   },
   emptyWrap: { padding: 16, alignItems: 'center' },
   emptyText: { color: 'rgba(255,255,255,0.35)', fontSize: 12, textAlign: 'center', lineHeight: 18 },
@@ -170,7 +170,7 @@ const vb = StyleSheet.create({
   ringScore: {
     fontSize: 24,
     fontFamily: "'Plus Jakarta Sans', 'Montserrat', sans-serif",
-    fontWeight: '800',
+    fontWeight: '800'
   },
   ringLabel: { color: 'rgba(255,255,255,0.35)', fontSize: 8, fontWeight: '800', letterSpacing: 2, marginTop: -2 },
   primaryBox: { flex: 1, gap: 4 },
@@ -187,10 +187,10 @@ const vb = StyleSheet.create({
   barPct: {
     fontSize: 15,
     fontFamily: "'Plus Jakarta Sans', 'Montserrat', sans-serif",
-    fontWeight: '800',
+    fontWeight: '800'
   },
   barTrack: {
-    height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.06)', overflow: 'hidden' as any,
+    height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.06)', overflow: 'hidden' as any
   },
-  barFill: { height: 4, borderRadius: 2 },
+  barFill: { height: 4, borderRadius: 2 }
 });

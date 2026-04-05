@@ -14,11 +14,11 @@ import { api } from '../../utils/api';
 
 const DIFF_CFG: Record<string, { color: string }> = {
   hard:    { color: '#FF3B30' },
-  extreme: { color: '#AF52DE' },
+  extreme: { color: '#AF52DE' }
 };
 
 const DISC_LABELS: Record<string, string> = {
-  power: 'POWER', agility: 'AGILITY', endurance: 'ENDURANCE',
+  power: 'POWER', agility: 'AGILITY', endurance: 'ENDURANCE'
 };
 
 export function CertifiedByPros() {
@@ -83,8 +83,8 @@ export function CertifiedByPros() {
         trainingTargetTime: String(t.target_time),
         trainingName: t.name,
         trainingFlux: String(t.xp_reward),
-        dnaPotential: '75',
-      },
+        dnaPotential: '75'
+      }
     });
   };
 
@@ -221,5 +221,5 @@ const cp$ = StyleSheet.create({
   unlockBtnOff: { backgroundColor: 'rgba(255,255,255,0.06)' },
   unlockBtnText: { color: '#000', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   startBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#00FF87', borderRadius: 12, paddingVertical: 13 },
-  startBtnText: { color: '#000', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
+  startBtnText: { color: '#000', fontSize: 15, fontWeight: '900', letterSpacing: 2 }
 });

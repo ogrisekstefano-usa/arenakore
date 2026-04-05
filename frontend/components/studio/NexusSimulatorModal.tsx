@@ -12,11 +12,11 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, Modal, TouchableOpacity, Dimensions, Platform,
+  View, Text, StyleSheet, Modal, TouchableOpacity, Dimensions, Platform
 } from 'react-native';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming, withSpring, withDelay,
-  useAnimatedStyle, FadeIn, FadeInDown, Easing,
+  useAnimatedStyle, FadeIn, FadeInDown, Easing
 } from 'react-native-reanimated';
 import Svg, { Circle, Line, Polygon, Rect, Text as SvgText } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -132,7 +132,7 @@ export function NexusSimulatorModal({ visible, onClose, onEventInjected }: Nexus
       SKELETON_JOINTS.forEach(j => {
         offsets[j.id] = {
           dx: (Math.random() - 0.5) * (cal > 60 ? 1 : 4),
-          dy: (Math.random() - 0.5) * (cal > 60 ? 1 : 4),
+          dy: (Math.random() - 0.5) * (cal > 60 ? 1 : 4)
         };
       });
       setJointOffsets(offsets);
@@ -212,7 +212,7 @@ export function NexusSimulatorModal({ visible, onClose, onEventInjected }: Nexus
         timestamp: new Date().toISOString(),
         age_secs: 0,
         isNew: true,
-        is_demo: true,
+        is_demo: true
       };
       
       if (onEventInjected) onEventInjected(mockEvent);
@@ -225,20 +225,20 @@ export function NexusSimulatorModal({ visible, onClose, onEventInjected }: Nexus
   }, [token, onEventInjected]);
 
   const pulseStyle = useAnimatedStyle(() => ({
-    opacity: 0.4 + skeletonPulse.value * 0.6,
+    opacity: 0.4 + skeletonPulse.value * 0.6
   }));
 
   const scanStyle = useAnimatedStyle(() => ({
-    top: `${scanLineY.value}%` as any,
+    top: `${scanLineY.value}%` as any
   }));
 
   const borderStyle = useAnimatedStyle(() => ({
-    borderColor: `rgba(0,229,255,${borderGlow.value})`,
+    borderColor: `rgba(0,229,255,${borderGlow.value})`
   }));
 
   const completeStyle = useAnimatedStyle(() => ({
     transform: [{ scale: completionScale.value }],
-    opacity: completionScale.value,
+    opacity: completionScale.value
   }));
 
   const phaseColor = phase === 'complete' ? '#00FF87' 
@@ -375,11 +375,11 @@ export function NexusSimulatorModal({ visible, onClose, onEventInjected }: Nexus
                 <View key={label} style={sim$.phaseStep}>
                   <View style={[sim$.phaseDot, {
                     backgroundColor: isActive ? phaseColor : theme.surface2,
-                    borderColor: isCurrent ? phaseColor : 'transparent',
+                    borderColor: isCurrent ? phaseColor : 'transparent'
                   }]} />
                   <Text style={[sim$.phaseStepLabel, MONT('600'), {
                     color: isActive ? phaseColor : theme.textTer,
-                    fontSize: fz(8, mode),
+                    fontSize: fz(8, mode)
                   }]}>{label}</Text>
                 </View>
               );
@@ -387,7 +387,7 @@ export function NexusSimulatorModal({ visible, onClose, onEventInjected }: Nexus
             <View style={[sim$.phaseTrack, { backgroundColor: theme.surface2 }]}>
               <View style={[sim$.phaseFill, {
                 backgroundColor: phaseColor,
-                width: `${phase === 'idle' ? 0 : phase === 'calibrating' ? 15 : phase === 'tracking' ? 50 : phase === 'analyzing' ? 80 : 100}%` as any,
+                width: `${phase === 'idle' ? 0 : phase === 'calibrating' ? 15 : phase === 'tracking' ? 50 : phase === 'analyzing' ? 80 : 100}%` as any
               }]} />
             </View>
           </View>
@@ -447,7 +447,7 @@ const sim$ = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 24
   },
   modal: {
     width: '100%',
@@ -455,25 +455,25 @@ const sim$ = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     padding: 24,
-    gap: 16,
+    gap: 16
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    flex: 1,
+    flex: 1
   },
   statusDot: { width: 8, height: 8, borderRadius: 4 },
   title: { fontSize: 16, letterSpacing: 3 },
   subtitle: { fontSize: 12, letterSpacing: 1, marginLeft: 4 },
   closeBtn: {
     width: 36, height: 36, borderRadius: 18,
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
 
   viewport: {
@@ -484,7 +484,7 @@ const sim$ = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 2,
     overflow: 'hidden',
-    position: 'relative',
+    position: 'relative'
   },
   scanLine: {
     position: 'absolute',
@@ -493,40 +493,40 @@ const sim$ = StyleSheet.create({
     height: 2,
     backgroundColor: '#00E5FF',
     opacity: 0.4,
-    zIndex: 10,
+    zIndex: 10
   },
   skeletonWrap: {
     flex: 1,
-    padding: 16,
+    padding: 16
   },
   idleOverlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)'
   },
   idleText: {
     fontSize: 14,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 20
   },
   completeBadge: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.6)'
   },
   completeText: {
     color: '#00FF87',
     fontSize: 18,
-    letterSpacing: 4,
+    letterSpacing: 4
   },
 
   metricsRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 8
   },
   metricCard: {
     flex: 1,
@@ -535,7 +535,7 @@ const sim$ = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1,
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.2)'
   },
   metricLabel: { fontSize: 9, letterSpacing: 1.5 },
   metricValue: { fontSize: 22, letterSpacing: 1 },
@@ -546,12 +546,12 @@ const sim$ = StyleSheet.create({
     justifyContent: 'space-between',
     position: 'relative',
     paddingTop: 4,
-    paddingBottom: 12,
+    paddingBottom: 12
   },
   phaseStep: { alignItems: 'center', gap: 4, zIndex: 2 },
   phaseDot: {
     width: 10, height: 10, borderRadius: 5,
-    borderWidth: 2,
+    borderWidth: 2
   },
   phaseStepLabel: { letterSpacing: 1 },
   phaseTrack: {
@@ -561,15 +561,15 @@ const sim$ = StyleSheet.create({
     right: 20,
     height: 3,
     borderRadius: 1.5,
-    zIndex: 1,
+    zIndex: 1
   },
   phaseFill: {
     height: '100%',
-    borderRadius: 1.5,
+    borderRadius: 1.5
   },
 
   actions: {
-    alignItems: 'center',
+    alignItems: 'center'
   },
   startBtn: {
     flexDirection: 'row',
@@ -579,12 +579,12 @@ const sim$ = StyleSheet.create({
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,
-    width: '100%',
+    width: '100%'
   },
   startBtnText: {
     color: '#000',
     fontSize: 14,
-    letterSpacing: 3,
+    letterSpacing: 3
   },
   liveIndicator: {
     flexDirection: 'row',
@@ -593,7 +593,7 @@ const sim$ = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 10
   },
   liveDot: { width: 8, height: 8, borderRadius: 4 },
   liveText: { fontSize: 13, letterSpacing: 2 },
@@ -601,6 +601,6 @@ const sim$ = StyleSheet.create({
   note: {
     fontSize: 11,
     textAlign: 'center',
-    letterSpacing: 0.5,
-  },
+    letterSpacing: 0.5
+  }
 });

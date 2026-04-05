@@ -12,7 +12,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue, withTiming, withSequence, withRepeat,
-  useAnimatedStyle, Easing, FadeIn,
+  useAnimatedStyle, Easing, FadeIn
 } from 'react-native-reanimated';
 
 interface Props {
@@ -68,11 +68,11 @@ export function EfficiencyGhostHUD({ currentQuality, dnaBaseline, isActive }: Pr
   }, [isGold, isActive]);
 
   const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulse.value }],
+    transform: [{ scale: pulse.value }]
   }));
 
   const flashStyle = useAnimatedStyle(() => ({
-    opacity: flashOpacity.value,
+    opacity: flashOpacity.value
   }));
 
   if (!isActive || dnaBaseline <= 0) return null;
@@ -105,7 +105,7 @@ const g$ = StyleSheet.create({
     position: 'absolute',
     top: 80,
     left: 20,
-    zIndex: 40,
+    zIndex: 40
   },
   goldFlash: {
     position: 'absolute',
@@ -114,34 +114,34 @@ const g$ = StyleSheet.create({
     right: -100,
     bottom: -100,
     backgroundColor: '#FFD700',
-    borderRadius: 200,
+    borderRadius: 200
   },
   hudWrap: {
     alignItems: 'flex-start',
-    gap: 2,
+    gap: 2
   },
   label: {
     color: 'rgba(255,255,255,0.4)',
     fontSize: 12,
     fontWeight: '900',
-    letterSpacing: 4,
+    letterSpacing: 4
   },
   ratio: {
     fontSize: 42,
     fontWeight: '800',
     letterSpacing: -1,
-    lineHeight: 44,
+    lineHeight: 44
   },
   tagWrap: {
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
     borderWidth: 1,
-    marginTop: 2,
+    marginTop: 2
   },
   tag: {
     fontSize: 12,
     fontWeight: '900',
-    letterSpacing: 2,
-  },
+    letterSpacing: 2
+  }
 });

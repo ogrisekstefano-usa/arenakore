@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TextInput,
-  TouchableOpacity, ActivityIndicator, Alert,
+  TouchableOpacity, ActivityIndicator, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -15,7 +15,7 @@ import { api } from '../../utils/api';
 const ROLE_CFG: Record<string, { color: string; bg: string }> = {
   GYM_OWNER: { color: '#FFD700', bg: 'rgba(255,215,0,0.1)' },
   COACH:     { color: '#00E5FF', bg: 'rgba(0,229,255,0.08)' },
-  ATHLETE:   { color: 'rgba(255,255,255,0.30)', bg: 'rgba(255,255,255,0.04)' },
+  ATHLETE:   { color: 'rgba(255,255,255,0.30)', bg: 'rgba(255,255,255,0.04)' }
 };
 
 export default function StaffManagement() {
@@ -233,5 +233,5 @@ const s$ = StyleSheet.create({
   addBtnOff: { opacity: 0.4 },
   addBtnText: { color: '#000', fontSize: 14, fontWeight: '900', letterSpacing: 1 },
   infoBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: 'rgba(0,229,255,0.05)', borderRadius: 8, padding: 10 },
-  infoText: { flex: 1, color: '#00E5FF22', fontSize: 13, fontWeight: '300', lineHeight: 16 },
+  infoText: { flex: 1, color: '#00E5FF22', fontSize: 13, fontWeight: '300', lineHeight: 16 }
 });

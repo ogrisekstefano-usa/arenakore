@@ -7,14 +7,14 @@ import { TAB_BACKGROUNDS } from '../../utils/images';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, TouchableOpacity,
-  Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput, Image, Share,
+  Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput, Image, Share
 } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming,
   useAnimatedStyle, withSpring, withDelay, Easing, interpolate, interpolateColor,
-  FadeIn, FadeInDown, FadeInUp,
+  FadeIn, FadeInDown, FadeInUp
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Text as SvgText, Polygon } from 'react-native-svg';
@@ -60,14 +60,14 @@ const { width: SW, height: SH } = Dimensions.get('window');
 const FORGE_IMAGES = {
   personal: 'https://images.unsplash.com/photo-1710736460914-4a7f22d736c4?w=800&q=60',
   battle: 'https://images.unsplash.com/photo-1709315957145-a4bad1feef28?w=800&q=60',
-  duel: 'https://images.pexels.com/photos/1075935/pexels-photo-1075935.jpeg?w=800&q=60',
+  duel: 'https://images.pexels.com/photos/1075935/pexels-photo-1075935.jpeg?w=800&q=60'
 };
 
 const CONSOLE_IMAGES = {
   scan: 'https://images.unsplash.com/photo-1710736460914-4a7f22d736c4?w=800&q=60',
   forge: 'https://images.unsplash.com/photo-1698788067684-2053c651bfed?w=800&q=60',
   hall: 'https://images.unsplash.com/photo-1590285372176-c3ff4d8c9399?w=800&q=60',
-  dna: 'https://images.pexels.com/photos/7479526/pexels-photo-7479526.jpeg?w=800&q=60',
+  dna: 'https://images.pexels.com/photos/7479526/pexels-photo-7479526.jpeg?w=800&q=60'
 };
 
 // ========== BIO-SCAN TRIGGER ==========
@@ -190,7 +190,7 @@ const bio$ = StyleSheet.create({
   avviaBtnText: { color: '#000', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   bracket: { position: 'absolute' },
   bH: { width: 30, height: 2, backgroundColor: '#00E5FF', opacity: 0.5 },
-  bV: { width: 2, height: 30, backgroundColor: '#00E5FF', opacity: 0.5 },
+  bV: { width: 2, height: 30, backgroundColor: '#00E5FF', opacity: 0.5 }
 });
 
 // ========== NEXUS PROACTIVE ENGINE — 6 CTA CARDS ==========
@@ -219,7 +219,7 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
       title: 'SFIDA IL RIVALE',
       subtitle: `${myRank.next_username.toUpperCase()} · ${myRank.xp_gap || '?'} FLUX sopra di te`,
       cta: 'SFIDA ORA', ctaColor: '#FFD700',
-      action: () => onNavigate('/(tabs)/arena'),
+      action: () => onNavigate('/(tabs)/arena')
     });
   }
 
@@ -230,7 +230,7 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
       title: 'BOOST CREW',
       subtitle: `${(myCrews[0]?.name || 'TUA CREW').toUpperCase()} · Contribuisci al ranking globale`,
       cta: 'CONTRIBUISCI', ctaColor: '#FF6B00',
-      action: () => onNavigate('/(tabs)/kore'),
+      action: () => onNavigate('/(tabs)/kore')
     });
   }
 
@@ -243,7 +243,7 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
       title: daysSince >= 7 ? `DNA SCADUTO · ${daysSince}G` : 'CERTIFICA IL DNA',
       subtitle: daysSince >= 7 ? 'Bio-Signature non aggiornata. Ricertifica ora.' : 'Effettua il tuo primo BIO-SCAN',
       cta: 'RICERTIFICA', ctaColor: '#FF9500',
-      action: onScan,
+      action: onScan
     });
   }
 
@@ -254,7 +254,7 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
       title: 'SCALA LA CLASSIFICA',
       subtitle: `Rank #${myRank.rank} · ${myRank.xp_gap || '?'} FLUX alla vetta della Hall`,
       cta: 'GUADAGNA FLUX', ctaColor: '#00E5FF',
-      action: () => onNavigate('/(tabs)/hall'),
+      action: () => onNavigate('/(tabs)/hall')
     });
   }
 
@@ -264,7 +264,7 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
     title: 'RISCATTA REWARD',
     subtitle: 'Badge eksklusivi · Medaglie KORE disponibili',
     cta: 'RISCATTA', ctaColor: '#AF52DE',
-    action: () => onNavigate('/reward-store'),
+    action: () => onNavigate('/reward-store')
   });
 
   // 6. PUSH TO COACH
@@ -276,7 +276,7 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
       : 'Unisciti a una Crew con un Coach KORE',
     cta: myCrews && myCrews.length > 0 ? 'INVIA DATI' : 'TROVA CREW',
     ctaColor: '#00FF87',
-    action: () => onNavigate('/coach-connect'),
+    action: () => onNavigate('/coach-connect')
   });
 
   if (cards.length === 0) return null;
@@ -306,20 +306,19 @@ function NexusProactiveCTAs({ user, eligibility, myRank, myCrews, onScan, onNavi
 const pro$ = StyleSheet.create({
   section: { marginTop: 12, marginBottom: 4 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, marginBottom: 10 },
-  sectionDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#00E5FF',
-    shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
+  sectionDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#00E5FF' },
   sectionTitle: { color: '#AAAAAA', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
   scroll: { paddingHorizontal: 24, gap: 10, paddingBottom: 4 },
   card: {
     width: SW * 0.68, backgroundColor: 'rgba(255,255,255,0.04)',
     borderRadius: 14, padding: 14,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
-    borderLeftWidth: 3, gap: 6,
+    borderLeftWidth: 3, gap: 6
   },
   cardTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 1.5 },
   cardSub: { color: '#AAAAAA', fontSize: 14, fontWeight: '400', lineHeight: 16 },
   ctaBtn: { marginTop: 6, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 6, paddingHorizontal: 12, paddingVertical: 5 },
-  ctaText: { fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  ctaText: { fontSize: 13, fontWeight: '900', letterSpacing: 2 }
 });
 
 // ========== AI PROMPT BANNER — Contextual Tool Discovery ==========
@@ -346,7 +345,7 @@ function AIPromptBanner() {
         <View style={apb$.header}>
           <Ionicons name={p.icon || 'flash'} size={14} color={p.color} />
           <Text style={[apb$.title, { color: p.color }]}>{p.title}</Text>
-          <TouchableOpacity onPress={() => setDismissed(true)} style={{ marginLeft: 'auto' as any }}>
+          <TouchableOpacity onPress={() => setDismissed(true)} style={{ alignSelf: 'flex-end' }}>
             <Ionicons name="close" size={14} color="rgba(255,255,255,0.3)" />
           </TouchableOpacity>
         </View>
@@ -374,7 +373,7 @@ const apb$ = StyleSheet.create({
   title: { fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   message: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '300', lineHeight: 16 },
   cta: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 },
-  ctaText: { fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  ctaText: { fontSize: 13, fontWeight: '900', letterSpacing: 1.5 }
 });
 
 // ========== GHOST SESSION HUD (PvP Mode) ==========
@@ -427,7 +426,7 @@ const ghost$ = StyleSheet.create({
   container: {
     position: 'absolute', bottom: 170, right: 10, zIndex: 35,
     backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 12, padding: 10,
-    borderWidth: 1, borderColor: '#00E5FF22', gap: 6, minWidth: 120,
+    borderWidth: 1, borderColor: '#00E5FF22', gap: 6, minWidth: 120
   },
   ghostRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   ghostLabel: { color: '#00E5FF22', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
@@ -439,7 +438,7 @@ const ghost$ = StyleSheet.create({
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
   statusWin: { backgroundColor: 'rgba(0,229,255,0.08)' },
   statusLose: { backgroundColor: 'rgba(255,59,48,0.08)' },
-  statusText: { fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  statusText: { fontSize: 11, fontWeight: '900', letterSpacing: 1 }
 });
 
 // ========== NEXUS CONSOLE ==========
@@ -466,7 +465,7 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
         'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600&q=50',
         'https://images.unsplash.com/photo-1663791088119-07535b0fafeb?w=600&q=50',
       ],
-      action: () => { onPillarAction('sfida_hub'); },
+      action: () => { onPillarAction('sfida_hub'); }
     },
     {
       key: 'live', label: 'LIVE', sub: 'Entra in Arena.',
@@ -476,7 +475,7 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
         'https://images.unsplash.com/photo-1577416412292-747c6607f055?w=600&q=50',
         'https://images.unsplash.com/photo-1519879709058-11082644047d?w=600&q=50',
       ],
-      action: () => { onPillarAction('live'); },
+      action: () => { onPillarAction('live'); }
     },
     {
       key: 'coach', label: 'COACH', sub: 'Trova la tua Guida.',
@@ -486,7 +485,7 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
         'https://images.unsplash.com/photo-1550345332-09e3ac987658?w=600&q=50',
         'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=50',
       ],
-      action: () => { onPillarAction('coach_hub'); },
+      action: () => { onPillarAction('coach_hub'); }
     },
     {
       key: 'scanSync', label: 'SCAN & SYNC', sub: 'Connettiti al Mondo.',
@@ -496,7 +495,7 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
         'https://images.unsplash.com/photo-1601113329251-0aebe217bdbe?w=600&q=50',
         'https://images.unsplash.com/photo-1652532678111-85849708e1f4?w=600&q=50',
       ],
-      action: () => { onPillarAction('scan_sync'); },
+      action: () => { onPillarAction('scan_sync'); }
     },
   ];
 
@@ -658,7 +657,7 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
 
 // ═══ NEXUS HUB CARD — Cross-fade images with neon aura ═══
 function NexusHubCard({
-  images, label, sub, color, icon, onPress, index,
+  images, label, sub, color, icon, onPress, index
 }: {
   images: string[]; label: string; sub: string; color: string;
   icon: keyof typeof Ionicons.glyphMap;
@@ -702,8 +701,8 @@ function NexusHubCard({
     borderColor: interpolateColor(pulse.value, [0, 1], [color + '20', color + '80']),
     ...Platform.select({
       web: { boxShadow: `0 0 ${4 + pulse.value * 12}px ${color}${Math.round(10 + pulse.value * 30).toString(16).padStart(2, '0')}` },
-      default: {},
-    }),
+      default: {}
+    })
   }));
 
   const imgA = images[activeIdx];
@@ -766,12 +765,12 @@ const cn$ = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 12,
     marginTop: 12,
-    justifyContent: 'space-between',
+    justifyContent: 'space-between'
   },
   gridRow: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 12,
+    marginTop: 12
   },
   hubCard: {
     borderRadius: 18,
@@ -779,18 +778,18 @@ const cn$ = StyleSheet.create({
     borderWidth: 1.5,
     backgroundColor: '#121212',
     position: 'relative',
-    height: 190,
+    height: 190
   },
   hubCardOuter: {
-    flex: 1,
+    flex: 1
   },
   hubImgLayer: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 0,
+    zIndex: 0
   },
   hubImg: {
     width: '100%',
-    height: '100%',
+    height: '100%'
   },
   hubIconWrap: {
     position: 'absolute',
@@ -802,7 +801,7 @@ const cn$ = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    zIndex: 5,
+    zIndex: 5
   },
   hubContent: {
     position: 'absolute',
@@ -812,18 +811,18 @@ const cn$ = StyleSheet.create({
     paddingHorizontal: 12,
     paddingBottom: 12,
     gap: 2,
-    zIndex: 5,
+    zIndex: 5
   },
   hubLabel: {
     fontSize: 16,
     fontWeight: '900',
-    letterSpacing: 1.5,
+    letterSpacing: 1.5
   },
   hubSub: {
     color: 'rgba(255,255,255,0.55)',
     fontSize: 11,
     fontWeight: '500',
-    letterSpacing: 0.3,
+    letterSpacing: 0.3
   },
 
   // ═══ QUICK ACTION BAR ═══
@@ -831,7 +830,7 @@ const cn$ = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     marginTop: 16,
-    marginBottom: 8,
+    marginBottom: 8
   },
   quickBtn: {
     flex: 1,
@@ -841,20 +840,20 @@ const cn$ = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.02)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.04)',
+    borderColor: 'rgba(255,255,255,0.04)'
   },
   quickIcon: {
     width: 36,
     height: 36,
     borderRadius: 10,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   quickLabel: {
     color: 'rgba(255,255,255,0.45)',
     fontSize: 9,
     fontWeight: '900',
-    letterSpacing: 1.5,
+    letterSpacing: 1.5
   },
 
   // ═══ DISCIPLINE EXPLORER + GOVERNANCE ═══
@@ -867,11 +866,11 @@ const cn$ = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 14, paddingVertical: 9, borderRadius: 12,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: 'rgba(255,255,255,0.03)'
   },
   proposeChip: {
     backgroundColor: 'rgba(0,229,255,0.04)', borderColor: 'rgba(0,229,255,0.12)',
-    borderStyle: 'dashed' as any,
+    borderStyle: 'dashed' as any
   },
   discChipText: { fontSize: 11, fontWeight: '800', letterSpacing: 1 },
   templateCTA: {
@@ -879,7 +878,7 @@ const cn$ = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 12,
     borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.02)',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)',
-    marginTop: 8,
+    marginTop: 8
   },
   templateCTAText: { flex: 1, color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '700' },
 
@@ -887,14 +886,14 @@ const cn$ = StyleSheet.create({
   eligBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10,
-    borderWidth: 1, marginTop: 10, marginBottom: 2,
+    borderWidth: 1, marginTop: 10, marginBottom: 2
   },
   eligBannerActive: { backgroundColor: 'transparent', borderColor: '#00E5FF' },
   eligBannerLocked: { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.07)' },
   eligText: { flex: 1, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   eligTextActive: { color: '#00E5FF' },
   eligTextLocked: { color: 'rgba(255,255,255,0.3)' },
-  eligReadyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF' },
+  eligReadyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF' }
 });
 
 // ========== CHALLENGE FORGE ==========
@@ -1000,12 +999,12 @@ const fg$ = StyleSheet.create({
   exRow: { flexDirection: 'row', gap: 12, width: '100%' },
   exCard: {
     flex: 1, alignItems: 'center', gap: 8, paddingVertical: 28,
-    backgroundColor: 'rgba(0,229,255,0.05)', borderRadius: 16, borderWidth: 1, borderColor: '#00E5FF',
+    backgroundColor: 'rgba(0,229,255,0.05)', borderRadius: 16, borderWidth: 1, borderColor: '#00E5FF'
   },
   exName: { color: '#00E5FF', fontSize: 22, fontWeight: '900', letterSpacing: 2 },
   exDesc: { color: 'rgba(255,255,255,0.6)', fontSize: 19, fontWeight: '400' },
   backBtn: { marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  backText: { color: '#555', fontSize: 17, fontWeight: '800', letterSpacing: 1 },
+  backText: { color: '#555', fontSize: 17, fontWeight: '800', letterSpacing: 1 }
 });
 
 // ========== MINI DNA RADAR ==========
@@ -1121,7 +1120,7 @@ function SmoothedValidation({ exercise, onComplete }: { exercise: ExerciseType; 
 
   const progressStyle = useAnimatedStyle(() => ({ width: `${progressAnim.value * 100}%` as any }));
   const stabStyle = useAnimatedStyle(() => ({ width: `${stabilityAnim.value * 100}%` as any }));
-  const glowStyle = useAnimatedStyle(() => ({ opacity: glowAnim.value, shadowOpacity: glowAnim.value }));
+  const glowStyle = useAnimatedStyle(() => ({ opacity: glowAnim.value }));
   const flashStyle = useAnimatedStyle(() => ({ opacity: screenFlash.value }));
   const doneStyle = useAnimatedStyle(() => ({ transform: [{ scale: doneScale.value }], opacity: doneScale.value }));
 
@@ -1184,7 +1183,7 @@ function SmoothedValidation({ exercise, onComplete }: { exercise: ExerciseType; 
           </View>
           <View style={smv$.barBg}>
             <Animated.View style={[smv$.stabFill, stabStyle, {
-              backgroundColor: isStable ? '#00E5FF' : '#FF3B30',
+              backgroundColor: isStable ? '#00E5FF' : '#FF3B30'
             }]} />
           </View>
         </View>
@@ -1211,7 +1210,7 @@ const smv$ = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject, zIndex: 30,
     backgroundColor: 'rgba(0,0,0,0.85)',
-    justifyContent: 'center', alignItems: 'center',
+    justifyContent: 'center', alignItems: 'center'
   },
   flashGold: { backgroundColor: '#FFD700', zIndex: 31 },
   content: { alignItems: 'center', gap: 22, paddingHorizontal: 32, width: '100%' },
@@ -1220,9 +1219,7 @@ const smv$ = StyleSheet.create({
     width: 110, height: 110, borderRadius: 55,
     backgroundColor: 'rgba(0,229,255,0.06)',
     borderWidth: 2.5, borderColor: '#00E5FF',
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9, shadowRadius: 28,
+    alignItems: 'center', justifyContent: 'center'
   },
   mainMsg: { fontSize: 34, fontWeight: '900', letterSpacing: 4, textAlign: 'center' },
   hint: { color: '#00E5FF22', fontSize: 18, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center', marginTop: -8 },
@@ -1234,9 +1231,7 @@ const smv$ = StyleSheet.create({
   stabFill: { height: '100%', borderRadius: 2.5 },
   progressBg: { height: 7, backgroundColor: 'rgba(0,229,255,0.15)', borderRadius: 3.5, overflow: 'hidden' },
   progressFill: {
-    height: '100%', borderRadius: 3.5, backgroundColor: '#00E5FF',
-    shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1, shadowRadius: 10,
+    height: '100%', borderRadius: 3.5, backgroundColor: '#00E5FF'
   },
   progressPct: { color: '#00E5FF', fontSize: 22, fontWeight: '900', letterSpacing: 2 },
   progressNote: { color: 'rgba(255,255,255,0.3)', fontSize: 15, fontWeight: '800', letterSpacing: 2.5, textAlign: 'center' },
@@ -1246,14 +1241,12 @@ const smv$ = StyleSheet.create({
     width: 130, height: 130, borderRadius: 65,
     backgroundColor: 'rgba(255,215,0,0.08)',
     borderWidth: 3, borderColor: '#FFD700',
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1, shadowRadius: 40,
+    alignItems: 'center', justifyContent: 'center'
   },
   doneTitle: { color: '#FFD700', fontSize: 38, fontWeight: '900', letterSpacing: 3, textAlign: 'center' },
   doneDivider: { width: 80, height: 2.5, backgroundColor: '#FFD700', borderRadius: 1.5 },
   doneAccess: { color: '#FFFFFF', fontSize: 26, fontWeight: '900', letterSpacing: 5, textAlign: 'center' },
-  doneDesc: { color: '#AAAAAA', fontSize: 17, fontWeight: '800', letterSpacing: 3, textAlign: 'center' },
+  doneDesc: { color: '#AAAAAA', fontSize: 17, fontWeight: '800', letterSpacing: 3, textAlign: 'center' }
 });
 
 // ========== COUNTDOWN ==========
@@ -1347,7 +1340,7 @@ function BattleIntroOverlay({ user, pvpChallenge, onComplete }: {
 
       {/* Left: User avatar */}
       <Animated.View style={[bi$.avatarLeft, leftStyle]}>
-        <View style={[bi$.avatarCircle, { backgroundColor: userColor, shadowColor: userColor }]}>
+        <View style={[bi$.avatarCircle, { backgroundColor: userColor }]}>
           <Text style={bi$.avatarLetter}>{(user?.username || 'TU')[0].toUpperCase()}</Text>
         </View>
         <Text style={bi$.avatarName}>{(user?.username || 'TU').toUpperCase()}</Text>
@@ -1369,7 +1362,7 @@ function BattleIntroOverlay({ user, pvpChallenge, onComplete }: {
 
       {/* Right: Opponent avatar */}
       <Animated.View style={[bi$.avatarRight, rightStyle]}>
-        <View style={[bi$.avatarCircle, { backgroundColor: opponent.color, shadowColor: opponent.color }]}>
+        <View style={[bi$.avatarCircle, { backgroundColor: opponent.color }]}>
           <Text style={bi$.avatarLetter}>{(pvpChallenge?.challenged_username || opponent.username)[0].toUpperCase()}</Text>
         </View>
         <Text style={bi$.avatarName}>{(pvpChallenge?.challenged_username || opponent.username).toUpperCase()}</Text>
@@ -1391,15 +1384,15 @@ const bi$ = StyleSheet.create({
   flash: { ...StyleSheet.absoluteFillObject, backgroundColor: '#00E5FF', zIndex: 45 },
   avatarLeft: { position: 'absolute', left: 20, alignItems: 'center', gap: 8 },
   avatarRight: { position: 'absolute', right: 20, alignItems: 'center', gap: 8 },
-  avatarCircle: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 20, elevation: 12 },
+  avatarCircle: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', elevation: 12 },
   avatarLetter: { color: '#000', fontSize: 32, fontWeight: '900' },
   avatarName: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
   avatarBadge: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   avatarBadgeTxt: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
   center: { alignItems: 'center', gap: 8 },
-  countNum: { fontSize: 110, fontWeight: '900', letterSpacing: -4, lineHeight: 110, textShadowColor: '#00E5FF22', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 30 },
+  countNum: { fontSize: 110, fontWeight: '900', letterSpacing: -4, lineHeight: 110 },
   vsText: { color: 'rgba(255,255,255,0.2)', fontSize: 15, fontWeight: '900', letterSpacing: 6, marginTop: 4 },
-  bottomLabel: { position: 'absolute', bottom: 80, color: 'rgba(255,255,255,0.30)', fontSize: 15, fontWeight: '900', letterSpacing: 4 },
+  bottomLabel: { position: 'absolute', bottom: 80, color: 'rgba(255,255,255,0.30)', fontSize: 15, fontWeight: '900', letterSpacing: 4 }
 });
 
 // ========== GHOST SHADOW (Silhouette during scan) ==========
@@ -1433,9 +1426,9 @@ function GhostShadow({ isAhead, currentReps, ghostReps }: {
 }
 
 const gs$ = StyleSheet.create({
-  container: { position: 'absolute', top: '20%' as any, left: 0, right: 0, alignItems: 'center', zIndex: 30 },
+  container: { position: 'absolute', top: 150, left: 0, right: 0, alignItems: 'center', zIndex: 30 },
   gap: { position: 'absolute', top: 20, borderWidth: 1, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
-  gapText: { fontSize: 18, fontWeight: '900', letterSpacing: 2 },
+  gapText: { fontSize: 18, fontWeight: '900', letterSpacing: 2 }
 });
 
 // ========== FLUX RAIN ==========
@@ -1446,7 +1439,7 @@ function AKDropsRain({ drops, visible }: { drops: number; visible: boolean }) {
       y: new RNAnimated.Value(-80),
       x: new RNAnimated.Value(40 + Math.random() * (SW - 80)),
       opacity: new RNAnimated.Value(0),
-      rotate: new RNAnimated.Value(0),
+      rotate: new RNAnimated.Value(0)
     }))
   ).current;
 
@@ -1478,7 +1471,7 @@ function AKDropsRain({ drops, visible }: { drops: number; visible: boolean }) {
       {anims.map((a, i) => (
         <RNAnimated.Text key={i} style={[dr$.drop, {
           transform: [{ translateY: a.y }, { translateX: a.x }, { rotate: a.rotate.interpolate({ inputRange: [-4, 4], outputRange: ['-720deg', '720deg'] }) }],
-          opacity: a.opacity,
+          opacity: a.opacity
         }]}>
          
         </RNAnimated.Text>
@@ -1493,8 +1486,8 @@ function AKDropsRain({ drops, visible }: { drops: number; visible: boolean }) {
 const dr$ = StyleSheet.create({
   container: { ...StyleSheet.absoluteFillObject, zIndex: 55 },
   drop: { position: 'absolute', top: 0, left: 0, fontSize: 28 },
-  badge: { position: 'absolute', top: '40%' as any, alignSelf: 'center', backgroundColor: 'rgba(0,229,255,0.15)', borderRadius: 20, borderWidth: 2, borderColor: '#00E5FF', paddingHorizontal: 24, paddingVertical: 10, shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 20 },
-  badgeText: { color: '#00E5FF', fontSize: 28, fontWeight: '900', letterSpacing: 4 },
+  badge: { position: 'absolute', top: 340, alignSelf: 'center', backgroundColor: 'rgba(0,229,255,0.15)', borderRadius: 20, borderWidth: 2, borderColor: '#00E5FF', paddingHorizontal: 24, paddingVertical: 10 },
+  badgeText: { color: '#00E5FF', fontSize: 28, fontWeight: '900', letterSpacing: 4 }
 });
 
 // ========== VICTORY OVERLAY ==========
@@ -1506,8 +1499,7 @@ function VictoryOverlay({ visible, xpChange }: { visible: boolean; xpChange?: nu
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
   }, [visible]);
   const glowStyle = useAnimatedStyle(() => ({
-    shadowOpacity: glow.value,
-    opacity: 0.8 + glow.value * 0.2,
+    opacity: 0.8 + glow.value * 0.2
   }));
   if (!visible) return null;
   return (
@@ -1522,9 +1514,9 @@ function VictoryOverlay({ visible, xpChange }: { visible: boolean; xpChange?: nu
 }
 
 const vo$ = StyleSheet.create({
-  container: { position: 'absolute', top: 80, alignSelf: 'center', alignItems: 'center', gap: 8, zIndex: 50, shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowRadius: 30 },
-  victory: { color: '#FFD700', fontSize: 42, fontWeight: '900', letterSpacing: 6, textShadowColor: 'rgba(255,215,0,0.5)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 20 },
-  xp: { color: '#FFFFFF', fontSize: 20, fontWeight: '700', letterSpacing: 2 },
+  container: { position: 'absolute', top: 80, alignSelf: 'center', alignItems: 'center', gap: 8, zIndex: 50 },
+  victory: { color: '#FFD700', fontSize: 42, fontWeight: '900', letterSpacing: 6 },
+  xp: { color: '#FFFFFF', fontSize: 20, fontWeight: '700', letterSpacing: 2 }
 });
 
 // ========== ORIGINAL COUNTDOWN (kept as fallback) ==========
@@ -1716,7 +1708,7 @@ const lw$ = StyleSheet.create({
   expiredSub: { color: '#AAAAAA', fontSize: 14, fontWeight: '400' },
   // Back
   backBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16 },
-  backText: { color: '#555', fontSize: 14, fontWeight: '800', letterSpacing: 2 },
+  backText: { color: '#555', fontSize: 14, fontWeight: '800', letterSpacing: 2 }
 });
 
 // ========== MAIN SCREEN ==========
@@ -1880,7 +1872,7 @@ export default function NexusTriggerScreen() {
       ugcRepsPerExercise.current.push({
         name: currentEx.name,
         reps_done: currentExReps,
-        quality: motionState?.quality || 0,
+        quality: motionState?.quality || 0
       });
 
       if (ugcExerciseIndex < ugcExercises.length - 1) {
@@ -1935,7 +1927,7 @@ export default function NexusTriggerScreen() {
 
   const { isListening } = useVoiceCommands({
     enabled: isVoiceActive,
-    onCommand: handleVoiceCommand,
+    onCommand: handleVoiceCommand
   });
 
   // ═══ EMERGENCY EXIT ═══
@@ -2128,7 +2120,7 @@ export default function NexusTriggerScreen() {
         reps: d.reps, quality: d.quality, currentPhase: mag > 1 ? (ex === 'squat' ? 'down' : 'strike') : 'idle',
         isInFrame: true, peakAcceleration: Math.max(mag, 4.5), avgAmplitude: d.quality, amplitudes: [...d.qualities],
         lastRepQuality: d.qualities.length > 0 ? Math.round(d.qualities[d.qualities.length - 1]) : 0,
-        skeletonPose: { torsoTilt: ex === 'squat' ? Math.max(-1, Math.min(1, -y)) : Math.sin(t) * 0.15, kneeAngle: ex === 'squat' ? Math.max(0, -y * 1.5) : 0, armExtension: ex === 'punch' ? (mag > 1 ? 1 : 0) : 0, shoulderRotation: ex === 'punch' ? Math.min(1, x * 0.2) : 0, hipDrop: ex === 'squat' ? Math.max(0, -y * 1.2) : 0, intensity: mag > 0.5 ? 0.8 : 0.2 },
+        skeletonPose: { torsoTilt: ex === 'squat' ? Math.max(-1, Math.min(1, -y)) : Math.sin(t) * 0.15, kneeAngle: ex === 'squat' ? Math.max(0, -y * 1.5) : 0, armExtension: ex === 'punch' ? (mag > 1 ? 1 : 0) : 0, shoulderRotation: ex === 'punch' ? Math.min(1, x * 0.2) : 0, hipDrop: ex === 'squat' ? Math.max(0, -y * 1.2) : 0, intensity: mag > 0.5 ? 0.8 : 0.2 }
       });
     }, 50);
     return () => clearInterval(iv);
@@ -2162,7 +2154,7 @@ export default function NexusTriggerScreen() {
           quality_score: qual,
           duration_seconds: dur,
           ai_feedback_score: aiFeedbackScore,
-          performance_score: qual,
+          performance_score: qual
         }, token);
         setScanResult({ ...r, training_mode: true, is_master_template: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, ai_feedback_score: aiFeedbackScore, training_name: params.trainingName, snapshots });
         if (r.user) updateUser(r.user);
@@ -2190,7 +2182,7 @@ export default function NexusTriggerScreen() {
         ugcRepsPerExercise.current.push({
           name: currentEx.name,
           reps_done: currentExReps,
-          quality: qual,
+          quality: qual
         });
       }
       const totalTargetReps = ugcExercises.reduce((sum, e) => sum + (e.target_reps || 0), 0);
@@ -2205,8 +2197,8 @@ export default function NexusTriggerScreen() {
             total_reps: reps,
             avg_quality: qual,
             duration_seconds: dur,
-            motion_tracked: isMotionTracked,
-          }),
+            motion_tracked: isMotionTracked
+          })
         });
         const r = await res.json();
         setScanResult({
@@ -2220,7 +2212,7 @@ export default function NexusTriggerScreen() {
           xp_earned: r.flux_earned || 0,
           is_verified: r.is_verified,
           flux_earned: r.flux_earned,
-          snapshots,
+          snapshots
         });
         if (r.user) updateUser(r.user);
         // FLUX Rain + Victory based on verification
@@ -2246,7 +2238,7 @@ export default function NexusTriggerScreen() {
     if (pvpChallengeId && token) {
       try {
         const pvpResult = await api.submitPvPResult(pvpChallengeId, {
-          reps, quality_score: qual, duration_seconds: dur, peak_acceleration: peak,
+          reps, quality_score: qual, duration_seconds: dur, peak_acceleration: peak
         }, token);
         setScanResult({ ...pvpResult, pvp_mode: true, exercise_type: exercise, reps_completed: reps, quality_score: qual, xp_earned: pvpResult.xp_change || 0 });
         // FLUX Rain + Victory for PvP
@@ -2314,13 +2306,13 @@ export default function NexusTriggerScreen() {
             explosivity_pct: scanResult.explosivity_pct,
             power_output: scanResult.power_output,
             heart_rate_avg: scanResult.heart_rate_avg,
-            heart_rate_peak: scanResult.heart_rate_peak,
+            heart_rate_peak: scanResult.heart_rate_peak
           },
           is_certified: !!scanResult.is_master_template,
           template_name: scanResult.training_name || scanResult.ugc_title,
           validation_status: scanResult.verification_status || (scanResult.is_verified ? 'AI_VERIFIED' : 'UNVERIFIED'),
           flux_earned: scanResult.flux_earned || scanResult.xp_earned || 0,
-          duration_seconds: timer,
+          duration_seconds: timer
         }, token);
       } catch (_) { /* silent — backend already has core record, this enriches with snapshots */ }
     })();
@@ -2587,7 +2579,7 @@ export default function NexusTriggerScreen() {
           dnaPotential,
           isActive: true,
           isMasterTemplate: true,
-          exerciseName: params.trainingExercise || params.trainingName || '',
+          exerciseName: params.trainingExercise || params.trainingName || ''
         }} />
       )}
 
@@ -2775,7 +2767,7 @@ const main$ = StyleSheet.create({
   cameraOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(5,5,5,0.3)',
-    zIndex: 1,
+    zIndex: 1
   },
   cancelWrap: { alignItems: 'center', marginTop: 20 },
   cancelText: { color: '#555', fontSize: 17, fontWeight: '700', letterSpacing: 1 },
@@ -2784,7 +2776,7 @@ const main$ = StyleSheet.create({
     position: 'absolute',
     top: Platform.OS === 'ios' ? 56 : 16,
     right: 16,
-    zIndex: 999,
+    zIndex: 999
   },
   // Voice-Command indicator (bottom-left during body_lock / scanning)
   voiceIndicator: {
@@ -2800,13 +2792,13 @@ const main$ = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    zIndex: 999,
+    zIndex: 999
   },
   voiceText: {
     color: '#00FFFF',
     fontSize: 10,
     fontWeight: '900',
-    letterSpacing: 2,
+    letterSpacing: 2
   },
   // "Dì VIA" prompt after body lock
   voicePrompt: {
@@ -2816,7 +2808,7 @@ const main$ = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
-    zIndex: 999,
+    zIndex: 999
   },
   voicePromptBox: {
     flexDirection: 'row',
@@ -2827,20 +2819,20 @@ const main$ = StyleSheet.create({
     borderColor: 'rgba(0,255,135,0.35)',
     borderRadius: 14,
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 12
   },
   voicePromptText: {
     color: '#00FF87',
     fontSize: 16,
     fontWeight: '900',
-    letterSpacing: 3,
+    letterSpacing: 3
   },
   // ═══ PRE-SCAN DUAL-CAM TOGGLE ═══
   preScanCamToggle: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 60 : 20,
     right: 16,
-    zIndex: 999,
+    zIndex: 999
   },
   dualCamBtn: {
     flexDirection: 'row',
@@ -2851,143 +2843,143 @@ const main$ = StyleSheet.create({
     borderColor: 'rgba(0,229,255,0.35)',
     borderRadius: 12,
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 10
   },
   dualCamLabel: {
     color: '#00E5FF',
     fontSize: 11,
     fontWeight: '900',
-    letterSpacing: 2,
-  },
+    letterSpacing: 2
+  }
 });
 
 // SPRINT 5: Military/Tech Corner HUD
 const hud$ = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 20,
+    zIndex: 20
   },
   // TOP-LEFT: Timer
   topLeft: {
     position: 'absolute', top: 56, left: 14,
-    gap: 3,
+    gap: 3
   },
   cornerLabel: {
     color: '#00E5FF22', fontSize: 13, fontWeight: '900',
-    letterSpacing: 3,
+    letterSpacing: 3
   },
   timerVal: {
     color: '#00E5FF', fontSize: 28, fontWeight: '900',
     fontVariant: ['tabular-nums'], letterSpacing: 2,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace'
   },
   timerBar: {
     width: 80, height: 2, backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 1, overflow: 'hidden',
+    borderRadius: 1, overflow: 'hidden'
   },
   timerBarFill: {
-    height: '100%', backgroundColor: '#00E5FF', borderRadius: 1,
+    height: '100%', backgroundColor: '#00E5FF', borderRadius: 1
   },
   // TOP-RIGHT: Exercise & Mode
   topRight: {
     position: 'absolute', top: 56, right: 14,
-    alignItems: 'flex-end', gap: 3,
+    alignItems: 'flex-end', gap: 3
   },
   exerciseVal: {
     color: '#FFFFFF', fontSize: 17, fontWeight: '900',
-    letterSpacing: 2,
+    letterSpacing: 2
   },
   modeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: 'rgba(255,215,0,0.1)',
     borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)'
   },
   modeText: {
-    color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 1.5,
+    color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 1.5
   },
   // CENTER: Rep Feedback
   centerFeedback: {
-    position: 'absolute', top: '45%' as any, left: 0, right: 0,
-    alignItems: 'center',
+    position: 'absolute', top: 380, left: 0, right: 0,
+    alignItems: 'center'
   },
   repFeedback: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8,
     paddingHorizontal: 24, paddingVertical: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)'
   },
   repFeedbackDot: {
-    width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF',
+    width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF'
   },
   repFeedbackText: {
-    color: '#00E5FF', fontSize: 17, fontWeight: '800', letterSpacing: 2,
+    color: '#00E5FF', fontSize: 17, fontWeight: '800', letterSpacing: 2
   },
   phaseIndicator: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 6,
-    paddingHorizontal: 12, paddingVertical: 6,
+    paddingHorizontal: 12, paddingVertical: 6
   },
   phaseDot: {
     width: 5, height: 5, borderRadius: 3,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.2)'
   },
   phaseText: {
-    color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '800', letterSpacing: 2,
+    color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '800', letterSpacing: 2
   },
   // BOTTOM-LEFT: Reps
   bottomLeft: {
     position: 'absolute', bottom: 160, left: 14,
-    gap: 2,
+    gap: 2
   },
   repsVal: {
     color: '#00E5FF', fontSize: 48, fontWeight: '900',
     fontVariant: ['tabular-nums'], letterSpacing: 1,
-    lineHeight: 50,
+    lineHeight: 50
   },
   repsUnit: {
-    color: '#00E5FF22', fontSize: 12, fontWeight: '900', letterSpacing: 2,
+    color: '#00E5FF22', fontSize: 12, fontWeight: '900', letterSpacing: 2
   },
   // BOTTOM-RIGHT: Quality
   bottomRight: {
     position: 'absolute', bottom: 160, right: 14,
-    alignItems: 'flex-end', gap: 2,
+    alignItems: 'flex-end', gap: 2
   },
   qualityVal: {
     color: '#00E5FF', fontSize: 48, fontWeight: '900',
     fontVariant: ['tabular-nums'], letterSpacing: 1,
-    lineHeight: 50,
+    lineHeight: 50
   },
   qualityUnit: {
-    color: '#00E5FF22', fontSize: 12, fontWeight: '900', letterSpacing: 2,
+    color: '#00E5FF22', fontSize: 12, fontWeight: '900', letterSpacing: 2
   },
   // BOTTOM: Stop Button
   stopWrap: {
     position: 'absolute', bottom: 20, left: 20, right: 20,
-    flexDirection: 'row', gap: 10, alignItems: 'center',
+    flexDirection: 'row', gap: 10, alignItems: 'center'
   },
   stopBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: 'rgba(255,59,48,0.12)', borderRadius: 14, paddingVertical: 18, flex: 1,
-    borderWidth: 1, borderColor: 'rgba(255,59,48,0.35)',
+    borderWidth: 1, borderColor: 'rgba(255,59,48,0.35)'
   },
   camToggle: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(0,229,255,0.10)', paddingHorizontal: 18, paddingVertical: 14, borderRadius: 16,
-    borderWidth: 1.5, borderColor: 'rgba(0,229,255,0.30)',
+    borderWidth: 1.5, borderColor: 'rgba(0,229,255,0.30)'
   },
   camToggleText: {
-    color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 2,
+    color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 2
   },
   stopDot: {
-    width: 10, height: 10, borderRadius: 5, backgroundColor: '#FF3B30',
+    width: 10, height: 10, borderRadius: 5, backgroundColor: '#FF3B30'
   },
   stopText: {
-    color: '#FF3B30', fontSize: 19, fontWeight: '900', letterSpacing: 3,
-  },
+    color: '#FF3B30', fontSize: 19, fontWeight: '900', letterSpacing: 3
+  }
 });
 const crewMsg$ = StyleSheet.create({
   container: { marginHorizontal: 20, marginBottom: 16, padding: 12, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   text: { color: '#AAAAAA', fontSize: 15, fontWeight: '400', textAlign: 'center', lineHeight: 20 },
-  cta: { color: '#00E5FF', fontWeight: '700' },
+  cta: { color: '#00E5FF', fontWeight: '700' }
 });

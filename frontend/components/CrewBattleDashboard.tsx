@@ -6,13 +6,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal,
-  Platform, ActivityIndicator,
+  Platform, ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn, FadeInDown, FadeInRight, useSharedValue, withTiming,
-  useAnimatedStyle, Easing, withRepeat, withSequence, interpolateColor,
+  useAnimatedStyle, Easing, withRepeat, withSequence, interpolateColor
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
@@ -59,7 +59,7 @@ export function CrewBattleDashboard({ visible, battleId, onClose }: Props) {
     try {
       const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
       const res = await fetch(`${backendUrl}/api/battles/crew/${battleId}/detail`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const json = await res.json();
@@ -237,11 +237,11 @@ const s = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: '#0A0A0A' },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)'
   },
   backBtn: {
     width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.05)',
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
   headerCenter: { flex: 1, alignItems: 'center' },
   headerTitle: { color: '#FFF', fontSize: 16, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
@@ -252,7 +252,7 @@ const s = StyleSheet.create({
 
   // Crew names
   crewRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20
   },
   crewInfo: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
   crewDot: { width: 10, height: 10, borderRadius: 5 },
@@ -263,7 +263,7 @@ const s = StyleSheet.create({
   // Power Bar
   powerSection: {
     padding: 18, borderRadius: 18, marginBottom: 20,
-    backgroundColor: 'rgba(255,255,255,0.02)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(255,255,255,0.02)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)'
   },
   scoreRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   scoreNum: { fontSize: 32, fontWeight: '900', fontFamily: FONT_J },
@@ -284,10 +284,10 @@ const s = StyleSheet.create({
   feedItem: {
     paddingVertical: 10, paddingHorizontal: 14, marginBottom: 6,
     borderLeftWidth: 3, borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.02)',
+    backgroundColor: 'rgba(255,255,255,0.02)'
   },
   feedItemTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 },
   feedUser: { fontSize: 13, fontWeight: '900', fontFamily: FONT_J },
   feedPts: { fontSize: 13, fontWeight: '900', fontFamily: FONT_J },
-  feedMsg: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '500', fontFamily: FONT_M },
+  feedMsg: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '500', fontFamily: FONT_M }
 });

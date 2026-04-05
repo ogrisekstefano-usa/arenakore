@@ -5,11 +5,11 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, Dimensions, FlatList,
+  View, Text, TouchableOpacity, StyleSheet, Dimensions, FlatList
 } from 'react-native';
 import Animated, {
   FadeIn, FadeInDown, useSharedValue, useAnimatedStyle, withTiming,
-  withRepeat, withSequence, Easing, withSpring,
+  withRepeat, withSequence, Easing, withSpring
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { apiClient } from '../utils/api';
@@ -74,10 +74,10 @@ export function CrewBattleProgressBar({ battleId, isExpanded = false, onToggleEx
   }, []);
 
   const barStyleA = useAnimatedStyle(() => ({
-    flex: progressA.value,
+    flex: progressA.value
   }));
   const barStyleB = useAnimatedStyle(() => ({
-    flex: progressB.value,
+    flex: progressB.value
   }));
   const pulseStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
 
@@ -215,7 +215,7 @@ export function CrewBattleProgressBar({ battleId, isExpanded = false, onToggleEx
 const cb$ = StyleSheet.create({
   container: {
     backgroundColor: 'rgba(255,69,58,0.04)', borderRadius: 16, borderWidth: 1,
-    borderColor: 'rgba(255,69,58,0.15)', marginBottom: 12, overflow: 'hidden',
+    borderColor: 'rgba(255,69,58,0.15)', marginBottom: 12, overflow: 'hidden'
   },
   loader: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 16 },
   loaderText: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '700' },
@@ -246,5 +246,5 @@ const cb$ = StyleSheet.create({
   memberScans: { color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '700', width: 50, textAlign: 'right' },
   feedRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 3 },
   feedDot: { width: 6, height: 6, borderRadius: 3 },
-  feedText: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '600' },
+  feedText: { color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: '600' }
 });

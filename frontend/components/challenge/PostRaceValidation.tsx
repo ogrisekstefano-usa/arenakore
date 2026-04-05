@@ -12,12 +12,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView,
-  Dimensions, Platform, ActivityIndicator, Alert,
+  Dimensions, Platform, ActivityIndicator, Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming, withSpring, withDelay,
-  useAnimatedStyle, FadeIn, FadeInDown, FadeInUp, Easing,
+  useAnimatedStyle, FadeIn, FadeInDown, FadeInUp, Easing
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, G, Text as SvgText } from 'react-native-svg';
@@ -48,14 +48,14 @@ interface PostRaceValidationProps {
 const TAG_COLORS: Record<string, string> = {
   POWER: '#FF3B30',
   FLOW: '#34C759',
-  PULSE: '#007AFF',
+  PULSE: '#007AFF'
 };
 
 // ═══════════════════════════════════════════════════════════════
 // CIRCULAR PROGRESS RING (SVG)
 // ═══════════════════════════════════════════════════════════════
 function ProgressRing({
-  confirmations, threshold, size = 160, strokeWidth = 6, color = EL.CYAN,
+  confirmations, threshold, size = 160, strokeWidth = 6, color = EL.CYAN
 }: {
   confirmations: number; threshold: number; size?: number; strokeWidth?: number; color?: string;
 }) {
@@ -81,7 +81,7 @@ function ProgressRing({
   }, [isComplete]);
 
   const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulse.value }],
+    transform: [{ scale: pulse.value }]
   }));
 
   return (
@@ -143,7 +143,7 @@ function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { color: string; icon: string; label: string }> = {
     provisional: { color: '#FFD700', icon: 'time-outline', label: 'PROVVISORIO' },
     official:    { color: '#34C759', icon: 'shield-checkmark', label: 'UFFICIALE' },
-    annulled:    { color: '#FF3B30', icon: 'close-circle', label: 'ANNULLATO' },
+    annulled:    { color: '#FF3B30', icon: 'close-circle', label: 'ANNULLATO' }
   };
   const c = config[status] || config.provisional;
 
@@ -161,7 +161,7 @@ function StatusBadge({ status }: { status: string }) {
   }, [status]);
 
   const glowStyle = useAnimatedStyle(() => ({
-    opacity: status === 'official' ? glow.value : 0,
+    opacity: status === 'official' ? glow.value : 0
   }));
 
   return (
@@ -181,7 +181,7 @@ function StatusBadge({ status }: { status: string }) {
 // ═══════════════════════════════════════════════════════════════
 export function PostRaceValidation({
   user, token, challengeId, declaredScore, totalParticipants, challengeType = 'CLOSED_LIVE',
-  tags = ['POWER'], onComplete, onBack,
+  tags = ['POWER'], onComplete, onBack
 }: PostRaceValidationProps) {
 
   const [phase, setPhase] = useState<ValidationPhase>('my_qr');
@@ -233,7 +233,7 @@ export function PostRaceValidation({
         declared_seconds: declaredScore.seconds,
         declared_kg: declaredScore.kg,
         total_participants: totalParticipants,
-        challenge_type: challengeType,
+        challenge_type: challengeType
       }, token);
       setQrData(res);
     } catch (err) {
@@ -436,7 +436,7 @@ export function PostRaceValidation({
                     </View>
                     <View style={[s.participantStatus, { borderColor: p.status === 'official' ? '#34C759' : p.status === 'annulled' ? '#FF3B30' : '#FFD700' }]}>
                       <Text style={[s.participantStatusText, {
-                        color: p.status === 'official' ? '#34C759' : p.status === 'annulled' ? '#FF3B30' : '#FFD700',
+                        color: p.status === 'official' ? '#34C759' : p.status === 'annulled' ? '#FF3B30' : '#FFD700'
                       }]}>
                         {p.confirmations}/{p.threshold}
                       </Text>
@@ -706,7 +706,7 @@ export function PostRaceValidation({
 const pr = StyleSheet.create({
   ringCount: { fontFamily: FONT_JAKARTA, color: '#FFFFFF', fontSize: 48, fontWeight: '800', letterSpacing: 1 },
   ringDivider: { fontFamily: FONT_MONT, color: '#555', fontSize: 18, fontWeight: '600', marginTop: -6 },
-  ringLabel: { fontFamily: FONT_MONT, color: '#FFD700', fontSize: 11, fontWeight: '800', letterSpacing: 3, marginTop: 4 },
+  ringLabel: { fontFamily: FONT_MONT, color: '#FFD700', fontSize: 11, fontWeight: '800', letterSpacing: 3, marginTop: 4 }
 });
 
 // Status Badge styles
@@ -717,9 +717,9 @@ const sb = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(0,0,0,0.7)',
     borderWidth: 1, borderRadius: 20,
-    paddingHorizontal: 16, paddingVertical: 7,
+    paddingHorizontal: 16, paddingVertical: 7
   },
-  text: { fontFamily: FONT_JAKARTA, fontSize: 13, fontWeight: '800', letterSpacing: 3 },
+  text: { fontFamily: FONT_JAKARTA, fontSize: 13, fontWeight: '800', letterSpacing: 3 }
 });
 
 // Main styles
@@ -763,7 +763,7 @@ const s = StyleSheet.create({
   participantRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     backgroundColor: EL.CARD_BG, borderRadius: 12, borderWidth: 1, borderColor: EL.BORDER,
-    padding: 12,
+    padding: 12
   },
   participantAvatar: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   participantInfo: { flex: 1, gap: 2 },
@@ -778,12 +778,12 @@ const s = StyleSheet.create({
   actions: { gap: 10, marginBottom: 8 },
   primaryBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    borderRadius: 12, paddingVertical: 16,
+    borderRadius: 12, paddingVertical: 16
   },
   primaryBtnText: { fontFamily: FONT_JAKARTA, color: '#000000', fontSize: 15, fontWeight: '800', letterSpacing: 2 },
   secondaryBtn: {
     borderRadius: 12, borderWidth: 1, borderColor: '#333',
-    paddingVertical: 14, alignItems: 'center',
+    paddingVertical: 14, alignItems: 'center'
   },
   secondaryBtnText: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 13, fontWeight: '600', letterSpacing: 1 },
   backBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12 },
@@ -795,18 +795,18 @@ const s = StyleSheet.create({
   scanSub: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.45)', fontSize: 13, fontWeight: '400', textAlign: 'center' },
   cameraContainer: {
     width: SW - 64, height: SW - 64, borderRadius: 20, overflow: 'hidden',
-    backgroundColor: '#0A0A0A', marginVertical: 12,
+    backgroundColor: '#0A0A0A', marginVertical: 12
   },
   camera: { flex: 1 },
   scanOverlay: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   scanFrame: {
     width: 200, height: 200,
-    position: 'relative' as const,
+    position: 'relative' as const
   },
   scanCorner: {
     position: 'absolute' as const,
     width: 30, height: 30,
-    borderColor: EL.CYAN,
+    borderColor: EL.CYAN
   },
   scanCornerTL: { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3 },
   scanCornerTR: { top: 0, right: 0, borderTopWidth: 3, borderRightWidth: 3 },
@@ -815,13 +815,13 @@ const s = StyleSheet.create({
   scanLoadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.7)',
-    alignItems: 'center', justifyContent: 'center', gap: 8,
+    alignItems: 'center', justifyContent: 'center', gap: 8
   },
   scanLoadingText: { fontFamily: FONT_MONT, color: EL.CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 3 },
 
   noCameraCard: {
     flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12,
-    backgroundColor: EL.CARD_BG,
+    backgroundColor: EL.CARD_BG
   },
   noCameraText: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 14, fontWeight: '500' },
   grantBtn: { borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
@@ -829,7 +829,7 @@ const s = StyleSheet.create({
 
   rescanBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderWidth: 1, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10,
+    borderWidth: 1, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10
   },
   rescanBtnText: { fontFamily: FONT_MONT, fontSize: 13, fontWeight: '700', letterSpacing: 1 },
 
@@ -845,7 +845,7 @@ const s = StyleSheet.create({
     color: '#FFFFFF', fontSize: 36, fontWeight: '800',
     fontFamily: FONT_JAKARTA, letterSpacing: 12,
     paddingVertical: 18, paddingHorizontal: 30,
-    width: '80%', marginTop: 16,
+    width: '80%', marginTop: 16
   },
   pinDigitCount: { fontFamily: FONT_MONT, color: '#555', fontSize: 12, fontWeight: '600' },
 
@@ -867,7 +867,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,215,0,0.08)',
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
     borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
-    width: '100%',
+    width: '100%'
   },
-  officialBannerText: { fontFamily: FONT_MONT, color: '#FFD700', fontSize: 13, fontWeight: '500', flex: 1 },
+  officialBannerText: { fontFamily: FONT_MONT, color: '#FFD700', fontSize: 13, fontWeight: '500', flex: 1 }
 });

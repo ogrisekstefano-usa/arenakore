@@ -9,7 +9,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  ActivityIndicator, Dimensions, Platform,
+  ActivityIndicator, Dimensions, Platform
 } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,7 +23,7 @@ const COMPARE_FILLS  = ['rgba(255,59,48,0.22)', 'rgba(0,122,255,0.22)', 'rgba(52
 const STATS = ['endurance', 'power', 'mobility', 'technique', 'recovery', 'agility'];
 const STAT_LABELS: Record<string, string> = {
   endurance: 'RESISTENZA', power: 'POTENZA', mobility: 'AGILITÀ',
-  technique: 'TECNICA', recovery: 'RECUPERO', agility: 'VELOCITÀ',
+  technique: 'TECNICA', recovery: 'RECUPERO', agility: 'VELOCITÀ'
 };
 
 interface ComparisonViewProps {
@@ -33,7 +33,7 @@ interface ComparisonViewProps {
 
 // ═══ MULTI-RADAR OVERLAY — Apple Fitness Grade ═══
 function MultiRadarChart({
-  athletes, size = 340,
+  athletes, size = 340
 }: {
   athletes: { username: string; six_axis: Record<string, number>; color: string; colorIdx: number }[];
   size?: number;
@@ -276,7 +276,7 @@ export function ComparisonView({ athletes: allAthletes, token }: ComparisonViewP
               <Text style={[cs.radarTitle, JAKARTA('800'), { color: theme.text }]}>DNA RADAR OVERLAY</Text>
               <MultiRadarChart
                 athletes={comparisonData.athletes.map((a: any, idx: number) => ({
-                  ...a, color: COMPARE_COLORS[idx], colorIdx: idx,
+                  ...a, color: COMPARE_COLORS[idx], colorIdx: idx
                 }))}
                 size={Math.min(Dimensions.get('window').width - 100, 380)}
               />
@@ -403,7 +403,7 @@ const cs = StyleSheet.create({
   athleteChip: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     borderWidth: 1.5, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
-    minWidth: 160,
+    minWidth: 160
   },
   chipAvatar: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   chipAvatarText: { color: '#000', fontSize: 14, fontWeight: '900' },
@@ -414,7 +414,7 @@ const cs = StyleSheet.create({
 
   compareBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    borderRadius: 12, paddingVertical: 14, marginBottom: 20,
+    borderRadius: 12, paddingVertical: 14, marginBottom: 20
   },
   compareBtnText: { color: '#000', fontSize: 15, letterSpacing: 2 },
 
@@ -426,7 +426,7 @@ const cs = StyleSheet.create({
 
   radarCard: {
     borderWidth: 1, borderRadius: 16, padding: 20, marginBottom: 16,
-    alignItems: 'center', gap: 12,
+    alignItems: 'center', gap: 12
   },
   radarTitle: { fontSize: 14, letterSpacing: 2, alignSelf: 'flex-start' },
 
@@ -442,23 +442,23 @@ const cs = StyleSheet.create({
   leaderPill: {
     flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 3,
     backgroundColor: 'rgba(52,199,89,0.12)', borderRadius: 4,
-    paddingHorizontal: 6, paddingVertical: 1,
+    paddingHorizontal: 6, paddingVertical: 1
   },
   leaderText: { fontSize: 8, color: '#34C759', fontWeight: '900', letterSpacing: 1 },
   gapPct: { fontSize: 15 },
   gapBarBg: {
     width: 40, height: 3, borderRadius: 1.5, backgroundColor: 'rgba(255,255,255,0.08)',
-    marginTop: 4, overflow: 'hidden',
+    marginTop: 4, overflow: 'hidden'
   },
   gapBarFill: { height: 3, borderRadius: 1.5 },
 
   insightCard: {
     flexDirection: 'row', gap: 14, borderWidth: 1, borderRadius: 14,
-    padding: 16, marginBottom: 16,
+    padding: 16, marginBottom: 16
   },
   insightIcon: {
     width: 40, height: 40, borderRadius: 12,
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
   insightContent: { flex: 1, gap: 5 },
   insightTitle: { fontSize: 11, letterSpacing: 2 },
@@ -466,7 +466,7 @@ const cs = StyleSheet.create({
 
   resetBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    borderWidth: 1, borderRadius: 10, paddingVertical: 12,
+    borderWidth: 1, borderRadius: 10, paddingVertical: 12
   },
-  resetBtnText: { fontSize: 13, letterSpacing: 1.5 },
+  resetBtnText: { fontSize: 13, letterSpacing: 1.5 }
 });

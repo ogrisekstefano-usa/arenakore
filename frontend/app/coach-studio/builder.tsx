@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, TextInput, Alert, Platform,
+  ActivityIndicator, TextInput, Alert, Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Rect, Text as SvgText, G, Line, Polygon } from 'react-native-svg';
@@ -23,7 +23,7 @@ const DISC_META: Record<string, { label: string; icon: string; color: string; ex
   technique: { label: 'Technique',  icon: 'ribbon',      color: '#FFD700', exercise: 'Form Drill' },
   recovery:  { label: 'Recovery',   icon: 'moon',        color: '#AF52DE', exercise: 'Plank/Breath' },
   agility:   { label: 'Agility',    icon: 'flash',       color: '#FF9500', exercise: 'Punch/Sprint' },
-  nexus:     { label: 'NÈXUS Bio',  icon: 'scan',        color: '#00E5FF', exercise: 'Bio-Scan' },
+  nexus:     { label: 'NÈXUS Bio',  icon: 'scan',        color: '#00E5FF', exercise: 'Bio-Scan' }
 };
 
 const TRIGGER_META: Record<string, { label: string; icon: string; unit: string }> = {
@@ -32,7 +32,7 @@ const TRIGGER_META: Record<string, { label: string; icon: string; unit: string }
   recovery_low:     { label: 'Recovery bassa (<)',       icon: 'moon',           unit: '/100' },
   power_drop:       { label: 'Calo forza (<)',           icon: 'trending-down',  unit: '/100' },
   pvp_win_streak:   { label: 'Streak vittorie PvP (≥)',  icon: 'flame',          unit: 'wins' },
-  days_inactive:    { label: 'Kore inattivo (≥)',      icon: 'time',           unit: 'days' },
+  days_inactive:    { label: 'Kore inattivo (≥)',      icon: 'time',           unit: 'days' }
 };
 
 const ACTION_META = [
@@ -101,7 +101,7 @@ const dc$ = StyleSheet.create({
   eventTarget: { fontSize: 15, marginTop: 2 },
   eventNotes: { fontSize: 11, lineHeight: 12, marginTop: 2 },
   addBtn: { margin: 6, borderRadius: 8, borderWidth: 1, borderStyle: 'dashed' as any, height: 120, alignItems: 'center', justifyContent: 'center', gap: 6 },
-  addLabel: { fontSize: 12, letterSpacing: 1 },
+  addLabel: { fontSize: 12, letterSpacing: 1 }
 });
 
 // ── Day Event Editor ──────────────────────────────────────────────────────────
@@ -166,7 +166,7 @@ const de$ = StyleSheet.create({
   input: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7, fontSize: 15 } as any,
   notesInput: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7, fontSize: 14, minHeight: 52 } as any,
   saveBtn: { borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
-  saveBtnText: { fontSize: 14, letterSpacing: 2 },
+  saveBtnText: { fontSize: 14, letterSpacing: 2 }
 });
 
 // ── Global Leaderboard Chart ──────────────────────────────────────────────────
@@ -276,7 +276,7 @@ const lb$ = StyleSheet.create({
   legend: { flexDirection: 'row', gap: 16, borderRadius: 10, padding: 12, marginTop: 16, flexWrap: 'wrap' },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontSize: 13 },
+  legendText: { fontSize: 13 }
 });
 
 // ── Automation Engine ──────────────────────────────────────────────────────────
@@ -449,7 +449,7 @@ const ae$ = StyleSheet.create({
   arrowRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   arrowLine: { flex: 1, height: 1 },
   aiNote: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, borderWidth: 1, borderRadius: 10, padding: 12 },
-  aiNoteText: { flex: 1, fontSize: 13, lineHeight: 16 },
+  aiNoteText: { flex: 1, fontSize: 13, lineHeight: 16 }
 });
 
 // ── Main Challenge Builder ────────────────────────────────────────────────────
@@ -763,5 +763,5 @@ const mb$ = StyleSheet.create({
   paletteTitle: { fontSize: 11, letterSpacing: 3 },
   paletteGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   paletteItem: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 7, paddingHorizontal: 8, paddingVertical: 5 },
-  paletteLabel: { fontSize: 11, letterSpacing: 1 },
+  paletteLabel: { fontSize: 11, letterSpacing: 1 }
 });

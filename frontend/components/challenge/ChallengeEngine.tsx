@@ -6,13 +6,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView,
-  Dimensions, Platform, KeyboardAvoidingView, ActivityIndicator,
+  Dimensions, Platform, KeyboardAvoidingView, ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming, withSpring, withDelay,
   useAnimatedStyle, FadeIn, FadeInDown, FadeInUp, Easing, interpolate,
-  runOnJS,
+  runOnJS
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, Polygon, Text as SvgText } from 'react-native-svg';
@@ -33,13 +33,13 @@ type VerificationStatus = 'UNVERIFIED' | 'AI_VERIFIED' | 'PROOF_PENDING' | 'SUSP
 const TAG_CONFIG: Record<ChallengeTag, { color: string; icon: string; label: string; desc: string }> = {
   POWER: { color: '#FF3B30', icon: 'flame', label: 'POWER', desc: 'Forza · Potenza · Esplosività' },
   FLOW:  { color: '#34C759', icon: 'leaf',  label: 'FLOW',  desc: 'Agilità · Tecnica · Fluidità' },
-  PULSE: { color: '#007AFF', icon: 'pulse', label: 'PULSE', desc: 'Velocità · Resistenza · Cardio' },
+  PULSE: { color: '#007AFF', icon: 'pulse', label: 'PULSE', desc: 'Velocità · Resistenza · Cardio' }
 };
 
 const MODE_CONFIG: Record<ValidationMode, { icon: string; title: string; sub: string; badge: string }> = {
   AUTO_COUNT:    { icon: 'scan',          title: 'NÈXUS VISION',     sub: 'Conteggio rep automatico via camera',      badge: '100% FLUX' },
   MANUAL_ENTRY:  { icon: 'create-outline', title: 'MANUAL ENTRY',    sub: 'Inserisci dati post-allenamento',           badge: '50% FLUX' },
-  SENSOR_IMPORT: { icon: 'watch-outline',  title: 'SENSOR IMPORT',   sub: 'Importa da Apple Health / Garmin',          badge: '75% FLUX' },
+  SENSOR_IMPORT: { icon: 'watch-outline',  title: 'SENSOR IMPORT',   sub: 'Importa da Apple Health / Garmin',          badge: '75% FLUX' }
 };
 
 const PROOF_OPTIONS: { type: ProofType; icon: string; title: string; sub: string; fluxBoost: string }[] = [
@@ -53,7 +53,7 @@ const VERIFICATION_BADGE_CONFIG: Record<VerificationStatus, { color: string; ico
   AI_VERIFIED:   { color: EL.CYAN,   icon: 'shield-checkmark',  label: 'AI VERIFIED' },
   PROOF_PENDING: { color: '#FFD700', icon: 'shield-half',       label: 'PROOF PENDING' },
   SUSPICIOUS:    { color: '#FF9500', icon: 'warning',           label: 'REVISIONE RICHIESTA' },
-  TECH_VERIFIED: { color: '#007AFF', icon: 'hardware-chip',     label: 'TECH VERIFIED' },
+  TECH_VERIFIED: { color: '#007AFF', icon: 'hardware-chip',     label: 'TECH VERIFIED' }
 };
 
 // ═══ MAIN ENGINE PHASES ═══
@@ -141,14 +141,14 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
   }, []);
 
   const bgStyle = useAnimatedStyle(() => ({
-    opacity: bgPulse.value,
+    opacity: bgPulse.value
   }));
 
   // Background wrapper — OLED Black with animated colored overlay
   const DarkBase = ({ children }: { children: React.ReactNode }) => (
     <View style={s.container}>
       <Animated.View style={[s.colorOverlay, {
-        backgroundColor: dominantTag === 'POWER' ? '#FF3B30' : dominantTag === 'FLOW' ? '#00FF87' : '#00E5FF',
+        backgroundColor: dominantTag === 'POWER' ? '#FF3B30' : dominantTag === 'FLOW' ? '#00FF87' : '#00E5FF'
       }, bgStyle]} />
       {children}
     </View>
@@ -187,7 +187,7 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
         exercise_type: exerciseType,
         tags: selectedTags,
         validation_mode: validationMode,
-        mode: sessionMode,
+        mode: sessionMode
       }, token);
       setChallengeId(res.challenge_id);
 
@@ -212,7 +212,7 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
         exercise_type: exerciseType,
         reps: parseInt(manualReps) || 0,
         seconds: parseFloat(manualSeconds) || 0,
-        kg: parseFloat(manualKg) || 0,
+        kg: parseFloat(manualKg) || 0
       }, token);
       setSanityResult(result);
 
@@ -247,7 +247,7 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
         kg: parseFloat(manualKg) || 0,
         quality_score: 75,
         has_video_proof: withVideo || hasVideoProof,
-        proof_type: proofType,
+        proof_type: proofType
       }, token);
       setVerdict(res.verdict);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -274,7 +274,7 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
         seconds: 45,
         kg: 0,
         quality_score: 82,
-        has_video_proof: false,
+        has_video_proof: false
       }, token);
       setVerdict(res.verdict);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -664,7 +664,7 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
                       'SPIKE_OVER_PB_KG': 'Peso +50% sopra il tuo record personale',
                       'EXCEEDS_WORLD_RECORD_REPS': 'Supera il record mondiale di ripetizioni',
                       'EXCEEDS_WORLD_RECORD_KG': 'Supera il record mondiale di peso',
-                      'EXCEEDS_WORLD_RECORD_TIME': 'Supera il record mondiale di durata',
+                      'EXCEEDS_WORLD_RECORD_TIME': 'Supera il record mondiale di durata'
                     };
                     return (
                       <View key={idx} style={sw.flagRow}>
@@ -909,32 +909,32 @@ function IntegrityGlowBadge() {
 
   const containerStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    opacity: opacity.value,
+    opacity: opacity.value
   }));
 
   const glowStyle = useAnimatedStyle(() => ({
-    opacity: glowOpacity.value,
+    opacity: glowOpacity.value
   }));
 
   const ringStyle = useAnimatedStyle(() => ({
     transform: [{ scale: ringScale.value }],
-    opacity: ringOpacity.value,
+    opacity: ringOpacity.value
   }));
 
   const ring2Style = useAnimatedStyle(() => ({
     transform: [{ scale: ring2Scale.value }],
-    opacity: ring2Opacity.value,
+    opacity: ring2Opacity.value
   }));
 
   const shieldStyle = useAnimatedStyle(() => ({
     transform: [
       { scale: shieldScale.value },
       { rotate: `${shieldRotate.value}deg` },
-    ],
+    ]
   }));
 
   const textStyle = useAnimatedStyle(() => ({
-    opacity: textOpacity.value,
+    opacity: textOpacity.value
   }));
 
   return (
@@ -983,11 +983,11 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
 
   const heroStyle = useAnimatedStyle(() => ({
     transform: [{ scale: heroScale.value }],
-    opacity: heroOpacity.value,
+    opacity: heroOpacity.value
   }));
 
   const radarStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: radarPulse.value }],
+    transform: [{ scale: radarPulse.value }]
   }));
 
   const hero = verdict.hero_data || {};
@@ -1211,7 +1211,7 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
   colorOverlay: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 0,
+    zIndex: 0
   },
   safe: { flex: 1, zIndex: 1 },
   content: { flex: 1, paddingHorizontal: 24, paddingTop: 16, zIndex: 1 },
@@ -1226,7 +1226,7 @@ const s = StyleSheet.create({
   tagCard: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
     padding: 16, borderRadius: 16, borderWidth: 1, borderColor: EL.BORDER,
-    backgroundColor: EL.CARD_BG,
+    backgroundColor: EL.CARD_BG
   },
   tagIconWrap: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   tagLabel: { fontFamily: FONT_MONT, color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 3, flex: 0 },
@@ -1241,7 +1241,7 @@ const s = StyleSheet.create({
   modeCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 16, borderRadius: 16, borderWidth: 1, borderColor: EL.BORDER,
-    backgroundColor: EL.CARD_BG, position: 'relative' as const,
+    backgroundColor: EL.CARD_BG, position: 'relative' as const
   },
   modeIconWrap: { width: 48, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   modeContent: { flex: 1, gap: 2 },
@@ -1267,20 +1267,20 @@ const s = StyleSheet.create({
     backgroundColor: EL.CARD_BG, borderWidth: 1, borderRadius: 12,
     color: '#FFFFFF', fontSize: 28, fontWeight: '800', textAlign: 'center' as const,
     paddingVertical: 14, letterSpacing: 1,
-    fontFamily: FONT_JAKARTA,
+    fontFamily: FONT_JAKARTA
   },
   inputUnit: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 11, fontWeight: '500', letterSpacing: 1, textAlign: 'center' as const },
 
   proofBtn: {
     flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6,
     borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
-    backgroundColor: 'rgba(255,255,255,0.02)', paddingVertical: 14,
+    backgroundColor: 'rgba(255,255,255,0.02)', paddingVertical: 14
   },
   proofText: { fontFamily: FONT_MONT, color: '#555', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
 
   disclaimer: {
     flexDirection: 'row', gap: 12, padding: 14, borderRadius: 12, borderWidth: 1,
-    backgroundColor: 'rgba(255,215,0,0.04)', marginBottom: 20,
+    backgroundColor: 'rgba(255,215,0,0.04)', marginBottom: 20
   },
   disclaimerContent: { flex: 1, gap: 4 },
   disclaimerTitle: { fontFamily: FONT_MONT, color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
@@ -1298,7 +1298,7 @@ const s = StyleSheet.create({
   sensorMock: { flexDirection: 'row', gap: 12, marginBottom: 20 },
   sensorDevice: {
     flex: 1, alignItems: 'center', gap: 8, padding: 20, borderRadius: 16,
-    borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.02)'
   },
   sensorName: { fontFamily: FONT_MONT, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   sensorStatus: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '400' },
@@ -1310,11 +1310,11 @@ const s = StyleSheet.create({
 
   primaryBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    borderRadius: 12, paddingVertical: 16, marginBottom: 12,
+    borderRadius: 12, paddingVertical: 16, marginBottom: 12
   },
   primaryBtnText: { fontFamily: FONT_MONT, color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
   backBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12 },
-  backText: { fontFamily: FONT_MONT, color: '#555', fontSize: 13, fontWeight: '800', letterSpacing: 2 },
+  backText: { fontFamily: FONT_MONT, color: '#555', fontSize: 13, fontWeight: '800', letterSpacing: 2 }
 });
 
 
@@ -1326,23 +1326,23 @@ const sw = StyleSheet.create({
   rocketWrap: {
     width: 80, height: 80, borderRadius: 40,
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 8
   },
   rocketEmoji: { fontSize: 40 },
   heroTitle: {
     fontFamily: FONT_MONT, fontSize: 22, fontWeight: '900',
-    letterSpacing: 3, textAlign: 'center',
+    letterSpacing: 3, textAlign: 'center'
   },
   heroBody: {
     fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.65)',
     fontSize: 15, fontWeight: '400', lineHeight: 22,
-    textAlign: 'center', paddingHorizontal: 12,
+    textAlign: 'center', paddingHorizontal: 12
   },
 
   flagsCard: {
     backgroundColor: EL.CARD_BG, borderRadius: 14,
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)',
-    padding: 14, gap: 10, marginBottom: 24,
+    padding: 14, gap: 10, marginBottom: 24
   },
   flagsHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   flagsTitle: { fontFamily: FONT_MONT, color: EL.CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
@@ -1351,13 +1351,13 @@ const sw = StyleSheet.create({
 
   proofSectionTitle: {
     fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 12,
-    fontWeight: '700', letterSpacing: 2, marginBottom: 12, textAlign: 'center',
+    fontWeight: '700', letterSpacing: 2, marginBottom: 12, textAlign: 'center'
   },
   proofOptions: { gap: 10, marginBottom: 20 },
   proofCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 14, borderRadius: 14, borderWidth: 1, borderColor: EL.BORDER,
-    backgroundColor: EL.CARD_BG, position: 'relative' as const,
+    backgroundColor: EL.CARD_BG, position: 'relative' as const
   },
   proofIconWrap: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   proofContent: { flex: 1, gap: 2 },
@@ -1368,15 +1368,15 @@ const sw = StyleSheet.create({
   proofCheck: {
     position: 'absolute' as const, top: -6, right: -6,
     width: 22, height: 22, borderRadius: 11,
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
 
   skipBtn: {
     borderWidth: 1, borderRadius: 12, paddingVertical: 14,
-    alignItems: 'center', marginBottom: 8, gap: 4,
+    alignItems: 'center', marginBottom: 8, gap: 4
   },
   skipBtnText: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 14, fontWeight: '700', letterSpacing: 1 },
-  skipBtnSub: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '400' },
+  skipBtnSub: { fontFamily: FONT_MONT, color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '400' }
 });
 
 
@@ -1388,9 +1388,9 @@ const vb = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 6,
     borderWidth: 1, borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 5,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.4)'
   },
-  badgeText: { fontFamily: FONT_MONT, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  badgeText: { fontFamily: FONT_MONT, fontSize: 10, fontWeight: '900', letterSpacing: 2 }
 });
 
 
@@ -1400,20 +1400,20 @@ const vb = StyleSheet.create({
 const ig = StyleSheet.create({
   outerWrap: {
     alignItems: 'center', justifyContent: 'center',
-    marginVertical: 8, height: 60,
+    marginVertical: 8, height: 60
   },
   ringBurst: {
     position: 'absolute' as const,
     width: 60, height: 60, borderRadius: 30,
-    borderWidth: 2, borderColor: EL.CYAN,
+    borderWidth: 2, borderColor: EL.CYAN
   },
   ringBurst2: {
     position: 'absolute' as const,
     width: 50, height: 50, borderRadius: 25,
-    borderWidth: 1.5, borderColor: EL.CYAN,
+    borderWidth: 1.5, borderColor: EL.CYAN
   },
   container: {
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
   glowRing: {
     position: 'absolute' as const,
@@ -1421,19 +1421,19 @@ const ig = StyleSheet.create({
     backgroundColor: EL.CYAN,
     ...(Platform.OS === 'web' ? {
       // @ts-ignore — Web boxShadow for glow
-      boxShadow: `0 0 24px ${EL.CYAN}55, 0 0 48px ${EL.CYAN}22`,
-    } : {}),
+      boxShadow: `0 0 24px ${EL.CYAN}55, 0 0 48px ${EL.CYAN}22`
+    } : {})
   },
   innerBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: '#0A1A1A',
     borderWidth: 1.5, borderColor: EL.CYAN,
-    borderRadius: 22, paddingHorizontal: 20, paddingVertical: 11,
+    borderRadius: 22, paddingHorizontal: 20, paddingVertical: 11
   },
   badgeText: {
     fontFamily: FONT_MONT, color: EL.CYAN,
-    fontSize: 13, fontWeight: '900', letterSpacing: 3,
-  },
+    fontSize: 13, fontWeight: '900', letterSpacing: 3
+  }
 });
 
 
@@ -1462,7 +1462,7 @@ const v = StyleSheet.create({
   sanityCard: {
     backgroundColor: EL.CARD_BG, borderRadius: 14,
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)',
-    padding: 14, gap: 8, marginBottom: 16,
+    padding: 14, gap: 8, marginBottom: 16
   },
   sanityHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   sanityTitle: { fontFamily: FONT_MONT, color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
@@ -1470,7 +1470,7 @@ const v = StyleSheet.create({
   proofTypeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     borderWidth: 1, borderColor: EL.CYAN + '33', borderRadius: 6,
-    paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start',
+    paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start'
   },
   proofTypeText: { fontFamily: FONT_MONT, color: EL.CYAN, fontSize: 10, fontWeight: '800', letterSpacing: 1 },
 
@@ -1486,7 +1486,7 @@ const v = StyleSheet.create({
 
   verificationInfo: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    marginTop: 4,
+    marginTop: 4
   },
   verificationMult: { fontFamily: FONT_MONT, color: '#8E8E93', fontSize: 11, fontWeight: '600' },
 
@@ -1506,5 +1506,5 @@ const v = StyleSheet.create({
   dnaStatIncrement: { fontFamily: FONT_JAKARTA, fontSize: 12, fontWeight: '800', letterSpacing: 1 },
 
   closeBtn: { borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 8 },
-  closeBtnText: { fontFamily: FONT_MONT, color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
+  closeBtnText: { fontFamily: FONT_MONT, color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 3 }
 });

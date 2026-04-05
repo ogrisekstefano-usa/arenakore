@@ -5,10 +5,10 @@
  */
 import React, { useEffect } from 'react';
 import {
-  Modal, View, Text, TouchableOpacity, StyleSheet, FlatList, Platform,
+  Modal, View, Text, TouchableOpacity, StyleSheet, FlatList, Platform
 } from 'react-native';
 import Animated, {
-  useSharedValue, withTiming, withSpring, useAnimatedStyle, Easing,
+  useSharedValue, withTiming, withSpring, useAnimatedStyle, Easing
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -46,7 +46,7 @@ function timeAgo(isoString: string | null): string {
 }
 
 export function NotificationDrawer({
-  visible, onClose, notifications, unreadCount, onMarkRead, onMarkAllRead,
+  visible, onClose, notifications, unreadCount, onMarkRead, onMarkAllRead
 }: NotificationDrawerProps) {
   const slideY = useSharedValue(60);
   const opacity = useSharedValue(0);
@@ -63,7 +63,7 @@ export function NotificationDrawer({
 
   const overlayStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
   const panelStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: slideY.value }],
+    transform: [{ translateY: slideY.value }]
   }));
 
   function renderItem({ item }: { item: Notification }) {
@@ -150,7 +150,7 @@ export function NotificationDrawer({
 const styles = StyleSheet.create({
   overlay: {
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(2,2,2,0.72)',
+    backgroundColor: 'rgba(2,2,2,0.72)'
   },
   panel: {
     borderTopLeftRadius: 24,
@@ -158,27 +158,27 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     maxHeight: '75%',
     borderTopWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
+    borderColor: 'rgba(255,255,255,0.07)'
   },
   panelGradient: { paddingBottom: 40 },
   panelHeader: {
     flexDirection: 'row', alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingTop: 20, paddingBottom: 14,
+    paddingHorizontal: 20, paddingTop: 20, paddingBottom: 14
   },
   panelTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   panelTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: 3 },
   unreadBadge: {
     backgroundColor: '#00E5FF', borderRadius: 8,
     paddingHorizontal: 7, paddingVertical: 2,
-    minWidth: 20, alignItems: 'center',
+    minWidth: 20, alignItems: 'center'
   },
   unreadBadgeText: { color: '#000', fontSize: 14, fontWeight: '900' },
   panelActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   markAllBtn: {
     backgroundColor: '#00E5FF22', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 5,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   markAllText: { color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
   closeBtn: { padding: 4 },
@@ -186,13 +186,13 @@ const styles = StyleSheet.create({
   list: { flexGrow: 0 },
   notifRow: {
     flexDirection: 'row', alignItems: 'flex-start',
-    paddingHorizontal: 20, paddingVertical: 14, gap: 14,
+    paddingHorizontal: 20, paddingVertical: 14, gap: 14
   },
   notifRowUnread: { backgroundColor: 'rgba(0,229,255,0.025)' },
   iconWrap: {
     width: 38, height: 38, borderRadius: 12,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, flexShrink: 0,
+    borderWidth: 1, flexShrink: 0
   },
   notifContent: { flex: 1, gap: 3 },
   notifTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -204,5 +204,5 @@ const styles = StyleSheet.create({
   separator: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginLeft: 72 },
   emptyState: { alignItems: 'center', paddingVertical: 48, gap: 10 },
   emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
-  emptySubText: { color: '#AAAAAA', fontSize: 16, textAlign: 'center', lineHeight: 18 },
+  emptySubText: { color: '#AAAAAA', fontSize: 16, textAlign: 'center', lineHeight: 18 }
 });

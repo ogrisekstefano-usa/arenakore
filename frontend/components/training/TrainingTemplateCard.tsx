@@ -16,12 +16,12 @@ const DIFF_CFG: Record<string, { color: string; label: string }> = {
   easy:    { color: '#00FF87', label: 'EASY' },
   medium:  { color: '#FF9500', label: 'MEDIUM' },
   hard:    { color: '#FF3B30', label: 'HARD' },
-  extreme: { color: '#AF52DE', label: 'EXTREME' },
+  extreme: { color: '#AF52DE', label: 'EXTREME' }
 };
 
 const EX_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   squat: 'barbell',
-  punch: 'hand-left',
+  punch: 'hand-left'
 };
 
 export function TrainingTemplateCard() {
@@ -65,8 +65,8 @@ export function TrainingTemplateCard() {
         trainingTargetTime: String(t.target_time),
         trainingName: t.name,
         trainingFlux: String(t.xp_reward),
-        dnaPotential: String(dnaP),
-      },
+        dnaPotential: String(dnaP)
+      }
     });
   };
 
@@ -122,7 +122,7 @@ export function TrainingTemplateCard() {
 const c$ = StyleSheet.create({
   section: { marginTop: 12, marginBottom: 4 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 24, marginBottom: 8 },
-  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FFD700', shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 6 },
+  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#FFD700' },
   sectionTitle: { flex: 1, color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
   donePill: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   doneText: { color: '#00FF87', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
@@ -141,5 +141,5 @@ const c$ = StyleSheet.create({
   startBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: '#FFD700', borderRadius: 12, paddingVertical: 16 },
   startBtnDone: { backgroundColor: 'rgba(0,255,135,0.06)', borderWidth: 1, borderColor: 'rgba(0,255,135,0.2)' },
   startBtnText: { color: '#000000', fontSize: 17, fontWeight: '900', letterSpacing: 3 },
-  startBtnDoneText: { color: '#00FF87', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
+  startBtnDoneText: { color: '#00FF87', fontSize: 15, fontWeight: '900', letterSpacing: 2 }
 });

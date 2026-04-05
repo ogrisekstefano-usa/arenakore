@@ -6,7 +6,7 @@
 import React, { useRef, useCallback, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, Platform, Share, Alert,
-  ActivityIndicator,
+  ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,10 +19,10 @@ const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default
 const FONT_M = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });
 
 const TEMPLATE_COLORS: Record<string, string> = {
-  AMRAP: '#FF3B30', EMOM: '#00E5FF', FOR_TIME: '#FFD700', TABATA: '#00FF87', CUSTOM: '#FF9500',
+  AMRAP: '#FF3B30', EMOM: '#00E5FF', FOR_TIME: '#FFD700', TABATA: '#00FF87', CUSTOM: '#FF9500'
 };
 const TEMPLATE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
-  AMRAP: 'flame', EMOM: 'timer', FOR_TIME: 'speedometer', TABATA: 'pulse', CUSTOM: 'construct',
+  AMRAP: 'flame', EMOM: 'timer', FOR_TIME: 'speedometer', TABATA: 'pulse', CUSTOM: 'construct'
 };
 
 interface Props {
@@ -48,7 +48,7 @@ export function ChallengeShareCard({ visible, challenge, onClose }: Props) {
     try {
       if (Platform.OS === 'web') {
         await Share.share({
-          message: `🔥 ${challenge.title} — Sfida creata su ARENAKORE!\n\nEsercizi: ${exercises}\nFLUX Reward: +${challenge.flux_reward}⚡\n\nScansiona il QR nell'app per importarla!`,
+          message: `🔥 ${challenge.title} — Sfida creata su ARENAKORE!\n\nEsercizi: ${exercises}\nFLUX Reward: +${challenge.flux_reward}⚡\n\nScansiona il QR nell'app per importarla!`
         });
       } else {
         const uri = await captureRef(viewRef, { format: 'png', quality: 0.9 });
@@ -57,7 +57,7 @@ export function ChallengeShareCard({ visible, challenge, onClose }: Props) {
     } catch (e) {
       // Fallback to text sharing
       await Share.share({
-        message: `🔥 ${challenge.title}\n${exercises}\n+${challenge.flux_reward}⚡ FLUX\n\nSfida su ARENAKORE!`,
+        message: `🔥 ${challenge.title}\n${exercises}\n+${challenge.flux_reward}⚡ FLUX\n\nSfida su ARENAKORE!`
       });
     } finally {
       setSharing(false);
@@ -178,7 +178,7 @@ export function ChallengeShareCard({ visible, challenge, onClose }: Props) {
 const s = StyleSheet.create({
   backdrop: {
     flex: 1, backgroundColor: 'rgba(0,0,0,0.95)',
-    alignItems: 'center', justifyContent: 'center', padding: 20,
+    alignItems: 'center', justifyContent: 'center', padding: 20
   },
   closeBtn: { position: 'absolute', right: 20, zIndex: 10, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' },
   cardWrap: { width: '100%', maxWidth: 340 },
@@ -209,5 +209,5 @@ const s = StyleSheet.create({
   footerLogo: { color: 'rgba(255,255,255,0.15)', fontSize: 16, fontWeight: '900', letterSpacing: 4, fontFamily: FONT_J },
   footerKore: { fontSize: 16, fontWeight: '900', letterSpacing: 4, fontFamily: FONT_J },
   shareBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 20, paddingVertical: 16, paddingHorizontal: 40, borderRadius: 16, width: '100%', maxWidth: 340 },
-  shareBtnText: { color: '#0A0A0A', fontSize: 15, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
+  shareBtnText: { color: '#0A0A0A', fontSize: 15, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J }
 });

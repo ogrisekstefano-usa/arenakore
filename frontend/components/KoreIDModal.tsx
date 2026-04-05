@@ -10,13 +10,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   View, Text, StyleSheet, Modal, TouchableOpacity, Dimensions, Platform,
-  ActivityIndicator,
+  ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
 import Animated, {
   FadeIn, FadeInDown, FadeInUp,
-  useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming,
+  useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming
 } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { useAuth } from '../contexts/AuthContext';
@@ -70,7 +70,7 @@ export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
     }
   }, [visible]);
   const pulseStyle = useAnimatedStyle(() => ({
-    opacity: pulse.value,
+    opacity: pulse.value
   }));
 
   // Founder shimmer
@@ -89,7 +89,7 @@ export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
     if (visible && token) {
       setLoadingRank(true);
       fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/rankings/city?city=GLOBAL`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(r => r.json())
         .then(d => { setRank(d.my_rank || null); })
@@ -238,14 +238,14 @@ const ki$ = StyleSheet.create({
     borderRadius: 24, borderWidth: 2,
     ...Platform.select({
       web: {},
-      default: {},
-    }),
+      default: {}
+    })
   },
 
   // Card
   card: {
     borderRadius: 22, overflow: 'hidden', borderWidth: 1,
-    backgroundColor: Platform.OS === 'web' ? 'rgba(10,10,10,0.85)' : 'rgba(5,5,5,0.6)',
+    backgroundColor: Platform.OS === 'web' ? 'rgba(10,10,10,0.85)' : 'rgba(5,5,5,0.6)'
   },
   webGlass: { backgroundColor: 'rgba(10,10,10,0.88)' },
 
@@ -255,7 +255,7 @@ const ki$ = StyleSheet.create({
   // Header
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 2,
+    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 2
   },
   headerLeft: { gap: 0 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -264,7 +264,7 @@ const ki$ = StyleSheet.create({
   moodBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
-    borderWidth: 1,
+    borderWidth: 1
   },
   moodText: { fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
 
@@ -284,7 +284,7 @@ const ki$ = StyleSheet.create({
   qrSection: { alignItems: 'center', paddingVertical: 14, gap: 8 },
   qrFrame: {
     padding: 16, borderRadius: 18, borderWidth: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)'
   },
   qrHint: { color: 'rgba(255,255,255,0.12)', fontSize: 10, fontWeight: '600', letterSpacing: 1.5 },
 
@@ -294,7 +294,7 @@ const ki$ = StyleSheet.create({
   // Stats
   statsGrid: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: 14, paddingHorizontal: 16,
+    paddingVertical: 14, paddingHorizontal: 16
   },
   stat: { flex: 1, alignItems: 'center', gap: 2 },
   statValue: { fontSize: 16, fontWeight: '900' },
@@ -304,13 +304,13 @@ const ki$ = StyleSheet.create({
   // Serial
   serialRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 20, paddingBottom: 16, paddingTop: 4,
+    paddingHorizontal: 20, paddingBottom: 16, paddingTop: 4
   },
   serial: { fontSize: 11, fontWeight: '800', letterSpacing: 2 },
   uid: {
     color: 'rgba(255,255,255,0.1)', fontSize: 10, fontWeight: '600', letterSpacing: 1,
-    ...Platform.select({ web: { fontFamily: 'monospace' }, default: {} }),
+    ...Platform.select({ web: { fontFamily: 'monospace' }, default: {} })
   },
   // Share section
-  shareSection: { paddingHorizontal: 20, paddingBottom: 16 },
+  shareSection: { paddingHorizontal: 20, paddingBottom: 16 }
 });

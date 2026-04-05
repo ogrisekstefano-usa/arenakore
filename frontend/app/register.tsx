@@ -7,7 +7,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
   KeyboardAvoidingView, Platform, ScrollView,
-  ActivityIndicator, StatusBar, Pressable,
+  ActivityIndicator, StatusBar, Pressable
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn, FadeInDown, FadeInRight, FadeOutLeft,
   useSharedValue, withRepeat, withSequence, withTiming,
-  useAnimatedStyle, SlideInRight, SlideOutLeft,
+  useAnimatedStyle, SlideInRight, SlideOutLeft
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../contexts/AuthContext';
@@ -24,7 +24,7 @@ import { useAuth } from '../contexts/AuthContext';
 const MONT: any = Platform.select({ web: { fontFamily: 'Montserrat, sans-serif' }, default: {} });
 const GLASS: any = Platform.select({
   web: { backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' },
-  default: {},
+  default: {}
 });
 
 const CYAN   = '#00E5FF';
@@ -48,14 +48,14 @@ function CyanDot() {
   }, []);
   const style = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    opacity: scale.value > 1.2 ? 0.6 : 1,
+    opacity: scale.value > 1.2 ? 0.6 : 1
   }));
   return <Animated.View style={[styles.cyanDot, style]} />;
 }
 
 // ── PasswordField ─────────────────────────────────────────────────────────────
 function PasswordField({
-  value, onChangeText, placeholder, matchValue, showEye, onToggleEye, forwardRef,
+  value, onChangeText, placeholder, matchValue, showEye, onToggleEye, forwardRef
 }: {
   value: string; onChangeText: (t: string) => void; placeholder: string;
   matchValue?: string; showEye: boolean; onToggleEye: () => void;
@@ -243,7 +243,7 @@ function SecurityPhase({ onNext }: { onNext: (email: string, password: string) =
 
 // ── Phase 2: Bio-Data ─────────────────────────────────────────────────────────
 function BioDataPhase({
-  email, password, onBack,
+  email, password, onBack
 }: {
   email: string; password: string; onBack: () => void;
 }) {
@@ -516,24 +516,24 @@ export default function Register() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: '#000000'
   },
 
   // Background
   gridBg: {
     ...StyleSheet.absoluteFillObject,
-    flexDirection: 'row',
+    flexDirection: 'row'
   },
   gridLine: {
     position: 'absolute',
     top: 0, bottom: 0,
     width: 1,
-    backgroundColor: 'rgba(0,229,255,0.04)',
+    backgroundColor: 'rgba(0,229,255,0.04)'
   },
 
   scroll: {
     paddingHorizontal: 24,
-    paddingTop: 12,
+    paddingTop: 12
   },
 
   // Top nav
@@ -541,39 +541,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 32
   },
   navBack: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 4
   },
   navBackText: {
     color: 'rgba(255,255,255,0.5)',
     fontSize: 16,
     fontWeight: '300',
-    letterSpacing: 0.5,
+    letterSpacing: 0.5
   },
   nexusBrand: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 8
   },
   nexusDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: CYAN,
-    shadowColor: CYAN,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
+    backgroundColor: CYAN
   },
   nexusBrandText: {
     color: CYAN,
     fontSize: 15,
     fontWeight: '900',
-    letterSpacing: 4,
+    letterSpacing: 4
   },
 
   content: { gap: 0 },
@@ -583,44 +579,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 16,
+    marginBottom: 16
   },
   backBtn: {
-    marginRight: 4,
+    marginRight: 4
   },
   phaseLabel: {
     flex: 1,
     color: 'rgba(255,255,255,0.4)',
     fontSize: 12,
     fontWeight: '300',
-    letterSpacing: 3,
+    letterSpacing: 3
   },
   stepPills: {
     flexDirection: 'row',
-    gap: 4,
+    gap: 4
   },
   stepPill: {
     width: 20,
     height: 3,
     borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.12)'
   },
   stepPillActive: {
-    backgroundColor: CYAN,
-    shadowColor: CYAN,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
+    backgroundColor: CYAN
   },
   cyanDot: {
     width: 5,
     height: 5,
     borderRadius: 3,
-    backgroundColor: CYAN,
-    shadowColor: CYAN,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 6,
+    backgroundColor: CYAN
   },
 
   // Titles
@@ -630,7 +618,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 2,
     lineHeight: 40,
-    marginBottom: 8,
+    marginBottom: 8
   },
   phaseSub: {
     color: 'rgba(255,255,255,0.4)',
@@ -638,7 +626,7 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     lineHeight: 18,
     letterSpacing: 0.5,
-    marginBottom: 24,
+    marginBottom: 24
   },
 
   // Glass card
@@ -649,7 +637,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.07)',
     padding: 20,
     gap: 18,
-    marginBottom: 20,
+    marginBottom: 20
   },
 
   // Field
@@ -658,7 +646,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.30)',
     fontSize: 12,
     fontWeight: '300',
-    letterSpacing: 3,
+    letterSpacing: 3
   },
   fieldWrap: {
     flexDirection: 'row',
@@ -669,7 +657,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.07)',
     paddingHorizontal: 24,
     paddingVertical: 14,
-    gap: 10,
+    gap: 10
   },
   fieldIcon: { opacity: 0.7 },
   fieldInput: {
@@ -679,17 +667,17 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     letterSpacing: 0.5,
     // web only:
-    ...(Platform.OS === 'web' ? { outlineStyle: 'none' } as any : {}),
+    ...(Platform.OS === 'web' ? { outlineStyle: 'none' } as any : {})
   },
   eyeBtn: {
-    padding: 4,
+    padding: 4
   },
   fieldHint: {
     fontSize: 13,
     fontWeight: '300',
     letterSpacing: 0.5,
     color: 'rgba(255,255,255,0.3)',
-    marginTop: -2,
+    marginTop: -2
   },
 
   // Terms
@@ -697,7 +685,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 16
   },
   checkbox: {
     width: 20,
@@ -708,11 +696,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1,
-    flexShrink: 0,
+    flexShrink: 0
   },
   checkboxActive: {
     backgroundColor: CYAN,
-    borderColor: CYAN,
+    borderColor: CYAN
   },
   termsText: {
     flex: 1,
@@ -720,11 +708,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '300',
     lineHeight: 18,
-    letterSpacing: 0.3,
+    letterSpacing: 0.3
   },
   termsLink: {
     color: CYAN,
-    fontWeight: '400',
+    fontWeight: '400'
   },
 
   // Error
@@ -737,20 +725,20 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,59,48,0.2)',
+    borderColor: 'rgba(255,59,48,0.2)'
   },
   errorText: {
     color: '#FF3B30',
     fontSize: 14,
     fontWeight: '300',
-    letterSpacing: 0.5,
+    letterSpacing: 0.5
   },
 
   // CTA
   ctaBtn: {
     borderRadius: 14,
     overflow: 'hidden',
-    marginBottom: 8,
+    marginBottom: 8
   },
   ctaBtnOff: { opacity: 0.6 },
   ctaGrad: {
@@ -759,19 +747,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
     paddingVertical: 17,
-    paddingHorizontal: 24,
+    paddingHorizontal: 24
   },
   ctaText: {
     color: '#000000',
     fontSize: 16,
     fontWeight: '900',
-    letterSpacing: 3,
+    letterSpacing: 3
   },
 
   // Gender
   genderRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 10
   },
   genderBtn: {
     flex: 1,
@@ -783,17 +771,17 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.07)',
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: 'rgba(255,255,255,0.04)'
   },
   genderBtnActive: {
     backgroundColor: CYAN,
-    borderColor: CYAN,
+    borderColor: CYAN
   },
   genderLabel: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: 13,
     fontWeight: '900',
-    letterSpacing: 1.5,
+    letterSpacing: 1.5
   },
 
   // Calibration note
@@ -806,7 +794,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(0,229,255,0.1)',
+    borderColor: 'rgba(0,229,255,0.1)'
   },
   calibText: {
     flex: 1,
@@ -814,7 +802,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '300',
     lineHeight: 16,
-    letterSpacing: 0.3,
+    letterSpacing: 0.3
   },
 
   // Login link
@@ -823,19 +811,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    paddingTop: 16,
+    paddingTop: 16
   },
   loginLinkText: {
     color: 'rgba(255,255,255,0.30)',
     fontSize: 15,
     fontWeight: '300',
-    letterSpacing: 0.5,
+    letterSpacing: 0.5
   },
   loginLinkCta: {
     color: CYAN,
     fontSize: 15,
     fontWeight: '900',
-    letterSpacing: 2,
+    letterSpacing: 2
   },
 
   // ── Chameleon Engine styles ─────────────────────────────────────────
@@ -844,18 +832,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     marginTop: 8,
-    marginBottom: 10,
+    marginBottom: 10
   },
   chameleonLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.1)'
   },
   chameleonLabel: {
     color: 'rgba(255,255,255,0.3)',
     fontSize: 11,
     fontWeight: '900',
-    letterSpacing: 3,
+    letterSpacing: 3
   },
   chameleonCard: {
     flexDirection: 'row',
@@ -865,21 +853,21 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     marginBottom: 10,
-    gap: 12,
+    gap: 12
   },
   chameleonFast: {
     backgroundColor: 'rgba(255,255,255,0.04)',
-    borderColor: 'rgba(255,255,255,0.07)',
+    borderColor: 'rgba(255,255,255,0.07)'
   },
   chameleonNexus: {
     backgroundColor: 'rgba(0,229,255,0.07)',
-    borderColor: '#00E5FF22',
+    borderColor: '#00E5FF22'
   },
   chameleonCardLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    flex: 1,
+    flex: 1
   },
   chameleonIconWrap: {
     width: 44,
@@ -888,19 +876,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.07)',
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 0,
+    flexShrink: 0
   },
   chameleonCardTitle: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: 1,
-    marginBottom: 3,
+    marginBottom: 3
   },
   chameleonCardSub: {
     color: '#AAAAAA',
     fontSize: 13,
     fontWeight: '300',
-    lineHeight: 16,
-  },
+    lineHeight: 16
+  }
 });

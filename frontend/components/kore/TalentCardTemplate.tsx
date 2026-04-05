@@ -15,13 +15,13 @@ const FONT_M = Platform.select({ ios: 'Montserrat-Regular', android: 'Montserrat
 const SILO_COLORS: Record<string, string> = {
   'Fitness': '#FF3B30', 'Golf': '#00FF87', 'Padel': '#00B4D8', 'Calcio': '#06D6A0',
   'Tennis': '#FFD700', 'Basket': '#FF9500', 'Running': '#A855F7', 'Nuoto': '#0096C7',
-  'Yoga': '#C77DFF', 'CrossFit': '#FF6B6B', 'Boxing': '#E63946', 'MMA': '#D62828', 'Ciclismo': '#48CAE4',
+  'Yoga': '#C77DFF', 'CrossFit': '#FF6B6B', 'Boxing': '#E63946', 'MMA': '#D62828', 'Ciclismo': '#48CAE4'
 };
 
 const DISC_ICONS: Record<string, string> = {
   'Golf': '⛳', 'Fitness': '🏋️', 'Padel': '🏓', 'Calcio': '⚽', 'Tennis': '🎾',
   'Basket': '🏀', 'Running': '🏃', 'Nuoto': '🏊', 'Yoga': '🧘', 'CrossFit': '💪',
-  'Boxing': '🥊', 'MMA': '🥋', 'Ciclismo': '🚴',
+  'Boxing': '🥊', 'MMA': '🥋', 'Ciclismo': '🚴'
 };
 
 interface TalentCardData {
@@ -184,7 +184,7 @@ export const TalentCardTemplate = forwardRef<View, { data: TalentCardData }>(({ 
               <View style={tc.kpiBarTrack}>
                 <View style={[tc.kpiBarFill, {
                   width: `${Math.min((kpi.value || 0), 100)}%`,
-                  backgroundColor: kpi.color,
+                  backgroundColor: kpi.color
                 }]} />
               </View>
               <Text style={[tc.kpiValue, { color: kpi.color }]}>{Math.round(kpi.value || 0)}</Text>
@@ -196,7 +196,7 @@ export const TalentCardTemplate = forwardRef<View, { data: TalentCardData }>(({ 
             <View style={tc.kpiBarTrack}>
               <View style={[tc.kpiBarFill, {
                 width: `${Math.min(data.qualityScore, 100)}%`,
-                backgroundColor: '#FFFFFF',
+                backgroundColor: '#FFFFFF'
               }]} />
             </View>
             <Text style={[tc.kpiValue, { color: '#FFFFFF' }]}>{Math.round(data.qualityScore)}</Text>
@@ -251,7 +251,7 @@ const tc = StyleSheet.create({
   neonFrame: {
     flex: 1, margin: 10, borderRadius: 18, borderWidth: 2,
     overflow: 'hidden', justifyContent: 'space-between',
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.4)'
   },
   glowLineTop: { height: 2, width: '100%', opacity: 0.8 },
   glowLineBottom: { height: 2, width: '100%', opacity: 0.8 },
@@ -259,7 +259,7 @@ const tc = StyleSheet.create({
   // Top
   topSection: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 14, paddingTop: 10,
+    paddingHorizontal: 14, paddingTop: 10
   },
   brandRow: { flexDirection: 'row', gap: 4 },
   brandA: { color: 'rgba(255,255,255,0.40)', fontSize: 11, fontWeight: '900', letterSpacing: 4 },
@@ -268,36 +268,36 @@ const tc = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 4,
     borderWidth: 1, borderRadius: 8,
     paddingHorizontal: 8, paddingVertical: 3,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.3)'
   },
   discEmoji: { fontSize: 12 },
   discName: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
 
   // Athlete
   athleteSection: {
-    alignItems: 'center', paddingHorizontal: 14, position: 'relative',
+    alignItems: 'center', paddingHorizontal: 14, position: 'relative'
   },
   ratingContainer: {
     position: 'absolute', top: -5, left: 20, zIndex: 10,
     width: 54, height: 62, borderRadius: 10, borderWidth: 2,
     alignItems: 'center', justifyContent: 'center',
-    overflow: 'hidden',
+    overflow: 'hidden'
   },
   ratingValue: { fontSize: 28, fontWeight: '900', lineHeight: 30, fontFamily: FONT_J },
   ratingLabel: { fontSize: 8, fontWeight: '900', letterSpacing: 2, marginTop: -2 },
   photoFrame: {
     width: 260, height: 200, borderRadius: 14, overflow: 'hidden',
-    borderWidth: 1.5,
+    borderWidth: 1.5
   },
   photoImg: { width: '100%', height: '100%' },
   photoPlaceholder: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.02)',
+    backgroundColor: 'rgba(255,255,255,0.02)'
   },
   photoGradient: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 60 },
   titleBadge: {
     marginTop: 6, paddingHorizontal: 12, paddingVertical: 4,
-    borderRadius: 8, borderWidth: 1,
+    borderRadius: 8, borderWidth: 1
   },
   titleText: { fontSize: 10, fontWeight: '900', letterSpacing: 2 },
 
@@ -307,7 +307,7 @@ const tc = StyleSheet.create({
   founderBadge: {
     marginTop: 3, backgroundColor: 'rgba(255,215,0,0.10)',
     borderRadius: 5, paddingHorizontal: 8, paddingVertical: 2,
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)'
   },
   founderText: { color: '#FFD700', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
 
@@ -323,7 +323,7 @@ const tc = StyleSheet.create({
   kpiBarTrack: {
     flex: 1, height: 6, borderRadius: 3,
     backgroundColor: 'rgba(255,255,255,0.06)',
-    overflow: 'hidden',
+    overflow: 'hidden'
   },
   kpiBarFill: { height: '100%', borderRadius: 3 },
   kpiValue: { fontSize: 13, fontWeight: '900', width: 28, textAlign: 'right', fontFamily: FONT_J },
@@ -334,19 +334,19 @@ const tc = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: 'rgba(0,255,135,0.10)', borderRadius: 6,
     paddingHorizontal: 8, paddingVertical: 3,
-    borderWidth: 1, borderColor: 'rgba(0,255,135,0.20)',
+    borderWidth: 1, borderColor: 'rgba(0,255,135,0.20)'
   },
   certText: { color: '#00FF87', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
   fluxRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   fluxText: { color: '#FFD700', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   verifyRow: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    width: '80%',
+    width: '80%'
   },
   verifyLine: { flex: 1, height: 1 },
   verifyContent: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   verifyText: { fontSize: 8, fontWeight: '800', letterSpacing: 1.5 },
-  footer: { color: 'rgba(255,255,255,0.10)', fontSize: 9, fontWeight: '800', letterSpacing: 3 },
+  footer: { color: 'rgba(255,255,255,0.10)', fontSize: 9, fontWeight: '800', letterSpacing: 3 }
 });
 
 export type { TalentCardData };

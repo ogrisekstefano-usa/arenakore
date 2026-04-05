@@ -30,7 +30,7 @@ function EventRow({ event, idx }: { event: LiveEvent & { isNew?: boolean }; idx:
   }, [event.isNew]);
   const glowStyle = useAnimatedStyle(() => ({
     backgroundColor: `rgba(0,229,255,${glow.value * 0.08})`,
-    borderLeftColor: `rgba(0,229,255,${0.2 + glow.value * 0.7})`,
+    borderLeftColor: `rgba(0,229,255,${0.2 + glow.value * 0.7})`
   }));
 
   const age = event.age_secs ?? 0;
@@ -68,7 +68,7 @@ const e$ = StyleSheet.create({
   detail: { color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '300' },
   right: { alignItems: 'flex-end', gap: 1 },
   xp: { color: '#FFD700', fontSize: 13, fontWeight: '900' },
-  age: { color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: '300' },
+  age: { color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: '300' }
 });
 
 export function LiveMonitorPanel({ gymId }: { gymId: string | null | undefined }) {
@@ -91,7 +91,7 @@ export function LiveMonitorPanel({ gymId }: { gymId: string | null | undefined }
       const data = await api.getLiveEvents(token);
       const evts = (data.events || []).map((e: LiveEvent, i: number) => ({
         ...e,
-        isNew: i === 0 && !lastEventIds.current.has(e.timestamp || String(i)),
+        isNew: i === 0 && !lastEventIds.current.has(e.timestamp || String(i))
       }));
       if (evts[0]?.timestamp) lastEventIds.current.add(evts[0].timestamp);
       mergeEvents(evts);
@@ -170,5 +170,5 @@ const lm$ = StyleSheet.create({
   title: { color: '#FFF', fontSize: 13, fontWeight: '900', letterSpacing: 3 },
   sub: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '300', letterSpacing: 1 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 24, gap: 10 },
-  emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 14, textAlign: 'center', lineHeight: 18 },
+  emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 14, textAlign: 'center', lineHeight: 18 }
 });

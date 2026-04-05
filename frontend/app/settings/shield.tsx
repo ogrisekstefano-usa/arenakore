@@ -6,7 +6,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  StatusBar, Alert, Switch, ActivityIndicator,
+  StatusBar, Alert, Switch, ActivityIndicator
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,19 +24,19 @@ const PILLARS = [
     icon: 'phone-portrait-outline' as const,
     color: CYAN,
     title: 'ON-DEVICE ANALYSIS',
-    desc: 'Elaborazione biometrica 100% locale. Il tuo DNA score non lascia mai il dispositivo durante la scansione. Solo vettori numerici anonimi sono sincronizzati.',
+    desc: 'Elaborazione biometrica 100% locale. Il tuo DNA score non lascia mai il dispositivo durante la scansione. Solo vettori numerici anonimi sono sincronizzati.'
   },
   {
     icon: 'lock-closed' as const,
     color: GOLD,
     title: 'DATA ENCRYPTION',
-    desc: 'Tutti i dati trasmessi usano crittografia AES-256. Le password sono hashate con bcrypt (irreversibile). Zero MD5, zero plaintext storage.',
+    desc: 'Tutti i dati trasmessi usano crittografia AES-256. Le password sono hashate con bcrypt (irreversibile). Zero MD5, zero plaintext storage.'
   },
   {
     icon: 'shield-checkmark' as const,
     color: '#32D74B',
     title: 'ZERO-MARKETING POLICY',
-    desc: 'I tuoi dati non vengono mai venduti o ceduti a terzi. ARENAKORE non usa analytics di terze parti. Nessun cookie di tracciamento.',
+    desc: 'I tuoi dati non vengono mai venduti o ceduti a terzi. ARENAKORE non usa analytics di terze parti. Nessun cookie di tracciamento.'
   },
 ];
 
@@ -96,7 +96,7 @@ export default function PrivacyShield() {
             } finally {
               setWipingData(false);
             }
-          },
+          }
         },
       ]
     );
@@ -213,7 +213,7 @@ const s = StyleSheet.create({
   shieldIcon: { width: 60, height: 60, borderRadius: 20, backgroundColor: '#00E5FF22', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   title: { color: CYAN, fontSize: 15, fontWeight: '400', letterSpacing: 6 },
   titleBig: { color: '#FFFFFF', fontSize: 44, fontWeight: '400', letterSpacing: 0.5, lineHeight: 48 },
-  accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6 },
+  accentLine: { height: 2, width: 48, backgroundColor: CYAN, marginTop: 12, marginBottom: 14 },
   subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '900', letterSpacing: 3 },
 
   pillar: { flexDirection: 'row', gap: 14, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 12, padding: 16, marginBottom: 10, borderWidth: 1 },
@@ -239,5 +239,5 @@ const s = StyleSheet.create({
   wipeNote: { color: '#AAAAAA', fontSize: 15, fontWeight: '400', textAlign: 'center', lineHeight: 18 },
 
   footer: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center', paddingTop: 8 },
-  footerTxt: { color: 'rgba(0,229,255,0.2)', fontSize: 10, fontWeight: '400', letterSpacing: 2 },
+  footerTxt: { color: 'rgba(0,229,255,0.2)', fontSize: 10, fontWeight: '400', letterSpacing: 2 }
 });

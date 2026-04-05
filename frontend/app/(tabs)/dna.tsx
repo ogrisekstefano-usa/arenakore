@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar, ImageBackground,
-  Dimensions, TouchableOpacity, Linking,
+  Dimensions, TouchableOpacity, Linking
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,7 +14,7 @@ import { TalentCard } from '../../components/TalentCard';
 import { useFocusEffect, useRouter } from 'expo-router';
 import Animated, {
   useSharedValue, withTiming, withSpring, withSequence,
-  withDelay, useAnimatedStyle, Easing,
+  withDelay, useAnimatedStyle, Easing
 } from 'react-native-reanimated';
 import { api } from '../../utils/api';
 import { DNA_HERO_IMAGE } from '../../utils/images';
@@ -55,7 +55,7 @@ function GlitchOverlay({ active }: { active: boolean }) {
   const overlayStyle = useAnimatedStyle(() => ({ opacity: glitchOpacity.value }));
   const scanLineStyle = useAnimatedStyle(() => ({
     top: `${scanY.value * 100}%` as any,
-    opacity: 1 - scanY.value * 0.8,
+    opacity: 1 - scanY.value * 0.8
   }));
   const stripesStyle = useAnimatedStyle(() => ({ opacity: stripesOpacity.value }));
 
@@ -77,12 +77,11 @@ const gStyles = StyleSheet.create({
   tint: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,229,255,0.18)', zIndex: 50 },
   scanLine: {
     position: 'absolute', left: 0, right: 0, height: 2,
-    backgroundColor: '#00E5FF', shadowColor: '#00E5FF',
-    shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.9, shadowRadius: 12,
-    elevation: 10, zIndex: 51,
+    backgroundColor: '#00E5FF',
+    elevation: 10, zIndex: 51
   },
   stripes: { ...StyleSheet.absoluteFillObject, zIndex: 50 },
-  stripe: { position: 'absolute', left: 0, right: 0, backgroundColor: '#00E5FF22' },
+  stripe: { position: 'absolute', left: 0, right: 0, backgroundColor: '#00E5FF22' }
 });
 
 function getRoleColor(role?: string) {
@@ -200,12 +199,12 @@ export default function DNATab() {
 
   const scanStyle = useAnimatedStyle(() => ({
     opacity: scanOpacity.value,
-    transform: [{ scale: scanScale.value }],
+    transform: [{ scale: scanScale.value }]
   }));
 
   const radarStyle = useAnimatedStyle(() => ({
     opacity: scanOpacity.value,
-    transform: [{ scale: scanScale.value * radarExpand.value }],
+    transform: [{ scale: scanScale.value * radarExpand.value }]
   }));
 
   return (
@@ -506,14 +505,14 @@ const styles = StyleSheet.create({
   chartGlass: {
     alignItems: 'center', marginTop: 8, marginHorizontal: 12,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 20, padding: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   glassInner: { alignItems: 'center' },
   glowBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     width: '100%', backgroundColor: 'rgba(255,215,0,0.08)',
     borderRadius: 10, padding: 10, borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
-    justifyContent: 'center', marginTop: 8,
+    justifyContent: 'center', marginTop: 8
   },
   glowBannerText: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
   noData: { padding: 40, alignItems: 'center', gap: 12 },
@@ -521,7 +520,7 @@ const styles = StyleSheet.create({
     width: 72, height: 72, borderRadius: 36,
     backgroundColor: 'transparent',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
   noDataTitle: { color: '#FFFFFF', fontSize: 14, fontWeight: '800', letterSpacing: -0.5, lineHeight: 17 },
   noDataText: { color: '#AAAAAA', fontSize: 18, textAlign: 'center', lineHeight: 22 },
@@ -530,7 +529,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent', borderRadius: 10,
     paddingHorizontal: 24, paddingVertical: 10,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
-    marginTop: 4,
+    marginTop: 4
   },
   firstScanDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF' },
   firstScanCtaText: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
@@ -539,15 +538,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginHorizontal: 24, marginTop: 12, marginBottom: 4,
     borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10,
-    borderWidth: 1,
+    borderWidth: 1
   },
   eligibilityBannerActive: {
     backgroundColor: 'transparent',
-    borderColor: 'rgba(255,255,255,0.07)',
+    borderColor: 'rgba(255,255,255,0.07)'
   },
   eligibilityBannerLocked: {
     backgroundColor: 'rgba(255,255,255,0.05)',
-    borderColor: 'rgba(255,255,255,0.07)',
+    borderColor: 'rgba(255,255,255,0.07)'
   },
   eligibilityText: { flex: 1, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   eligibilityTextActive: { color: '#00E5FF' },
@@ -555,7 +554,7 @@ const styles = StyleSheet.create({
   avgDnaBadge: {
     backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 8,
     paddingHorizontal: 8, paddingVertical: 3,
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)'
   },
   avgDnaText: { color: '#FFD700', fontSize: 15, fontWeight: '900' },
   // Evolution glow banner
@@ -563,7 +562,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     width: '100%', backgroundColor: 'transparent',
     borderRadius: 10, padding: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center', marginTop: 8,
+    justifyContent: 'center', marginTop: 8
   },
   evoBannerText: { color: '#00E5FF', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   // Stat card improvement
@@ -579,7 +578,7 @@ const styles = StyleSheet.create({
   statCard: {
     width: '30%', flexGrow: 1,
     backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 12,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', gap: 3,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', gap: 3
   },
   statCardBroken: { borderColor: 'rgba(255,215,0,0.25)', backgroundColor: 'rgba(255,215,0,0.03)' },
   statLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '800', letterSpacing: 1.5 },
@@ -593,11 +592,11 @@ const styles = StyleSheet.create({
   talentSection: { marginTop: 20 },
   sectionRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 24, paddingBottom: 12,
+    paddingHorizontal: 24, paddingBottom: 12
   },
   sectionTitle: {
     color: '#FFFFFF', fontSize: 16, fontWeight: '800',
-    letterSpacing: -0.5, textTransform: 'uppercase', lineHeight: 19,
+    letterSpacing: -0.5, textTransform: 'uppercase', lineHeight: 19
   },
   // ===== TALOSFIT PARTNER BANNER — SPRINT 10 =====
   talosBannerWrap: {
@@ -605,11 +604,7 @@ const styles = StyleSheet.create({
     borderRadius: 20, overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,215,0,0.32)',
-    shadowColor: '#FFD700',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
+    elevation: 6
   },
   talosBannerGrad: { overflow: 'hidden' },
   talosTopLine: { height: 2, backgroundColor: '#FFD700', opacity: 0.8 },
@@ -617,7 +612,7 @@ const styles = StyleSheet.create({
   talosBannerContent: {
     flexDirection: 'row', alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 18, paddingVertical: 18, gap: 14,
+    paddingHorizontal: 18, paddingVertical: 18, gap: 14
   },
   talosLeft: { flex: 1, gap: 7 },
   talosPartnerBadge: {
@@ -625,25 +620,25 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     backgroundColor: 'rgba(255,215,0,0.1)',
     borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.22)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.22)'
   },
   talosPartnerText: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   talosBannerTitle: {
     color: '#FFFFFF', fontSize: 18, fontWeight: '800', letterSpacing: -0.5,
-    lineHeight: 22,
+    lineHeight: 22
   },
   talosBannerBody: {
     color: '#AAAAAA', fontSize: 16,
-    fontWeight: '600', lineHeight: 17,
+    fontWeight: '600', lineHeight: 17
   },
   talosBannerBodyAccent: {
-    color: 'rgba(255,255,255,0.6)', fontWeight: '500',
+    color: 'rgba(255,255,255,0.6)', fontWeight: '500'
   },
   talosCta: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     alignSelf: 'flex-start',
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,215,0,0.4)',
-    paddingBottom: 1,
+    paddingBottom: 1
   },
   talosCtaText: { color: '#FFD700', fontSize: 15, fontWeight: '900', letterSpacing: 2.5 },
   talosRight: { alignItems: 'center', gap: 2, width: 52 },
@@ -652,10 +647,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,215,0,0.1)',
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.35)',
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: 4,
+    marginBottom: 4
   },
   talosLogoT: {
-    color: '#FFD700', fontSize: 24, fontWeight: '900', letterSpacing: 0.5,
+    color: '#FFD700', fontSize: 24, fontWeight: '900', letterSpacing: 0.5
   },
   talosLogoName: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   talosLogoFit: { color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
@@ -666,7 +661,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF3B30', borderRadius: 7,
     minWidth: 14, height: 14,
     alignItems: 'center', justifyContent: 'center',
-    paddingHorizontal: 3,
+    paddingHorizontal: 3
   },
   notifBellBadgeText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
   // History Section
@@ -674,17 +669,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 24, marginTop: 16,
     borderRadius: 16, overflow: 'hidden',
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.14)',
-    backgroundColor: 'rgba(255,215,0,0.03)',
+    backgroundColor: 'rgba(255,215,0,0.03)'
   },
   historyToggle: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 24, paddingVertical: 14,
+    paddingHorizontal: 24, paddingVertical: 14
   },
   historyToggleLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   historyToggleLabel: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   historyCountBadge: {
     backgroundColor: 'rgba(255,215,0,0.15)', borderRadius: 8,
-    paddingHorizontal: 7, paddingVertical: 2,
+    paddingHorizontal: 7, paddingVertical: 2
   },
   historyCountText: { color: '#FFD700', fontSize: 14, fontWeight: '900' },
   historyContent: { borderTopWidth: 1, borderTopColor: 'rgba(255,215,0,0.1)', paddingBottom: 16 },
@@ -700,7 +695,7 @@ const styles = StyleSheet.create({
   timelineTypeBadge: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1 },
   timelineTypeText: { fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
   timelineAvg: { color: 'rgba(255,255,255,0.3)', fontSize: 15, fontWeight: '700', letterSpacing: 1 },
-  timelineAvgVal: { color: '#AAAAAA', fontWeight: '900' },
+  timelineAvgVal: { color: '#AAAAAA', fontWeight: '900' }
 });
 
 const ins$ = StyleSheet.create({
@@ -714,11 +709,11 @@ const ins$ = StyleSheet.create({
   statLabel: { color: '#AAAAAA', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   statVal: { color: '#FF3B30', fontSize: 15, fontWeight: '900' },
   templateBtn: { flex: 1, backgroundColor: '#FFD700', borderRadius: 8, paddingVertical: 9, alignItems: 'center' },
-  templateText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  templateText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 }
 });
 
 const pvp$ = StyleSheet.create({
   btn: { marginHorizontal: 24, marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#00E5FF', borderRadius: 10, paddingVertical: 13 },
-  text: { color: '#000000', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
+  text: { color: '#000000', fontSize: 15, fontWeight: '900', letterSpacing: 2 }
 });
 

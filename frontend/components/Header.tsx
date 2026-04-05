@@ -56,31 +56,31 @@ const h = StyleSheet.create({
   container: {
     backgroundColor: EL.BG,
     paddingHorizontal: 20,
-    paddingBottom: 8,
+    paddingBottom: 8
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'space-between'
   },
   title: {
     fontFamily: FONT_MONT,
     fontWeight: '800',
     fontSize: 28,
     color: EL.TEXT,
-    letterSpacing: -0.3,
+    letterSpacing: -0.3
   },
   rightGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 6
   },
   iconBtn: {
-    padding: 6,
+    padding: 6
   },
   menuBtn: {
     padding: 10,
-    marginLeft: 2,
+    marginLeft: 2
   },
   // FLUX Pill — minimal
   fluxPill: {
@@ -90,13 +90,13 @@ const h = StyleSheet.create({
     backgroundColor: EL.CYAN_12,
     borderRadius: EL.RADIUS_PILL,
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 5
   },
   fluxNum: {
     fontFamily: FONT_JAKARTA,
     fontWeight: '700',
     fontSize: 14,
     color: EL.CYAN,
-    letterSpacing: 0.3,
-  },
+    letterSpacing: 0.3
+  }
 });

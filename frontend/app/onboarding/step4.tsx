@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
-  KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, StatusBar,
+  KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, StatusBar
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -50,7 +50,7 @@ export default function LegacyStep4() {
           height_cm: params.height_cm ? parseFloat(params.height_cm) : undefined,
           weight_kg: params.weight_kg ? parseFloat(params.weight_kg) : undefined,
           age:       params.age ? parseInt(params.age) : undefined,
-          training_level: params.training_level || 'LEGACY',
+          training_level: params.training_level || 'LEGACY'
         },
       );
       // ── DNA SYNC + SCAN RESULT SYNC after registration
@@ -177,7 +177,7 @@ export default function LegacyStep4() {
             <View style={s.strengthBar}>
               <View style={[s.strengthFill, {
                 width: `${Math.min(100, (password.length / 12) * 100)}%` as any,
-                backgroundColor: password.length >= 8 ? '#00E5FF' : '#FF3B30',
+                backgroundColor: password.length >= 8 ? '#00E5FF' : '#FF3B30'
               }]} />
             </View>
           )}
@@ -246,26 +246,24 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: 24 },
   topBar: {
     flexDirection: 'row', justifyContent: 'space-between',
-    alignItems: 'center', marginBottom: 12,
+    alignItems: 'center', marginBottom: 12
   },
   brand: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
     backgroundColor: '#00E5FF22', borderRadius: 20,
     paddingHorizontal: 12, paddingVertical: 5,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)'
   },
   stepTxt: { color: CYAN, fontSize: 14, fontWeight: '400', letterSpacing: 2 },
   progBar: { height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 28, overflow: 'hidden' },
   progFill: {
-    height: '100%', backgroundColor: CYAN, borderRadius: 2,
-    shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 4,
+    height: '100%', backgroundColor: CYAN, borderRadius: 2
   },
   titleWrap: { marginBottom: 32 },
   titleSm: { color: '#333', fontSize: 14, fontWeight: '900', letterSpacing: 4 },
   titleBig: { color: '#FFFFFF', fontSize: 52, fontWeight: '900', letterSpacing: 0.5, lineHeight: 54 },
   cyanLine: {
-    height: 2, width: 48, backgroundColor: CYAN, marginTop: 14,
-    shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6,
+    height: 2, width: 48, backgroundColor: CYAN, marginTop: 14
   },
   fieldWrap: { gap: 8, marginBottom: 18 },
   fieldHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -273,11 +271,11 @@ const s = StyleSheet.create({
   charCount: { color: '#222', fontSize: 12, fontWeight: '700' },
   input: {
     backgroundColor: '#00E5FF', borderWidth: 1, borderColor: '#1A1A1A',
-    borderRadius: 8, padding: 16, color: '#FFFFFF', fontSize: 18, fontWeight: '800',
+    borderRadius: 8, padding: 16, color: '#FFFFFF', fontSize: 18, fontWeight: '800'
   },
   pwdRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#00E5FF', borderWidth: 1, borderColor: '#1A1A1A', borderRadius: 8,
+    backgroundColor: '#00E5FF', borderWidth: 1, borderColor: '#1A1A1A', borderRadius: 8
   },
   pwdInput: { flex: 1, padding: 16, color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
   eye: { paddingHorizontal: 24 },
@@ -289,19 +287,19 @@ const s = StyleSheet.create({
     backgroundColor: '#00E5FF22', borderRadius: 6,
     paddingHorizontal: 12, paddingVertical: 8,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
-    marginBottom: 20,
+    marginBottom: 20
   },
   secTxt: { color: '#00E5FF22', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   error: {
     color: '#FF3B30', fontSize: 14, fontWeight: '800', letterSpacing: 1,
-    textAlign: 'center', marginBottom: 12,
+    textAlign: 'center', marginBottom: 12
   },
   cta: {
     backgroundColor: CYAN, borderRadius: 8, paddingVertical: 18,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10
   },
   ctaLoading: { opacity: 0.7 },
   ctaTxt: { color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 3 },
   loginLink: { alignItems: 'center', paddingVertical: 16 },
-  loginLinkTxt: { color: '#333', fontSize: 14, fontWeight: '700', letterSpacing: 2 },
+  loginLinkTxt: { color: '#333', fontSize: 14, fontWeight: '700', letterSpacing: 2 }
 });

@@ -7,7 +7,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, StatusBar,
-  useWindowDimensions, Share, Platform, ActivityIndicator,
+  useWindowDimensions, Share, Platform, ActivityIndicator
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -39,7 +39,7 @@ function BiometricBar({ value, color, label }: { value: number; color: string; l
   }, [value]);
   const barStyle = useAnimatedStyle(() => ({
     width: `${barWidth.value}%`,
-    backgroundColor: color,
+    backgroundColor: color
   }));
   return (
     <View style={bar$.row}>
@@ -59,7 +59,7 @@ const bar$ = StyleSheet.create({
   label: { fontSize: 9, fontWeight: '900', letterSpacing: 3 },
   val:   { fontSize: 9, fontWeight: '900', letterSpacing: 1 },
   track: { height: 6, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden' },
-  fill:  { height: 6, borderRadius: 3 },
+  fill:  { height: 6, borderRadius: 3 }
 });
 
 // ── Main ──────────────────────────────────────────────────────────
@@ -84,9 +84,7 @@ export default function PassportScreen() {
     );
   }, []);
   const glowStyle = useAnimatedStyle(() => ({
-    textShadowColor: `rgba(255,215,0,${glow.value * 0.9})`,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 28 * glow.value,
+    opacity: 0.6 + glow.value * 0.4,
   }));
 
   // Load scan result from AsyncStorage
@@ -103,7 +101,7 @@ export default function PassportScreen() {
             stability:  82,
             amplitude:  68,
             city:       'CHICAGO',
-            scan_date:  new Date().toISOString(),
+            scan_date:  new Date().toISOString()
           });
         }
       } catch (_) {
@@ -124,13 +122,13 @@ export default function PassportScreen() {
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, {
           mimeType: 'image/png',
-          dialogTitle: 'ARENAKORE — KORE DNA ID',
+          dialogTitle: 'ARENAKORE — KORE DNA ID'
         });
       } else {
         // Fallback: native Share sheet
         await Share.share({
           message: `ARENAKORE — KORE DNA ID\n\nDNA SCORE: ${result?.kore_score}/100\nSTABILITÀ: ${result?.stability}% | AMPIEZZA: ${result?.amplitude}%\nCERTIFIED IN ${result?.city}\n${result ? formatDate(result.scan_date) : ''}\n\nhttps://arena-scan-lab.preview.emergentagent.com`,
-          title: 'KORE DNA ID',
+          title: 'KORE DNA ID'
         });
       }
       setDownloadOk(true);
@@ -292,7 +290,7 @@ function formatDate(iso: string): string {
     const d = new Date(iso);
     return d.toLocaleDateString('it-IT', {
       day: '2-digit', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
+      hour: '2-digit', minute: '2-digit'
     }).toUpperCase();
   } catch {
     return new Date().toLocaleDateString('it-IT').toUpperCase();
@@ -314,7 +312,7 @@ const s = StyleSheet.create({
     backgroundColor: CARD,
     borderRadius: 16, overflow: 'hidden',
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
-    flex: 1,
+    flex: 1
   },
   cardTopBar: { height: 3, backgroundColor: GOLD },
   cardDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginHorizontal: 24 },
@@ -338,8 +336,7 @@ const s = StyleSheet.create({
   // DNA Score
   scoreWrap: { alignItems: 'center', paddingVertical: 12, gap: 4 },
   scoreBig: {
-    color: GOLD, fontSize: 80, fontWeight: '400', letterSpacing: -4, lineHeight: 84,
-    textShadowColor: 'rgba(255,215,0,0.8)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 24,
+    color: GOLD, fontSize: 80, fontWeight: '400', letterSpacing: -4, lineHeight: 84
   },
   scoreSubLabel: { color: 'rgba(255,215,0,0.6)', fontSize: 10, fontWeight: '900', letterSpacing: 5 },
   scoreArc: { height: 4, width: 160, backgroundColor: 'rgba(255,215,0,0.1)', borderRadius: 2, overflow: 'hidden', marginTop: 6 },
@@ -351,7 +348,7 @@ const s = StyleSheet.create({
 
   // Location badge
   locBadge: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
-  locDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: CYAN, shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4 },
+  locDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: CYAN },
   locTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
   locSub: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '400', letterSpacing: 1, marginTop: 2 },
 
@@ -365,15 +362,14 @@ const s = StyleSheet.create({
   downloadBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
     backgroundColor: GOLD, borderRadius: 10, paddingVertical: 17,
-    shadowColor: GOLD, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 12,
-    elevation: 8,
+    elevation: 8
   },
-  downloadOk: { backgroundColor: '#32D74B', shadowColor: '#32D74B' },
+  downloadOk: { backgroundColor: '#32D74B' },
   downloadTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   continueBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 10, paddingVertical: 14,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 10, paddingVertical: 14
   },
   continueTxt: { color: CYAN, fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
-  footerNote: { color: '#AAAAAA', fontSize: 11, fontWeight: '400', textAlign: 'center', letterSpacing: 1 },
+  footerNote: { color: '#AAAAAA', fontSize: 11, fontWeight: '400', textAlign: 'center', letterSpacing: 1 }
 });

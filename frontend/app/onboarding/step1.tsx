@@ -6,14 +6,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, Platform,
-  TouchableOpacity,
+  TouchableOpacity
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming, withDelay,
-  useAnimatedStyle, FadeInDown, Easing,
+  useAnimatedStyle, FadeInDown, Easing
 } from 'react-native-reanimated';
 import * as Speech from 'expo-speech';
 import { Audio } from 'expo-av';
@@ -231,7 +231,7 @@ function Waveform({ active, color }: { active: boolean; color: string }) {
       {barAnims.map((anim, i) => {
         const barStyle = useAnimatedStyle(() => ({
           height: `${anim.value * 100}%` as any,
-          backgroundColor: color,
+          backgroundColor: color
         }));
         return (
           <Animated.View key={i} style={[wf$.bar, barStyle]} />
@@ -243,9 +243,9 @@ function Waveform({ active, color }: { active: boolean; color: string }) {
 const wf$ = StyleSheet.create({
   container: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    height: 20, gap: 2,
+    height: 20, gap: 2
   },
-  bar: { width: 3, borderRadius: 1.5, minHeight: 3 },
+  bar: { width: 3, borderRadius: 1.5, minHeight: 3 }
 });
 
 // ===================================================================
@@ -456,17 +456,17 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000000', paddingHorizontal: 24 },
   topBar: {
     flexDirection: 'row', justifyContent: 'space-between',
-    alignItems: 'center', marginBottom: 12,
+    alignItems: 'center', marginBottom: 12
   },
   brand: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
     backgroundColor: 'transparent',
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
-    borderWidth: 1, borderColor: '#00E5FF44',
+    borderWidth: 1, borderColor: '#00E5FF44'
   },
   stepTxt: { color: '#00E5FF', fontSize: 14, fontWeight: '400', letterSpacing: 2 },
   progBar: {
-    height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 28, overflow: 'hidden',
+    height: 2, backgroundColor: '#111', borderRadius: 2, marginBottom: 28, overflow: 'hidden'
   },
   progFill: { height: '100%', backgroundColor: '#FFD700', borderRadius: 2 },
 
@@ -474,26 +474,19 @@ const s = StyleSheet.create({
   heroWrap: { gap: 2, marginBottom: 16 },
   heroTagline: {
     color: 'rgba(255,215,0,0.4)', fontSize: 11, fontWeight: '900',
-    letterSpacing: 6, marginBottom: 4,
+    letterSpacing: 6, marginBottom: 4
   },
   heroLine1: {
     color: '#00E5FF',              // NEXUS = CYAN (not gold)
     fontSize: 58, fontWeight: '900',
-    letterSpacing: 0.5, lineHeight: 60,
-    textShadowColor: '#00E5FF22',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 16,
+    letterSpacing: 0.5, lineHeight: 60
   },
   heroLine2: {
     color: '#FFFFFF', fontSize: 42, fontWeight: '900',
-    letterSpacing: 0.5, lineHeight: 46,
-    textShadowColor: 'rgba(255,215,0,0.35)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 12,
+    letterSpacing: 0.5, lineHeight: 46
   },
   goldLine: {
-    height: 2, width: 56, backgroundColor: '#FFD700', marginTop: 12,
-    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 6,
+    height: 2, width: 56, backgroundColor: '#FFD700', marginTop: 12
   },
   // Legacy compatibility (unused but kept to avoid ref errors)
   heroLine3: { color: '#FFFFFF', fontSize: 58, fontWeight: '900', letterSpacing: 0.5 },
@@ -503,15 +496,15 @@ const s = StyleSheet.create({
   bodyWrap: { marginBottom: 20 },
   bodyText: {
     color: '#E0E0E0', fontSize: 16, fontWeight: '400',
-    letterSpacing: 0.5, lineHeight: 20,
+    letterSpacing: 0.5, lineHeight: 20
   },
 
   // ── SPEC / WARNING — command center aesthetic
   warningRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12,
+    flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12
   },
   warningDot: {
-    width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFD700',
+    width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFD700'
   },
   warningTxt: { color: '#FFD700', fontSize: 14, fontWeight: '400', letterSpacing: 2 },
   specList: { gap: 7, marginBottom: 12 },
@@ -524,24 +517,23 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(0,229,255,0.07)',
     borderRadius: 10, paddingHorizontal: 24, paddingVertical: 12,
-    borderWidth: 1, borderColor: '#00E5FF22',
+    borderWidth: 1, borderColor: '#00E5FF22'
   },
   voiceStatusGold: {
     backgroundColor: 'rgba(255,215,0,0.06)',
-    borderColor: 'rgba(255,215,0,0.3)',
-    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 10,
+    borderColor: 'rgba(255,215,0,0.3)'
   },
   voiceLabelRow: { flexDirection: 'row', alignItems: 'center' },
   voiceLabel: {
-    flex: 1, color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 2,
+    flex: 1, color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 2
   },
   keywordHint: {
     color: 'rgba(255,215,0,0.4)', fontSize: 11, fontWeight: '900',
-    letterSpacing: 3, textAlign: 'center',
+    letterSpacing: 3, textAlign: 'center'
   },
   transcript: {
     color: '#AAAAAA', fontSize: 10, fontWeight: '700',
-    letterSpacing: 1, textAlign: 'center',
+    letterSpacing: 1, textAlign: 'center'
   },
 
   // CTA
@@ -551,32 +543,27 @@ const s = StyleSheet.create({
     flex: 1, backgroundColor: '#FFD700', borderRadius: 10,
     paddingVertical: 18, flexDirection: 'row',
     alignItems: 'center', justifyContent: 'center', gap: 12,
-    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 12,
-    elevation: 8,
+    elevation: 8
   },
   ctaActivated: {
     backgroundColor: '#00E5FF',         // Cyan when NEXUS activated
-    shadowColor: '#00E5FF',
-    shadowOpacity: 0.55,
-    shadowRadius: 14,
   },
   ctaGold: { backgroundColor: '#FFD700', opacity: 0.7 },
   ctaTxt: {
-    color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 2,
+    color: '#000000', fontSize: 16, fontWeight: '900', letterSpacing: 2
   },
   micBtn: {
     width: 58, height: 58, borderRadius: 10,
     backgroundColor: 'transparent',
     borderWidth: 1, borderColor: '#00E5FF22',
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
   micBtnGold: {
     backgroundColor: 'rgba(255,215,0,0.1)',
-    borderColor: 'rgba(255,215,0,0.4)',
-    shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 10,
+    borderColor: 'rgba(255,215,0,0.4)'
   },
   orLabel: {
     color: '#AAAAAA', fontSize: 13, fontWeight: '400',
-    letterSpacing: 2, textAlign: 'center',
-  },
+    letterSpacing: 2, textAlign: 'center'
+  }
 });

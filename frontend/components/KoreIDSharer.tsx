@@ -7,7 +7,7 @@
  */
 import React, { useRef, useCallback, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Platform, Share, Alert,
+  View, Text, StyleSheet, TouchableOpacity, Platform, Share, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
@@ -115,7 +115,7 @@ export function KoreIDSharer({ user, onShareStart, onShareEnd }: KoreIDSharerPro
         await Share.share({
           url: uri,
           message: 'Sfidami su ARENA KORE! https://arenakore.app',
-          title: 'ARENAKORE — KORE ID',
+          title: 'ARENAKORE — KORE ID'
         });
       }
     } catch (e) {
@@ -217,7 +217,7 @@ const sh$ = StyleSheet.create({
   bg: {
     flex: 1, backgroundColor: '#050505',
     paddingHorizontal: 24, paddingVertical: 20,
-    justifyContent: 'space-between',
+    justifyContent: 'space-between'
   },
   topLine: { height: 3, borderRadius: 2, width: 40, marginBottom: 16 },
   header: { gap: 0 },
@@ -252,7 +252,7 @@ const sh$ = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     borderRadius: 12, paddingVertical: 14,
     backgroundColor: 'rgba(0,229,255,0.04)', borderWidth: 1,
-    marginTop: 8,
+    marginTop: 8
   },
-  shareBtnText: { fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  shareBtnText: { fontSize: 14, fontWeight: '900', letterSpacing: 2 }
 });

@@ -14,7 +14,7 @@ const RESULT_CFG: Record<string, { color: string; bg: string; label: string }> =
   win:    { color: '#00FF87', bg: '#00FF8720', label: 'VITTORIA' },
   loss:   { color: '#FF3B30', bg: '#FF3B3020', label: 'SCONFITTA' },
   active: { color: '#00E5FF', bg: '#00E5FF20', label: 'LIVE' },
-  tie:    { color: '#888888', bg: '#88888820', label: 'PAREGGIO' },
+  tie:    { color: '#888888', bg: '#88888820', label: 'PAREGGIO' }
 };
 
 export default function CrewStrategist() {
@@ -208,5 +208,5 @@ const c$ = StyleSheet.create({
   breakdownRow: { flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 4 },
   breakdownName: { flex: 1, color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '700' },
   breakdownScore: { color: '#FFD700', fontSize: 13, fontWeight: '700' },
-  breakdownXp: { color: 'rgba(255,255,255,0.25)', fontSize: 12 },
+  breakdownXp: { color: 'rgba(255,255,255,0.25)', fontSize: 12 }
 });

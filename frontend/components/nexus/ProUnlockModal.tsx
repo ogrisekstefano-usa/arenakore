@@ -5,11 +5,11 @@
  */
 import React, { useEffect } from 'react';
 import {
-  Modal, View, Text, TouchableOpacity, StyleSheet, Dimensions, Platform,
+  Modal, View, Text, TouchableOpacity, StyleSheet, Dimensions, Platform
 } from 'react-native';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming, withSpring,
-  useAnimatedStyle, Easing, interpolate,
+  useAnimatedStyle, Easing, interpolate
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -60,10 +60,7 @@ export function ProUnlockModal({ visible, onClose, avgDna }: ProUnlockModalProps
   }, [visible]);
 
   const overlayGlowStyle = useAnimatedStyle(() => ({
-    shadowColor: '#FFD700',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: interpolate(glowPulse.value, [0, 1], [0, 0.65]),
-    shadowRadius: interpolate(glowPulse.value, [0, 1], [10, 50]),
+    opacity: interpolate(glowPulse.value, [0, 1], [0.4, 0.85]),
     elevation: 25,
   }));
 
@@ -86,9 +83,6 @@ export function ProUnlockModal({ visible, onClose, avgDna }: ProUnlockModalProps
   }));
 
   const titleGlowStyle = useAnimatedStyle(() => ({
-    textShadowColor: '#FFD700',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: interpolate(titleGlowPulse.value, [0, 1], [0, 18]),
     opacity: interpolate(titleGlowPulse.value, [0, 1], [0.7, 1]),
   }));
 
@@ -194,15 +188,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(2,2,2,0.92)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 24
   },
   gridLine: {
     position: 'absolute', left: 0, right: 0, height: 1,
-    backgroundColor: '#00E5FF22',
+    backgroundColor: '#00E5FF22'
   },
   gridLineV: {
     position: 'absolute', top: 0, bottom: 0, width: 1,
-    backgroundColor: '#00E5FF22',
+    backgroundColor: '#00E5FF22'
   },
   card: {
     width: '100%',
@@ -210,83 +204,71 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,215,0,0.18)',
+    borderColor: 'rgba(255,215,0,0.18)'
   },
   cardGradient: {
     paddingVertical: 28,
     paddingHorizontal: 24,
     alignItems: 'center',
-    gap: 18,
+    gap: 18
   },
   borderTrack: {
     width: '100%',
     height: 2,
     backgroundColor: 'rgba(255,255,255,0.04)',
-    overflow: 'hidden',
+    overflow: 'hidden'
   },
   borderFillGold: {
     height: '100%',
-    backgroundColor: '#FFD700',
-    shadowColor: '#FFD700',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
+    backgroundColor: '#FFD700'
   },
   borderFillCyan: {
     height: '100%',
-    backgroundColor: '#00E5FF',
-    shadowColor: '#00E5FF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
+    backgroundColor: '#00E5FF'
   },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginTop: 8,
+    marginTop: 8
   },
   statusDot: {
     width: 6, height: 6, borderRadius: 3,
-    backgroundColor: '#00E5FF',
-    shadowColor: '#00E5FF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 6,
+    backgroundColor: '#00E5FF'
   },
   statusText: {
     color: '#00E5FF',
     fontSize: 11,
     fontWeight: '900',
-    letterSpacing: 3,
+    letterSpacing: 3
   },
   titleBlock: {
     alignItems: 'center',
-    gap: 2,
+    gap: 2
   },
   titleLine1: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '900',
     letterSpacing: 8,
-    opacity: 0.5,
+    opacity: 0.5
   },
   titleLine2: {
     color: '#FFFFFF',
     fontSize: 36,
     fontWeight: '900',
     letterSpacing: 4,
-    lineHeight: 40,
+    lineHeight: 40
   },
   titleLine3: {
     color: '#FFD700',
     fontSize: 48,
     fontWeight: '900',
     letterSpacing: 6,
-    lineHeight: 54,
+    lineHeight: 54
   },
   scoreContainer: {
-    alignItems: 'center',
+    alignItems: 'center'
   },
   scoreBadge: {
     flexDirection: 'row',
@@ -297,71 +279,71 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255,215,0,0.2)',
+    borderColor: 'rgba(255,215,0,0.2)'
   },
   scoreLabel: {
     color: '#AAAAAA',
     fontSize: 13,
     fontWeight: '400',
-    letterSpacing: 2,
+    letterSpacing: 2
   },
   scoreValue: {
     color: '#FFD700',
     fontSize: 18,
     fontWeight: '900',
-    letterSpacing: 1,
+    letterSpacing: 1
   },
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    width: '100%',
+    width: '100%'
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(255,255,255,0.06)'
   },
   dividerLabel: {
     color: '#AAAAAA',
     fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 2,
+    letterSpacing: 2
   },
   featuresBlock: {
     width: '100%',
-    gap: 8,
+    gap: 8
   },
   featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingHorizontal: 4,
+    paddingHorizontal: 4
   },
   featureText: {
     color: '#AAAAAA',
     fontSize: 13,
     fontWeight: '700',
-    letterSpacing: 1.5,
+    letterSpacing: 1.5
   },
   ctaBtn: {
     width: '100%',
     borderRadius: 14,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,215,0,0.3)',
+    borderColor: 'rgba(255,215,0,0.3)'
   },
   ctaBtnInner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    paddingVertical: 16,
+    paddingVertical: 16
   },
   ctaText: {
     color: '#FFD700',
     fontSize: 15,
     fontWeight: '900',
-    letterSpacing: 3,
-  },
+    letterSpacing: 3
+  }
 });

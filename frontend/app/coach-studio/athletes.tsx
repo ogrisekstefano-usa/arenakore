@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, TextInput, Alert,
+  ActivityIndicator, TextInput, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path as KPath, Circle as KCircle, Polygon, Line, Text as SvgText, Circle } from 'react-native-svg';
@@ -171,7 +171,7 @@ const kg$ = StyleSheet.create({
   barTrack: { flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 2 },
   barVal: { fontSize: 13, width: 32, textAlign: 'right' },
-  barContrib: { fontSize: 10, color: 'rgba(255,255,255,0.2)', letterSpacing: 0.3, width: 56, textAlign: 'right' },
+  barContrib: { fontSize: 10, color: 'rgba(255,255,255,0.2)', letterSpacing: 0.3, width: 56, textAlign: 'right' }
 });
 
 // ── Injury Risk Badge ─────────────────────────────────────────────────────────
@@ -187,7 +187,7 @@ function RiskBadge({ risk }: { risk: any }) {
 const rb$ = StyleSheet.create({
   badge: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1 },
   dot: { width: 5, height: 5, borderRadius: 3 },
-  text: { fontSize: 11, letterSpacing: 1.5 },
+  text: { fontSize: 11, letterSpacing: 1.5 }
 });
 
 // ── Scan Trend Sparkline ──────────────────────────────────────────────────────
@@ -425,7 +425,7 @@ const dp$ = StyleSheet.create({
   pdfBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     marginHorizontal: 24, marginTop: 10, marginBottom: 6,
-    borderWidth: 1, borderRadius: 8, paddingVertical: 8,
+    borderWidth: 1, borderRadius: 8, paddingVertical: 8
   },
   section: { paddingHorizontal: 24, paddingVertical: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
   sectionTitle: { fontSize: 11, letterSpacing: 3 },
@@ -451,7 +451,7 @@ const dp$ = StyleSheet.create({
   msVal: { fontSize: 16 },
   msInput: { width: 60, borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 5, fontSize: 14, textAlign: 'right' } as any,
   saveBtn: { borderRadius: 8, paddingVertical: 10, alignItems: 'center', justifyContent: 'center', marginTop: 6 },
-  saveBtnText: { color: '#000', fontSize: 13, letterSpacing: 2 },
+  saveBtnText: { color: '#000', fontSize: 13, letterSpacing: 2 }
 });
 
 // ── Crew Panel ────────────────────────────────────────────────────────────────
@@ -547,7 +547,7 @@ function CrewPanel() {
                 <Text style={[cp$.memberName, { color: theme.text }]} numberOfLines={1}>{m.username}</Text>
                 <View style={[cp$.rolePill, {
                   backgroundColor: m.role === 'COACH' ? theme.accent + '15' : m.role === 'OWNER' ? theme.accentGold + '15' : theme.surface2,
-                  borderColor: m.role === 'COACH' ? theme.accent + '40' : m.role === 'OWNER' ? theme.accentGold + '40' : theme.border,
+                  borderColor: m.role === 'COACH' ? theme.accent + '40' : m.role === 'OWNER' ? theme.accentGold + '40' : theme.border
                 }]}>
                   {m.role === 'COACH' && <Ionicons name="medal" size={9} color={theme.accent} />}
                   {m.role === 'OWNER' && <Ionicons name="shield" size={9} color={theme.accentGold} />}
@@ -642,7 +642,7 @@ function CrewPanel() {
               <Text style={[MONT('300'), { color: theme.textTer, fontSize: 13 }]}>{inv.crew_name}</Text>
               <View style={[cp$.statusPill, {
                 backgroundColor: inv.status === 'accepted' ? '#00FF8715' : inv.status === 'declined' ? '#FF3B3015' : theme.surface2,
-                borderColor: inv.status === 'accepted' ? '#00FF8740' : inv.status === 'declined' ? '#FF3B3040' : theme.border,
+                borderColor: inv.status === 'accepted' ? '#00FF8740' : inv.status === 'declined' ? '#FF3B3040' : theme.border
               }]}>
                 <Text style={[MONT('900'), { fontSize: 10, letterSpacing: 1.5, color: inv.status === 'accepted' ? '#00FF87' : inv.status === 'declined' ? '#FF3B30' : theme.textTer }]}>
                   {(inv.status || 'PENDING').toUpperCase()}
@@ -700,7 +700,7 @@ const cp$ = StyleSheet.create({
   declineBtn: { borderWidth: 1, borderRadius: 7, paddingHorizontal: 10, paddingVertical: 7 },
   declineTxt: { fontSize: 12 },
   sentRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 5 },
-  statusPill: { borderWidth: 1, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 },
+  statusPill: { borderWidth: 1, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 }
 });
 
 // ── Main Module ───────────────────────────────────────────────────────────────
@@ -908,5 +908,5 @@ const am$ = StyleSheet.create({
   rowAvatar: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   rowAvatarLetter: { color: '#000', fontSize: 14, fontWeight: '900' },
   td: { fontSize: 15, width: 50, textAlign: 'center' },
-  tdSub: { fontSize: 12, letterSpacing: 0.3 },
+  tdSub: { fontSize: 12, letterSpacing: 0.3 }
 });

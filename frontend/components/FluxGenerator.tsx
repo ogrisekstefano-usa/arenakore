@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal,
-  ScrollView, Platform, ActivityIndicator, Alert,
+  ScrollView, Platform, ActivityIndicator, Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,7 +25,7 @@ const TIERS = [
     icon: 'flash-outline' as const,
     colors: ['#1A1A1A', '#222222'] as [string, string],
     accent: '#FFD700', border: 'rgba(255,215,0,0.15)',
-    badge: null,
+    badge: null
   },
   {
     key: 'KINETIC', flux: 3000, crew_pct: 5,
@@ -33,7 +33,7 @@ const TIERS = [
     icon: 'rocket-outline' as const,
     colors: ['#0D1A1F', '#0A1318'] as [string, string],
     accent: '#00E5FF', border: 'rgba(0,229,255,0.20)',
-    badge: 'POPULAR',
+    badge: 'POPULAR'
   },
   {
     key: 'CORE', flux: 7500, crew_pct: 10,
@@ -41,7 +41,7 @@ const TIERS = [
     icon: 'shield-checkmark' as const,
     colors: ['#0D1F0D', '#081408'] as [string, string],
     accent: '#00FF87', border: 'rgba(0,255,135,0.20)',
-    badge: 'BEST VALUE',
+    badge: 'BEST VALUE'
   },
   {
     key: 'DOMINATION', flux: 20000, crew_pct: 15,
@@ -49,7 +49,7 @@ const TIERS = [
     icon: 'diamond' as const,
     colors: ['#1F0D0D', '#180808'] as [string, string],
     accent: '#FF3B30', border: 'rgba(255,59,48,0.25)',
-    badge: 'ELITE',
+    badge: 'ELITE'
   },
 ];
 
@@ -77,7 +77,7 @@ export function FluxGenerator({ visible, onClose, onPurchased }: FluxGeneratorPr
       const res = await fetch(`${backendUrl}/api/flux/purchase`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ tier: tier.key }),
+        body: JSON.stringify({ tier: tier.key })
       });
       const data = await res.json();
       if (res.ok) {
@@ -232,11 +232,11 @@ const s = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: '#0A0A0A' },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)'
   },
   backBtn: {
     width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.05)',
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
   headerCenter: { flex: 1, alignItems: 'center' },
   headerTitle: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
@@ -245,7 +245,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 10,
     paddingHorizontal: 10, paddingVertical: 6,
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)',
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)'
   },
   balanceText: { color: '#FFD700', fontSize: 14, fontWeight: '900', fontFamily: FONT_J },
   body: { paddingHorizontal: 16, paddingTop: 16 },
@@ -253,13 +253,13 @@ const s = StyleSheet.create({
   // Fees
   feesCard: {
     padding: 14, borderRadius: 14, marginBottom: 16,
-    backgroundColor: 'rgba(255,255,255,0.02)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: 'rgba(255,255,255,0.02)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)'
   },
   feesTitle: { color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: '800', letterSpacing: 2.5, fontFamily: FONT_M, marginBottom: 10 },
   feesGrid: { flexDirection: 'row', gap: 8 },
   feeChip: {
     flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 10,
-    borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.02)'
   },
   feeLabel: { fontSize: 8, fontWeight: '800', letterSpacing: 1.5, fontFamily: FONT_M, marginBottom: 2 },
   feeVal: { fontSize: 14, fontWeight: '900', fontFamily: FONT_J },
@@ -268,7 +268,7 @@ const s = StyleSheet.create({
   tierCard: { borderRadius: 18, overflow: 'hidden', marginBottom: 12, borderWidth: 1.5 },
   tierGrad: { padding: 18, position: 'relative' },
   tierBadge: {
-    position: 'absolute', top: 12, right: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8,
+    position: 'absolute', top: 12, right: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8
   },
   tierBadgeText: { color: '#0A0A0A', fontSize: 9, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
   tierTop: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 16 },
@@ -292,12 +292,12 @@ const s = StyleSheet.create({
   crewBoostBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     marginTop: 20, paddingHorizontal: 18, paddingVertical: 12, borderRadius: 14,
-    borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.03)'
   },
   crewBoostText: { fontSize: 13, fontWeight: '800', fontFamily: FONT_J },
   successBalance: { color: 'rgba(255,255,255,0.25)', fontSize: 14, fontWeight: '700', fontFamily: FONT_J, marginTop: 16 },
   closeSuccessBtn: {
-    marginTop: 30, paddingHorizontal: 40, paddingVertical: 14, borderRadius: 14, borderWidth: 1.5,
+    marginTop: 30, paddingHorizontal: 40, paddingVertical: 14, borderRadius: 14, borderWidth: 1.5
   },
-  closeSuccessBtnText: { fontSize: 14, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
+  closeSuccessBtnText: { fontSize: 14, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J }
 });

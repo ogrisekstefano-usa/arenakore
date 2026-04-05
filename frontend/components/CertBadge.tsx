@@ -33,7 +33,7 @@ export function CertBadge({ certified, size = 'sm' }: {
 const SIZE_CFG = {
   xs: { px: 4, py: 1, icon: 8,  text: 7  },
   sm: { px: 7, py: 2, icon: 9,  text: 8  },
-  md: { px: 10, py: 4, icon: 12, text: 10 },
+  md: { px: 10, py: 4, icon: 12, text: 10 }
 };
 
 const cb$ = StyleSheet.create({
@@ -41,7 +41,7 @@ const cb$ = StyleSheet.create({
   certBadge: { backgroundColor: 'rgba(0,229,255,0.09)', borderColor: '#00E5FF44' },
   uncertBadge: { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.12)' },
   certText: { color: '#00E5FF', fontWeight: '900', letterSpacing: 1.5 },
-  uncertText: { color: 'rgba(255,255,255,0.30)', fontWeight: '700', letterSpacing: 1.5 },
+  uncertText: { color: 'rgba(255,255,255,0.30)', fontWeight: '700', letterSpacing: 1.5 }
 });
 
 // ── FLUX Wallet Widget ────────────────────────────────────────────────────
@@ -114,7 +114,7 @@ const dw$ = StyleSheet.create({
     backgroundColor: 'rgba(255,215,0,0.06)',
     borderRadius: 14, padding: 16,
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
-    flexDirection: 'row', alignItems: 'center', gap: 12,
+    flexDirection: 'row', alignItems: 'center', gap: 12
   },
   lockedIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,215,0,0.1)', alignItems: 'center', justifyContent: 'center' },
   lockedInfo: { flex: 1, gap: 4 },
@@ -128,7 +128,7 @@ const dw$ = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 14, padding: 16,
     borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)',
-    gap: 10,
+    gap: 10
   },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   headerTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
@@ -139,5 +139,5 @@ const dw$ = StyleSheet.create({
   ruleRow: { flexDirection: 'row', gap: 8 },
   ruleItem: { flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 8, gap: 3, alignItems: 'center' },
   ruleLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '400', textAlign: 'center' },
-  ruleVal: { color: '#00E5FF', fontSize: 14, fontWeight: '900' },
+  ruleVal: { color: '#00E5FF', fontSize: 14, fontWeight: '900' }
 });

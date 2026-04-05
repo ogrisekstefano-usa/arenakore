@@ -6,7 +6,7 @@ import React, { createContext, useContext, useState, useCallback, useRef } from 
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
-  FadeInRight, FadeOutRight, useSharedValue, withTiming,
+  FadeInRight, FadeOutRight, useSharedValue, withTiming
 } from 'react-native-reanimated';
 
 type ToastType = 'success' | 'warning' | 'error' | 'info';
@@ -30,7 +30,7 @@ const TOAST_CFG: Record<ToastType, { color: string; bg: string; icon: keyof type
   success: { color: '#00FF87', bg: 'rgba(0,255,135,0.12)',  icon: 'checkmark-circle' },
   warning: { color: '#FF9500', bg: 'rgba(255,149,0,0.12)',  icon: 'warning' },
   error:   { color: '#FF3B30', bg: 'rgba(255,59,48,0.12)',  icon: 'alert-circle' },
-  info:    { color: '#00E5FF', bg: 'rgba(0,229,255,0.10)',  icon: 'information-circle' },
+  info:    { color: '#00E5FF', bg: 'rgba(0,229,255,0.10)',  icon: 'information-circle' }
 };
 
 function ToastItem({ toast, onDone }: { toast: Toast; onDone: () => void }) {
@@ -85,16 +85,14 @@ export function StudioToastProvider({ children }: { children: React.ReactNode })
 const t$ = StyleSheet.create({
   container: {
     position: 'absolute', top: 20, right: 16, zIndex: 9999,
-    gap: 8, alignItems: 'flex-end',
+    gap: 8, alignItems: 'flex-end'
   },
   toast: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 10,
     maxWidth: 340, borderRadius: 12, padding: 12,
-    borderWidth: 1,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3, shadowRadius: 12,
+    borderWidth: 1
   },
   body: { flex: 1, gap: 2 },
   title: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
-  msg: { color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: '300', lineHeight: 17 },
+  msg: { color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: '300', lineHeight: 17 }
 });

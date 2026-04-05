@@ -9,7 +9,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal,
-  TextInput, Platform, KeyboardAvoidingView, Alert,
+  TextInput, Platform, KeyboardAvoidingView, Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -143,8 +143,8 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
           destination,
           certification,
           time_cap_seconds: parseInt(timeCap) || 600,
-          rounds: rounds ? parseInt(rounds) : null,
-        }),
+          rounds: rounds ? parseInt(rounds) : null
+        })
       });
       const data = await res.json();
       if (res.ok) {
@@ -465,11 +465,11 @@ const s = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: '#0A0A0A' },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)'
   },
   backBtn: {
     width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.05)',
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
   headerCenter: { flex: 1, alignItems: 'center' },
   headerTitle: { color: '#FFF', fontSize: 16, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
@@ -487,7 +487,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 14,
     padding: 16, borderRadius: 16, marginBottom: 10,
     borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)',
-    backgroundColor: 'rgba(255,255,255,0.02)',
+    backgroundColor: 'rgba(255,255,255,0.02)'
   },
   optionIcon: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   optionContent: { flex: 1 },
@@ -500,21 +500,21 @@ const s = StyleSheet.create({
   textInput: {
     backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14,
     color: '#FFF', fontSize: 16, fontWeight: '700', fontFamily: FONT_J,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 16,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 16
   },
   paramRow: { flexDirection: 'row', gap: 12 },
   paramBox: { flex: 1 },
   textInputSmall: {
     backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12,
     color: '#00E5FF', fontSize: 18, fontWeight: '900', fontFamily: FONT_J, textAlign: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)'
   },
 
   // Exercise chips
   exGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   exChip: {
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.03)'
   },
   exChipSelected: { backgroundColor: '#00E5FF', borderColor: '#00E5FF' },
   exChipText: { color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: '700', fontFamily: FONT_M },
@@ -523,7 +523,7 @@ const s = StyleSheet.create({
   exParamRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10,
     padding: 12, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.02)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)'
   },
   exParamName: { flex: 1, color: '#00E5FF', fontSize: 12, fontWeight: '800', fontFamily: FONT_J },
   exParamFields: { flexDirection: 'row', gap: 8 },
@@ -532,13 +532,13 @@ const s = StyleSheet.create({
   exParamInput: {
     width: 50, paddingVertical: 6, paddingHorizontal: 4, borderRadius: 8,
     backgroundColor: 'rgba(255,255,255,0.06)', color: '#FFF', fontSize: 14, fontWeight: '900',
-    fontFamily: FONT_J, textAlign: 'center',
+    fontFamily: FONT_J, textAlign: 'center'
   },
 
   // Summary
   summaryBox: {
     marginTop: 20, padding: 18, borderRadius: 16,
-    backgroundColor: 'rgba(0,229,255,0.04)', borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)',
+    backgroundColor: 'rgba(0,229,255,0.04)', borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)'
   },
   summaryTitle: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J, marginBottom: 12 },
   summaryLine: { color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: '500', fontFamily: FONT_M, marginBottom: 4 },
@@ -549,12 +549,12 @@ const s = StyleSheet.create({
   // Fee badges on destination cards
   feeBadge: {
     backgroundColor: 'rgba(255,215,0,0.12)', borderRadius: 8,
-    paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)',
+    paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,215,0,0.25)'
   },
   feeText: { color: '#FFD700', fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J },
   freeBadge: {
     backgroundColor: 'rgba(0,255,135,0.08)', borderRadius: 8,
-    paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(0,255,135,0.15)',
+    paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(0,255,135,0.15)'
   },
   freeText: { color: '#00FF87', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
 
@@ -562,13 +562,13 @@ const s = StyleSheet.create({
   bottomBar: { paddingHorizontal: 20, paddingTop: 14, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.04)' },
   nextBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#00E5FF', borderRadius: 16, paddingVertical: 16,
+    backgroundColor: '#00E5FF', borderRadius: 16, paddingVertical: 16
   },
   nextBtnDisabled: { backgroundColor: 'rgba(255,255,255,0.06)' },
   nextBtnText: { color: '#0A0A0A', fontSize: 16, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
   submitBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#FFD700', borderRadius: 16, paddingVertical: 16,
+    backgroundColor: '#FFD700', borderRadius: 16, paddingVertical: 16
   },
-  submitBtnText: { color: '#0A0A0A', fontSize: 16, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
+  submitBtnText: { color: '#0A0A0A', fontSize: 16, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J }
 });

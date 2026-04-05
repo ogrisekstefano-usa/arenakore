@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  TouchableOpacity, TextInput, Alert,
+  TouchableOpacity, TextInput, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -16,7 +16,7 @@ import { KPICard, SectionHeader } from '../../components/studio/StudioComponents
 const TIER_CFG: Record<string, { color: string; label: string; icon: string }> = {
   free:  { color: 'rgba(255,255,255,0.4)', label: 'FREE',  icon: '⬜' },
   pro:   { color: '#00E5FF',               label: 'PRO',   icon: '💎' },
-  elite: { color: '#FFD700',               label: 'ELITE', icon: '👑' },
+  elite: { color: '#FFD700',               label: 'ELITE', icon: '👑' }
 };
 
 export default function GymDashboard() {
@@ -196,5 +196,5 @@ const g$ = StyleSheet.create({
   saveBtnOff: { opacity: 0.4 },
   saveBtnText: { color: '#000', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
   joinInfo: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginTop: 4 },
-  joinText: { flex: 1, color: 'rgba(0,229,255,0.45)', fontSize: 13, fontWeight: '300', lineHeight: 16 },
+  joinText: { flex: 1, color: 'rgba(0,229,255,0.45)', fontSize: 13, fontWeight: '300', lineHeight: 16 }
 });

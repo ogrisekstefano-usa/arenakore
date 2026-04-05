@@ -7,7 +7,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, Alert, Platform,
+  ActivityIndicator, Alert, Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
@@ -37,9 +37,9 @@ const lb = StyleSheet.create({
   val: {
     fontSize: 16,
     fontFamily: "'Plus Jakarta Sans', 'Montserrat', sans-serif",
-    fontWeight: '800',
+    fontWeight: '800'
   },
-  unit: { color: 'rgba(255,255,255,0.35)', fontSize: 8, fontWeight: '800', letterSpacing: 1 },
+  unit: { color: 'rgba(255,255,255,0.35)', fontSize: 8, fontWeight: '800', letterSpacing: 1 }
 });
 
 
@@ -126,7 +126,7 @@ export default function HealthHub() {
     APPLE_HEALTH:  { icon: 'heart',    bgColor: '#FF2D55', description: 'Sincronizza BPM, passi e attività da Apple Health' },
     GOOGLE_HEALTH: { icon: 'fitness',  bgColor: '#4285F4', description: 'Importa dati da Google Health Connect' },
     STRAVA:        { icon: 'bicycle',  bgColor: '#FC4C02', description: 'Collega Strava per GPS tracking e attività outdoor' },
-    BLE_SENSOR:    { icon: 'watch',    bgColor: '#FF9500', description: 'Accoppia fasce cardio e sensori di potenza via BLE' },
+    BLE_SENSOR:    { icon: 'watch',    bgColor: '#FF9500', description: 'Accoppia fasce cardio e sensori di potenza via BLE' }
   };
 
   if (loading) {
@@ -221,7 +221,7 @@ export default function HealthHub() {
                           await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/health/force-sync`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                            body: JSON.stringify({ source: conn.source }),
+                            body: JSON.stringify({ source: conn.source })
                           });
                           await loadData();
                           Alert.alert('SYNC FORZATA', `Token ${conn.display_name} rigenerato. Dati aggiornati.`);
@@ -387,7 +387,7 @@ const hh = StyleSheet.create({
   connCard: {
     backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)', borderRadius: 16,
-    padding: 16, gap: 12,
+    padding: 16, gap: 12
   },
   connTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   connIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
@@ -396,7 +396,7 @@ const hh = StyleSheet.create({
   connDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 11, lineHeight: 16 },
   statusPill: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    borderWidth: 1, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
+    borderWidth: 1, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4
   },
   statusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#34C759' },
   statusText: { color: '#34C759', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
@@ -406,20 +406,20 @@ const hh = StyleSheet.create({
   statValue: {
     color: '#FFF', fontSize: 16,
     fontFamily: "'Plus Jakarta Sans', 'Montserrat', sans-serif",
-    fontWeight: '800',
+    fontWeight: '800'
   },
   connActions: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   connectBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10, flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   connectBtnText: { color: '#FFF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   forceSyncBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8,
     backgroundColor: 'rgba(255,149,0,0.10)', borderWidth: 1,
-    borderColor: 'rgba(255,149,0,0.25)',
+    borderColor: 'rgba(255,149,0,0.25)'
   },
   forceSyncText: { color: '#FF9500', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
 
@@ -427,7 +427,7 @@ const hh = StyleSheet.create({
   feedTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
   feedItem: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 12,
+    backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 12
   },
   feedInfo: { flex: 1, gap: 2 },
   feedType: { color: '#FFF', fontSize: 12, fontWeight: '700' },
@@ -444,6 +444,6 @@ const hh = StyleSheet.create({
   trustPct: {
     fontSize: 13, width: 38, textAlign: 'right' as any,
     fontFamily: "'Plus Jakarta Sans', 'Montserrat', sans-serif",
-    fontWeight: '800',
-  },
+    fontWeight: '800'
+  }
 });

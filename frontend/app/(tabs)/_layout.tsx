@@ -40,7 +40,7 @@ function GoldButton({ onPress, focused }: { onPress: () => void; focused: boolea
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    shadowOpacity: glow.value,
+    opacity: 0.5 + glow.value * 0.5
   }));
 
   return (
@@ -139,36 +139,36 @@ const $ = StyleSheet.create({
   bar: {
     flexDirection: 'row', backgroundColor: '#000000',
     borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.07)',
-    height: 76, alignItems: 'center', overflow: 'visible',
+    height: 76, alignItems: 'center', overflow: 'visible'
   },
   tabItem: {
     flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4, position: 'relative',
-    paddingTop: 6,
+    paddingTop: 6
   },
   glowDot: {
     position: 'absolute', top: -2, width: 5, height: 5, borderRadius: 2.5,
-    backgroundColor: '#00E5FF',
+    backgroundColor: '#00E5FF'
   },
   label: {
     color: '#AAAAAA', fontSize: 11, fontWeight: '900',
-    letterSpacing: 2, textTransform: 'uppercase',
+    letterSpacing: 2, textTransform: 'uppercase'
   },
   labelActive: {
-    color: '#00E5FF',
+    color: '#00E5FF'
   },
   centerWrap: {
-    flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'visible',
+    flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'visible'
   },
   centerLabel: {
     color: '#AAAAAA', fontSize: 11, fontWeight: '900',
-    letterSpacing: 2, marginTop: 38,
+    letterSpacing: 2, marginTop: 38
   },
   nexusWrap: {
-    position: 'absolute', top: -31, alignSelf: 'center',
+    position: 'absolute', top: -31, alignSelf: 'center'
   },
   goldBtn: {
     width: 64, height: 64, borderRadius: 32,
     backgroundColor: '#FFD700', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 3, borderColor: '#000000',
-  },
+    borderWidth: 3, borderColor: '#000000'
+  }
 });

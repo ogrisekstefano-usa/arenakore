@@ -7,14 +7,14 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar, TouchableOpacity,
-  RefreshControl, Platform, Image, ActivityIndicator,
+  RefreshControl, Platform, Image, ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn, FadeInDown, FadeInUp,
   useSharedValue, withRepeat, withSequence, withTiming, withDelay,
-  useAnimatedStyle, Easing, interpolateColor,
+  useAnimatedStyle, Easing, interpolateColor
 } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
 import { KoreIDModal } from '../../components/KoreIDModal';
@@ -66,12 +66,12 @@ const CARD_IMAGES = {
     'https://images.unsplash.com/photo-1548690312-e3b507d8c110?w=600&q=50',
     'https://images.unsplash.com/photo-1550345332-09e3ac987658?w=600&q=50',
     'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=50',
-  ],
+  ]
 };
 
 // ═══ DYNAMIC IMAGE CARD ═══
 function DynamicNeonCard({
-  images, label, sub, color, onPress, index,
+  images, label, sub, color, onPress, index
 }: {
   images: string[];
   label: string;
@@ -122,8 +122,8 @@ function DynamicNeonCard({
     borderColor: interpolateColor(pulse.value, [0, 1], [color + '20', color + '80']),
     ...Platform.select({
       web: { boxShadow: `0 0 ${4 + pulse.value * 12}px ${color}${Math.round(10 + pulse.value * 30).toString(16).padStart(2, '0')}` },
-      default: {},
-    }),
+      default: {}
+    })
   }));
 
   const imgA = images[activeIdx];
@@ -203,7 +203,7 @@ export default function KoreTab() {
     try {
       const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
       const res = await fetch(`${backendUrl}/api/ugc/mine`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -221,7 +221,7 @@ export default function KoreTab() {
         'Live': 'LIVE_ARENA',
         'Crew': 'CREW_BATTLE',
         'Allenamenti': 'ALLENAMENTO',
-        'Duelli': 'DUELLO',
+        'Duelli': 'DUELLO'
       };
       const tipoFilter = activeFilter ? filterMap[activeFilter] : undefined;
       const result = await api.getKoreHistory(token, { limit: 50, tipo: tipoFilter });
@@ -264,8 +264,8 @@ export default function KoreTab() {
     borderColor: interpolateColor(fluxGlow.value, [0, 1], ['rgba(255,215,0,0.08)', 'rgba(255,215,0,0.30)']),
     ...Platform.select({
       web: { boxShadow: `0 0 ${3 + fluxGlow.value * 8}px rgba(255,215,0,${0.04 + fluxGlow.value * 0.10})` },
-      default: {},
-    }),
+      default: {}
+    })
   }));
 
   // Founder shimmer
@@ -293,7 +293,11 @@ export default function KoreTab() {
   // Avatar: User Photo > Sport Placeholder > Abstract Fallback
   const avatarSource = userProfilePic || getSportAvatarPlaceholder(userSport);
 
-  // Neon ring pulse for avatar
+  // Pre-compute safe color strings for the neon ring animation
+  const ringColorDim = sportAura + '50';
+  const ringColorBright = sportAura + 'CC';
+
+  // Neon ring pulse for avatar — SAFE for native worklets
   const avatarPulse = useSharedValue(0);
   useEffect(() => {
     avatarPulse.value = withRepeat(
@@ -303,13 +307,12 @@ export default function KoreTab() {
       ), -1, true,
     );
   }, []);
-  const avatarRingStyle = useAnimatedStyle(() => ({
-    borderColor: interpolateColor(avatarPulse.value, [0, 1], [sportAura + '50', sportAura + 'CC']),
-    ...Platform.select({
-      web: { boxShadow: `0 0 ${4 + avatarPulse.value * 14}px ${sportAura}${Math.round(15 + avatarPulse.value * 35).toString(16).padStart(2, '0')}` },
-      default: {},
-    }),
-  }));
+  const avatarRingStyle = useAnimatedStyle(() => {
+    const opacity = 0.3 + avatarPulse.value * 0.5;
+    return {
+      opacity
+    };
+  });
 
   // Card actions
   const CARDS = [
@@ -397,7 +400,7 @@ export default function KoreTab() {
             <Animated.View entering={FadeIn.duration(600)} style={hero.identityBlock}>
               {/* Circular Avatar with Neon Ring */}
               <TouchableOpacity onPress={() => router.push('/settings')} activeOpacity={0.85}>
-                <Animated.View style={[hero.avatarRing, avatarRingStyle]}>
+                <Animated.View style={[hero.avatarRing, { borderColor: ringColorBright }, avatarRingStyle]}>
                   <Image source={{ uri: avatarSource }} style={hero.avatarImg} resizeMode="cover" />
                   {/* Sport icon overlay badge */}
                   <View style={[hero.avatarBadge, { backgroundColor: sportAura }]}>
@@ -642,8 +645,8 @@ export default function KoreTab() {
                           ugcTemplateType: ch.template_type || 'CUSTOM',
                           ugcFluxReward: String(ch.flux_reward || 15),
                           ugcCreatorRole: ch.creator_role || 'ATHLETE',
-                          ugcIsMaster: ch.is_master_template ? 'true' : 'false',
-                        },
+                          ugcIsMaster: ch.is_master_template ? 'true' : 'false'
+                        }
                       });
                     }}
                     onInvite={() => {}}
@@ -715,12 +718,12 @@ const TIPO_CONFIG: Record<string, { color: string; label: string; icon: keyof ty
   'ALLENAMENTO':  { color: '#00FF87', label: 'TRAINING',    icon: 'barbell' },
   'COACH_PROGRAM':{ color: '#00FF87', label: 'COACH',       icon: 'school' },
   'CREW_BATTLE':  { color: '#A855F7', label: 'CREW',        icon: 'people' },
-  'DUELLO':       { color: '#FF9500', label: 'DUELLO',      icon: 'flash' },
+  'DUELLO':       { color: '#FF9500', label: 'DUELLO',      icon: 'flash' }
 };
 const DISC_ICONS: Record<string, string> = {
   'Golf': '⛳', 'Fitness': '🏋️', 'Padel': '🏓', 'Calcio': '⚽', 'Tennis': '🎾',
   'Basket': '🏀', 'Running': '🏃', 'Nuoto': '🏊', 'Yoga': '🧘', 'CrossFit': '💪',
-  'Boxing': '🥊', 'MMA': '🥋', 'Ciclismo': '🚴',
+  'Boxing': '🥊', 'MMA': '🥋', 'Ciclismo': '🚴'
 };
 
 function PerformanceCard({ record, index, onPress }: { record: any; index: number; onPress?: () => void }) {
@@ -861,10 +864,10 @@ function PerformanceCard({ record, index, onPress }: { record: any; index: numbe
 // ─── UGC Card (Horizontal Scroll) ──────────────────────────────────
 const PUBLISH_FEES: Record<string, number> = { solo: 0, ranked: 50, friend: 25, live: 100 };
 const TEMPLATE_COLORS: Record<string, string> = {
-  AMRAP: '#FF3B30', EMOM: '#00E5FF', FOR_TIME: '#FFD700', TABATA: '#00FF87', CUSTOM: '#FF9500',
+  AMRAP: '#FF3B30', EMOM: '#00E5FF', FOR_TIME: '#FFD700', TABATA: '#00FF87', CUSTOM: '#FF9500'
 };
 const TEMPLATE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
-  AMRAP: 'flame', EMOM: 'timer', FOR_TIME: 'speedometer', TABATA: 'pulse', CUSTOM: 'construct',
+  AMRAP: 'flame', EMOM: 'timer', FOR_TIME: 'speedometer', TABATA: 'pulse', CUSTOM: 'construct'
 };
 
 function UGCCard({ challenge, onStart, onInvite, onLive, onShare, userFlux }: {
@@ -907,7 +910,7 @@ function UGCCard({ challenge, onStart, onInvite, onLive, onShare, userFlux }: {
             style={[ugc.actionBtn, {
               backgroundColor: canInvite ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)',
               borderColor: canInvite ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
-              opacity: canInvite ? 1 : 0.4,
+              opacity: canInvite ? 1 : 0.4
             }]}
             onPress={canInvite ? onInvite : undefined}
             disabled={!canInvite}
@@ -942,7 +945,7 @@ function QuickLink({ icon, color, label, onPress }: {
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#0A0A0A' },
   body: { paddingHorizontal: 16 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between', marginBottom: 20 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between', marginBottom: 20 }
 });
 
 // ── NIKE HERO BANNER ──
@@ -951,97 +954,97 @@ const hero = StyleSheet.create({
     height: 280,
     position: 'relative',
     overflow: 'hidden',
-    marginBottom: 4,
+    marginBottom: 4
   },
   imgLayer: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 0,
+    zIndex: 0
   },
   img: { width: '100%', height: '100%' },
   topRow: {
     position: 'absolute', top: 0, left: 0, right: 0,
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16,
-    zIndex: 10,
+    zIndex: 10
   },
   topActions: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 8
   },
   iconBtn: {
     width: 36, height: 36, borderRadius: 10,
     backgroundColor: 'rgba(0,0,0,0.35)',
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)'
   },
   fluxBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 7,
-    borderWidth: 1.2, borderColor: 'rgba(255,215,0,0.18)',
+    borderWidth: 1.2, borderColor: 'rgba(255,215,0,0.18)'
   },
   fluxVal: { color: '#FFD700', fontSize: 15, fontWeight: '900', fontFamily: FONT_J, letterSpacing: 0.5 },
   content: {
     position: 'absolute', bottom: 20, left: 20, right: 20,
-    zIndex: 10,
+    zIndex: 10
   },
   chips: {
-    flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10,
+    flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10
   },
   lvlChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: 'rgba(0,229,255,0.12)', borderRadius: 8,
-    paddingHorizontal: 8, paddingVertical: 4,
+    paddingHorizontal: 8, paddingVertical: 4
   },
   nexusChip: {
     flexDirection: 'row', alignItems: 'center', gap: 3,
     backgroundColor: 'rgba(0,255,135,0.10)', borderRadius: 8,
-    paddingHorizontal: 8, paddingVertical: 4,
+    paddingHorizontal: 8, paddingVertical: 4
   },
   founderChip: {
     flexDirection: 'row', alignItems: 'center', gap: 3,
     backgroundColor: 'rgba(255,215,0,0.10)', borderRadius: 8,
-    paddingHorizontal: 8, paddingVertical: 4,
+    paddingHorizontal: 8, paddingVertical: 4
   },
   chipText: {
-    color: '#00E5FF', fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J,
+    color: '#00E5FF', fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J
   },
   tagline: {
     color: 'rgba(255,255,255,0.30)', fontSize: 11, fontWeight: '900',
-    letterSpacing: 4, fontFamily: FONT_M, marginTop: 6,
+    letterSpacing: 4, fontFamily: FONT_M, marginTop: 6
   },
   // ═══ IDENTITY BLOCK (Avatar + Name + Title) ═══
   identityBlock: {
-    flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 12,
+    flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 12
   },
   avatarRing: {
     width: 76, height: 76, borderRadius: 38,
     borderWidth: 2.5,
     alignItems: 'center', justifyContent: 'center',
-    overflow: 'visible',
+    overflow: 'visible'
   },
   avatarImg: {
-    width: 68, height: 68, borderRadius: 34,
+    width: 68, height: 68, borderRadius: 34
   },
   avatarBadge: {
     position: 'absolute', bottom: -2, right: -2,
     width: 24, height: 24, borderRadius: 12,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: '#0A0A0A',
+    borderWidth: 2, borderColor: '#0A0A0A'
   },
   avatarBadgeText: { fontSize: 12 },
   identityInfo: {
-    flex: 1, gap: 4,
+    flex: 1, gap: 4
   },
   heroName: {
     color: '#FFFFFF', fontSize: 26, fontWeight: '900', fontFamily: FONT_M,
-    letterSpacing: -0.5,
+    letterSpacing: -0.5
   },
   titleChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     borderWidth: 1, borderRadius: 8,
     paddingHorizontal: 9, paddingVertical: 4,
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.35)'
   },
   titleDot: { width: 7, height: 7, borderRadius: 4 },
   titleText: { fontSize: 10, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
@@ -1049,10 +1052,10 @@ const hero = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 5,
     borderWidth: 1, borderRadius: 8,
     paddingHorizontal: 9, paddingVertical: 4,
-    alignSelf: 'flex-start',
+    alignSelf: 'flex-start'
   },
   sportChipIcon: { fontSize: 12 },
-  sportChipText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
+  sportChipText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J }
 });
 
 // ── DYNAMIC CARDS ──
@@ -1061,30 +1064,30 @@ const cd = StyleSheet.create({
   card: {
     borderRadius: 18, overflow: 'hidden', height: 180,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
-    position: 'relative',
+    position: 'relative'
   },
   imgLayer: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 1,
+    zIndex: 1
   },
   img: { width: '100%', height: '100%' },
   vignette: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 2,
+    zIndex: 2
   },
   content: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     paddingHorizontal: 14, paddingBottom: 14,
-    zIndex: 3,
+    zIndex: 3
   },
   label: {
     fontSize: 16, fontWeight: '900', letterSpacing: 1,
-    fontFamily: FONT_J, marginBottom: 2,
+    fontFamily: FONT_J, marginBottom: 2
   },
   sub: {
     color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: '600',
-    fontFamily: FONT_M, lineHeight: 14,
-  },
+    fontFamily: FONT_M, lineHeight: 14
+  }
 });
 
 const qs = StyleSheet.create({
@@ -1099,12 +1102,12 @@ const qs = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.04)',
     marginBottom: 16,
-    marginTop: 4,
+    marginTop: 4
   },
   item: { alignItems: 'center', gap: 3, flex: 1 },
   num: { color: '#00E5FF', fontSize: 22, fontWeight: '900', fontFamily: FONT_J },
   label: { color: 'rgba(255,255,255,0.22)', fontSize: 9, fontWeight: '800', letterSpacing: 2, fontFamily: FONT_M },
-  divider: { width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.05)' },
+  divider: { width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.05)' }
 });
 
 const lnk = StyleSheet.create({
@@ -1112,10 +1115,10 @@ const lnk = StyleSheet.create({
   row: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingVertical: 14, paddingHorizontal: 4,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.025)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.025)'
   },
   iconBox: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  text: { flex: 1, fontSize: 13, fontWeight: '800', letterSpacing: 1.5, fontFamily: FONT_M },
+  text: { flex: 1, fontSize: 13, fontWeight: '800', letterSpacing: 1.5, fontFamily: FONT_M }
 });
 
 const ugc = StyleSheet.create({
@@ -1125,25 +1128,25 @@ const ugc = StyleSheet.create({
   sub: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '500', fontFamily: FONT_M, marginTop: 2 },
   createBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: '#00E5FF', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8,
+    backgroundColor: '#00E5FF', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8
   },
   createBtnText: { color: '#0A0A0A', fontSize: 12, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
   emptyCard: {
     alignItems: 'center', justifyContent: 'center', paddingVertical: 30, borderRadius: 16,
     borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.05)', borderStyle: 'dashed',
-    backgroundColor: 'rgba(255,255,255,0.015)',
+    backgroundColor: 'rgba(255,255,255,0.015)'
   },
   emptyText: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '700', fontFamily: FONT_J, marginTop: 10 },
   emptySub: { color: 'rgba(255,255,255,0.15)', fontSize: 11, fontWeight: '500', fontFamily: FONT_M, marginTop: 3 },
   listScroll: { gap: 10, paddingRight: 20 },
   card: {
     width: 200, borderRadius: 16, overflow: 'hidden',
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)'
   },
   cardGrad: { padding: 14, minHeight: 140, justifyContent: 'space-between' },
   cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
   cardBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8
   },
   cardBadgeText: { fontSize: 9, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J },
   cardFlux: { fontSize: 12, fontWeight: '900', fontFamily: FONT_J },
@@ -1152,9 +1155,9 @@ const ugc = StyleSheet.create({
   cardActions: { flexDirection: 'row', gap: 6 },
   actionBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1,
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1
   },
-  actionText: { fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J },
+  actionText: { fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J }
 });
 
 // ── DISCIPLINE SELECTOR ──
@@ -1164,14 +1167,14 @@ const dsc = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12,
     borderWidth: 1.2, borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: 'rgba(255,255,255,0.03)'
   },
   chipActive: { backgroundColor: '#FFF', borderColor: '#FFF' },
   chipText: {
     color: 'rgba(255,255,255,0.50)', fontSize: 11, fontWeight: '800',
-    letterSpacing: 1, fontFamily: FONT_J,
+    letterSpacing: 1, fontFamily: FONT_J
   },
-  chipTextActive: { color: '#0A0A0A' },
+  chipTextActive: { color: '#0A0A0A' }
 });
 
 // ── DNA RADAR (Nike-style with BG image) ──
@@ -1180,28 +1183,28 @@ const dna = StyleSheet.create({
   radarCard: {
     borderRadius: 18, overflow: 'hidden',
     position: 'relative',
-    borderWidth: 1, borderColor: 'rgba(0,229,255,0.08)',
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.08)'
   },
   bgImage: {
     ...StyleSheet.absoluteFillObject,
-    width: '100%', height: '100%',
+    width: '100%', height: '100%'
   },
   inner: {
     padding: 16, gap: 14,
-    position: 'relative', zIndex: 5,
+    position: 'relative', zIndex: 5
   },
   radarHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   radarBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: 'rgba(0,229,255,0.06)', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 5,
-    borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)',
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)'
   },
   radarBadgeText: { color: '#00E5FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   viewAll: { color: 'rgba(0,229,255,0.5)', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   statsRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
-    paddingVertical: 8,
+    paddingVertical: 8
   },
   statItem: { alignItems: 'center', gap: 3 },
   statValue: { color: '#00E5FF', fontSize: 26, fontWeight: '900', fontFamily: FONT_J },
@@ -1210,15 +1213,15 @@ const dna = StyleSheet.create({
   actionRow: { flexDirection: 'row', gap: 10 },
   scanBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    backgroundColor: '#00E5FF', borderRadius: 12, paddingVertical: 10,
+    backgroundColor: '#00E5FF', borderRadius: 12, paddingVertical: 10
   },
   scanBtnText: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
   idBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: 'rgba(0,229,255,0.06)', borderRadius: 12, paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)',
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)'
   },
-  idBtnText: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
+  idBtnText: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J }
 });
 
 // ── WAR LOG ──
@@ -1231,7 +1234,7 @@ const wl = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: 'rgba(0,229,255,0.08)', borderRadius: 10,
     paddingHorizontal: 10, paddingVertical: 6,
-    borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)',
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)'
   },
   statPillNum: { color: '#00E5FF', fontSize: 14, fontWeight: '900', fontFamily: FONT_J },
   statPillLabel: { color: 'rgba(0,229,255,0.50)', fontSize: 8, fontWeight: '800', letterSpacing: 1 },
@@ -1239,7 +1242,7 @@ const wl = StyleSheet.create({
   filterPill: {
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10,
     borderWidth: 1.2, borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.02)',
+    backgroundColor: 'rgba(255,255,255,0.02)'
   },
   filterPillActive: { backgroundColor: '#FFF', borderColor: '#FFF' },
   filterText: { color: 'rgba(255,255,255,0.40)', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
@@ -1247,10 +1250,10 @@ const wl = StyleSheet.create({
   emptyCard: {
     alignItems: 'center', justifyContent: 'center', paddingVertical: 40, borderRadius: 16,
     borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.05)', borderStyle: 'dashed',
-    backgroundColor: 'rgba(255,255,255,0.015)',
+    backgroundColor: 'rgba(255,255,255,0.015)'
   },
   emptyText: { color: 'rgba(255,255,255,0.25)', fontSize: 14, fontWeight: '700', fontFamily: FONT_J, marginTop: 10 },
-  emptySub: { color: 'rgba(255,255,255,0.12)', fontSize: 11, fontWeight: '500', fontFamily: FONT_M, marginTop: 3 },
+  emptySub: { color: 'rgba(255,255,255,0.12)', fontSize: 11, fontWeight: '500', fontFamily: FONT_M, marginTop: 3 }
 });
 
 // ── PERFORMANCE CARD ──
@@ -1258,77 +1261,77 @@ const pc = StyleSheet.create({
   card: {
     borderRadius: 18, overflow: 'hidden', marginBottom: 12,
     borderWidth: 1.2, borderColor: 'rgba(255,255,255,0.06)',
-    position: 'relative', minHeight: 170,
+    position: 'relative', minHeight: 170
   },
   bgImg: {
     ...StyleSheet.absoluteFillObject,
-    width: '100%', height: '100%',
+    width: '100%', height: '100%'
   },
   bgGrad: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFillObject
   },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 14, paddingTop: 14,
-    position: 'relative', zIndex: 5,
+    position: 'relative', zIndex: 5
   },
   tipoBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 9, paddingVertical: 4, borderRadius: 8,
-    borderWidth: 1,
+    borderWidth: 1
   },
   tipoBadgeText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.2, fontFamily: FONT_J },
   discBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
+    flexDirection: 'row', alignItems: 'center', gap: 4
   },
   discIcon: { fontSize: 14 },
   discText: { color: 'rgba(255,255,255,0.45)', fontSize: 10, fontWeight: '700', letterSpacing: 1, fontFamily: FONT_M },
   center: {
     alignItems: 'center', justifyContent: 'center',
     paddingVertical: 10,
-    position: 'relative', zIndex: 5,
+    position: 'relative', zIndex: 5
   },
   primaryVal: {
     color: '#FFFFFF', fontSize: 42, fontWeight: '900', fontFamily: FONT_J,
     letterSpacing: 2,
     ...Platform.select({
       web: { textShadow: '0 0 20px rgba(255,255,255,0.25)' } as any,
-      default: {},
-    }),
+      default: {}
+    })
   },
   primaryUnit: {
     color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '900',
-    letterSpacing: 3, fontFamily: FONT_J, marginTop: -2,
+    letterSpacing: 3, fontFamily: FONT_J, marginTop: -2
   },
   certBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 6,
     backgroundColor: 'rgba(0,255,135,0.10)', borderRadius: 6,
     paddingHorizontal: 8, paddingVertical: 3,
-    borderWidth: 1, borderColor: 'rgba(0,255,135,0.20)',
+    borderWidth: 1, borderColor: 'rgba(0,255,135,0.20)'
   },
   certText: { color: '#00FF87', fontSize: 8, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
   footer: {
     paddingHorizontal: 14, paddingBottom: 14,
-    position: 'relative', zIndex: 5,
+    position: 'relative', zIndex: 5
   },
   kpiRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     flexWrap: 'wrap',
-    marginBottom: 8,
+    marginBottom: 8
   },
   kpiItem: { alignItems: 'center', gap: 2 },
   kpiVal: { color: '#00E5FF', fontSize: 13, fontWeight: '900', fontFamily: FONT_J },
   kpiLabel: { color: 'rgba(255,255,255,0.20)', fontSize: 7, fontWeight: '800', letterSpacing: 1.5 },
   footerBottom: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'
   },
   timeAgo: { color: 'rgba(255,255,255,0.18)', fontSize: 10, fontWeight: '600', fontFamily: FONT_M },
   modeBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 3,
     backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 6,
-    paddingHorizontal: 8, paddingVertical: 3,
+    paddingHorizontal: 8, paddingVertical: 3
   },
-  modeText: { color: 'rgba(255,255,255,0.30)', fontSize: 8, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_J },
+  modeText: { color: 'rgba(255,255,255,0.30)', fontSize: 8, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_J }
 });
 
 
@@ -1338,7 +1341,7 @@ const si = StyleSheet.create({
   card: {
     borderRadius: 20, overflow: 'hidden', padding: 16,
     borderWidth: 1.2, position: 'relative',
-    backgroundColor: 'rgba(255,255,255,0.015)',
+    backgroundColor: 'rgba(255,255,255,0.015)'
   },
   header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 },
   title: { color: '#FFF', fontSize: 14, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
@@ -1346,16 +1349,16 @@ const si = StyleSheet.create({
   domBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 10,
-    paddingHorizontal: 10, paddingVertical: 5,
+    paddingHorizontal: 10, paddingVertical: 5
   },
   domDot: { width: 8, height: 8, borderRadius: 4 },
   domText: { fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J },
   domPct: { color: 'rgba(255,255,255,0.30)', fontSize: 9, fontWeight: '800', fontFamily: FONT_J },
   statsRow: {
     flexDirection: 'row', justifyContent: 'space-around', marginTop: 16,
-    paddingTop: 14, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.04)',
+    paddingTop: 14, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.04)'
   },
   statItem: { alignItems: 'center' },
   statVal: { color: '#FFF', fontSize: 18, fontWeight: '900', fontFamily: FONT_J },
-  statLabel: { color: 'rgba(255,255,255,0.20)', fontSize: 8, fontWeight: '800', letterSpacing: 1.5, marginTop: 2 },
+  statLabel: { color: 'rgba(255,255,255,0.20)', fontSize: 8, fontWeight: '800', letterSpacing: 1.5, marginTop: 2 }
 });

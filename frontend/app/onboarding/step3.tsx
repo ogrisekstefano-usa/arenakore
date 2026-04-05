@@ -7,7 +7,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
-  KeyboardAvoidingView, Platform, ScrollView, StatusBar, Switch,
+  KeyboardAvoidingView, Platform, ScrollView, StatusBar, Switch
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,17 +28,17 @@ const LEVELS = [
   {
     id: 'LEGACY', label: 'LEGACY',
     desc: 'INIZIANTE — Il tuo viaggio comincia ora',
-    icon: 'leaf-outline' as const,
+    icon: 'leaf-outline' as const
   },
   {
     id: 'ELITE', label: 'ELITE',
     desc: 'INTERMEDIO — Spingi oltre i limiti',
-    icon: 'flash-outline' as const,
+    icon: 'flash-outline' as const
   },
   {
     id: 'KORE', label: 'KORE',
     desc: 'AVANZATO — Sei già oltre il confine',
-    icon: 'diamond-outline' as const,
+    icon: 'diamond-outline' as const
   },
 ];
 
@@ -71,7 +71,7 @@ export default function LegacyStep3() {
         if (status !== 'granted') return;
 
         const pos = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
+          accuracy: Location.Accuracy.Balanced
         });
         const [geo] = await Location.reverseGeocodeAsync(pos.coords);
         const city = (geo?.city || geo?.subregion || geo?.region || 'CHICAGO')
@@ -108,7 +108,7 @@ export default function LegacyStep3() {
     setError('');
     router.push({
       pathname: '/onboarding/step4',
-      params: { height_cm: h, weight_kg: w, age: a, training_level: level, ghost_mode: ghostMode ? '1' : '0', city: detectedCity },
+      params: { height_cm: h, weight_kg: w, age: a, training_level: level, ghost_mode: ghostMode ? '1' : '0', city: detectedCity }
     });
   }, [height, weight, age, level, router]);
 
@@ -323,9 +323,6 @@ const s = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 8,
     // Gold outer-glow
-    textShadowColor: 'rgba(255,215,0,0.9)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 14,
   },
   titleLine2: {
     color: '#FFFFFF',
@@ -333,29 +330,22 @@ const s = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 0.5,
     lineHeight: 52,
-    // Subtle gold shadow for depth
-    textShadowColor: 'rgba(255,215,0,0.35)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 20,
-    marginTop: 2,
+    // Subtle gold shadow for depth,
+    marginTop: 2
   },
   accentLine: {
     height: 2,
     width: 52,
     backgroundColor: GOLD,
     marginTop: 14,
-    marginBottom: 16,
-    shadowColor: GOLD,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7,
-    shadowRadius: 8,
+    marginBottom: 16
   },
   subtitle: {
     color: 'rgba(255,255,255,0.30)',
     fontSize: 13,
     fontWeight: '700',
     letterSpacing: 1.5,
-    lineHeight: 18,
+    lineHeight: 18
   },
 
   // Group
@@ -371,7 +361,7 @@ const s = StyleSheet.create({
     color: '#E0E0E0',            // off-white — highly readable on dark bg
     fontSize: 11,
     fontWeight: '900',
-    letterSpacing: 3,
+    letterSpacing: 3
   },
 
   // Input — Cyan neon container
@@ -385,16 +375,12 @@ const s = StyleSheet.create({
     fontSize: 24,
     fontWeight: '900',
     letterSpacing: 1,
-    marginTop: 2,
+    marginTop: 2
   },
   inputFocused: {
     borderColor: CYAN,
     backgroundColor: '#00E5FF22',
-    shadowColor: CYAN,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    elevation: 4
   },
 
   // Level cards
@@ -406,46 +392,41 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: BORDER,
     borderRadius: 12,
-    padding: 16,
+    padding: 16
   },
   levelCardActive: {
     borderColor: CYAN,
     backgroundColor: '#00E5FF22',
-    shadowColor: CYAN,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 6,
+    elevation: 6
   },
   levelLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   levelIconBox: {
     width: 32, height: 32, borderRadius: 8,
     backgroundColor: 'rgba(255,255,255,0.03)',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
   levelIconBoxActive: {
     backgroundColor: '#00E5FF22',
-    borderColor: 'rgba(255,255,255,0.07)',
+    borderColor: 'rgba(255,255,255,0.07)'
   },
   levelTextGroup: { gap: 3 },
   levelLabel: {
     color: '#AAAAAA',  // off-white (inactive)
     fontSize: 16,
     fontWeight: '900',
-    letterSpacing: 2,
+    letterSpacing: 2
   },
   levelLabelActive: { color: CYAN },
   levelDesc: {
     color: '#A0A0A0',
     fontSize: 15,
     fontWeight: '400',
-    letterSpacing: 0.2,
+    letterSpacing: 0.2
   },
   levelDescActive: { color: 'rgba(0,229,255,0.8)', fontSize: 15, fontWeight: '400' },
   levelGlow: {
-    width: 6, height: 6, borderRadius: 3, backgroundColor: CYAN,
-    shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 4,
+    width: 6, height: 6, borderRadius: 3, backgroundColor: CYAN
   },
 
   // Error
@@ -453,7 +434,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(255,59,48,0.06)',
     borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)',
-    borderRadius: 8, padding: 12, marginBottom: 16,
+    borderRadius: 8, padding: 12, marginBottom: 16
   },
   errorText: { color: '#FF3B30', fontSize: 13, fontWeight: '800', letterSpacing: 1, flex: 1 },
 
@@ -471,11 +452,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
-    shadowColor: CYAN,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
+    elevation: 8
   },
   ctaTxt: { color: BG, fontSize: 16, fontWeight: '900', letterSpacing: 3 },
   ctaNote: {
@@ -484,6 +461,6 @@ const s = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 2,
     textAlign: 'center',
-    marginTop: 10,
-  },
+    marginTop: 10
+  }
 });

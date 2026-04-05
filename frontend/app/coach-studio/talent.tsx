@@ -7,7 +7,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, TextInput, Alert,
+  ActivityIndicator, TextInput, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -22,7 +22,7 @@ const TIER_CFG: Record<string, { color: string; bg: string; icon: string }> = {
   ELITE:  { color: '#FFD700', bg: 'rgba(255,215,0,0.12)', icon: '👑' },
   PRO:    { color: '#00E5FF', bg: 'rgba(0,229,255,0.08)',  icon: '⭐' },
   RISING: { color: '#00FF87', bg: 'rgba(0,255,135,0.08)',  icon: '🔥' },
-  SCOUT:  { color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.04)', icon: '🔍' },
+  SCOUT:  { color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.04)', icon: '🔍' }
 };
 
 const DISC_OPTIONS = [
@@ -56,7 +56,7 @@ export default function TalentScout() {
   const [draftingId, setDraftingId] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     city: '', continent: '', discipline: '',
-    crewStatus: '', minDna: '', sortBy: 'efficiency_ratio',
+    crewStatus: '', minDna: '', sortBy: 'efficiency_ratio'
   });
 
   const load = useCallback(async () => {
@@ -70,7 +70,7 @@ export default function TalentScout() {
           discipline: filters.discipline || undefined,
           crewStatus: filters.crewStatus || undefined,
           minDna: filters.minDna ? Number(filters.minDna) : undefined,
-          sortBy: filters.sortBy,
+          sortBy: filters.sortBy
         }),
         api.getMyDrafts(token),
       ]);
@@ -353,5 +353,5 @@ const t$ = StyleSheet.create({
   draftName: { color: '#FFF', fontSize: 15, fontWeight: '700' },
   draftMeta: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '300', marginTop: 2 },
   draftStatus: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
-  draftStatusText: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
+  draftStatusText: { fontSize: 12, fontWeight: '900', letterSpacing: 1.5 }
 });

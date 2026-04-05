@@ -5,7 +5,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput,
-  Image, Platform, Alert, ActivityIndicator, Modal, FlatList, KeyboardAvoidingView,
+  Image, Platform, Alert, ActivityIndicator, Modal, FlatList, KeyboardAvoidingView
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -64,7 +64,7 @@ export default function SettingsScreen() {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.7,
-        base64: true,
+        base64: true
       });
 
       if (!result.canceled && result.assets[0]?.base64) {
@@ -94,7 +94,7 @@ export default function SettingsScreen() {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.7,
-        base64: true,
+        base64: true
       });
 
       if (!result.canceled && result.assets[0]?.base64) {
@@ -128,7 +128,7 @@ export default function SettingsScreen() {
       const res = await fetch(`${backendUrl}/api/auth/update-profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Errore');
@@ -317,18 +317,18 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#0A0A0A' },
   topBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 12,
+    paddingHorizontal: 16, paddingVertical: 12
   },
   backBtn: {
     width: 40, height: 40, borderRadius: 12,
     backgroundColor: 'rgba(255,255,255,0.06)', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)'
   },
   topTitle: { color: '#FFF', fontSize: 16, fontWeight: '900', letterSpacing: 3, fontFamily: FONT_J },
   section: { marginBottom: 24 },
   sectionTitle: {
     color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '900', letterSpacing: 3,
-    marginBottom: 12, fontFamily: FONT_J,
+    marginBottom: 12, fontFamily: FONT_J
   },
 
   // Avatar
@@ -337,25 +337,25 @@ const s = StyleSheet.create({
   avatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 2, borderColor: 'rgba(0,229,255,0.30)' },
   avatarPlaceholder: {
     width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: 'rgba(255,255,255,0.15)',
+    borderWidth: 2, borderColor: 'rgba(255,255,255,0.15)'
   },
   avatarLetter: { color: '#000', fontSize: 36, fontWeight: '900', fontFamily: FONT_J },
   avatarOverlay: {
     ...StyleSheet.absoluteFillObject, borderRadius: 50,
-    backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center'
   },
   avatarBadge: {
     position: 'absolute', bottom: 0, right: 0,
     width: 30, height: 30, borderRadius: 15,
     backgroundColor: '#00E5FF', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: '#0A0A0A',
+    borderWidth: 2, borderColor: '#0A0A0A'
   },
   avatarActions: { flexDirection: 'row', gap: 10 },
   avatarBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10,
     borderWidth: 1.2, borderColor: 'rgba(0,229,255,0.20)',
-    backgroundColor: 'rgba(0,229,255,0.04)',
+    backgroundColor: 'rgba(0,229,255,0.04)'
   },
   avatarBtnText: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
 
@@ -364,7 +364,7 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 10,
     backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14,
     borderWidth: 1.2, borderColor: 'rgba(255,255,255,0.08)',
-    paddingHorizontal: 16, paddingVertical: 14,
+    paddingHorizontal: 16, paddingVertical: 14
   },
   sportIcon: { fontSize: 22 },
   sportName: { color: '#FFF', fontSize: 16, fontWeight: '800', flex: 1, fontFamily: FONT_J },
@@ -375,19 +375,19 @@ const s = StyleSheet.create({
   inputHalf: { flex: 1 },
   inputLabel: {
     color: 'rgba(255,255,255,0.30)', fontSize: 10, fontWeight: '900', letterSpacing: 2,
-    marginBottom: 6, fontFamily: FONT_J,
+    marginBottom: 6, fontFamily: FONT_J
   },
   input: {
     backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12,
     borderWidth: 1.2, borderColor: 'rgba(255,255,255,0.08)',
     paddingHorizontal: 14, paddingVertical: 12, marginBottom: 10,
-    color: '#FFF', fontSize: 14, fontWeight: '600', fontFamily: FONT_M,
+    color: '#FFF', fontSize: 14, fontWeight: '600', fontFamily: FONT_M
   },
 
   // Save button
   saveBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#00E5FF', borderRadius: 14, paddingVertical: 16,
+    backgroundColor: '#00E5FF', borderRadius: 14, paddingVertical: 16
   },
   saveBtnText: { color: '#000', fontSize: 14, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
 
@@ -396,9 +396,9 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     borderRadius: 14, paddingVertical: 14,
     borderWidth: 1.2, borderColor: 'rgba(255,59,48,0.25)',
-    backgroundColor: 'rgba(255,59,48,0.04)',
+    backgroundColor: 'rgba(255,59,48,0.04)'
   },
-  logoutText: { color: '#FF3B30', fontSize: 13, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
+  logoutText: { color: '#FF3B30', fontSize: 13, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J }
 });
 
 // ── Sport Picker Modal ──
@@ -406,32 +406,32 @@ const sp = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' },
   sheet: {
     backgroundColor: '#121212', borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    maxHeight: '75%', paddingHorizontal: 16,
+    maxHeight: '75%', paddingHorizontal: 16
   },
   handle: {
     width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.15)',
-    alignSelf: 'center', marginTop: 10, marginBottom: 14,
+    alignSelf: 'center', marginTop: 10, marginBottom: 14
   },
   header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12
   },
   title: { color: '#FFF', fontSize: 16, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
   searchBox: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 12,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-    paddingHorizontal: 12, marginBottom: 10,
+    paddingHorizontal: 12, marginBottom: 10
   },
   searchInput: {
     flex: 1, paddingVertical: 10,
-    color: '#FFF', fontSize: 14, fontWeight: '600', fontFamily: FONT_M,
+    color: '#FFF', fontSize: 14, fontWeight: '600', fontFamily: FONT_M
   },
   item: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingVertical: 12, paddingHorizontal: 8, borderRadius: 10,
+    paddingVertical: 12, paddingHorizontal: 8, borderRadius: 10
   },
   itemActive: { backgroundColor: 'rgba(0,229,255,0.08)' },
   itemIcon: { fontSize: 20, width: 30, textAlign: 'center' },
   itemText: { color: 'rgba(255,255,255,0.65)', fontSize: 15, fontWeight: '700', flex: 1, fontFamily: FONT_M },
-  itemTextActive: { color: '#00E5FF', fontWeight: '900' },
+  itemTextActive: { color: '#00E5FF', fontWeight: '900' }
 });

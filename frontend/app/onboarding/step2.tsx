@@ -6,14 +6,14 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, useWindowDimensions, Platform,
-  ActivityIndicator, TouchableOpacity, Alert,
+  ActivityIndicator, TouchableOpacity, Alert
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Line, Circle, Rect, Text as SvgText, G, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
 import Animated, {
   useSharedValue, withTiming, withSequence, withRepeat, withDelay,
-  useAnimatedStyle, FadeIn, FadeInDown, Easing, runOnJS,
+  useAnimatedStyle, FadeIn, FadeInDown, Easing, runOnJS
 } from 'react-native-reanimated';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
@@ -120,7 +120,7 @@ const BEATS: BeatDef[] = [
       { label: 'PUNTI', value: '17/17', position: 'right', yPct: 30 },
       { label: 'BARICENTRO', value: 'CENTRATO', position: 'left', yPct: 55 },
       { label: 'JITTER', value: '< 3PX', position: 'right', yPct: 55 },
-    ],
+    ]
   },
   {
     id: 2, label: 'ALZA', instruction: 'ALZA LE BRACCIA SOPRA LA TESTA',
@@ -130,7 +130,7 @@ const BEATS: BeatDef[] = [
       { label: 'DORSALE', value: '12\u00B0', position: 'right', yPct: 25 },
       { label: 'ESTENSIONE', value: '96%', position: 'left', yPct: 42 },
       { label: 'SIMMETRIA', value: '97.4%', position: 'right', yPct: 42 },
-    ],
+    ]
   },
   {
     id: 3, label: 'T-POSE', instruction: 'BRACCIA APERTE — ASSUMI T-POSE',
@@ -140,7 +140,7 @@ const BEATS: BeatDef[] = [
       { label: 'SIMMETRIA', value: '97%', position: 'right', yPct: 22 },
       { label: 'ALLINEAMENTO', value: 'PERFETTO', position: 'left', yPct: 50 },
       { label: 'TENSIONE', value: '84%', position: 'right', yPct: 50 },
-    ],
+    ]
   },
   {
     id: 4, label: 'SQUAT', instruction: 'ESEGUI MEZZO SQUAT — TIENI',
@@ -150,7 +150,7 @@ const BEATS: BeatDef[] = [
       { label: 'CENTRO MASSA', value: 'STABILE', position: 'right', yPct: 65 },
       { label: 'ANGOLO SQUAT', value: '82\u00B0', position: 'left', yPct: 45 },
       { label: 'CARICO', value: 'SIMMETRICO', position: 'right', yPct: 45 },
-    ],
+    ]
   },
   {
     id: 5, label: 'DNA', instruction: 'GENERAZIONE KORE DNA...',
@@ -162,7 +162,7 @@ const BEATS: BeatDef[] = [
       { label: 'TEC', value: '88', position: 'right', yPct: 40 },
       { label: 'MEN', value: '94', position: 'left', yPct: 60 },
       { label: 'FLE', value: '79', position: 'right', yPct: 60 },
-    ],
+    ]
   },
 ];
 
@@ -242,7 +242,7 @@ function ScanLineOverlay({ active, scanH }: { active: boolean; scanH: number }) 
   }, [active, scanH]);
 
   const lineStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: lineY.value }],
+    transform: [{ translateY: lineY.value }]
   }));
 
   if (!active) return null;
@@ -259,8 +259,8 @@ const scanLine$ = StyleSheet.create({
   line: { height: 2, backgroundColor: '#FFD700' },
   glow: {
     height: 20, marginTop: -10,
-    backgroundColor: 'rgba(255,215,0,0.15)',
-  },
+    backgroundColor: 'rgba(255,215,0,0.15)'
+  }
 });
 
 // ===================================================================
@@ -285,8 +285,8 @@ const bi$ = StyleSheet.create({
   row: { flexDirection: 'row', gap: 8, justifyContent: 'center', marginTop: 4 },
   dot: { width: 8, height: 8, borderRadius: 4 },
   dotDone: { backgroundColor: '#FFD700' },
-  dotActive: { backgroundColor: '#00E5FF', shadowColor: '#00E5FF', shadowOpacity: 1, shadowRadius: 8, shadowOffset: { width: 0, height: 0 } },
-  dotPending: { backgroundColor: 'rgba(255,255,255,0.1)' },
+  dotActive: { backgroundColor: '#00E5FF' },
+  dotPending: { backgroundColor: 'rgba(255,255,255,0.1)' }
 });
 
 // ===================================================================
@@ -406,7 +406,7 @@ export default function NexusBioScan() {
       loading:    'WELCOME',
       positioning: poseEngineReady ? 'NEXUS_ACTIVE' : 'WELCOME',
       countdown:  'COUNTDOWN',
-      approved:   'SUCCESS',
+      approved:   'SUCCESS'
     };
     const key = keyMap[phase];
     if (key) {
@@ -757,7 +757,7 @@ export default function NexusBioScan() {
   const approvedScale = useSharedValue(0.5);
   const approvedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: approvedScale.value }],
-    opacity: approvedScale.value > 0.6 ? 1 : 0,
+    opacity: approvedScale.value > 0.6 ? 1 : 0
   }));
   const positionPulse = useSharedValue(0.4);
   useEffect(() => {
@@ -1172,7 +1172,7 @@ export default function NexusBioScan() {
               stabilityBufferRef.current = [];
               holdTimerRef.current = null;
               pendingApprovalRef.current = false;
-            },
+            }
           },
           { text: 'CONTINUA COMUNQUE', style: 'cancel' },
         ],
@@ -1226,7 +1226,7 @@ export default function NexusBioScan() {
     try {
       // Always save locally first
       await AsyncStorage.setItem('@kore_pending_dna',  JSON.stringify({
-        velocita: 87, forza: 83, resistenza: 91, tecnica: 88, mentalita: 94, flessibilita: 79,
+        velocita: 87, forza: 83, resistenza: 91, tecnica: 88, mentalita: 94, flessibilita: 79
       }));
       await AsyncStorage.setItem('@kore_scan_result',  JSON.stringify(scanPayload));
       await AsyncStorage.setItem('@kore_pending_scan', JSON.stringify(scanPayload));
@@ -1720,7 +1720,7 @@ export default function NexusBioScan() {
                     {
                       width: `${(detectedPoints / 17) * 100}%` as any,
                       // Gold bar when entry gate is in progress (real MediaPipe)
-                      backgroundColor: poseEngineReady && detectedPoints > 0 ? '#FFD700' : '#00E5FF',
+                      backgroundColor: poseEngineReady && detectedPoints > 0 ? '#FFD700' : '#00E5FF'
                     }
                   ]} />
                 </View>
@@ -1850,14 +1850,14 @@ const s = StyleSheet.create({
   // Header
   header: {
     paddingHorizontal: 20, justifyContent: 'center', gap: 6,
-    backgroundColor: 'rgba(5,5,5,0.95)', zIndex: 20,
+    backgroundColor: 'rgba(5,5,5,0.95)', zIndex: 20
   },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   brand: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 6 },
   stepPill: {
     backgroundColor: '#00E5FF22',
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)'
   },
   stepTxt: { color: '#00E5FF', fontSize: 14, fontWeight: '400', letterSpacing: 2 },
   detectRow: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },
@@ -1870,7 +1870,7 @@ const s = StyleSheet.create({
   gridOverlay: {
     ...StyleSheet.absoluteFillObject,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
-    backgroundColor: '#00E5FF22',
+    backgroundColor: '#00E5FF22'
   },
   darkOverlay: { backgroundColor: 'rgba(0,0,0,0.35)' },
 
@@ -1892,7 +1892,7 @@ const s = StyleSheet.create({
   footer: {
     paddingHorizontal: 20, paddingTop: 12,
     backgroundColor: 'rgba(5,5,5,0.97)',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   footerCenter: { alignItems: 'center', gap: 8 },
 
@@ -1907,7 +1907,7 @@ const s = StyleSheet.create({
   detectCount: { color: '#00E5FF', fontSize: 28, fontWeight: '400', letterSpacing: 2 },
   positioningRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   positioningDot: {
-    width: 8, height: 8, borderRadius: 4, backgroundColor: '#00E5FF',
+    width: 8, height: 8, borderRadius: 4, backgroundColor: '#00E5FF'
   },
   positioningTxt: { color: '#00E5FF', fontSize: 16, fontWeight: '400', letterSpacing: 3 },
 
@@ -1940,10 +1940,7 @@ const s = StyleSheet.create({
   beatInstruction: {
     color: '#FFFFFF', fontSize: 32, fontWeight: '900',
     letterSpacing: 1.5,
-    textAlign: 'center', lineHeight: 38,
-    textShadowColor: 'rgba(255,255,255,0.2)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
+    textAlign: 'center', lineHeight: 38
   },
   beatBar: { width: '100%', height: 4, backgroundColor: '#111', borderRadius: 2, overflow: 'hidden' },
   beatFill: { height: '100%', backgroundColor: '#00E5FF', borderRadius: 2 },
@@ -1953,12 +1950,12 @@ const s = StyleSheet.create({
   approvedWrap: { alignItems: 'center', gap: 8 },
   approvedBig: {
     color: '#FFD700', fontSize: 32, fontWeight: '900',
-    letterSpacing: 0.5, textAlign: 'center',
+    letterSpacing: 0.5, textAlign: 'center'
   },
   approvedSub: {
     color: '#FFFFFF', fontSize: 22, fontWeight: '900',
-    letterSpacing: 6, textAlign: 'center',
-  },
+    letterSpacing: 6, textAlign: 'center'
+  }
 });
 
 // ── DEBUG BYPASS BUTTON styles (isolated to avoid polluting main StyleSheet)
@@ -1968,11 +1965,11 @@ const dbg$ = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,59,48,0.35)',
     borderRadius: 8, paddingHorizontal: 24, paddingVertical: 8,
     backgroundColor: 'rgba(255,59,48,0.06)',
-    marginTop: 8,
+    marginTop: 8
   },
   txt: {
-    color: '#FF3B30', fontSize: 12, fontWeight: '900', letterSpacing: 3,
-  },
+    color: '#FF3B30', fontSize: 12, fontWeight: '900', letterSpacing: 3
+  }
 });
 
 // ── CENTRATI NELL'ARENA warning overlay
@@ -1980,14 +1977,11 @@ const cw$ = StyleSheet.create({
   container: {
     position: 'absolute', bottom: 16, left: 0, right: 0,
     alignItems: 'center', gap: 6, zIndex: 20,
-    flexDirection: 'row', justifyContent: 'center',
+    flexDirection: 'row', justifyContent: 'center'
   },
   txt: {
-    color: '#FFD700', fontSize: 20, fontWeight: '900', letterSpacing: 2,
-    textShadowColor: 'rgba(255,215,0,0.8)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
+    color: '#FFD700', fontSize: 20, fontWeight: '900', letterSpacing: 2
+  }
 });
 
 // ── Live FPS badge
@@ -1996,7 +1990,7 @@ const fps$ = StyleSheet.create({
     position: 'absolute', top: 8, left: 8, zIndex: 25,
     backgroundColor: 'rgba(0,0,0,0.6)',
     borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   txt: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   low: { color: '#FF3B30' }, // red when below 20fps
@@ -2009,28 +2003,25 @@ const fallback$ = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.4)',
     borderRadius: 10, paddingHorizontal: 18, paddingVertical: 12,
     backgroundColor: 'rgba(255,215,0,0.06)',
-    marginTop: 10,
+    marginTop: 10
   },
   txt: {
-    color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 2,
-  },
+    color: '#FFD700', fontSize: 14, fontWeight: '900', letterSpacing: 2
+  }
 });
 
 // ── FEET VISIBILITY WARNING — big overlay when ankles off-frame
 const feet$ = StyleSheet.create({
   container: {
-    position: 'absolute', top: '30%', left: 0, right: 0,
-    alignItems: 'center', gap: 6, zIndex: 22, paddingHorizontal: 20,
+    position: 'absolute', top: 250, left: 0, right: 0,
+    alignItems: 'center', gap: 6, zIndex: 22, paddingHorizontal: 20
   },
   title: {
-    color: '#FF9F0A', fontSize: 36, fontWeight: '900', letterSpacing: 2,
-    textShadowColor: 'rgba(255,159,10,0.8)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 12,
+    color: '#FF9F0A', fontSize: 36, fontWeight: '900', letterSpacing: 2
   },
   sub: {
-    color: 'rgba(255,159,10,0.7)', fontSize: 16, fontWeight: '900', letterSpacing: 3,
-  },
+    color: 'rgba(255,159,10,0.7)', fontSize: 16, fontWeight: '900', letterSpacing: 3
+  }
 });
 
 // ── PRIVACY CONSENT styles
@@ -2038,13 +2029,13 @@ const prv$ = StyleSheet.create({
   overlay: {
     position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 300,
     backgroundColor: 'rgba(0,0,0,0.7)',
-    paddingBottom: 0,
+    paddingBottom: 0
   },
   card: {
     backgroundColor: '#0A0A0A',
     borderTopLeftRadius: 20, borderTopRightRadius: 20,
     padding: 24, gap: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   topBar: { height: 2, backgroundColor: '#00E5FF', opacity: 0.6, marginHorizontal: -24, marginTop: -24, marginBottom: 8 },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -2054,33 +2045,33 @@ const prv$ = StyleSheet.create({
   row: { gap: 10 },
   acceptBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#00E5FF', borderRadius: 10, paddingVertical: 14,
+    backgroundColor: '#00E5FF', borderRadius: 10, paddingVertical: 14
   },
   acceptTxt: { color: '#000000', fontSize: 15, fontWeight: '900', letterSpacing: 2 },
   cancelBtn: {
     alignItems: 'center', paddingVertical: 10,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', borderRadius: 10,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)', borderRadius: 10
   },
   cancelTxt: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '700', letterSpacing: 1 },
   // Auto-accept countdown
   countdownRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14, backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 8, padding: 10 },
   countdownTxt: { color: 'rgba(255,215,0,0.7)', fontSize: 13, fontWeight: '800', letterSpacing: 1 },
-  countdownNum: { color: '#FFD700', fontSize: 16, fontWeight: '900' },
+  countdownNum: { color: '#FFD700', fontSize: 16, fontWeight: '900' }
 });
 
 // ── CAMERA ERROR styles
 const camErr$ = StyleSheet.create({
   overlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50,
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center'
   },
   box: {
     alignItems: 'center', gap: 12,
     backgroundColor: 'rgba(0,0,0,0.85)',
     borderRadius: 16, padding: 28,
     borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)',
-    marginHorizontal: 32,
+    marginHorizontal: 32
   },
   title: { color: '#FF3B30', fontSize: 18, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
-  desc: { color: 'rgba(255,255,255,0.5)', fontSize: 15, fontWeight: '400', letterSpacing: 1, textAlign: 'center', lineHeight: 18 },
+  desc: { color: 'rgba(255,255,255,0.5)', fontSize: 15, fontWeight: '400', letterSpacing: 1, textAlign: 'center', lineHeight: 18 }
 });

@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar,
-  TouchableOpacity, ActivityIndicator, RefreshControl, ImageBackground,
+  TouchableOpacity, ActivityIndicator, RefreshControl, ImageBackground
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
@@ -86,13 +86,13 @@ const s = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   sectionTitle: {
     color: '#00E5FF22', fontSize: 13, fontWeight: '900',
-    letterSpacing: 4, marginBottom: 14,
+    letterSpacing: 4, marginBottom: 14
   },
   card: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 12,
     padding: 14, marginBottom: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)'
   },
   rankBox: { width: 32, alignItems: 'center' },
   rank: { color: '#AAAAAA', fontSize: 15, fontWeight: '900' },
@@ -103,5 +103,5 @@ const s = StyleSheet.create({
   xp: { color: '#FFD700', fontSize: 15, fontWeight: '900' },
   dnaChip: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   dnaChipText: { color: '#00E5FF', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
-  actionBtn: { padding: 8 },
+  actionBtn: { padding: 8 }
 });

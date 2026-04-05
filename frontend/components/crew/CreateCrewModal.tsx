@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, TextInput,
-  ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform,
+  ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../utils/api';
@@ -19,7 +19,7 @@ const CATEGORIES_MAP: Record<string, { icon: keyof typeof Ionicons.glyphMap; col
   fitness:   { icon: 'barbell',   color: '#FFD700' },
   outdoor:   { icon: 'trail-sign', color: '#30B0C7' },
   mind_body: { icon: 'leaf',      color: '#AF52DE' },
-  extreme:   { icon: 'flame',     color: '#FF2D55' },
+  extreme:   { icon: 'flame',     color: '#FF2D55' }
 };
 
 export function CreateCrewModal({ visible, onClose, onCreated, token }: any) {
@@ -87,17 +87,17 @@ const m$ = StyleSheet.create({
   subtitle: { color: '#AAAAAA', fontSize: 18, marginBottom: 4 },
   input: {
     backgroundColor: '#1A1A1A', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14,
-    color: '#FFFFFF', fontSize: 17, borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)',
+    color: '#FFFFFF', fontSize: 17, borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)'
   },
   catTitle: { color: 'rgba(255,255,255,0.5)', fontSize: 15, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
   catRow: { gap: 8, paddingVertical: 4 },
   catChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#2A2A2A',
+    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#2A2A2A'
   },
   catLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
   createBtn: { backgroundColor: '#FFD700', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
   createBtnText: { color: '#000000', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
   cancelBtn: { alignItems: 'center', paddingVertical: 8 },
-  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 19, fontWeight: '600' },
+  cancelText: { color: 'rgba(255,255,255,0.4)', fontSize: 19, fontWeight: '600' }
 });

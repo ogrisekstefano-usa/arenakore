@@ -20,5 +20,5 @@ export default function GymHubTab() {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#050505' },
+  root: { flex: 1, backgroundColor: '#050505' }
 });

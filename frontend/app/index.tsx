@@ -6,14 +6,14 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, StatusBar,
-  ScrollView, Image, useWindowDimensions,
+  ScrollView, Image, useWindowDimensions
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useSharedValue, withRepeat, withTiming, withSequence,
-  useAnimatedStyle, FadeInDown, FadeIn, Easing,
+  useAnimatedStyle, FadeInDown, FadeIn, Easing
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Line, Circle, Rect, Defs, LinearGradient as SvgGrad, Stop, G } from 'react-native-svg';
@@ -44,7 +44,7 @@ function ScanLine() {
   }, [height]);
 
   const lineStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: y.value }],
+    transform: [{ translateY: y.value }]
   }));
 
   return (
@@ -57,7 +57,7 @@ function ScanLine() {
 const scan$ = StyleSheet.create({
   wrap: { position: 'absolute', left: 0, right: 0, zIndex: 5 },
   line: { height: 1, backgroundColor: 'rgba(255,215,0,0.4)' },
-  glow: { height: 24, backgroundColor: 'rgba(255,215,0,0.06)', marginTop: -12 },
+  glow: { height: 24, backgroundColor: 'rgba(255,215,0,0.06)', marginTop: -12 }
 });
 
 // =====================================================================
@@ -81,7 +81,7 @@ const mb$ = StyleSheet.create({
     minWidth: 0,                      // allow shrinking below natural width
   },
   value: { color: GOLD, fontSize: 18, fontWeight: '900', letterSpacing: 0 },
-  label: { color: 'rgba(255,255,255,0.30)', fontSize: 7, fontWeight: '900', letterSpacing: 1.5, marginTop: 2, textAlign: 'center' },
+  label: { color: 'rgba(255,255,255,0.30)', fontSize: 7, fontWeight: '900', letterSpacing: 1.5, marginTop: 2, textAlign: 'center' }
 });
 
 // =====================================================================
@@ -117,9 +117,7 @@ export default function HeroIndex() {
     );
   }, []);
   const glowStyle = useAnimatedStyle(() => ({
-    textShadowColor: `rgba(255,215,0,${glow.value * 0.7})`,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 24 * glow.value,
+    opacity: 0.7 + glow.value * 0.3
   }));
 
   // ── Loading screen
@@ -128,9 +126,7 @@ export default function HeroIndex() {
 
   // ── Brand animated style — MUST be declared before any conditional return
   const brandArenaStyle = useAnimatedStyle(() => ({
-    textShadowColor: `rgba(255,215,0,${glow.value * 0.4})`,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 16 * glow.value,
+    opacity: 0.6 + glow.value * 0.4
   }));
 
   if (isLoading) {
@@ -332,7 +328,7 @@ const s = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 1, borderColor: '#00E5FF44',
     borderRadius: 20, paddingHorizontal: 24, paddingVertical: 7,
-    marginBottom: 12,
+    marginBottom: 12
   },
   liveDot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: CYAN },
   liveTxt: { color: CYAN, fontSize: 9, fontWeight: '900', letterSpacing: 3 },
@@ -341,19 +337,19 @@ const s = StyleSheet.create({
   hero: {
     justifyContent: 'flex-end',
     paddingBottom: 32,
-    gap: 20,
+    gap: 20
   },
 
   // Decorative corners
   cornerTL: {
     position: 'absolute', top: 0, left: 0,
     width: 24, height: 24,
-    borderTopWidth: 1.5, borderLeftWidth: 1.5, borderColor: 'rgba(255,215,0,0.3)',
+    borderTopWidth: 1.5, borderLeftWidth: 1.5, borderColor: 'rgba(255,215,0,0.3)'
   },
   cornerTR: {
     position: 'absolute', top: 0, right: 0,
     width: 24, height: 24,
-    borderTopWidth: 1.5, borderRightWidth: 1.5, borderColor: 'rgba(255,215,0,0.3)',
+    borderTopWidth: 1.5, borderRightWidth: 1.5, borderColor: 'rgba(255,215,0,0.3)'
   },
 
   // Brand — ARENA (white) + KORE (blue)
@@ -363,17 +359,14 @@ const s = StyleSheet.create({
     fontSize: 58,
     fontWeight: '900',
     letterSpacing: -3,
-    lineHeight: 60,
+    lineHeight: 60
   },
   brandKore: {
     color: '#00E5FF',                      // KORE = pure CYAN
     fontSize: 58,
     fontWeight: '900',
     letterSpacing: -3,
-    lineHeight: 60,
-    textShadowColor: 'rgba(0,229,255,0.75)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 20,
+    lineHeight: 60
   },
   // Keep old brand style for compatibility
   brand: { color: GOLD, fontSize: 58, fontWeight: '900', letterSpacing: -3, lineHeight: 60 },
@@ -384,29 +377,25 @@ const s = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '400',
-    letterSpacing: 2,
-    textShadowColor: 'rgba(255,255,255,0.3)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8,
+    letterSpacing: 2
   },
   sub2: {
     color: '#AAAAAA',
     fontSize: 14,
     fontWeight: '400',
-    letterSpacing: 2,
+    letterSpacing: 2
   },
 
   // Accent line
   accentLine: {
-    height: 2, width: 56, backgroundColor: GOLD,
-    shadowColor: GOLD, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 8,
+    height: 2, width: 56, backgroundColor: GOLD
   },
 
   // Metrics — 3 badges on single row, equal width
   metricsRow: {
     flexDirection: 'row',
     gap: 8,
-    alignSelf: 'stretch',
+    alignSelf: 'stretch'
   },
 
   // CTAs
@@ -415,16 +404,14 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
     backgroundColor: GOLD,
     borderRadius: 10, paddingVertical: 18,
-    shadowColor: GOLD, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 14,
-    elevation: 10,
+    elevation: 10
   },
   primaryBtnTxt: { color: BG, fontSize: 14, fontWeight: '900', letterSpacing: 2 },
   outlineBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: 'rgba(0,0,0,0.75)',
     borderWidth: 1, borderColor: '#00E5FF',
-    borderRadius: 10, paddingVertical: 14,
-    shadowColor: '#00E5FF', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 12,
+    borderRadius: 10, paddingVertical: 14
   },
   outlineBtnTxt: { color: '#00E5FF', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
 
@@ -444,7 +431,7 @@ const s = StyleSheet.create({
     fontSize: 15,
     fontWeight: '400',
     lineHeight: 22,
-    letterSpacing: 0.5,
+    letterSpacing: 0.5
   },
   featRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   featTxt: { color: '#AAAAAA', fontSize: 13, fontWeight: '400', letterSpacing: 1, flex: 1 },
@@ -454,12 +441,11 @@ const s = StyleSheet.create({
     borderRadius: 10, paddingVertical: 16,
     marginTop: 4,
     borderWidth: 1, borderColor: '#00E5FF',
-    shadowColor: CYAN, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.25, shadowRadius: 10,
-    elevation: 8,
+    elevation: 8
   },
   gymBtnTxt: { color: CYAN, fontSize: 14, fontWeight: '900', letterSpacing: 3 },
 
   // Footer
   footer: { alignItems: 'center', gap: 4, marginTop: 28, paddingBottom: 8 },
-  footerTxt: { color: '#AAAAAA', fontSize: 8, fontWeight: '400', letterSpacing: 2 },
+  footerTxt: { color: '#AAAAAA', fontSize: 8, fontWeight: '400', letterSpacing: 2 }
 });

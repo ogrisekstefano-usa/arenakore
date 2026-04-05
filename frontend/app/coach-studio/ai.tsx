@@ -25,7 +25,7 @@ function RiskBar({ pct, color }: { pct: number; color: string }) {
 const rb$ = StyleSheet.create({
   wrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   track: { flex: 1, height: 6, backgroundColor: '#1E1E1E', borderRadius: 3, overflow: 'hidden' },
-  pct: { fontSize: 13, fontWeight: '900', width: 32, textAlign: 'right' },
+  pct: { fontSize: 13, fontWeight: '900', width: 32, textAlign: 'right' }
 });
 
 export default function AICoachAssistant() {
@@ -238,5 +238,5 @@ const ai$ = StyleSheet.create({
   forecastXpVal: { color: '#FFD700', fontSize: 16, fontWeight: '900' },
   forecastXpLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 11, marginTop: 2 },
   aiNote: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#0A0A0A', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#1E1E1E' },
-  aiNoteText: { flex: 1, color: '#00E5FF22', fontSize: 13, fontWeight: '300' },
+  aiNoteText: { flex: 1, color: '#00E5FF22', fontSize: 13, fontWeight: '300' }
 });
