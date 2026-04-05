@@ -27,6 +27,7 @@ import { QRScannerModal } from '../../components/QRScannerModal';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { api } from '../../utils/api';
 
 const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
 const FONT_M = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });
@@ -173,6 +174,12 @@ export default function KoreTab() {
   const [previewChallenge, setPreviewChallenge] = useState<any>(null);
   const [scannerVisible, setScannerVisible] = useState(false);
 
+  // ── WAR LOG: Performance Records ──
+  const [warLog, setWarLog] = useState<any[]>([]);
+  const [warLogStats, setWarLogStats] = useState<any>({});
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [loadingWarLog, setLoadingWarLog] = useState(false);
+
   useEffect(() => {
     (globalThis as any).__openKoreIdModal = () => setKoreIdVisible(true);
     (globalThis as any).__openControlCenter = () => setSidebarOpen(true);
@@ -200,16 +207,36 @@ export default function KoreTab() {
     } catch {}
   }, [token]);
 
+  const fetchWarLog = useCallback(async () => {
+    if (!token) return;
+    setLoadingWarLog(true);
+    try {
+      const filterMap: Record<string, string> = {
+        'Sfide': 'SFIDA_UGC',
+        'Live': 'LIVE_ARENA',
+        'Crew': 'CREW_BATTLE',
+        'Allenamenti': 'ALLENAMENTO',
+        'Duelli': 'DUELLO',
+      };
+      const tipoFilter = activeFilter ? filterMap[activeFilter] : undefined;
+      const result = await api.getKoreHistory(token, { limit: 50, tipo: tipoFilter });
+      setWarLog(result.records || []);
+      setWarLogStats(result.stats || {});
+    } catch {}
+    setLoadingWarLog(false);
+  }, [token, activeFilter]);
+
   useEffect(() => { if (token) fetchMyChallenges(); }, [token, fetchMyChallenges]);
+  useEffect(() => { if (token) fetchWarLog(); }, [token, fetchWarLog]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       if (refreshUser) await refreshUser();
-      await fetchMyChallenges();
+      await Promise.all([fetchMyChallenges(), fetchWarLog()]);
     } catch (_) {}
     finally { setRefreshing(false); }
-  }, [refreshUser, fetchMyChallenges]);
+  }, [refreshUser, fetchMyChallenges, fetchWarLog]);
 
   // FLUX badge glow
   const fluxGlow = useSharedValue(0);
@@ -424,8 +451,58 @@ export default function KoreTab() {
             </View>
           </Animated.View>
 
+          {/* ═══ WAR LOG — PERFORMANCE CARDS ═══ */}
+          <Animated.View entering={FadeInDown.delay(300).duration(400)} style={wl.section}>
+            <View style={wl.headerRow}>
+              <View>
+                <Text style={wl.title}>WAR LOG</Text>
+                <Text style={wl.sub}>{warLog.length} performance registrate</Text>
+              </View>
+              {warLogStats.total_sessions > 0 && (
+                <View style={wl.statPill}>
+                  <Text style={wl.statPillNum}>{warLogStats.avg_quality || 0}</Text>
+                  <Text style={wl.statPillLabel}>AVG Q</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Filter Pills */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={wl.filterRow}>
+              {['Tutte', 'Sfide', 'Live', 'Crew', 'Allenamenti', 'Duelli'].map((f) => {
+                const isActive = (f === 'Tutte' && !activeFilter) || activeFilter === f;
+                return (
+                  <TouchableOpacity
+                    key={f}
+                    style={[wl.filterPill, isActive && wl.filterPillActive]}
+                    onPress={() => setActiveFilter(f === 'Tutte' ? null : f)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[wl.filterText, isActive && wl.filterTextActive]}>{f.toUpperCase()}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+
+            {loadingWarLog ? (
+              <View style={wl.emptyCard}>
+                <ActivityIndicator color="#00E5FF" size="small" />
+                <Text style={wl.emptyText}>Caricamento...</Text>
+              </View>
+            ) : warLog.length === 0 ? (
+              <View style={wl.emptyCard}>
+                <Ionicons name="barbell-outline" size={28} color="rgba(255,255,255,0.15)" />
+                <Text style={wl.emptyText}>Nessuna performance registrata</Text>
+                <Text style={wl.emptySub}>Completa una sfida per riempire il tuo War Log.</Text>
+              </View>
+            ) : (
+              warLog.map((rec, i) => (
+                <PerformanceCard key={rec.id || i} record={rec} index={i} />
+              ))
+            )}
+          </Animated.View>
+
           {/* ═══ LE MIE SFIDE ═══ */}
-          <Animated.View entering={FadeInDown.delay(300).duration(400)} style={ugc.section}>
+          <Animated.View entering={FadeInDown.delay(400).duration(400)} style={ugc.section}>
             <View style={ugc.headerRow}>
               <View>
                 <Text style={ugc.title}>LE MIE SFIDE</Text>
@@ -524,6 +601,154 @@ export default function KoreTab() {
         onChallengeFound={(challengeData) => { setPreviewChallenge(challengeData); }}
       />
     </View>
+  );
+}
+
+// ─── Performance Card (WAR LOG) ─────────────────────────────────────
+const TIPO_CONFIG: Record<string, { color: string; label: string; icon: keyof typeof Ionicons.glyphMap }> = {
+  'SFIDA_UGC':    { color: '#FF3B30', label: 'SFIDA',       icon: 'flame' },
+  'LIVE_ARENA':   { color: '#FFD700', label: 'LIVE',        icon: 'radio' },
+  'ALLENAMENTO':  { color: '#00FF87', label: 'TRAINING',    icon: 'barbell' },
+  'COACH_PROGRAM':{ color: '#00FF87', label: 'COACH',       icon: 'school' },
+  'CREW_BATTLE':  { color: '#A855F7', label: 'CREW',        icon: 'people' },
+  'DUELLO':       { color: '#FF9500', label: 'DUELLO',      icon: 'flash' },
+};
+const DISC_ICONS: Record<string, string> = {
+  'Golf': '⛳', 'Fitness': '🏋️', 'Padel': '🏓', 'Calcio': '⚽', 'Tennis': '🎾',
+  'Basket': '🏀', 'Running': '🏃', 'Nuoto': '🏊', 'Yoga': '🧘', 'CrossFit': '💪',
+  'Boxing': '🥊', 'MMA': '🥋', 'Ciclismo': '🚴',
+};
+
+function PerformanceCard({ record, index }: { record: any; index: number }) {
+  const cfg = TIPO_CONFIG[record.tipo] || TIPO_CONFIG['ALLENAMENTO'];
+  const kpi = record.kpi || {};
+  const pr = kpi.primary_result || {};
+  const snapPeak = record.snapshots?.peak;
+  const discIcon = DISC_ICONS[record.disciplina] || '🏅';
+  const isCrew = record.modalita === 'CREW';
+
+  // Format primary result display
+  let primaryDisplay = '—';
+  let primaryUnit = '';
+  if (pr.type === 'REPS' && pr.value > 0) {
+    primaryDisplay = String(pr.value);
+    primaryUnit = 'REPS';
+  } else if (pr.type === 'TEMPO' && pr.value > 0) {
+    const m = Math.floor(pr.value / 60);
+    const ss = Math.round(pr.value % 60);
+    primaryDisplay = `${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+    primaryUnit = 'MIN';
+  } else if (pr.type === 'PUNTEGGIO' && pr.value > 0) {
+    primaryDisplay = String(Math.round(pr.value));
+    primaryUnit = 'PTS';
+  }
+
+  // Time ago
+  const completedAt = record.completed_at ? new Date(record.completed_at) : null;
+  let timeAgo = '';
+  if (completedAt) {
+    const diff = Date.now() - completedAt.getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) timeAgo = `${mins}min fa`;
+    else if (mins < 1440) timeAgo = `${Math.floor(mins / 60)}h fa`;
+    else timeAgo = `${Math.floor(mins / 1440)}g fa`;
+  }
+
+  return (
+    <Animated.View entering={FadeInDown.delay(index * 60).duration(300)} style={pc.card}>
+      {/* PEAK snapshot background */}
+      {snapPeak ? (
+        <Image source={{ uri: snapPeak }} style={pc.bgImg} resizeMode="cover" />
+      ) : (
+        <LinearGradient
+          colors={[cfg.color + '12', '#0A0A0A']}
+          style={pc.bgGrad}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+      )}
+      {/* Dark overlay gradient */}
+      <LinearGradient
+        colors={['rgba(10,10,10,0.3)', 'rgba(10,10,10,0.65)', 'rgba(10,10,10,0.92)']}
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFillObject}
+      />
+
+      {/* Header row */}
+      <View style={pc.header}>
+        <View style={[pc.tipoBadge, { backgroundColor: cfg.color + '20', borderColor: cfg.color + '35' }]}>
+          <Ionicons name={cfg.icon} size={10} color={cfg.color} />
+          <Text style={[pc.tipoBadgeText, { color: cfg.color }]}>{cfg.label}</Text>
+        </View>
+        <View style={pc.discBadge}>
+          <Text style={pc.discIcon}>{discIcon}</Text>
+          <Text style={pc.discText}>{record.disciplina || 'Fitness'}</Text>
+        </View>
+      </View>
+
+      {/* Center focus — primary result */}
+      <View style={pc.center}>
+        <Text style={pc.primaryVal}>{primaryDisplay}</Text>
+        {primaryUnit ? <Text style={pc.primaryUnit}>{primaryUnit}</Text> : null}
+        {record.is_certified && (
+          <View style={pc.certBadge}>
+            <Ionicons name="shield-checkmark" size={9} color="#00FF87" />
+            <Text style={pc.certText}>CERTIFIED</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Footer KPIs */}
+      <View style={pc.footer}>
+        <View style={pc.kpiRow}>
+          {kpi.quality_score != null && kpi.quality_score > 0 && (
+            <View style={pc.kpiItem}>
+              <Text style={pc.kpiVal}>{Math.round(kpi.quality_score)}%</Text>
+              <Text style={pc.kpiLabel}>QUALITY</Text>
+            </View>
+          )}
+          {kpi.rom_pct != null && (
+            <View style={pc.kpiItem}>
+              <Text style={pc.kpiVal}>{Math.round(kpi.rom_pct)}%</Text>
+              <Text style={pc.kpiLabel}>ROM</Text>
+            </View>
+          )}
+          {kpi.explosivity_pct != null && (
+            <View style={pc.kpiItem}>
+              <Text style={pc.kpiVal}>{Math.round(kpi.explosivity_pct)}%</Text>
+              <Text style={pc.kpiLabel}>EXPL.</Text>
+            </View>
+          )}
+          {kpi.power_output != null && kpi.power_output > 0 && (
+            <View style={pc.kpiItem}>
+              <Text style={pc.kpiVal}>{Math.round(kpi.power_output)}</Text>
+              <Text style={pc.kpiLabel}>POWER</Text>
+            </View>
+          )}
+          {kpi.heart_rate_avg != null && kpi.heart_rate_avg > 0 && (
+            <View style={pc.kpiItem}>
+              <Text style={[pc.kpiVal, { color: '#FF3B30' }]}>{Math.round(kpi.heart_rate_avg)}</Text>
+              <Text style={pc.kpiLabel}>BPM</Text>
+            </View>
+          )}
+          {record.flux_earned > 0 && (
+            <View style={pc.kpiItem}>
+              <Text style={[pc.kpiVal, { color: '#FFD700' }]}>+{record.flux_earned}</Text>
+              <Text style={pc.kpiLabel}>FLUX</Text>
+            </View>
+          )}
+        </View>
+        <View style={pc.footerBottom}>
+          <Text style={pc.timeAgo}>{timeAgo}</Text>
+          <View style={[pc.modeBadge, isCrew ? { backgroundColor: 'rgba(168,85,247,0.15)' } : {}]}>
+            <Ionicons name={isCrew ? 'people' : 'person'} size={9} color={isCrew ? '#A855F7' : 'rgba(255,255,255,0.35)'} />
+            <Text style={[pc.modeText, isCrew ? { color: '#A855F7' } : {}]}>
+              {isCrew ? (record.crew_id ? 'CREW' : 'CREW') : 'INDIVIDUALE'}
+            </Text>
+          </View>
+        </View>
+      </View>
+    </Animated.View>
   );
 }
 
@@ -848,4 +1073,114 @@ const dna = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)',
   },
   idBtnText: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
+});
+
+// ── WAR LOG ──
+const wl = StyleSheet.create({
+  section: { marginBottom: 20 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  title: { color: '#FFF', fontSize: 16, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
+  sub: { color: 'rgba(255,255,255,0.22)', fontSize: 11, fontWeight: '500', fontFamily: FONT_M, marginTop: 2 },
+  statPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: 'rgba(0,229,255,0.08)', borderRadius: 10,
+    paddingHorizontal: 10, paddingVertical: 6,
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)',
+  },
+  statPillNum: { color: '#00E5FF', fontSize: 14, fontWeight: '900', fontFamily: FONT_J },
+  statPillLabel: { color: 'rgba(0,229,255,0.50)', fontSize: 8, fontWeight: '800', letterSpacing: 1 },
+  filterRow: { gap: 8, paddingBottom: 14 },
+  filterPill: {
+    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10,
+    borderWidth: 1.2, borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.02)',
+  },
+  filterPillActive: { backgroundColor: '#FFF', borderColor: '#FFF' },
+  filterText: { color: 'rgba(255,255,255,0.40)', fontSize: 10, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
+  filterTextActive: { color: '#0A0A0A' },
+  emptyCard: {
+    alignItems: 'center', justifyContent: 'center', paddingVertical: 40, borderRadius: 16,
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.05)', borderStyle: 'dashed',
+    backgroundColor: 'rgba(255,255,255,0.015)',
+  },
+  emptyText: { color: 'rgba(255,255,255,0.25)', fontSize: 14, fontWeight: '700', fontFamily: FONT_J, marginTop: 10 },
+  emptySub: { color: 'rgba(255,255,255,0.12)', fontSize: 11, fontWeight: '500', fontFamily: FONT_M, marginTop: 3 },
+});
+
+// ── PERFORMANCE CARD ──
+const pc = StyleSheet.create({
+  card: {
+    borderRadius: 18, overflow: 'hidden', marginBottom: 12,
+    borderWidth: 1.2, borderColor: 'rgba(255,255,255,0.06)',
+    position: 'relative', minHeight: 170,
+  },
+  bgImg: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%', height: '100%',
+  },
+  bgGrad: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 14, paddingTop: 14,
+    position: 'relative', zIndex: 5,
+  },
+  tipoBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 9, paddingVertical: 4, borderRadius: 8,
+    borderWidth: 1,
+  },
+  tipoBadgeText: { fontSize: 9, fontWeight: '900', letterSpacing: 1.2, fontFamily: FONT_J },
+  discBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+  },
+  discIcon: { fontSize: 14 },
+  discText: { color: 'rgba(255,255,255,0.45)', fontSize: 10, fontWeight: '700', letterSpacing: 1, fontFamily: FONT_M },
+  center: {
+    alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 10,
+    position: 'relative', zIndex: 5,
+  },
+  primaryVal: {
+    color: '#FFFFFF', fontSize: 42, fontWeight: '900', fontFamily: FONT_J,
+    letterSpacing: 2,
+    ...Platform.select({
+      web: { textShadow: '0 0 20px rgba(255,255,255,0.25)' } as any,
+      default: {},
+    }),
+  },
+  primaryUnit: {
+    color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '900',
+    letterSpacing: 3, fontFamily: FONT_J, marginTop: -2,
+  },
+  certBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 6,
+    backgroundColor: 'rgba(0,255,135,0.10)', borderRadius: 6,
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1, borderColor: 'rgba(0,255,135,0.20)',
+  },
+  certText: { color: '#00FF87', fontSize: 8, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
+  footer: {
+    paddingHorizontal: 14, paddingBottom: 14,
+    position: 'relative', zIndex: 5,
+  },
+  kpiRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    flexWrap: 'wrap',
+    marginBottom: 8,
+  },
+  kpiItem: { alignItems: 'center', gap: 2 },
+  kpiVal: { color: '#00E5FF', fontSize: 13, fontWeight: '900', fontFamily: FONT_J },
+  kpiLabel: { color: 'rgba(255,255,255,0.20)', fontSize: 7, fontWeight: '800', letterSpacing: 1.5 },
+  footerBottom: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+  },
+  timeAgo: { color: 'rgba(255,255,255,0.18)', fontSize: 10, fontWeight: '600', fontFamily: FONT_M },
+  modeBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 6,
+    paddingHorizontal: 8, paddingVertical: 3,
+  },
+  modeText: { color: 'rgba(255,255,255,0.30)', fontSize: 8, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_J },
 });
