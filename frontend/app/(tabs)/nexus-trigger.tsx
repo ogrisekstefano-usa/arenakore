@@ -2278,6 +2278,47 @@ export default function NexusTriggerScreen() {
   useEffect(() => () => { stopSensors(); }, []);
   const fmt = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
+  // ═══ PERFORMANCE RECORD — fire-and-forget snapshot enrichment ═══
+  useEffect(() => {
+    if (phase !== 'results' || !scanResult || !token) return;
+    (async () => {
+      try {
+        const isCrew = !!scanResult.crew_id;
+        let tipo = 'ALLENAMENTO';
+        if (scanResult.training_mode) tipo = 'COACH_PROGRAM';
+        else if (scanResult.ugc_mode) tipo = 'SFIDA_UGC';
+        else if (scanResult.pvp_mode) tipo = 'DUELLO';
+        else if (isCrew) tipo = 'CREW_BATTLE';
+
+        const primaryValue = scanResult.reps_completed ?? scanResult.reps ?? 0;
+        const qualScore = scanResult.quality_score ?? 0;
+
+        await api.savePerformanceRecord({
+          tipo,
+          modalita: isCrew ? 'CREW' : 'INDIVIDUALE',
+          crew_id: scanResult.crew_id,
+          disciplina: user?.sport || 'Fitness',
+          exercise_type: scanResult.exercise_type || exercise,
+          snapshots: snapshots && (snapshots.start || snapshots.peak || snapshots.finish) ? snapshots : undefined,
+          kpi: {
+            primary_result: { type: primaryValue > 0 ? 'REPS' : 'PUNTEGGIO', value: primaryValue, unit: primaryValue > 0 ? 'rep' : '%' },
+            quality_score: qualScore,
+            rom_pct: scanResult.rom_pct,
+            explosivity_pct: scanResult.explosivity_pct,
+            power_output: scanResult.power_output,
+            heart_rate_avg: scanResult.heart_rate_avg,
+            heart_rate_peak: scanResult.heart_rate_peak,
+          },
+          is_certified: !!scanResult.is_master_template,
+          template_name: scanResult.training_name || scanResult.ugc_title,
+          validation_status: scanResult.verification_status || (scanResult.is_verified ? 'AI_VERIFIED' : 'UNVERIFIED'),
+          flux_earned: scanResult.flux_earned || scanResult.xp_earned || 0,
+          duration_seconds: timer,
+        }, token);
+      } catch (_) { /* silent — backend already has core record, this enriches with snapshots */ }
+    })();
+  }, [phase === 'results' && !!scanResult]);
+
   // ═══ PILLAR ACTION HANDLER ═══
   const handlePillarAction = (key: string) => {
     switch (key) {

@@ -451,4 +451,38 @@ export const api = {
   // ========== KORE HUB REQUEST ==========
   submitHubRequest: (data: { gym_name: string; locality: string; email: string }) =>
     request('/gym/hub-request', { method: 'POST', body: JSON.stringify(data) }),
+
+  // ========== PERFORMANCE RECORDS — KORE Tab ==========
+  savePerformanceRecord: (data: {
+    tipo: string;
+    modalita?: string;
+    crew_id?: string;
+    disciplina?: string;
+    exercise_type?: string;
+    snapshots?: { start?: string; peak?: string; finish?: string };
+    kpi?: Record<string, any>;
+    is_certified?: boolean;
+    template_name?: string;
+    coach_id?: string;
+    validation_status?: string;
+    flux_earned?: number;
+    source_id?: string;
+    source_collection?: string;
+    duration_seconds?: number;
+    extra_meta?: Record<string, any>;
+  }, token: string) =>
+    request('/performance/record', { method: 'POST', body: JSON.stringify(data) }, token),
+
+  getKoreHistory: (token: string, params?: { limit?: number; offset?: number; tipo?: string; disciplina?: string }) => {
+    let path = '/kore/history';
+    const qs: string[] = [];
+    if (params?.limit) qs.push(`limit=${params.limit}`);
+    if (params?.offset) qs.push(`offset=${params.offset}`);
+    if (params?.tipo) qs.push(`tipo=${encodeURIComponent(params.tipo)}`);
+    if (params?.disciplina) qs.push(`disciplina=${encodeURIComponent(params.disciplina)}`);
+    if (qs.length) path += `?${qs.join('&')}`;
+    return request(path, {}, token);
+  },
+
+  getKoreStats: (token: string) => request('/kore/stats', {}, token),
 };

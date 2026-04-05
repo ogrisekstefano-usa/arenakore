@@ -1464,6 +1464,32 @@ async def complete_challenge(data: ChallengeComplete, current_user: dict = Depen
     # Award AK Credits for scan completion
     await award_ak_credits(current_user["_id"], "nexus_scan")
 
+    # ── PERFORMANCE RECORD: Persist full metadata ──
+    is_coach_template = bool(data.template_push_id)
+    tmpl_name = None
+    tmpl_coach_id = None
+    if is_coach_template and 'push_doc' in dir() and push_doc:
+        tmpl_name = push_doc.get("template_name")
+        tmpl_coach_id = str(push_doc.get("coach_id")) if push_doc.get("coach_id") else None
+    await save_performance_record(
+        user_id=current_user["_id"],
+        username=current_user.get("username", "Kore"),
+        tipo="COACH_PROGRAM" if is_coach_template else "ALLENAMENTO",
+        modalita="INDIVIDUALE",
+        disciplina=current_user.get("sport", "Fitness"),
+        exercise_type="session",
+        kpi={
+            "primary_result": {"type": "REPS", "value": data.reps_completed or 0, "unit": "rep"},
+            "quality_score": data.quality_score or 0,
+        },
+        is_certified=is_coach_template,
+        template_name=tmpl_name,
+        coach_id=tmpl_coach_id,
+        validation_status="AI_VERIFIED" if is_coach_template else "UNVERIFIED",
+        flux_earned=total_xp,
+        extra_meta={"duration_seconds": duration},
+    )
+
     return {
         "duration_seconds": duration,
         "xp_earned": total_xp,
@@ -1969,6 +1995,12 @@ async def seed_data():
     logger.info("[NotifEngine] Scheduler started — running every 6h")
     logger.info("[DuelEnforcer] Scheduler started — running every 1h")
     logger.info("[QR-Enforcer] Scheduler started — running every 15min")
+
+    # ── Performance Records Indexes ──
+    await db.performance_records.create_index([("user_id", 1), ("completed_at", -1)])
+    await db.performance_records.create_index([("user_id", 1), ("tipo", 1)])
+    await db.performance_records.create_index([("user_id", 1), ("disciplina", 1)])
+
     # THE FOUNDER PROTOCOL — Retroactive badge for first 100 users
     founder_count = await db.users.count_documents({"is_founder": True})
     if founder_count == 0:
@@ -2691,6 +2723,27 @@ async def contribute_to_crew_battle(battle_id: str, data: BattleContributeReques
                         "icon": "warning", "color": "#FF9500",
                         "read": False, "created_at": now,
                     })
+
+    # ── PERFORMANCE RECORD: Persist Crew Battle contribution ──
+    my_crew_id = str(battle["crew_a_id"]) if in_a else str(battle["crew_b_id"])
+    await save_performance_record(
+        user_id=current_user["_id"],
+        username=current_user.get("username", "Kore"),
+        tipo="CREW_BATTLE",
+        modalita="CREW",
+        crew_id=my_crew_id,
+        disciplina=current_user.get("sport", "Fitness"),
+        exercise_type=data.exercise_type,
+        kpi={
+            "primary_result": {"type": "PUNTEGGIO", "value": contribution_pts, "unit": "pts"},
+            "quality_score": data.quality_score,
+        },
+        is_certified=False,
+        validation_status="AI_VERIFIED",
+        flux_earned=0,
+        source_id=battle_id,
+        source_collection="crew_battles",
+    )
 
     return {
         "status": "contributed",
@@ -5685,7 +5738,33 @@ async def submit_pvp_result(challenge_id: str, data: PvPSubmitRequest, current_u
     # Award AK Credits for PvP win
     if winner_id == current_user["_id"]:
         await award_ak_credits(winner_id, "pvp_win")
-    
+
+    # ── PERFORMANCE RECORD: Persist PvP Duel ──
+    await save_performance_record(
+        user_id=current_user["_id"],
+        username=current_user.get("username", "Kore"),
+        tipo="DUELLO",
+        modalita="INDIVIDUALE",
+        disciplina=ch.get("discipline", "Fitness"),
+        exercise_type=ch.get("discipline", "squat"),
+        kpi={
+            "primary_result": {"type": "REPS", "value": data.reps, "unit": "rep"},
+            "quality_score": data.quality_score,
+            "explosivity_pct": data.peak_acceleration,
+        },
+        is_certified=False,
+        validation_status="AI_VERIFIED",
+        flux_earned=winner_xp_gain if is_winner else -loser_xp_loss,
+        source_id=challenge_id,
+        source_collection="pvp_challenges",
+        extra_meta={
+            "pvp_score": pvp_score,
+            "opponent_score": challenger_score,
+            "is_winner": is_winner,
+            "duration_seconds": data.duration_seconds,
+        },
+    )
+
     return {
         "your_score": pvp_score,
         "opponent_score": challenger_score,
@@ -5909,6 +5988,32 @@ async def complete_nexus_session_v2(data: SessionCompleteRequest, current_user: 
     await db.users.update_one({"_id": user_id}, {"$inc": {"xp": xp_earned}})
 
     updated_user = await db.users.find_one({"_id": user_id})
+
+    # ── PERFORMANCE RECORD: Persist Nexus session ──
+    tipo_session = "LIVE_ARENA" if data.mode == "ranked" else "ALLENAMENTO"
+    await save_performance_record(
+        user_id=user_id,
+        username=current_user.get("username", "Kore"),
+        tipo=tipo_session,
+        modalita="INDIVIDUALE",
+        disciplina=current_user.get("sport", "Fitness"),
+        exercise_type=data.exercise_type,
+        kpi={
+            "primary_result": {"type": "REPS", "value": data.reps, "unit": "rep"},
+            "quality_score": data.quality_score,
+            "explosivity_pct": data.peak_acceleration,
+        },
+        is_certified=False,
+        validation_status="AI_VERIFIED",
+        flux_earned=flux_earned,
+        source_collection="nexus_sessions",
+        extra_meta={
+            "mode": data.mode,
+            "pvp_score": pvp_score,
+            "duration_seconds": data.duration_seconds,
+            "is_personal_best": session_doc.get("is_personal_best", False),
+        },
+    )
 
     return {
         "status": "completed",
@@ -6145,6 +6250,40 @@ async def complete_challenge_engine(data: ChallengeEngineComplete, current_user:
             "proximity_witness": proximity_result,
         },
     }})
+
+    # ── PERFORMANCE RECORD: Persist full metadata ──
+    ch_mode = challenge.get("mode", "personal")
+    primary_type = "TEMPO" if seconds > 0 else ("REPS" if reps > 0 else "PUNTEGGIO")
+    primary_value = seconds if seconds > 0 else (reps if reps > 0 else quality)
+    primary_unit = "sec" if seconds > 0 else ("rep" if reps > 0 else "%")
+    await save_performance_record(
+        user_id=user_id,
+        username=current_user.get("username", "Kore"),
+        tipo="DUELLO" if ch_mode == "duel" else "ALLENAMENTO",
+        modalita="INDIVIDUALE",
+        disciplina=user_doc.get("sport", "Fitness") if user_doc else "Fitness",
+        exercise_type=challenge.get("exercise_type", "squat"),
+        kpi={
+            "primary_result": {"type": primary_type, "value": primary_value, "unit": primary_unit},
+            "quality_score": quality,
+            "rom_pct": None,
+            "explosivity_pct": None,
+            "power_output": data.speed_kmh,
+            "heart_rate_avg": data.bpm_avg,
+            "heart_rate_peak": data.bpm_peak,
+        },
+        is_certified=False,
+        validation_status=verification_status,
+        flux_earned=earned_flux,
+        source_id=data.challenge_id,
+        source_collection="challenges_engine",
+        extra_meta={
+            "tags": tags,
+            "dominant_tag": dominant_tag,
+            "ranked_eligible": ranked_eligible,
+            "integrity_ok": integrity_ok,
+        },
+    )
 
     return {
         "status": "completed",
@@ -7435,6 +7574,27 @@ async def complete_nexus_session(session_id: str, body: dict, current_user: dict
     }})
 
     updated_user = await db.users.find_one({"_id": current_user["_id"]})
+
+    # ── PERFORMANCE RECORD: Persist legacy session ──
+    await save_performance_record(
+        user_id=current_user["_id"],
+        username=current_user.get("username", "Kore"),
+        tipo="ALLENAMENTO",
+        modalita="INDIVIDUALE",
+        disciplina=current_user.get("sport", "Fitness"),
+        exercise_type=exercise_type,
+        kpi={
+            "primary_result": {"type": "REPS", "value": reps, "unit": "rep"},
+            "quality_score": quality_score,
+            "explosivity_pct": peak_acceleration,
+        },
+        is_certified=False,
+        validation_status="AI_VERIFIED",
+        flux_earned=total_xp,
+        source_id=session_id,
+        source_collection="nexus_sessions",
+        extra_meta={"duration_seconds": duration_seconds, "records_broken": records_broken},
+    )
 
     return {
         "session_id": session_id,
@@ -9935,6 +10095,33 @@ async def ugc_complete_challenge(challenge_id: str, body: UGCCompleteBody, curre
     }
     await db.ugc_completions.insert_one(completion_doc)
 
+    # ── PERFORMANCE RECORD: Persist full metadata for KORE tab ──
+    ugc_discipline = ch.get("discipline", "Fitness")
+    await save_performance_record(
+        user_id=current_user["_id"],
+        username=current_user.get("username", "Kore"),
+        tipo="SFIDA_UGC",
+        modalita="INDIVIDUALE",
+        disciplina=ugc_discipline,
+        exercise_type=exercises[0].get("name", "esercizio") if exercises else "esercizio",
+        kpi={
+            "primary_result": {"type": "REPS", "value": body.total_reps, "unit": "rep"},
+            "quality_score": body.avg_quality,
+        },
+        is_certified=is_master_template,
+        template_name=ch.get("title"),
+        validation_status=validation_status,
+        flux_earned=flux_earned,
+        source_id=challenge_id,
+        source_collection="ugc_challenges",
+        extra_meta={
+            "completion_ratio": round(completion_ratio, 2),
+            "creator_role": creator_role,
+            "duration_seconds": body.duration_seconds,
+            "motion_tracked": body.motion_tracked,
+        },
+    )
+
     # ── DISCIPLINE SILO RANKING ──
     discipline = ch.get("discipline", "Fitness")
 
@@ -10529,6 +10716,272 @@ async def get_crew_battle_live_state(battle_id: str, current_user: dict = Depend
 
 # Also add crew challenge FLUX fee to /battles/crew/challenge
 # (Already exists but need to add FLUX deduction)
+
+
+# ═══════════════════════════════════════════════════════════
+#  PERFORMANCE RECORDS — Unified Data Persistence for KORE Tab
+# ═══════════════════════════════════════════════════════════
+
+PERFORMANCE_TIPOS = {
+    "ALLENAMENTO",      # Standard nexus scan / session
+    "SFIDA_UGC",        # UGC Challenge
+    "LIVE_ARENA",       # Live Arena matchup
+    "COACH_PROGRAM",    # Coach Template / Training Session
+    "CREW_BATTLE",      # Crew Battle contribution
+    "DUELLO",           # PvP Duel
+}
+
+PERFORMANCE_MODALITA = {"INDIVIDUALE", "CREW"}
+
+
+async def save_performance_record(
+    user_id,
+    username: str,
+    tipo: str,
+    modalita: str = "INDIVIDUALE",
+    crew_id: str = None,
+    disciplina: str = "Fitness",
+    exercise_type: str = "squat",
+    snapshots: dict = None,
+    kpi: dict = None,
+    is_certified: bool = False,
+    template_name: str = None,
+    coach_id: str = None,
+    validation_status: str = "UNVERIFIED",
+    flux_earned: int = 0,
+    source_id: str = None,
+    source_collection: str = None,
+    completed_at: datetime = None,
+    extra_meta: dict = None,
+):
+    """
+    Central helper — persists a full performance record to the
+    `performance_records` collection. Called from every completion endpoint.
+    """
+    now = completed_at or datetime.now(timezone.utc)
+
+    # Normalize KPI block
+    kpi_block = kpi or {}
+    record = {
+        "user_id": user_id if isinstance(user_id, ObjectId) else ObjectId(user_id),
+        "username": username,
+        "tipo": tipo if tipo in PERFORMANCE_TIPOS else "ALLENAMENTO",
+        "modalita": modalita if modalita in PERFORMANCE_MODALITA else "INDIVIDUALE",
+        "crew_id": crew_id,
+        "disciplina": disciplina,
+        "exercise_type": exercise_type,
+        "snapshots": {
+            "start": (snapshots or {}).get("start"),
+            "peak": (snapshots or {}).get("peak"),
+            "finish": (snapshots or {}).get("finish"),
+        },
+        "kpi": {
+            "primary_result": kpi_block.get("primary_result", {"type": "REPS", "value": 0, "unit": "rep"}),
+            "rom_pct": kpi_block.get("rom_pct"),
+            "explosivity_pct": kpi_block.get("explosivity_pct"),
+            "power_output": kpi_block.get("power_output"),
+            "heart_rate_avg": kpi_block.get("heart_rate_avg"),
+            "heart_rate_peak": kpi_block.get("heart_rate_peak"),
+            "quality_score": kpi_block.get("quality_score", 0),
+        },
+        "is_certified": is_certified,
+        "template_name": template_name,
+        "coach_id": coach_id,
+        "validation_status": validation_status,
+        "flux_earned": flux_earned,
+        "source_id": source_id,
+        "source_collection": source_collection,
+        "completed_at": now,
+        "created_at": datetime.now(timezone.utc),
+    }
+    if extra_meta:
+        record["meta"] = extra_meta
+
+    result = await db.performance_records.insert_one(record)
+    return str(result.inserted_id)
+
+
+class PerformanceRecordBody(BaseModel):
+    """Frontend-initiated full performance record save"""
+    tipo: str = "ALLENAMENTO"
+    modalita: str = "INDIVIDUALE"
+    crew_id: Optional[str] = None
+    disciplina: str = "Fitness"
+    exercise_type: str = "squat"
+    snapshots: Optional[dict] = None           # {start, peak, finish}
+    kpi: Optional[dict] = None                 # {primary_result, rom_pct, explosivity_pct, ...}
+    is_certified: bool = False
+    template_name: Optional[str] = None
+    coach_id: Optional[str] = None
+    validation_status: str = "UNVERIFIED"
+    flux_earned: int = 0
+    source_id: Optional[str] = None            # original challenge/session ID
+    source_collection: Optional[str] = None    # "challenges_engine" | "nexus_sessions" | etc.
+    duration_seconds: Optional[int] = None
+    extra_meta: Optional[dict] = None
+
+
+@api_router.post("/performance/record")
+async def create_performance_record(body: PerformanceRecordBody, current_user: dict = Depends(get_current_user)):
+    """
+    Frontend calls this AFTER a challenge is completed, enriching
+    the record with snapshots and client-side KPI data.
+    """
+    record_id = await save_performance_record(
+        user_id=current_user["_id"],
+        username=current_user.get("username", "Kore"),
+        tipo=body.tipo,
+        modalita=body.modalita,
+        crew_id=body.crew_id,
+        disciplina=body.disciplina,
+        exercise_type=body.exercise_type,
+        snapshots=body.snapshots,
+        kpi=body.kpi,
+        is_certified=body.is_certified,
+        template_name=body.template_name,
+        coach_id=body.coach_id,
+        validation_status=body.validation_status,
+        flux_earned=body.flux_earned,
+        source_id=body.source_id,
+        source_collection=body.source_collection,
+        extra_meta={
+            **(body.extra_meta or {}),
+            "duration_seconds": body.duration_seconds,
+        },
+    )
+    return {"status": "saved", "record_id": record_id}
+
+
+@api_router.get("/kore/history")
+async def get_kore_history(
+    limit: int = Query(50, le=200),
+    offset: int = Query(0, ge=0),
+    tipo: Optional[str] = Query(None),
+    disciplina: Optional[str] = Query(None),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Returns the full performance timeline for the KORE tab.
+    Supports optional filters by tipo and disciplina.
+    """
+    user_id = current_user["_id"]
+    match_filter: dict = {"user_id": user_id}
+    if tipo and tipo in PERFORMANCE_TIPOS:
+        match_filter["tipo"] = tipo
+    if disciplina:
+        match_filter["disciplina"] = disciplina
+
+    cursor = db.performance_records.find(match_filter).sort("completed_at", -1).skip(offset).limit(limit)
+    records = await cursor.to_list(limit)
+
+    total = await db.performance_records.count_documents(match_filter)
+
+    items = []
+    for r in records:
+        items.append({
+            "id": str(r["_id"]),
+            "tipo": r.get("tipo", "ALLENAMENTO"),
+            "modalita": r.get("modalita", "INDIVIDUALE"),
+            "crew_id": r.get("crew_id"),
+            "disciplina": r.get("disciplina", "Fitness"),
+            "exercise_type": r.get("exercise_type", "squat"),
+            "snapshots": r.get("snapshots", {}),
+            "kpi": r.get("kpi", {}),
+            "is_certified": r.get("is_certified", False),
+            "template_name": r.get("template_name"),
+            "validation_status": r.get("validation_status", "UNVERIFIED"),
+            "flux_earned": r.get("flux_earned", 0),
+            "completed_at": r["completed_at"].isoformat() if r.get("completed_at") else None,
+            "meta": r.get("meta", {}),
+        })
+
+    # ── Aggregate stats ──
+    pipeline_stats = [
+        {"$match": {"user_id": user_id}},
+        {"$group": {
+            "_id": None,
+            "total_sessions": {"$sum": 1},
+            "total_flux": {"$sum": "$flux_earned"},
+            "avg_quality": {"$avg": "$kpi.quality_score"},
+            "certified_count": {"$sum": {"$cond": ["$is_certified", 1, 0]}},
+        }},
+    ]
+    stats_result = await db.performance_records.aggregate(pipeline_stats).to_list(1)
+    stats = stats_result[0] if stats_result else {"total_sessions": 0, "total_flux": 0, "avg_quality": 0, "certified_count": 0}
+    stats.pop("_id", None)
+    if stats.get("avg_quality") is not None:
+        stats["avg_quality"] = round(stats["avg_quality"], 1)
+
+    # ── Per-discipline breakdown ──
+    pipeline_disc = [
+        {"$match": {"user_id": user_id}},
+        {"$group": {"_id": "$disciplina", "count": {"$sum": 1}, "flux": {"$sum": "$flux_earned"}}},
+        {"$sort": {"count": -1}},
+    ]
+    disc_breakdown = []
+    async for d in db.performance_records.aggregate(pipeline_disc):
+        disc_breakdown.append({"disciplina": d["_id"], "count": d["count"], "flux": d["flux"]})
+
+    return {
+        "records": items,
+        "total": total,
+        "stats": stats,
+        "discipline_breakdown": disc_breakdown,
+    }
+
+
+@api_router.get("/kore/stats")
+async def get_kore_stats(current_user: dict = Depends(get_current_user)):
+    """Quick aggregate stats for the KORE dashboard header."""
+    user_id = current_user["_id"]
+
+    pipeline = [
+        {"$match": {"user_id": user_id}},
+        {"$group": {
+            "_id": None,
+            "total_sessions": {"$sum": 1},
+            "total_flux": {"$sum": "$flux_earned"},
+            "avg_quality": {"$avg": "$kpi.quality_score"},
+            "certified_count": {"$sum": {"$cond": ["$is_certified", 1, 0]}},
+            "best_quality": {"$max": "$kpi.quality_score"},
+            "total_reps": {"$sum": "$kpi.primary_result.value"},
+        }},
+    ]
+    result = await db.performance_records.aggregate(pipeline).to_list(1)
+    stats = result[0] if result else {}
+    stats.pop("_id", None)
+    if stats.get("avg_quality") is not None:
+        stats["avg_quality"] = round(stats["avg_quality"], 1)
+
+    # Per-tipo breakdown
+    pipeline_tipo = [
+        {"$match": {"user_id": user_id}},
+        {"$group": {"_id": "$tipo", "count": {"$sum": 1}}},
+    ]
+    tipo_map = {}
+    async for t in db.performance_records.aggregate(pipeline_tipo):
+        tipo_map[t["_id"]] = t["count"]
+
+    # Weekly trend (last 7 days)
+    week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    pipeline_weekly = [
+        {"$match": {"user_id": user_id, "completed_at": {"$gte": week_ago}}},
+        {"$group": {
+            "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$completed_at"}},
+            "count": {"$sum": 1},
+            "flux": {"$sum": "$flux_earned"},
+        }},
+        {"$sort": {"_id": 1}},
+    ]
+    weekly = []
+    async for w in db.performance_records.aggregate(pipeline_weekly):
+        weekly.append({"date": w["_id"], "count": w["count"], "flux": w["flux"]})
+
+    return {
+        "stats": stats,
+        "tipo_breakdown": tipo_map,
+        "weekly_trend": weekly,
+    }
 
 
 app.include_router(api_router)
