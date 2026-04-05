@@ -313,48 +313,47 @@ export default function KoreTab() {
           )}
         </Animated.View>
 
-        {/* ═══ DISCIPLINE SELECTOR ═══ */}
-        <Animated.View entering={FadeInDown.delay(70).duration(400)}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={dsc.scroll}>
-            <TouchableOpacity
-              style={[dsc.chip, !activeDiscipline && dsc.chipActive]}
-              onPress={() => { setActiveDiscipline(null); Haptics.selectionAsync().catch(() => {}); }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="grid" size={13} color={!activeDiscipline ? '#0A0A0A' : 'rgba(255,255,255,0.45)'} />
-              <Text style={[dsc.chipText, !activeDiscipline && dsc.chipTextActive]}>TUTTI</Text>
-            </TouchableOpacity>
-            {DISCIPLINES.map(d => {
-              const active = activeDiscipline === d.key;
-              return (
-                <TouchableOpacity
-                  key={d.key}
-                  style={[dsc.chip, active && { backgroundColor: d.color, borderColor: d.color }]}
-                  onPress={() => { setActiveDiscipline(d.key); Haptics.selectionAsync().catch(() => {}); }}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name={d.icon} size={13} color={active ? '#0A0A0A' : d.color} />
-                  <Text style={[dsc.chipText, active && { color: '#0A0A0A' }]}>{d.key.toUpperCase()}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
+        {/* ═══ DNA RADAR — Identità Biometrica ═══ */}
+        <Animated.View entering={FadeInDown.delay(70).duration(400)} style={dna.section}>
+          <View style={dna.radarCard}>
+            <LinearGradient colors={['rgba(0,229,255,0.04)', 'transparent']} style={StyleSheet.absoluteFillObject} />
+            <View style={dna.radarHeader}>
+              <View style={dna.radarBadge}>
+                <Ionicons name="analytics" size={14} color="#00E5FF" />
+                <Text style={dna.radarBadgeText}>DNA RADAR</Text>
+              </View>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/dna')} activeOpacity={0.7}>
+                <Text style={dna.viewAll}>VEDI TUTTO →</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={dna.statsRow}>
+              <View style={dna.statItem}>
+                <Text style={dna.statValue}>{user?.dna?.avg_dna || '—'}</Text>
+                <Text style={dna.statLabel}>DNA SCORE</Text>
+              </View>
+              <View style={dna.statDivider} />
+              <View style={dna.statItem}>
+                <Text style={[dna.statValue, { color: '#FFD700' }]}>{user?.dna?.peak_power || '—'}</Text>
+                <Text style={dna.statLabel}>PEAK POWER</Text>
+              </View>
+              <View style={dna.statDivider} />
+              <View style={dna.statItem}>
+                <Text style={[dna.statValue, { color: '#00FF87' }]}>{user?.dna?.endurance || '—'}</Text>
+                <Text style={dna.statLabel}>ENDURANCE</Text>
+              </View>
+            </View>
+            <View style={dna.actionRow}>
+              <TouchableOpacity style={dna.scanBtn} onPress={() => router.push('/(tabs)/nexus-trigger')} activeOpacity={0.85}>
+                <Ionicons name="scan" size={14} color="#000" />
+                <Text style={dna.scanBtnText}>NUOVA SCANSIONE</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={dna.idBtn} onPress={() => setKoreIdVisible(true)} activeOpacity={0.85}>
+                <Ionicons name="person-circle" size={14} color="#00E5FF" />
+                <Text style={dna.idBtnText}>KORE ID</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </Animated.View>
-
-        {/* ═══ 4 DYNAMIC CARDS ═══ */}
-        <View style={s.grid}>
-          {CARDS.map((c, i) => (
-            <DynamicNeonCard
-              key={c.key}
-              images={c.images}
-              label={c.label}
-              sub={c.sub}
-              color={c.color}
-              onPress={c.onPress}
-              index={i}
-            />
-          ))}
-        </View>
 
         {/* ═══ QUICK STATS ═══ */}
         <Animated.View entering={FadeInDown.delay(500).duration(400)} style={qs.container}>
@@ -740,4 +739,44 @@ const dsc = StyleSheet.create({
     letterSpacing: 1, fontFamily: FONT_J,
   },
   chipTextActive: { color: '#0A0A0A' },
+});
+
+// ── DNA RADAR ──
+const dna = StyleSheet.create({
+  section: { marginBottom: 16 },
+  radarCard: {
+    borderRadius: 18, overflow: 'hidden',
+    backgroundColor: '#121212',
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.08)',
+    padding: 16, gap: 14,
+  },
+  radarHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  radarBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: 'rgba(0,229,255,0.06)', borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)',
+  },
+  radarBadgeText: { color: '#00E5FF', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  viewAll: { color: 'rgba(0,229,255,0.5)', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+  statsRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
+    paddingVertical: 8,
+  },
+  statItem: { alignItems: 'center', gap: 3 },
+  statValue: { color: '#00E5FF', fontSize: 26, fontWeight: '900', fontFamily: FONT_J },
+  statLabel: { color: 'rgba(255,255,255,0.18)', fontSize: 8, fontWeight: '800', letterSpacing: 2 },
+  statDivider: { width: 1, height: 30, backgroundColor: 'rgba(255,255,255,0.04)' },
+  actionRow: { flexDirection: 'row', gap: 10 },
+  scanBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    backgroundColor: '#00E5FF', borderRadius: 12, paddingVertical: 10,
+  },
+  scanBtnText: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
+  idBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    backgroundColor: 'rgba(0,229,255,0.06)', borderRadius: 12, paddingVertical: 10,
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)',
+  },
+  idBtnText: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J },
 });

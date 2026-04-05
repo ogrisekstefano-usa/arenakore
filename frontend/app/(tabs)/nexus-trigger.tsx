@@ -7,14 +7,14 @@ import { TAB_BACKGROUNDS } from '../../utils/images';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, TouchableOpacity,
-  Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput,
+  Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput, Image, Share,
 } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming,
-  useAnimatedStyle, withSpring, withDelay, Easing, interpolate,
-  FadeIn, FadeInDown,
+  useAnimatedStyle, withSpring, withDelay, Easing, interpolate, interpolateColor,
+  FadeIn, FadeInDown, FadeInUp,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Text as SvgText, Polygon } from 'react-native-svg';
@@ -48,6 +48,8 @@ import { CertifiedByPros } from '../../components/training/CertifiedByPros';
 import { TiltGuideOverlay } from '../../components/TiltGuideOverlay';
 import { ChallengeEngine } from '../../components/challenge/ChallengeEngine';
 import { PostRaceValidation } from '../../components/challenge/PostRaceValidation';
+import { QRScannerModal } from '../../components/QRScannerModal';
+import { ChallengePreviewModal } from '../../components/ChallengePreviewModal';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -444,41 +446,54 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
 }) {
   const router = useRouter();
   const { width: screenWidth } = Dimensions.get('window');
-  const cardW = Math.max(Math.min((screenWidth - 60) / 2, 175), 140);
   const isFounder = user?.is_founder || user?.is_admin;
   const founderShimmer = useSharedValue(0.7);
   useEffect(() => { founderShimmer.value = withRepeat(withSequence(withTiming(1, { duration: 1500 }), withTiming(0.7, { duration: 1500 })), -1, false); }, []);
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: founderShimmer.value }));
 
-  const CONSOLE_ICONS: Record<string, { ionName: keyof typeof Ionicons.glyphMap; color: string }> = {
-    scan:     { ionName: 'scan',        color: '#007AFF' },
-    practice: { ionName: 'barbell',     color: '#34C759' },
-    ranked:   { ionName: 'trophy',      color: '#FF9500' },
-    duel:     { ionName: 'flash',       color: '#FF3B30' },
-    live:     { ionName: 'radio',       color: '#007AFF' },
-    forge:    { ionName: 'construct',   color: '#FFD700' },
-  };
-  const buttons = [
-    { key: 'scan',     title: 'SCAN\nBIOMETRICO',      sub: 'DNA Tracking · 0 Risk',               action: onScan },
-    { key: 'practice', title: 'ALLENAMENTO',            sub: 'Practice · +5 FLUX/session',          action: () => onPillarAction('practice') },
-    { key: 'ranked',   title: 'SFIDA\nUFFICIALE',       sub: 'Ranked · +50 FLUX / -20 loss',        action: () => onPillarAction('ranked') },
-    { key: 'duel',     title: 'DUELLO\n1VS1',           sub: '48h timer · -50 no-show',             action: () => onPillarAction('duel') },
-    { key: 'live',     title: 'LIVE\nARENA',            sub: 'Real-time · Waiting Room',            action: () => onPillarAction('live') },
-    { key: 'forge',    title: 'THE\nFORGE',             sub: 'Crea · Gestisci · Sfida',             action: onForge },
+  // ─── 4 DEFINITIVE CARDS ───
+  const NEXUS_CARDS = [
+    {
+      key: 'sfida', label: 'SFIDA', sub: 'Mettiti alla prova.',
+      color: '#FF3B30', icon: 'flame' as keyof typeof Ionicons.glyphMap,
+      images: [
+        'https://images.unsplash.com/photo-1636581563711-cd454f1bf99a?w=600&q=50',
+        'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600&q=50',
+        'https://images.unsplash.com/photo-1663791088119-07535b0fafeb?w=600&q=50',
+      ],
+      action: () => { onPillarAction('sfida_hub'); },
+    },
+    {
+      key: 'live', label: 'LIVE', sub: 'Entra in Arena.',
+      color: '#FFD700', icon: 'radio' as keyof typeof Ionicons.glyphMap,
+      images: [
+        'https://images.unsplash.com/photo-1599995730539-695f5717b24c?w=600&q=50',
+        'https://images.unsplash.com/photo-1577416412292-747c6607f055?w=600&q=50',
+        'https://images.unsplash.com/photo-1519879709058-11082644047d?w=600&q=50',
+      ],
+      action: () => { onPillarAction('live'); },
+    },
+    {
+      key: 'coach', label: 'COACH', sub: 'Trova la tua Guida.',
+      color: '#00FF87', icon: 'school' as keyof typeof Ionicons.glyphMap,
+      images: [
+        'https://images.unsplash.com/photo-1548690312-e3b507d8c110?w=600&q=50',
+        'https://images.unsplash.com/photo-1550345332-09e3ac987658?w=600&q=50',
+        'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&q=50',
+      ],
+      action: () => { onPillarAction('coach_hub'); },
+    },
+    {
+      key: 'scanSync', label: 'SCAN & SYNC', sub: 'Connettiti al Mondo.',
+      color: '#00E5FF', icon: 'qr-code' as keyof typeof Ionicons.glyphMap,
+      images: [
+        'https://images.unsplash.com/photo-1656785139062-0a4f174467a4?w=600&q=50',
+        'https://images.unsplash.com/photo-1601113329251-0aebe217bdbe?w=600&q=50',
+        'https://images.unsplash.com/photo-1652532678111-85849708e1f4?w=600&q=50',
+      ],
+      action: () => { onPillarAction('scan_sync'); },
+    },
   ];
-
-  // Pillar risk/reward indicator
-  const getRiskTag = (key: string) => {
-    switch (key) {
-      case 'scan': return { tag: 'ZERO RISK', color: '#00E5FF' };
-      case 'practice': return { tag: '+5 FLUX', color: '#00FF87' };
-      case 'ranked': return { tag: 'HIGH STAKES', color: '#FFD700' };
-      case 'duel': return { tag: '48H TIMER', color: '#FF3B30' };
-      case 'live': return { tag: 'REAL-TIME', color: '#FF6B00' };
-      case 'forge': return { tag: 'CREATE', color: '#FFD700' };
-      default: return { tag: '', color: '#555' };
-    }
-  };
 
   return (
     <View style={cn$.container} testID="nexus-console">
@@ -490,17 +505,14 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
         ) : undefined
       } />
       <SafeAreaView style={cn$.safe} edges={['left', 'right', 'bottom']}>
-        {/* Tier indicator below header */}
+        {/* Tier indicator */}
         <View style={cn$.tierBar}>
           <View style={cn$.tierDot} /><Text style={cn$.tierText}>{getTierLabel(deviceTier)}</Text>
         </View>
         <ScrollView style={cn$.scroll} contentContainerStyle={cn$.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* Bio-Scan Eligibility Status */}
+          {/* Bio-Scan Eligibility */}
           {eligibility && (
-            <View style={[
-              cn$.eligBanner,
-              eligibility.can_scan ? cn$.eligBannerActive : cn$.eligBannerLocked,
-            ]}>
+            <View style={[cn$.eligBanner, eligibility.can_scan ? cn$.eligBannerActive : cn$.eligBannerLocked]}>
               <Ionicons
                 name={eligibility.can_scan ? 'scan' : eligibility.phase === 'locked' ? 'lock-closed' : 'time-outline'}
                 size={12}
@@ -509,54 +521,157 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
               <Text style={[cn$.eligText, eligibility.can_scan ? cn$.eligTextActive : cn$.eligTextLocked]}>
                 {eligibility.message}
               </Text>
-              {eligibility.can_scan && (
-                <View style={cn$.eligReadyDot} />
-              )}
+              {eligibility.can_scan && <View style={cn$.eligReadyDot} />}
             </View>
           )}
 
-          {/* ═══ 6-PILLAR GRID (2x3) ═══ */}
-          <View style={cn$.grid}>
-            {buttons.map((btn) => {
-              const icon = CONSOLE_ICONS[btn.key];
-              const risk = getRiskTag(btn.key);
-              return (
-                <TouchableOpacity key={btn.key} style={[cn$.card, { width: cardW }]} activeOpacity={0.82} onPress={btn.action}>
-                  <View style={[cn$.cardInner, { borderColor: icon.color + '22', minHeight: cardW * 1.1 }]}>
-                    {/* Icon Circle */}
-                    <View style={[cn$.cardIconWrap, { backgroundColor: icon.color + '12' }]}>
-                      <Ionicons name={icon.ionName} size={30} color={icon.color} />
-                    </View>
-                    {/* Title + Sub */}
-                    <View style={cn$.cardContent}>
-                      <Text style={[cn$.cardTitle, { color: icon.color }]} numberOfLines={2}>{btn.title}</Text>
-                      <Text style={cn$.cardSub} numberOfLines={2}>{btn.sub}</Text>
-                    </View>
-                    {/* Risk/Reward Tag */}
-                    <View style={[cn$.riskTag, { borderColor: risk.color + '44' }]}>
-                      <View style={[cn$.riskDot, { backgroundColor: risk.color }]} />
-                      <Text style={[cn$.riskText, { color: risk.color }]}>{risk.tag}</Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
+          {/* ═══ 4 DEFINITIVE CARDS (2x2 explicit rows) ═══ */}
+          <View style={{ flexDirection: 'row', marginTop: 12, gap: 10 }}>
+            <View style={{ flex: 1 }}>
+              <NexusHubCard
+                images={NEXUS_CARDS[0].images} label={NEXUS_CARDS[0].label} sub={NEXUS_CARDS[0].sub}
+                color={NEXUS_CARDS[0].color} icon={NEXUS_CARDS[0].icon} onPress={NEXUS_CARDS[0].action} index={0}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <NexusHubCard
+                images={NEXUS_CARDS[1].images} label={NEXUS_CARDS[1].label} sub={NEXUS_CARDS[1].sub}
+                color={NEXUS_CARDS[1].color} icon={NEXUS_CARDS[1].icon} onPress={NEXUS_CARDS[1].action} index={1}
+              />
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row', marginTop: 10, gap: 10 }}>
+            <View style={{ flex: 1 }}>
+              <NexusHubCard
+                images={NEXUS_CARDS[2].images} label={NEXUS_CARDS[2].label} sub={NEXUS_CARDS[2].sub}
+                color={NEXUS_CARDS[2].color} icon={NEXUS_CARDS[2].icon} onPress={NEXUS_CARDS[2].action} index={2}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <NexusHubCard
+                images={NEXUS_CARDS[3].images} label={NEXUS_CARDS[3].label} sub={NEXUS_CARDS[3].sub}
+                color={NEXUS_CARDS[3].color} icon={NEXUS_CARDS[3].icon} onPress={NEXUS_CARDS[3].action} index={3}
+              />
+            </View>
           </View>
 
-          <NexusProactiveCTAs
-            user={user}
-            eligibility={eligibility}
-            myRank={myRank}
-            myCrews={myCrews}
-            onScan={onScan}
-            onNavigate={(r) => router.push(r as any)}
-          />
+          {/* ═══ QUICK ACTION BAR ═══ */}
+          <View style={cn$.quickBar}>
+            <TouchableOpacity style={cn$.quickBtn} onPress={onScan} activeOpacity={0.8}>
+              <View style={[cn$.quickIcon, { backgroundColor: 'rgba(0,122,255,0.08)' }]}>
+                <Ionicons name="scan" size={16} color="#007AFF" />
+              </View>
+              <Text style={cn$.quickLabel}>BIOSCAN</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={cn$.quickBtn} onPress={onForge} activeOpacity={0.8}>
+              <View style={[cn$.quickIcon, { backgroundColor: 'rgba(255,215,0,0.08)' }]}>
+                <Ionicons name="construct" size={16} color="#FFD700" />
+              </View>
+              <Text style={cn$.quickLabel}>THE FORGE</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={cn$.quickBtn} onPress={() => onPillarAction('duel')} activeOpacity={0.8}>
+              <View style={[cn$.quickIcon, { backgroundColor: 'rgba(255,59,48,0.08)' }]}>
+                <Ionicons name="flash" size={16} color="#FF3B30" />
+              </View>
+              <Text style={cn$.quickLabel}>DUELLO</Text>
+            </TouchableOpacity>
+          </View>
+
+          <NexusProactiveCTAs user={user} eligibility={eligibility} myRank={myRank} myCrews={myCrews} onScan={onScan} onNavigate={(r) => router.push(r as any)} />
           <PvPPendingCard />
           <TrainingTemplateCard />
           <CertifiedByPros />
           <AIPromptBanner />
         </ScrollView>
       </SafeAreaView>
+    </View>
+  );
+}
+
+// ═══ NEXUS HUB CARD — Cross-fade images with neon aura ═══
+function NexusHubCard({
+  images, label, sub, color, icon, onPress, index,
+}: {
+  images: string[]; label: string; sub: string; color: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  onPress: () => void; index: number;
+}) {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const fadeA = useSharedValue(1);
+  const fadeB = useSharedValue(0);
+  const showA = useRef(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (showA.current) {
+        fadeB.value = withTiming(1, { duration: 900, easing: Easing.inOut(Easing.ease) });
+        fadeA.value = withTiming(0, { duration: 900, easing: Easing.inOut(Easing.ease) });
+      } else {
+        fadeA.value = withTiming(1, { duration: 900, easing: Easing.inOut(Easing.ease) });
+        fadeB.value = withTiming(0, { duration: 900, easing: Easing.inOut(Easing.ease) });
+      }
+      showA.current = !showA.current;
+      setActiveIdx(prev => (prev + 1) % images.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  const styleA = useAnimatedStyle(() => ({ opacity: fadeA.value }));
+  const styleB = useAnimatedStyle(() => ({ opacity: fadeB.value }));
+
+  const pulse = useSharedValue(0);
+  useEffect(() => {
+    pulse.value = withDelay(
+      index * 200,
+      withRepeat(withSequence(
+        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+      ), -1, true),
+    );
+  }, []);
+
+  const glowStyle = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(pulse.value, [0, 1], [color + '20', color + '80']),
+    ...Platform.select({
+      web: { boxShadow: `0 0 ${4 + pulse.value * 12}px ${color}${Math.round(10 + pulse.value * 30).toString(16).padStart(2, '0')}` },
+      default: {},
+    }),
+  }));
+
+  const imgA = images[activeIdx];
+  const imgB = images[(activeIdx + 1) % images.length];
+
+  return (
+    <View style={cn$.hubCardOuter}>
+      <Animated.View entering={FadeInDown.delay(100 + index * 120).duration(500)}>
+        <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
+          <Animated.View style={[cn$.hubCard, glowStyle]}>
+            {/* Image A */}
+          <Animated.View style={[cn$.hubImgLayer, styleA]}>
+            <Image source={{ uri: imgA }} style={cn$.hubImg} resizeMode="cover" />
+          </Animated.View>
+          {/* Image B */}
+          <Animated.View style={[cn$.hubImgLayer, styleB]}>
+            <Image source={{ uri: imgB }} style={cn$.hubImg} resizeMode="cover" />
+          </Animated.View>
+          {/* Vignette */}
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.15)', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.92)']}
+            locations={[0, 0.25, 0.6, 1]}
+            style={StyleSheet.absoluteFillObject}
+          />
+          {/* Icon badge */}
+          <View style={[cn$.hubIconWrap, { backgroundColor: color + '18', borderColor: color + '30' }]}>
+            <Ionicons name={icon} size={14} color={color} />
+          </View>
+          {/* Content */}
+          <View style={cn$.hubContent}>
+            <Text style={[cn$.hubLabel, { color }]}>{label}</Text>
+            <Text style={cn$.hubSub}>{sub}</Text>
+          </View>
+        </Animated.View>
+      </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }
@@ -577,67 +692,98 @@ const cn$ = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 24, paddingBottom: 100 },
 
-  // ═══ 6-PILLAR GRID (2x3) ═══
+  // ═══ 4 DEFINITIVE CARDS (2x2) ═══
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
     marginTop: 12,
-  },
-  card: {
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  cardInner: {
-    flex: 1,
-    backgroundColor: '#121212',
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 14,
-    gap: 10,
     justifyContent: 'space-between',
   },
-  cardIconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
+  gridRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
+  },
+  hubCard: {
+    borderRadius: 18,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    backgroundColor: '#121212',
+    position: 'relative',
+    height: 190,
+  },
+  hubCardOuter: {
+    flex: 1,
+  },
+  hubImgLayer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
+  },
+  hubImg: {
+    width: '100%',
+    height: '100%',
+  },
+  hubIconWrap: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    zIndex: 5,
+  },
+  hubContent: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    gap: 2,
+    zIndex: 5,
+  },
+  hubLabel: {
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: 1.5,
+  },
+  hubSub: {
+    color: 'rgba(255,255,255,0.55)',
+    fontSize: 11,
+    fontWeight: '500',
+    letterSpacing: 0.3,
+  },
+
+  // ═══ QUICK ACTION BAR ═══
+  quickBar: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  quickBtn: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 10,
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
+  },
+  quickIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardContent: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    gap: 3,
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: '900',
-    letterSpacing: 1.5,
-    lineHeight: 18,
-  },
-  cardSub: {
-    color: 'rgba(255,255,255,0.40)',
-    fontSize: 11,
-    fontWeight: '500',
-    letterSpacing: 0.5,
-    lineHeight: 14,
-  },
-  riskTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  riskDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-  },
-  riskText: {
+  quickLabel: {
+    color: 'rgba(255,255,255,0.45)',
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 1.5,
@@ -1532,6 +1678,8 @@ export default function NexusTriggerScreen() {
   const [ugcExerciseReps, setUgcExerciseReps] = useState(0);
   const [ugcAllCompleted, setUgcAllCompleted] = useState(false);
   const ugcRepsPerExercise = useRef<{ name: string; reps_done: number; quality: number }[]>([]);
+  const [scannerFromNexus, setScannerFromNexus] = useState(false);
+  const [nexusChallengePreview, setNexusChallengePreview] = useState<any>(null);
   // Dopamine layer: FLUX Rain + Victory
   const [showDropsRain, setShowDropsRain] = useState(false);
   const [dropsEarned, setDropsEarned] = useState(0);
@@ -1938,6 +2086,11 @@ export default function NexusTriggerScreen() {
   // ═══ PILLAR ACTION HANDLER ═══
   const handlePillarAction = (key: string) => {
     switch (key) {
+      case 'sfida_hub':
+        // Opens the Challenge Engine for UGC creation / community challenges
+        setSessionMode('practice');
+        setPhase('challenge_engine');
+        break;
       case 'practice':
         setSessionMode('practice');
         setPhase('challenge_engine');
@@ -1947,12 +2100,18 @@ export default function NexusTriggerScreen() {
         setPhase('challenge_engine');
         break;
       case 'duel':
-        // Navigate to Duel Search screen
         router.push('/duel-search');
         break;
       case 'live':
-        // Navigate to Live Events screen
         router.push('/live-events');
+        break;
+      case 'coach_hub':
+        // Navigate to coach discovery / master templates
+        router.push('/reward-store');
+        break;
+      case 'scan_sync':
+        // Open Universal QR Scanner from NÈXUS
+        setScannerFromNexus(true);
         break;
       default:
         break;
@@ -2282,6 +2441,23 @@ export default function NexusTriggerScreen() {
         avgDna={bioscanResult?.avg_dna}
       />
       <BurgerMenu visible={showMenu} onClose={() => setShowMenu(false)} user={user} onLogout={logout} deviceTier={deviceTier} activeRole={activeRole} onRoleSwitch={setActiveRole} />
+
+      {/* ═══ SCAN & SYNC — Universal QR Scanner from NÈXUS ═══ */}
+      <QRScannerModal
+        visible={scannerFromNexus}
+        onClose={() => setScannerFromNexus(false)}
+        onUserFound={() => {}}
+        onChallengeFound={(challengeData: any) => {
+          setScannerFromNexus(false);
+          setNexusChallengePreview(challengeData);
+        }}
+      />
+      <ChallengePreviewModal
+        visible={!!nexusChallengePreview}
+        challengeData={nexusChallengePreview}
+        onClose={() => setNexusChallengePreview(null)}
+        onImported={() => { setNexusChallengePreview(null); }}
+      />
     </View>
   );
 }

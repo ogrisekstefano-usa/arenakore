@@ -123,7 +123,7 @@ export default function TabsLayout() {
   }, [token, isLoading]);
 
   return (
-    <Tabs tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false }}>
+    <Tabs tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false }} initialRouteName="nexus-trigger">
       <Tabs.Screen name="kore" />
       <Tabs.Screen name="arena" />
       <Tabs.Screen name="gym-hub" options={{ href: null }} />
