@@ -1060,7 +1060,7 @@ const hero = StyleSheet.create({
 
 // ── DYNAMIC CARDS ──
 const cd = StyleSheet.create({
-  wrap: { width: '48%' as any, flexGrow: 0, flexShrink: 0 },
+  wrap: { width: '48%', flexGrow: 0, flexShrink: 0 },
   card: {
     borderRadius: 18, overflow: 'hidden', height: 180,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',

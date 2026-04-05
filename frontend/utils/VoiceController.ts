@@ -1,17 +1,18 @@
 /**
- * ARENAKORE — NEXUS VOICE CONTROLLER v4.0
+ * ARENAKORE — NEXUS VOICE CONTROLLER v5.0
  * 
+ * ✅ Migrated from expo-av (deprecated SDK 54) → expo-audio AudioPlayer
  * ✅ 100% Stefano Ogrisek MP3 — ZERO Speech.speak() / TTS
- * ✅ Pre-load buffer: all 14 files loaded on scanner mount
+ * ✅ Pre-load buffer: all 15 files loaded on scanner mount
  * ✅ Audio lock 1.5s: prevents overlap / "disco rotto" effect
  * ✅ console.error if file missing — stays SILENT (no TTS fallback)
  */
-import { Audio } from 'expo-av';
+import { AudioPlayer } from 'expo-audio';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type VoiceLang = 'IT' | 'EN' | 'ES';
 
-// ── VOICE MAP (42 files — all require())
+// ── VOICE MAP (45 files — all require())
 const NEXUS_VOICES: Record<VoiceLang, Record<string, any>> = {
   IT: {
     WELCOME:        require('../assets/voice/it/welcome.mp3'),
@@ -71,12 +72,11 @@ const LANG_STORAGE_KEY = '@nexus_voice_lang';
 
 class VoiceControllerClass {
   private lang: VoiceLang = 'EN';
-  private soundCache     = new Map<string, Audio.Sound>(); // preloaded sounds
-  private currentSound: Audio.Sound | null = null;
-  private audioModeSet   = false;
-  private hasPlayedSet   = new Set<string>();
-  private lastPlayStart  = 0;
-  private AUDIO_LOCK_MS  = 1500; // 1.5s gap between plays
+  private playerCache = new Map<string, AudioPlayer>();
+  private currentPlayer: AudioPlayer | null = null;
+  private hasPlayedSet = new Set<string>();
+  private lastPlayStart = 0;
+  private AUDIO_LOCK_MS = 1500;
 
   constructor() {
     AsyncStorage.getItem(LANG_STORAGE_KEY).then(saved => {
@@ -88,7 +88,7 @@ class VoiceControllerClass {
     this.lang = lang;
     this.hasPlayedSet.clear();
     await AsyncStorage.setItem(LANG_STORAGE_KEY, lang).catch(() => {});
-    await this.preloadAll(lang); // reload for new language
+    await this.preloadAll(lang);
   }
 
   getCurrentLanguage(): VoiceLang { return this.lang; }
@@ -101,60 +101,36 @@ class VoiceControllerClass {
   // ── PRE-LOAD BUFFER: call on scanner screen mount
   async preloadAll(lang?: VoiceLang): Promise<void> {
     const targetLang = lang ?? this.lang;
-    await this.unloadAll();
-    await this.ensureAudioMode();
+    await this.releaseAll();
 
     const voices = NEXUS_VOICES[targetLang];
     let loaded = 0;
     for (const [key, module] of Object.entries(voices)) {
       try {
-        const { sound } = await Audio.Sound.createAsync(module, { shouldPlay: false, volume: 1.0 });
-        this.soundCache.set(`${targetLang}_${key}`, sound);
+        const player = new AudioPlayer(module);
+        this.playerCache.set(`${targetLang}_${key}`, player);
         loaded++;
       } catch (e) {
-        console.error(`%c[VoiceController] ❌ PRELOAD FAILED: ${targetLang}/${key}.mp3`, 'color:red;font-weight:bold', e);
+        console.error(`[VoiceController] PRELOAD FAILED: ${targetLang}/${key}.mp3`, e);
       }
     }
-    console.log(`[VoiceController] ✅ Preloaded ${loaded}/14 (${targetLang})`);
+    console.log(`[VoiceController] Preloaded ${loaded}/15 (${targetLang})`);
   }
 
-  private async unloadAll(): Promise<void> {
-    this.soundCache.forEach(async (sound) => {
-      try { await sound.unloadAsync(); } catch (_e) {}
+  private async releaseAll(): Promise<void> {
+    this.playerCache.forEach((player) => {
+      try { player.release(); } catch (_e) {}
     });
-    this.soundCache.clear();
-  }
-
-  private async ensureAudioMode() {
-    if (this.audioModeSet) return;
-    try {
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: false,
-        shouldDuckAndroid: true,   // duck other audio on Android
-      });
-      this.audioModeSet = true;
-    } catch (_e) {}
+    this.playerCache.clear();
+    this.currentPlayer = null;
   }
 
   async stop(): Promise<void> {
-    const sound = this.currentSound;
-    if (!sound) return;
-    this.currentSound = null;
+    const player = this.currentPlayer;
+    if (!player) return;
+    this.currentPlayer = null;
     try {
-      const status = await sound.getStatusAsync();
-      if (status.isLoaded) {
-        if (status.isPlaying) {
-          for (let v = 0.75; v >= 0; v -= 0.25) {
-            try { await sound.setVolumeAsync(Math.max(0, v)); } catch (_e) {}
-            await new Promise(r => setTimeout(r, 50));
-          }
-          await sound.stopAsync();
-        }
-        // Don't unload from cache — keep it for next play
-        await sound.setPositionAsync(0);
-        await sound.setVolumeAsync(1.0);
-      }
+      player.pause();
     } catch (_e) {}
   }
 
@@ -176,37 +152,33 @@ class VoiceControllerClass {
 
     // Get from pre-loaded cache
     const cacheKey = `${this.lang}_${key}`;
-    let sound = this.soundCache.get(cacheKey);
+    let player = this.playerCache.get(cacheKey);
 
-    if (!sound) {
+    if (!player) {
       // Not preloaded — try on-demand
       const module = NEXUS_VOICES[this.lang]?.[key] ?? null;
       if (module === null) {
-        console.error(`%c[VoiceController] ❌ MISSING FILE: ${this.lang}/${key}.mp3 — staying silent`, 'color:red;font-weight:bold');
-        return; // ← NO TTS FALLBACK
+        console.error(`[VoiceController] MISSING FILE: ${this.lang}/${key}.mp3 — staying silent`);
+        return;
       }
       try {
-        await this.ensureAudioMode();
-        const loaded = await Audio.Sound.createAsync(module, { shouldPlay: false, volume: 1.0 });
-        sound = loaded.sound;
-        this.soundCache.set(cacheKey, sound); // cache it
+        player = new AudioPlayer(module);
+        this.playerCache.set(cacheKey, player);
       } catch (e) {
-        console.error(`%c[VoiceController] ❌ LOAD FAILED: ${this.lang}/${key}.mp3`, 'color:red', e);
-        return; // ← NO TTS FALLBACK
+        console.error(`[VoiceController] LOAD FAILED: ${this.lang}/${key}.mp3`, e);
+        return;
       }
     }
 
     // Play
     try {
-      await this.ensureAudioMode();
-      await sound.setPositionAsync(0);
-      await sound.setVolumeAsync(1.0);
-      await sound.playAsync();
-      this.currentSound = sound;
+      player.seekTo(0);
+      player.play();
+      this.currentPlayer = player;
       this.lastPlayStart = Date.now();
       if (ONE_SHOT_KEYS.has(key)) this.hasPlayedSet.add(`${this.lang}_${key}`);
     } catch (e) {
-      console.error(`%c[VoiceController] ❌ PLAY FAILED: ${this.lang}/${key}`, 'color:red', e);
+      console.error(`[VoiceController] PLAY FAILED: ${this.lang}/${key}`, e);
     }
   }
 
