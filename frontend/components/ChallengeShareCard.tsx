@@ -36,14 +36,13 @@ export function ChallengeShareCard({ visible, challenge, onClose }: Props) {
   const viewRef = useRef<any>(null);
   const [sharing, setSharing] = useState(false);
 
-  if (!challenge) return null;
-
-  const color = TEMPLATE_COLORS[challenge.template_type] || '#00E5FF';
-  const icon = TEMPLATE_ICONS[challenge.template_type] || 'flash';
-  const qrData = `arenakore://challenge/${challenge._id || challenge.id}`;
-  const exercises = (challenge.exercises || []).map((e: any) => e.name).join(' · ');
+  const color = challenge ? (TEMPLATE_COLORS[challenge.template_type] || '#00E5FF') : '#00E5FF';
+  const icon = challenge ? (TEMPLATE_ICONS[challenge.template_type] || 'flash') : 'flash';
+  const qrData = challenge ? `arenakore://challenge/${challenge._id || challenge.id}` : '';
+  const exercises = challenge ? (challenge.exercises || []).map((e: any) => e.name).join(' · ') : '';
 
   const handleShare = useCallback(async () => {
+    if (!challenge) return;
     setSharing(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     try {
@@ -64,6 +63,8 @@ export function ChallengeShareCard({ visible, challenge, onClose }: Props) {
       setSharing(false);
     }
   }, [challenge, exercises]);
+
+  if (!challenge) return null;
 
   return (
     <Modal visible={visible} animationType="fade" transparent statusBarTranslucent>
