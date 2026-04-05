@@ -910,13 +910,13 @@ function UGCCard({ challenge, onStart, onInvite, onLive, onShare, userFlux }: {
             style={[ugc.actionBtn, {
               backgroundColor: canInvite ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)',
               borderColor: canInvite ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
-              opacity: canInvite ? 1 : 0.4
+              opacity: canInvite ? 1 : 0.4,
+              paddingHorizontal: 6
             }]}
             onPress={canInvite ? onInvite : undefined}
             disabled={!canInvite}
           >
-            <Ionicons name="person-add" size={11} color="rgba(255,255,255,0.4)" />
-            <Text style={[ugc.actionText, { color: 'rgba(255,255,255,0.3)', fontSize: 8 }]}>{inviteFee}⚡</Text>
+            <Ionicons name="person-add" size={12} color="rgba(255,255,255,0.4)" />
           </TouchableOpacity>
         </View>
       </LinearGradient>
@@ -1152,12 +1152,12 @@ const ugc = StyleSheet.create({
   cardFlux: { fontSize: 12, fontWeight: '900', fontFamily: FONT_J },
   cardTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 0.5, fontFamily: FONT_J, marginBottom: 3 },
   cardExercises: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '500', fontFamily: FONT_M, marginBottom: 10 },
-  cardActions: { flexDirection: 'row', gap: 6 },
+  cardActions: { flexDirection: 'row', gap: 4, flexWrap: 'wrap' },
   actionBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    paddingHorizontal: 7, paddingVertical: 5, borderRadius: 8, borderWidth: 1
   },
-  actionText: { fontSize: 10, fontWeight: '900', letterSpacing: 1, fontFamily: FONT_J }
+  actionText: { fontSize: 9, fontWeight: '900', letterSpacing: 0.5, fontFamily: FONT_J }
 });
 
 // ── DISCIPLINE SELECTOR ──
