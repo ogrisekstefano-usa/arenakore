@@ -91,7 +91,6 @@ function BioScanTrigger({ user, onComplete, onCancel }: { user: any; onComplete:
   const matchTimerRef = useRef<any>(null);
 
   const PHASES = ['SCANNING BIOMETRICS', 'DETECTING BIO-SIGNATURE', 'MAPPING KORE POINTS', 'CALIBRATING SENSORS'];
-  const isFounder = user?.is_founder || user?.is_admin;
   const fullMatch = `${(user?.username || 'ATHLETE').toUpperCase()} \u00b7 KORE ATHLETE`;
 
   useEffect(() => {
@@ -200,7 +199,6 @@ const bio$ = StyleSheet.create({
   progressPct: { color: '#00E5FF', fontSize: 20, fontWeight: '900', fontVariant: ['tabular-nums'], width: 50 },
   matchLabel: { color: '#00E5FF', fontSize: 16, fontWeight: '400', letterSpacing: 4 },
   matchText: { color: '#FFD700', fontSize: 20, fontWeight: '900', letterSpacing: 2, fontVariant: ['tabular-nums'], textAlign: 'center' },
-  founderGlow: { color: '#FFD700', fontSize: 17, fontWeight: '800', letterSpacing: 2, marginTop: 4 },
   avviaBtn: { marginTop: 20, paddingHorizontal: 40, paddingVertical: 14, backgroundColor: '#00E5FF', borderRadius: 12 },
   avviaBtnText: { color: '#000', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   bracket: { position: 'absolute' },
@@ -760,8 +758,6 @@ const cn$ = StyleSheet.create({
   brandLabel: { color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 2 },
   title: { color: '#FFFFFF', fontSize: 28, fontWeight: '800', letterSpacing: 0.5 },
   subtitle: { color: '#8E8E93', fontSize: 12, fontWeight: '500', letterSpacing: 2, opacity: 0.85 },
-  founderBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.08)' },
-  founderText: { color: '#FFD700', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   tierRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
   tierBar: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 20, paddingVertical: 4 },
   tierDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#007AFF' },
