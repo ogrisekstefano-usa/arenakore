@@ -12,7 +12,8 @@ import { TAB_BACKGROUNDS } from '../../utils/images';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, TouchableOpacity,
-  Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput, Image, BackHandler
+  Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput, Image, BackHandler,
+  Animated as RNAnimated
 } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -27,6 +28,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth, UserRole, ROLE_CONFIG } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { playAcceptPing, playRecordBroken, startBioScanHum, playBioMatchPing } from '../../utils/sounds';
+import { playChargingSound, playCountTick, playStartBeep } from '../../utils/ChargingAudio';
 import { MotionAnalyzer, MotionState, ExerciseType, SkeletonPose } from '../../utils/MotionAnalyzer';
 import { profileDevice, DeviceProfile, DeviceTier, getTierLabel, getTrackingMode } from '../../utils/DeviceIntelligence';
 import { RemoteUXEngine } from '../../utils/RemoteUXEngine';
@@ -2006,7 +2008,16 @@ export default function NexusTriggerScreen() {
     return () => sub.remove();
   }, [phase, handleEmergencyExit]);
 
-  useEffect(() => { const dp = profileDevice(); setDeviceTier(dp.tier); }, []);
+  // LAZY DEVICE PROFILING: Only profile when entering a scan-related phase
+  // (NOT on mount — prevents native module initialization at boot)
+  useEffect(() => {
+    if (['bioscan', 'tilt_setup', 'body_lock', 'countdown', 'scanning'].includes(phase) && deviceTier === 'standard') {
+      try {
+        const dp = profileDevice();
+        setDeviceTier(dp.tier);
+      } catch (_) { /* fallback stays 'standard' */ }
+    }
+  }, [phase]);
 
   // SPRINT 7: Fetch bio-scan eligibility on mount
   useEffect(() => {

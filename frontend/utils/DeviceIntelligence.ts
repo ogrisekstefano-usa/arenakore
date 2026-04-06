@@ -4,7 +4,13 @@
  * Classifies device into HIGH / STANDARD / LEGACY tier.
  */
 import { Platform } from 'react-native';
-import * as Device from 'expo-device';
+
+// LAZY LOAD: expo-device is loaded only when needed on native platforms
+// to prevent Expo Go crash during module evaluation
+function getDevice(): any {
+  if (Platform.OS === 'web') return null;
+  try { return require('expo-device'); } catch { return null; }
+}
 
 export type DeviceTier = 'high' | 'standard' | 'legacy';
 
@@ -79,7 +85,8 @@ function getModelName(): string {
     if (/Android/.test(ua)) return 'Android-Web';
     return 'Desktop-Web';
   }
-  return Device.modelName || Device.deviceName || 'Unknown';
+  const Device = getDevice();
+  return Device?.modelName || Device?.deviceName || 'Unknown';
 }
 
 function getCPUCores(): number {
@@ -100,7 +107,8 @@ function getRAMGB(): number {
       : 4; // Conservative default
   }
   // Native: Device.totalMemory is in bytes (may be null)
-  if (Device.totalMemory) {
+  const Device = getDevice();
+  if (Device?.totalMemory) {
     return Math.round(Device.totalMemory / (1024 * 1024 * 1024));
   }
   return 4;
@@ -108,7 +116,8 @@ function getRAMGB(): number {
 
 function checkEmulator(): boolean {
   if (Platform.OS === 'web') return false;
-  return !Device.isDevice;
+  const Device = getDevice();
+  return Device ? !Device.isDevice : false;
 }
 
 function classifyTier(model: string, cpuCores: number, ramGB: number): DeviceTier {
