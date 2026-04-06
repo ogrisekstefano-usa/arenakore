@@ -11,7 +11,7 @@ import { TAB_BACKGROUNDS } from '../../utils/images';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, TouchableOpacity,
-  Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput, Image
+  Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput, Image, BackHandler
 } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -1968,6 +1968,17 @@ export default function NexusTriggerScreen() {
     // Camera/MediaPipe cleanup is handled by React unmount of NativeCameraPreview
     // since phase='console' removes it from the render tree
   }, []);
+
+  // ═══ ANDROID BACK BUTTON INTERCEPT ═══
+  // Prevent hardware back from navigating to KORE — reset to console instead
+  useEffect(() => {
+    if (phase === 'console') return; // allow default back on console view
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      handleEmergencyExit();
+      return true; // prevent default (navigating away from NÈXUS tab)
+    });
+    return () => sub.remove();
+  }, [phase, handleEmergencyExit]);
 
   useEffect(() => { const dp = profileDevice(); setDeviceTier(dp.tier); }, []);
 
