@@ -386,10 +386,10 @@ export default function KoreTab() {
           </Animated.View>
           {/* Gradient overlay — MIDDLE layer */}
           <View style={[StyleSheet.absoluteFillObject, { zIndex: 5, elevation: 5 }]} pointerEvents="none">
-            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.30)' }]} />
+            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.45)' }]} />
             <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.30)', 'rgba(0,0,0,0.80)', '#0A0A0A']}
-              locations={[0, 0.25, 0.65, 1]}
+              colors={['transparent', 'rgba(0,0,0,0.50)', 'rgba(0,0,0,0.90)', '#0A0A0A']}
+              locations={[0, 0.20, 0.55, 1]}
               style={StyleSheet.absoluteFillObject}
             />
           </View>
@@ -469,22 +469,6 @@ export default function KoreTab() {
             </View>
           </Animated.View>
 
-          {/* ═══ KORE ATLAS — Mappa Interattiva ═══ */}
-          <Animated.View entering={FadeInDown.delay(150).duration(400)}>
-            <TouchableOpacity
-              style={atlas.card}
-              onPress={() => router.push('/kore-atlas')}
-              activeOpacity={0.8}
-            >
-              <View style={atlas.iconContainer}>
-                <Ionicons name="globe-outline" size={28} color="#00E5FF" />
-              </View>
-              <View style={atlas.textGroup}>
-                <Text style={atlas.title}>KORE ATLAS</Text>
-                <Text style={atlas.sub}>La mappa delle tue performance</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.3)" />
-            </TouchableOpacity>
           </Animated.View>
 
           {/* ═══ DNA RADAR — Nike-style with BG image ═══ */}
@@ -684,6 +668,24 @@ export default function KoreTab() {
                 )}
               </ScrollView>
             )}
+          </Animated.View>
+
+          {/* ═══ KORE ATLAS — Mappa Interattiva ═══ */}
+          <Animated.View entering={FadeInDown.delay(450).duration(400)}>
+            <TouchableOpacity
+              style={atlas.card}
+              onPress={() => router.push('/kore-atlas')}
+              activeOpacity={0.8}
+            >
+              <View style={atlas.iconContainer}>
+                <Ionicons name="globe-outline" size={28} color="#00E5FF" />
+              </View>
+              <View style={atlas.textGroup}>
+                <Text style={atlas.title}>KORE ATLAS</Text>
+                <Text style={atlas.sub}>La mappa delle tue performance</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.3)" />
+            </TouchableOpacity>
           </Animated.View>
 
           {/* ═══ QUICK NAV LINKS ═══ */}
