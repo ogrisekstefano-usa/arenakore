@@ -20,7 +20,7 @@ import Animated, {
   interpolate, Extrapolation
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { DeviceMotion, DeviceMotionMeasurement } from 'expo-sensors';
+// DeviceMotion lazy-loaded to prevent Expo Go crash
 import { RemoteUXEngine } from '../utils/RemoteUXEngine';
 
 const { width: SW, height: SH } = Dimensions.get('window');
@@ -186,11 +186,12 @@ export function TiltGuideOverlay({ onReady, onSkip, lang = 'it' }: Props) {
     RemoteUXEngine.speak('tilt_welcome', 0);
   }, []);
 
-  // ── Gyroscope ──
+  // ── Gyroscope (lazy-loaded) ──
   useEffect(() => {
     let sub: { remove: () => void } | null = null;
     const setup = async () => {
       try {
+        const { DeviceMotion } = require('expo-sensors');
         const available = await DeviceMotion.isAvailableAsync();
         if (!available) {
           setGyroAvailable(false);
@@ -199,7 +200,7 @@ export function TiltGuideOverlay({ onReady, onSkip, lang = 'it' }: Props) {
           return;
         }
         DeviceMotion.setUpdateInterval(80);
-        sub = DeviceMotion.addListener((data: DeviceMotionMeasurement) => {
+        sub = DeviceMotion.addListener((data: any) => {
           if (!data.rotation) return;
           const { isCorrect, angleDeg, status, quality, isFlat } = analyzeTilt(data.rotation.beta || 0);
           setTiltAngle(angleDeg);

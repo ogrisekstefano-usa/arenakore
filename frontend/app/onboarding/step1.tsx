@@ -18,7 +18,8 @@ import Animated, {
 // expo-speech: lazy-loaded to prevent Expo Go crash
 let Speech: any = null;
 try { Speech = require('expo-speech'); } catch {}
-import { Audio } from 'expo-av';
+// Audio lazy-loaded to prevent Expo Go crash
+// const { Audio } = require('expo-av') — used inside functions
 import { VoiceController } from '../../utils/VoiceController';
 
 // ===================================================================

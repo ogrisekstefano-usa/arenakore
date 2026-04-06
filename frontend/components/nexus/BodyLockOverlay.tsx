@@ -19,7 +19,7 @@ import Animated, {
   withSequence, Easing, cancelAnimation
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { Gyroscope } from 'expo-sensors';
+// Gyroscope lazy-loaded to prevent Expo Go crash
 
 const { width: SW, height: SH } = Dimensions.get('window');
 const CONFIDENCE_THRESHOLD = 0.85;
@@ -84,8 +84,9 @@ export function BodyLockOverlay({ onBodyLocked, onGuidance }: BodyLockOverlayPro
     let sub: any = null;
     let stableTimer: any = null;
     try {
+      const { Gyroscope } = require('expo-sensors');
       Gyroscope.setUpdateInterval(200);
-      sub = Gyroscope.addListener(({ x, y, z }) => {
+      sub = Gyroscope.addListener(({ x, y, z }: { x: number; y: number; z: number }) => {
         const magnitude = Math.sqrt(x * x + y * y + z * z);
         if (magnitude > GYRO_THRESHOLD) {
           setIsMoving(true);

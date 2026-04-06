@@ -11,7 +11,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import * as WebBrowser from 'expo-web-browser';
+import * as WebBrowser from 'expo-web-browser';  // OK: CoachStudio is desktop-only, not loaded on Expo Go
 import { api } from '../../utils/api';
 import { playAcceptPing } from '../../utils/sounds';
 import { useAuth } from '../../contexts/AuthContext';

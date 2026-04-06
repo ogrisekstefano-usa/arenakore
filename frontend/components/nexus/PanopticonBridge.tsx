@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import * as WebBrowser from 'expo-web-browser';
+// expo-web-browser lazy-loaded to prevent Expo Go crash
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
@@ -32,10 +32,11 @@ export function PanopticonBridge() {
       if (Platform.OS === 'web') {
         window.open(url, '_blank');
       } else {
+        const WebBrowser = require('expo-web-browser');
         await WebBrowser.openBrowserAsync(url, {
           toolbarColor: '#0A0A0A',
           controlsColor: '#00E5FF',
-          presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
+          presentationStyle: WebBrowser.WebBrowserPresentationStyle?.FULL_SCREEN,
         });
       }
     } catch (e: any) {

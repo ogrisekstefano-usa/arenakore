@@ -1,48 +1,47 @@
 /**
  * ARENAKORE — NativeCameraPreview
- * Lazy-loaded camera component to avoid Expo Go crash.
+ * FULLY lazy-loaded camera component to avoid Expo Go crash.
  * 
- * CRITICAL: useCameraPermissions() must NEVER be called at the top level
- * of nexus-trigger.tsx — it crashes Expo Go immediately during module init.
- * By isolating it here, the hook only runs when this component is mounted
- * (i.e., only when the user is actually in a camera-active scanning phase).
+ * CRITICAL: expo-camera is required ONLY when the component renders,
+ * never at module import time. This prevents crashes on Expo Go iOS.
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Platform } from 'react-native';
-
-// Only import expo-camera on native platforms
-let CameraView: any = null;
-let useCameraPermissions: any = null;
-
-if (Platform.OS !== 'web') {
-  try {
-    const mod = require('expo-camera');
-    CameraView = mod.CameraView;
-    useCameraPermissions = mod.useCameraPermissions;
-  } catch (e) {
-    console.warn('[NativeCameraPreview] expo-camera not available:', e);
-  }
-}
 
 interface Props {
   facing: 'front' | 'back';
 }
 
 function CameraInner({ facing }: Props) {
-  if (!useCameraPermissions || !CameraView) return null;
-
-  const [permission, requestPermission] = useCameraPermissions();
+  const [CameraView, setCameraView] = useState<any>(null);
+  const [permission, setPermission] = useState<any>(null);
+  const [permissionGranted, setPermissionGranted] = useState(false);
 
   useEffect(() => {
-    if (!permission?.granted) {
-      requestPermission().catch(() => {});
-    }
-  }, [permission?.granted]);
+    let mounted = true;
+    (async () => {
+      try {
+        const mod = require('expo-camera');
+        if (!mounted) return;
+        setCameraView(() => mod.CameraView);
 
-  if (!permission?.granted) {
+        // Request permission
+        const result = await mod.Camera?.requestCameraPermissionsAsync?.()
+          || await mod.requestCameraPermissionsAsync?.();
+        if (mounted && result?.granted) {
+          setPermissionGranted(true);
+        }
+      } catch (e) {
+        console.warn('[NativeCameraPreview] expo-camera init failed:', e);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  if (!CameraView || !permissionGranted) {
     return (
       <View style={[StyleSheet.absoluteFillObject, styles.placeholder]}>
-        <Text style={styles.placeholderText}>📷 Permesso camera richiesto...</Text>
+        <Text style={styles.placeholderText}>📷 Camera loading...</Text>
       </View>
     );
   }
@@ -56,9 +55,7 @@ function CameraInner({ facing }: Props) {
 }
 
 export function NativeCameraPreview({ facing }: Props) {
-  // Web: no native camera needed (uses navigator.mediaDevices instead)
   if (Platform.OS === 'web') return null;
-
   return <CameraInner facing={facing} />;
 }
 
