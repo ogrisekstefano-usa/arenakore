@@ -39,6 +39,16 @@ export default function SettingsScreen() {
   const [profilePic, setProfilePic] = useState(user?.profile_picture || null);
   const [coverPhoto, setCoverPhoto] = useState(user?.cover_photo || null);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [competencyLevel, setCompetencyLevel] = useState(user?.training_level || 'Amateur');
+  const [showCompetencyPicker, setShowCompetencyPicker] = useState(false);
+
+  const COMPETENCY_LEVELS = [
+    { key: 'Rookie',   label: 'ROOKIE',    color: '#8E8E93', desc: 'Primo approccio alla disciplina' },
+    { key: 'Amateur',  label: 'AMATEUR',   color: '#34C759', desc: 'Allenamento regolare, basi solide' },
+    { key: 'Semi-Pro', label: 'SEMI-PRO',  color: '#007AFF', desc: 'Competizioni regionali, tecnica avanzata' },
+    { key: 'Pro',      label: 'PRO',       color: '#FF9500', desc: 'Atleta professionista certificato' },
+    { key: 'Elite',    label: 'ELITE',     color: '#FFD700', desc: 'Top 1% — Livello internazionale' },
+  ];
 
   useEffect(() => {
     if (user) {
@@ -50,6 +60,7 @@ export default function SettingsScreen() {
       setSelectedSport(user.preferred_sport || user.sport || 'Fitness');
       setProfilePic(user.profile_picture || null);
       setCoverPhoto(user.cover_photo || null);
+      setCompetencyLevel(user.training_level || 'Amateur');
     }
   }, [user]);
 
@@ -201,6 +212,7 @@ export default function SettingsScreen() {
       if (weight) payload.weight = parseFloat(weight);
       if (height) payload.height = parseFloat(height);
       if (selectedSport) payload.preferred_sport = selectedSport;
+      if (competencyLevel) payload.training_level = competencyLevel;
 
       const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
       const res = await fetch(`${backendUrl}/api/auth/update-profile`, {
@@ -216,7 +228,7 @@ export default function SettingsScreen() {
       Alert.alert('Errore', err.message || 'Impossibile salvare.');
     }
     setSaving(false);
-  }, [firstName, lastName, username, weight, height, selectedSport, token, refreshUser]);
+  }, [firstName, lastName, username, weight, height, selectedSport, competencyLevel, token, refreshUser]);
 
   // ── Sport Picker Modal ──
   const filteredSports = [...SPORTS_LIST].filter(s =>
