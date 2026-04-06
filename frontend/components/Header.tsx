@@ -57,8 +57,11 @@ export function Header({ title, rightAction }: HeaderProps) {
             </TouchableOpacity>
           </View>
 
-          {/* ═══ CENTER: Tab Title ═══ */}
-          <Text style={h.title} numberOfLines={1}>{title}</Text>
+          {/* ═══ CENTER: ARENA KORE Branded Logo ═══ */}
+          <View style={h.logoGroup}>
+            <Text style={h.logoArena}>ARENA</Text>
+            <Text style={h.logoKore}>KORE</Text>
+          </View>
 
           {/* ═══ RIGHT: Multi-Wallet FLUX ═══ */}
           <View style={h.rightGroup}>
@@ -147,6 +150,28 @@ const h = StyleSheet.create({
     letterSpacing: 2,
     textAlign: 'center',
     flex: 1,
+  },
+
+  logoGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    gap: 4,
+  },
+  logoArena: {
+    fontFamily: FONT_MONT,
+    fontWeight: '900',
+    fontSize: 16,
+    color: '#FFFFFF',
+    letterSpacing: 2,
+  },
+  logoKore: {
+    fontFamily: FONT_MONT,
+    fontWeight: '900',
+    fontSize: 16,
+    color: '#00E5FF',
+    letterSpacing: 2,
   },
 
   rightGroup: {
