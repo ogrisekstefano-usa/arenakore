@@ -340,6 +340,7 @@ export default function NexusBioScan() {
   // ── BIOMETRIC GATE: camera must be confirmed ready before detection starts
   const [isScanning, setIsScanning] = useState(false);        // true = camera active, detection enabled
   const [cameraReady, setCameraReady] = useState(false);      // true = CameraView onCameraReady fired
+  const [cameraFacing, setCameraFacing] = useState<'front' | 'back'>('front'); // camera flip toggle
 
   // ── REAL MEDIAPIPE STATE
   const [realLandmarks, setRealLandmarks] = useState<Array<LandmarkPoint | null> | null>(null);
@@ -1385,11 +1386,35 @@ export default function NexusBioScan() {
       {/* ── HEADER ── */}
       <View style={[s.header, { paddingTop: insets.top + 8, height: HEADER_H }]}>
         <View style={s.headerTop}>
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={s.brand}>ARENA</Text>
             <Text style={[s.brand, { color: '#00E5FF' }]}>KORE</Text>
           </View>
-          <View style={s.stepPill}><Text style={s.stepTxt}>02 / 04</Text></View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <View style={s.stepPill}><Text style={s.stepTxt}>02 / 04</Text></View>
+            {/* Flip Camera Button */}
+            {!showPrivacyConsent && phase !== 'approved' && (
+              <TouchableOpacity
+                style={ctrl$.btn}
+                onPress={() => setCameraFacing(prev => prev === 'front' ? 'back' : 'front')}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="camera-reverse-outline" size={20} color="#00E5FF" />
+              </TouchableOpacity>
+            )}
+            {/* Close / Exit Button */}
+            <TouchableOpacity
+              style={ctrl$.closeBtn}
+              onPress={() => {
+                VoiceController.stop().catch(() => {});
+                if (Speech) { try { Speech.stop(); } catch(_) {} }
+                router.replace('/');
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="close" size={22} color="#FF3B30" />
+            </TouchableOpacity>
+          </View>
         </View>
         {phase === 'beats' && <BeatIndicator currentBeat={currentBeat} totalBeats={5} />}
         {phase === 'positioning' && (
@@ -1426,7 +1451,7 @@ export default function NexusBioScan() {
         {/* ── NATIVE CAMERA (iOS/Android): Shows live camera feed directly ── */}
         {!showPrivacyConsent && Platform.OS !== 'web' && (
           <View style={StyleSheet.absoluteFill}>
-            <NativeCameraPreview facing="front" />
+            <NativeCameraPreview facing={cameraFacing} />
           </View>
         )}
 
@@ -2078,4 +2103,21 @@ const camErr$ = StyleSheet.create({
   },
   title: { color: '#FF3B30', fontSize: 18, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
   desc: { color: 'rgba(255,255,255,0.5)', fontSize: 15, fontWeight: '400', letterSpacing: 1, textAlign: 'center', lineHeight: 18 }
+});
+
+
+// ── CAMERA CONTROLS: Flip cam + Close (X)
+const ctrl$ = StyleSheet.create({
+  btn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(0,229,255,0.1)',
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.3)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  closeBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(255,59,48,0.1)',
+    borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)',
+    alignItems: 'center', justifyContent: 'center',
+  },
 });
