@@ -15,7 +15,9 @@ import Animated, {
   useSharedValue, withRepeat, withSequence, withTiming, withDelay,
   useAnimatedStyle, FadeInDown, Easing
 } from 'react-native-reanimated';
-import * as Speech from 'expo-speech';
+// expo-speech: lazy-loaded to prevent Expo Go crash
+let Speech: any = null;
+try { Speech = require('expo-speech'); } catch {}
 import { Audio } from 'expo-av';
 import { VoiceController } from '../../utils/VoiceController';
 

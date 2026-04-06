@@ -17,7 +17,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Speech from 'expo-speech';
+// expo-speech: lazy-loaded to prevent Expo Go crash
+let Speech: any = null;
+try { Speech = require('expo-speech'); } catch {}
 import { VoiceController } from '../../utils/VoiceController';
 
 // ═══ LAZY LOAD expo-camera to prevent Expo Go crash ═══
