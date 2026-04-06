@@ -69,6 +69,7 @@ interface AuthContextType {
   activeRole: UserRole;
   setActiveRole: (role: UserRole) => void;
   login: (email: string, password: string) => Promise<User>;
+  loginWithToken: (token: string, user: User) => void;
   register: (username: string, email: string, password: string, extra?: {
     height_cm?: number; weight_kg?: number; age?: number;
     training_level?: string; gender?: string;
@@ -131,6 +132,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return result.user;
   };
 
+  // ═══ LOGIN WITH TOKEN — Used by Mobile-to-Web OTP Bridge ═══
+  const loginWithToken = async (jwtToken: string, userData: User) => {
+    await AsyncStorage.setItem(TOKEN_KEY, jwtToken);
+    setToken(jwtToken);
+    setUser(userData);
+    if (userData.is_admin) {
+      setActiveRoleState('ADMIN');
+      await AsyncStorage.setItem(ROLE_KEY, 'ADMIN');
+    } else if (userData.role === 'GYM_OWNER') {
+      setActiveRoleState('GYM_OWNER');
+      await AsyncStorage.setItem(ROLE_KEY, 'GYM_OWNER');
+    } else if (userData.role === 'COACH') {
+      setActiveRoleState('COACH');
+      await AsyncStorage.setItem(ROLE_KEY, 'COACH');
+    }
+  };
+
   const register = async (
     username: string, email: string, password: string,
     extra?: { height_cm?: number; weight_kg?: number; age?: number; training_level?: string },
@@ -176,7 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, activeRole, setActiveRole, login, register, completeOnboarding, logout, refreshUser, updateUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, activeRole, setActiveRole, login, loginWithToken, register, completeOnboarding, logout, refreshUser, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

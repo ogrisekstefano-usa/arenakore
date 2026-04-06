@@ -463,6 +463,28 @@ export default function TemplateBuilder() {
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [pushing, setPushing] = useState(false);
+
+  // ═══ DEEP LINK — "TESTA QUESTA SFIDA" opens the app on NÈXUS ═══
+  const handleTestChallenge = useCallback(async () => {
+    if (!selectedChallenge) return;
+    try {
+      const deepLink = `arenakore://nexus?template_id=${selectedChallenge.id}`;
+      const webFallback = `/(tabs)/nexus-trigger?template_id=${selectedChallenge.id}`;
+
+      if (Platform.OS === 'web') {
+        // On web: try deep link first, then fallback to web route
+        const link = document.createElement('a');
+        link.href = deepLink;
+        link.click();
+        // Fallback: if deep link doesn't open, redirect in-browser
+        setTimeout(() => {
+          window.location.href = webFallback;
+        }, 2000);
+      }
+    } catch {
+      Alert.alert('Info', 'Apri l\'app ARENA KORE sul tuo telefono per testare questa sfida.');
+    }
+  }, [selectedChallenge]);
   const [crews, setCrews] = useState<any[]>([]);
   const [selectedCrewIds, setSelectedCrewIds] = useState<string[]>([]);
   // New challenge form
@@ -574,6 +596,10 @@ export default function TemplateBuilder() {
             </TouchableOpacity>
             <TouchableOpacity style={[mb$.pushBtn, { backgroundColor: theme.accent }]} onPress={handlePush} disabled={pushing}>
               {pushing ? <ActivityIndicator color="#000" size="small" /> : <><Ionicons name="cloud-upload" size={14} color="#000" /><Text style={[mb$.pushBtnTxt, MONT('900')]}>PUBBLICA</Text></>}
+            </TouchableOpacity>
+            <TouchableOpacity style={[mb$.testBtn]} onPress={handleTestChallenge}>
+              <Ionicons name="phone-portrait-outline" size={14} color="#00E5FF" />
+              <Text style={[mb$.testBtnTxt, MONT('900')]}>TESTA SU APP</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -726,6 +752,8 @@ const mb$ = StyleSheet.create({
   saveBtnTxt: { fontSize: 13, letterSpacing: 1.5 },
   pushBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 8, paddingHorizontal: 24, paddingVertical: 8 },
   pushBtnTxt: { color: '#000', fontSize: 13, letterSpacing: 1.5 },
+  testBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1.5, borderColor: '#00E5FF' },
+  testBtnTxt: { color: '#00E5FF', fontSize: 11, letterSpacing: 1.5 },
   body: { flex: 1, flexDirection: 'row' },
   sidePanel: { width: 200, borderRightWidth: 1 },
   sidePanelHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1 },

@@ -502,4 +502,17 @@ export const api = {
 
   deleteCoverPhoto: (token: string) =>
     request('/user/cover-photo', { method: 'DELETE' }, token),
+
+  // ========== COACH STUDIO — MOBILE-TO-WEB BRIDGE ==========
+  generateWebToken: (token: string) =>
+    request('/coach/web-token', { method: 'POST' }, token),
+
+  exchangeWebToken: (otp: string) =>
+    request('/auth/web-token-login', {
+      method: 'POST',
+      body: JSON.stringify({ token: otp })
+    }),
+
+  getChallengeDeepLink: (token: string, templateId: string) =>
+    request(`/deeplink/challenge/${templateId}`, { method: 'GET' }, token),
 };

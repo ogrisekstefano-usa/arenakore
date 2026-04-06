@@ -2,14 +2,15 @@
  * NÈXUS COMMAND CENTER — Main Layout
  * Dual-theme (Dark/Light) · Slim Sidebar · Google Fonts (Montserrat Only)
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
-import { Slot, useRouter, usePathname, Redirect } from 'expo-router';
+import { Slot, useRouter, usePathname, Redirect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
 import { ThemeProvider, useTheme, MONT } from '../../contexts/ThemeContext';
 import { StudioToastProvider } from '../../components/studio/StudioToast';
+import { api } from '../../utils/api';
 
 // ── Inject Google Fonts (web only) ────────────────────────────────────────────
 function InjectFonts() {
@@ -190,13 +191,41 @@ const ni$ = StyleSheet.create({
 
 // ── Main Layout ────────────────────────────────────────────────────────────────
 function CommandCenterInner() {
-  const { user, token, isLoading } = useAuth();
+  const { user, token, isLoading, loginWithToken } = useAuth();
   const { theme, mode } = useTheme();
   const router = useRouter();
   const path = usePathname();
+  const params = useLocalSearchParams<{ otp?: string }>();
   const role = user?.role || 'ATHLETE';
   const navItems = getNavItems(role);
   const roleBadge = ROLE_BADGE[role] || ROLE_BADGE.ATHLETE;
+  const [otpLoading, setOtpLoading] = useState(false);
+
+  // ═══ AUTO-LOGIN via OTP (Mobile-to-Web Bridge) ═══
+  useEffect(() => {
+    const otpToken = params.otp || (Platform.OS === 'web' && typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('otp') : null);
+    if (!otpToken || token || otpLoading) return;
+    setOtpLoading(true);
+
+    (async () => {
+      try {
+        const result = await api.exchangeWebToken(otpToken);
+        if (result.token && result.user && loginWithToken) {
+          loginWithToken(result.token, result.user);
+        }
+        // Clean up OTP from URL
+        if (Platform.OS === 'web' && typeof window !== 'undefined') {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('otp');
+          window.history.replaceState({}, '', url.toString());
+        }
+      } catch (e) {
+        console.log('[OTP_LOGIN_ERROR]', e);
+      } finally {
+        setOtpLoading(false);
+      }
+    })();
+  }, [params.otp, token, otpLoading]);
 
   // Mobile guard
   if (Platform.OS !== 'web') {    return (

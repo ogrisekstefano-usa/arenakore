@@ -6,13 +6,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, TextInput,
-  ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform
+  ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform, Linking as RNLinking
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import * as WebBrowser from 'expo-web-browser';
 import { api } from '../../utils/api';
 import { playAcceptPing } from '../../utils/sounds';
+import { useAuth } from '../../contexts/AuthContext';
 
 const DIFFICULTY_LEVELS: { key: string; label: string; color: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { key: 'easy', label: 'EASY', color: '#00FF87', icon: 'star-outline' },
@@ -33,6 +35,37 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
   const [pushing, setPushing] = useState<string | null>(null);
   const [pushTargetTemplate, setPushTargetTemplate] = useState<any>(null);
   const [showPushModal, setShowPushModal] = useState(false);
+  const [openingWeb, setOpeningWeb] = useState(false);
+
+  const { token: authToken } = useAuth();
+
+  // ═══ PANOPTICON: Mobile-to-Web Bridge ═══
+  const openPanopticon = useCallback(async () => {
+    setOpeningWeb(true);
+    try {
+      const result = await api.generateWebToken(token);
+      const webToken = result.token;
+      // Build the authenticated URL for Coach Studio web
+      const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://arena-scan-lab.preview.emergentagent.com';
+      const url = `${baseUrl}/coach-studio?otp=${webToken}`;
+
+      if (Platform.OS === 'web') {
+        // Web: open in new tab
+        window.open(url, '_blank');
+      } else {
+        // Native: open in-app browser
+        await WebBrowser.openBrowserAsync(url, {
+          toolbarColor: '#0A0A0A',
+          controlsColor: '#00E5FF',
+          presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
+        });
+      }
+    } catch (e: any) {
+      Alert.alert('Errore', e?.message || 'Impossibile aprire il Command Center');
+    } finally {
+      setOpeningWeb(false);
+    }
+  }, [token]);
 
   const [name, setName] = useState('');
   const [exercise, setExercise] = useState('squat');
@@ -106,6 +139,24 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
           <Text style={cs$.headerSub}>Template Engine {'\u00b7'} {templates.length} template</Text>
         </View>
       </View>
+
+      {/* ═══ PANOPTICON — Mobile-to-Web Bridge Button ═══ */}
+      <TouchableOpacity style={cs$.panopticonBtn} onPress={openPanopticon} activeOpacity={0.8} disabled={openingWeb}>
+        <LinearGradient colors={['#00E5FF', '#0088AA']} style={cs$.panopticonGrad} start={{x: 0, y: 0}} end={{x: 1, y: 0}}>
+          {openingWeb ? (
+            <ActivityIndicator color="#050505" size="small" />
+          ) : (
+            <>
+              <Ionicons name="desktop-outline" size={20} color="#050505" />
+              <View style={{ flex: 1 }}>
+                <Text style={cs$.panopticonText}>GESTIONE AVANZATA (PANOPTICON)</Text>
+                <Text style={cs$.panopticonSub}>Apri il Command Center nel browser</Text>
+              </View>
+              <Ionicons name="open-outline" size={16} color="#050505" />
+            </>
+          )}
+        </LinearGradient>
+      </TouchableOpacity>
 
       {/* Create Template Button */}
       <TouchableOpacity style={cs$.createBtn} onPress={() => setShowCreator(true)} activeOpacity={0.8}>
@@ -276,6 +327,10 @@ const cs$ = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
   headerTitle: { color: '#FFD700', fontSize: 22, fontWeight: '900', letterSpacing: 2 },
   headerSub: { color: '#AAAAAA', fontSize: 15, fontWeight: '400', letterSpacing: 1 },
+  panopticonBtn: { borderRadius: 14, overflow: 'hidden', marginBottom: 4 },
+  panopticonGrad: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 18, paddingVertical: 14 },
+  panopticonText: { color: '#050505', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
+  panopticonSub: { color: 'rgba(0,0,0,0.55)', fontSize: 11, fontWeight: '500', marginTop: 1 },
   createBtn: { borderRadius: 14, overflow: 'hidden' },
   createGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 16 },
   createText: { color: '#000000', fontSize: 17, fontWeight: '900', letterSpacing: 2 },

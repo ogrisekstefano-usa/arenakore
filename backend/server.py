@@ -11269,6 +11269,94 @@ async def get_silo_profile(current_user: dict = Depends(get_current_user)):
 app.include_router(api_router)
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# COACH STUDIO — MOBILE-TO-WEB BRIDGE (One-Time Web Token)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.post("/api/coach/web-token")
+async def generate_web_token(current_user: dict = Depends(get_current_user)):
+    """Generate a one-time-use web token for auto-login in Coach Studio browser."""
+    role = current_user.get("role", "ATHLETE")
+    if role not in ("COACH", "GYM_OWNER", "ADMIN"):
+        raise HTTPException(403, "Solo Coach, Gym Owner e Admin possono accedere al Command Center")
+
+    import secrets
+    otp = secrets.token_urlsafe(48)
+    user_id = str(current_user["_id"])
+
+    # Store OTP with 15-minute expiry and single-use flag
+    await db.web_tokens.insert_one({
+        "token": otp,
+        "user_id": user_id,
+        "created_at": datetime.utcnow(),
+        "expires_at": datetime.utcnow() + timedelta(minutes=15),
+        "used": False
+    })
+
+    return {"token": otp, "expires_in": 900}
+
+
+@app.post("/api/auth/web-token-login")
+async def web_token_login(body: dict):
+    """Exchange a one-time web token for a full JWT session."""
+    otp = body.get("token", "")
+    if not otp:
+        raise HTTPException(400, "Token mancante")
+
+    # Find and validate the OTP
+    record = await db.web_tokens.find_one({"token": otp, "used": False})
+    if not record:
+        raise HTTPException(401, "Token non valido o già utilizzato")
+
+    if record["expires_at"] < datetime.utcnow():
+        await db.web_tokens.update_one({"_id": record["_id"]}, {"$set": {"used": True}})
+        raise HTTPException(401, "Token scaduto")
+
+    # Mark as used
+    await db.web_tokens.update_one({"_id": record["_id"]}, {"$set": {"used": True}})
+
+    # Get user
+    user = await db.users.find_one({"_id": ObjectId(record["user_id"])})
+    if not user:
+        raise HTTPException(404, "Utente non trovato")
+
+    # Generate JWT
+    token_data = {
+        "sub": str(user["_id"]),
+        "exp": datetime.utcnow() + timedelta(hours=48)
+    }
+    jwt_token = jwt.encode(token_data, SECRET_KEY, algorithm="HS256")
+
+    safe = user_to_response(user)
+    return {"token": jwt_token, "user": safe}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DEEP LINK — Generate app deep links for web-to-mobile bridge
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/deeplink/challenge/{template_id}")
+async def get_challenge_deeplink(template_id: str, current_user: dict = Depends(get_current_user)):
+    """Generate a deep link URL to open a challenge template in the mobile app."""
+    template = await db.templates.find_one({"_id": ObjectId(template_id)})
+    if not template:
+        raise HTTPException(404, "Template non trovato")
+
+    deep_link = f"arenakore://nexus?template_id={template_id}"
+    web_fallback = f"/nexus-trigger?template_id={template_id}"
+
+    return {
+        "deep_link": deep_link,
+        "web_fallback": web_fallback,
+        "template": {
+            "id": str(template["_id"]),
+            "name": template.get("name", ""),
+            "exercise": template.get("exercise", ""),
+            "difficulty": template.get("difficulty", ""),
+        }
+    }
+
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     if scheduler.running:

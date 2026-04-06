@@ -33,6 +33,7 @@ import { BodyLockOverlay } from '../../components/nexus/BodyLockOverlay';
 import { ExitButton } from '../../components/nexus/ExitButton';
 import { LiveBPMWidget } from '../../components/health/HealthHub';
 import { useVoiceCommands, speakCoach, cancelCoachSpeech } from '../../utils/VoiceCommandEngine';
+import { PanopticonBridge } from '../../components/nexus/PanopticonBridge';
 
 // Extracted sub-components
 import { CyberGrid, DigitalShadow, ScanLine } from '../../components/nexus/NexusVisuals';
@@ -603,6 +604,11 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
           </View>
 
           <NexusProactiveCTAs user={user} eligibility={eligibility} myRank={myRank} myCrews={myCrews} onScan={onScan} onNavigate={(r) => router.push(r as any)} />
+
+          {/* ═══ PANOPTICON — Coach/GYM_OWNER Web Bridge ═══ */}
+          {(user?.role === 'COACH' || user?.role === 'GYM_OWNER' || user?.is_admin) && (
+            <PanopticonBridge />
+          )}
 
           {/* ═══ DISCIPLINE EXPLORER + GOVERNANCE CTAs ═══ */}
           <View style={cn$.discSection}>

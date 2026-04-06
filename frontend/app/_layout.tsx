@@ -110,9 +110,14 @@ function DeepLinkHandler() {
         return;
       }
 
-      // Handle arenakore://nexus — open NÈXUS tab
+      // Handle arenakore://nexus — open NÈXUS tab (with optional template_id)
       if (path === 'nexus' || path === 'nexus-trigger') {
-        router.push('/(tabs)/nexus-trigger');
+        const templateId = params.template_id as string;
+        if (templateId) {
+          router.push({ pathname: '/(tabs)/nexus-trigger', params: { template_id: templateId } });
+        } else {
+          router.push('/(tabs)/nexus-trigger');
+        }
         return;
       }
 
@@ -131,6 +136,11 @@ function DeepLinkHandler() {
       // Handle generic query params on tabs
       if (params.challenge_id) {
         router.push({ pathname: '/(tabs)/nexus-trigger', params: { pvpChallengeId: params.challenge_id as string } });
+        return;
+      }
+
+      if (params.template_id) {
+        router.push({ pathname: '/(tabs)/nexus-trigger', params: { template_id: params.template_id as string } });
         return;
       }
 
