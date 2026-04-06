@@ -50,22 +50,10 @@ export function Header({ title, rightAction }: HeaderProps) {
       <View style={[h.container, { paddingTop: insets.top + 4 }]}>
         <View style={h.row}>
 
-          {/* ═══ LEFT: Notification Bell ═══ */}
-          <TouchableOpacity
-            style={h.bellBtn}
-            onPress={() => setNotifOpen(true)}
-            hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
-          >
-            <Ionicons name="notifications-outline" size={22} color={EL.TEXT_SEC} />
-            {notifications.length > 0 && (
-              <View style={h.bellDot} />
-            )}
-          </TouchableOpacity>
-
-          {/* ═══ CENTER: Tab Title ═══ */}
+          {/* ═══ LEFT: Tab Title — aligned left ═══ */}
           <Text style={h.title} numberOfLines={1}>{title}</Text>
 
-          {/* ═══ RIGHT: Multi-Wallet FLUX + Menu ═══ */}
+          {/* ═══ RIGHT: Multi-Wallet FLUX + Bell + Menu ═══ */}
           <View style={h.rightGroup}>
             {/* Neon FLUX */}
             <View style={[h.fluxChip, { borderColor: `${FLUX_TIERS.neon.color}25` }]}>
@@ -92,6 +80,18 @@ export function Header({ title, rightAction }: HeaderProps) {
             </View>
 
             {rightAction}
+
+            {/* Notification Bell */}
+            <TouchableOpacity
+              style={h.bellBtn}
+              onPress={() => setNotifOpen(true)}
+              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
+            >
+              <Ionicons name="notifications-outline" size={20} color={EL.TEXT_SEC} />
+              {notifications.length > 0 && (
+                <View style={h.bellDot} />
+              )}
+            </TouchableOpacity>
 
             {/* Menu ••• */}
             <TouchableOpacity
@@ -152,16 +152,16 @@ const h = StyleSheet.create({
     borderColor: EL.BG,
   },
 
-  // ─── CENTER: Title ───
+  // ─── LEFT: Title ───
   title: {
     fontFamily: FONT_MONT,
     fontWeight: '800',
     fontSize: 18,
     color: EL.TEXT,
     letterSpacing: 2,
-    textAlign: 'center',
+    textAlign: 'left',
     flex: 1,
-    marginHorizontal: 4,
+    marginRight: 8,
   },
 
   // ─── RIGHT: Multi-Wallet + Menu ───
