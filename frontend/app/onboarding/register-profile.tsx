@@ -61,6 +61,34 @@ export default function RegisterProfile() {
   const isNexus = params.is_nexus_certified === 'true';
   const bioHeight = params.height_cm ? parseFloat(params.height_cm) : null;
 
+  // ── CHECK IF USER ALREADY HAS AN ACCOUNT (came via register.tsx → choice)
+  const [existingToken, setExistingToken] = useState<string | null>(null);
+  const [existingUser, setExistingUser] = useState<any>(null);
+  useEffect(() => {
+    (async () => {
+      try {
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        const tk = await AsyncStorage.getItem('@auth_token');
+        const ud = await AsyncStorage.getItem('@user_data');
+        if (tk && ud) {
+          const u = JSON.parse(ud);
+          setExistingToken(tk);
+          setExistingUser(u);
+          // Pre-fill from existing account
+          if (u.username) setUsername(u.username);
+          if (u.email) setEmail(u.email);
+          if (u.gender) setGender(u.gender);
+          if (u.height_cm) setHeight(String(Math.round(u.height_cm)));
+          if (u.age) setAge(String(u.age));
+          if (u.preferred_sport || u.sport) setSport(u.preferred_sport || u.sport);
+          if (u.training_level) setLevel(u.training_level);
+        }
+      } catch {}
+    })();
+  }, []);
+
+  const isExistingUser = !!existingToken;
+
   // ── FORM STATE ──
   const [username, setUsername] = useState('');
   const [email, setEmail]       = useState('');
@@ -100,6 +128,17 @@ export default function RegisterProfile() {
 
   // ── FORM VALIDATION ──
   const isFormValid = useCallback(() => {
+    if (isExistingUser) {
+      // Existing user: only needs profile data
+      return (
+        gender !== '' &&
+        height !== '' && parseFloat(height) >= 100 && parseFloat(height) <= 250 &&
+        age !== '' && parseInt(age) >= 12 && parseInt(age) <= 100 &&
+        sport !== '' &&
+        level !== ''
+      );
+    }
+    // New user: needs everything
     return (
       username.length >= 3 &&
       usernameStatus === 'available' &&
@@ -111,9 +150,9 @@ export default function RegisterProfile() {
       sport !== '' &&
       level !== ''
     );
-  }, [username, usernameStatus, email, password, gender, height, age, sport, level]);
+  }, [username, usernameStatus, email, password, gender, height, age, sport, level, isExistingUser]);
 
-  // ── REGISTER ──
+  // ── REGISTER or UPDATE ──
   const handleRegister = useCallback(async () => {
     if (!isFormValid()) {
       setError('COMPILA TUTTI I CAMPI CORRETTAMENTE');
@@ -122,25 +161,29 @@ export default function RegisterProfile() {
     setLoading(true);
     setError('');
     try {
-      const res = await api.register({
-        username: username.trim(),
-        email: email.trim().toLowerCase(),
-        password,
-        height_cm: parseFloat(height),
-        weight_kg: undefined, // optional — can be added later
-        age: parseInt(age),
-        gender,
-        preferred_sport: sport,
-        training_level: level,
-      });
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
 
-      if (res.token) {
-        // Store token for KORE ID screen
-        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-        await AsyncStorage.setItem('@auth_token', res.token);
-        await AsyncStorage.setItem('@user_data', JSON.stringify(res.user));
+      if (isExistingUser && existingToken) {
+        // ── EXISTING USER: Update profile via PATCH
+        const BASE = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+        const resp = await fetch(`${BASE}/api/user/profile`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${existingToken}` },
+          body: JSON.stringify({
+            height_cm: parseFloat(height),
+            age: parseInt(age),
+            gender,
+            preferred_sport: sport,
+            training_level: level,
+          }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || 'ERRORE AGGIORNAMENTO PROFILO');
 
-        // Navigate to KORE ID
+        // Update stored user data
+        const updatedUser = { ...existingUser, height_cm: parseFloat(height), age: parseInt(age), gender, preferred_sport: sport, sport, training_level: level };
+        await AsyncStorage.setItem('@user_data', JSON.stringify(updatedUser));
+
         router.replace({
           pathname: '/onboarding/passport',
           params: {
@@ -148,17 +191,46 @@ export default function RegisterProfile() {
             kore_score: params.kore_score || '50',
             stability: params.stability || '50',
             amplitude: params.amplitude || '50',
-            username: username.trim(),
+            username: existingUser.username,
             sport,
           }
         });
+      } else {
+        // ── NEW USER: Create account
+        const res = await api.register({
+          username: username.trim(),
+          email: email.trim().toLowerCase(),
+          password,
+          height_cm: parseFloat(height),
+          age: parseInt(age),
+          gender,
+          preferred_sport: sport,
+          training_level: level,
+        });
+
+        if (res.token) {
+          await AsyncStorage.setItem('@auth_token', res.token);
+          await AsyncStorage.setItem('@user_data', JSON.stringify(res.user));
+
+          router.replace({
+            pathname: '/onboarding/passport',
+            params: {
+              is_nexus_certified: isNexus ? 'true' : 'false',
+              kore_score: params.kore_score || '50',
+              stability: params.stability || '50',
+              amplitude: params.amplitude || '50',
+              username: username.trim(),
+              sport,
+            }
+          });
+        }
       }
     } catch (e: any) {
       setError(e.message || 'ERRORE DI REGISTRAZIONE');
     } finally {
       setLoading(false);
     }
-  }, [isFormValid, username, email, password, height, age, gender, sport, level, isNexus, params, router]);
+  }, [isFormValid, isExistingUser, existingToken, existingUser, username, email, password, height, age, gender, sport, level, isNexus, params, router]);
 
   const sportsToShow = showAllSports ? SPORTS_LIST : TOP_SPORTS;
 
@@ -200,7 +272,8 @@ export default function RegisterProfile() {
           )}
         </Animated.View>
 
-        {/* ══════════════ IDENTITY ══════════════ */}
+        {/* ══════════════ IDENTITY (solo per nuovi utenti) ══════════════ */}
+        {!isExistingUser && (
         <Animated.View entering={FadeInDown.delay(200).duration(400)}>
           <Text style={s.sectionLabel}>IDENTITY</Text>
 
@@ -259,6 +332,7 @@ export default function RegisterProfile() {
             )}
           </View>
         </Animated.View>
+        )}
 
         {/* ══════════════ PROFILE DATA ══════════════ */}
         <Animated.View entering={FadeInDown.delay(350).duration(400)}>

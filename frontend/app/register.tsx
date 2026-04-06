@@ -276,7 +276,7 @@ function BioDataPhase({
       if (destination === 'fast') {
         router.replace('/(tabs)/nexus-trigger');
       } else {
-        router.replace('/onboarding/step1');
+        router.replace('/onboarding/choice');
       }
     } catch (e: any) {
       setError(e?.message || 'Errore durante la registrazione');

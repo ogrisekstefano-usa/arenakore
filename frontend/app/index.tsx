@@ -99,7 +99,7 @@ export default function HeroIndex() {
       if (user.onboarding_completed) {
         router.replace('/(tabs)/nexus-trigger');
       } else {
-        router.replace('/onboarding/step1');
+        router.replace('/onboarding/choice');
       }
     }
   }, [isLoading, token, user]);
@@ -216,7 +216,7 @@ export default function HeroIndex() {
             <TouchableOpacity
               testID="start-nexus-btn"
               style={s.primaryBtn}
-              onPress={() => router.push('/onboarding/step1')}
+              onPress={() => router.push('/onboarding/choice')}
               activeOpacity={0.85}
             >
               <Ionicons name="scan" size={18} color={BG} />

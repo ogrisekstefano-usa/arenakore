@@ -46,7 +46,7 @@ export default function Login() {
       } else if (result.onboarding_completed) {
         router.replace('/(tabs)/nexus-trigger');
       } else {
-        router.replace('/onboarding/step1');
+        router.replace('/onboarding/choice');
       }
     } catch (e: any) {
       setError(e.message || 'Credenziali non valide');

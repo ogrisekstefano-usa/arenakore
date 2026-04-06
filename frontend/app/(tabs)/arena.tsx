@@ -664,7 +664,7 @@ export default function ArenaTab() {
           </View>
           <TouchableOpacity
             style={s.urgencyCta}
-            onPress={() => router.push('/onboarding/step1')}
+            onPress={() => router.push('/onboarding/choice')}
             activeOpacity={0.85}
           >
             <Text style={s.urgencyCtaText}>CERTIFICA</Text>

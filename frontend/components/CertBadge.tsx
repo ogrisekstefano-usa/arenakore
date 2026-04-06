@@ -65,7 +65,7 @@ export function AKDropsWallet({ user }: { user: any }) {
         </View>
         <TouchableOpacity
           style={dw$.certBtn}
-          onPress={() => router.push('/onboarding/step1')}
+          onPress={() => router.push('/onboarding/choice')}
           activeOpacity={0.85}
         >
           <Text style={dw$.certBtnText}>CERTIFICA</Text>
