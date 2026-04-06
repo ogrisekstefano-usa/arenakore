@@ -22,19 +22,11 @@ let Speech: any = null;
 try { Speech = require('expo-speech'); } catch {}
 import { VoiceController } from '../../utils/VoiceController';
 
-// ═══ LAZY LOAD expo-camera to prevent Expo Go crash ═══
-let CameraViewLazy: any = null;
-let useCameraPermissionsLazy: any = null;
-try {
-  const mod = require('expo-camera');
-  CameraViewLazy = mod.CameraView;
-  useCameraPermissionsLazy = mod.useCameraPermissions;
-} catch (e) {
-  console.warn('[Step2] expo-camera not available');
-}
+// NativeCameraPreview handles expo-camera lazy loading & permissions internally
 import * as Haptics from 'expo-haptics';
 import { api } from '../../utils/api';
 import { NexusPoseEngine, type PoseData, type LandmarkPoint } from '../../components/NexusPoseEngine';
+import { NativeCameraPreview } from '../../components/nexus/NativeCameraPreview';
 
 // ===================================================================
 // PUPPET-MOTION-DECK: 17-POINT COCO SKELETON
@@ -310,7 +302,7 @@ export default function NexusBioScan() {
   const isRescan = mode === 'rescan';
   const insets = useSafeAreaInsets();
   const { width: SW, height: SH } = useWindowDimensions();
-  const [permission, requestPermission] = useCameraPermissionsLazy ? useCameraPermissionsLazy() : [null, async () => {}];
+  // Camera permission is now handled by NativeCameraPreview component directly
 
   // Layout
   const HEADER_H = insets.top + 70;
@@ -801,7 +793,9 @@ export default function NexusBioScan() {
           clearInterval(interval);
           // AUTO-ACCEPT: start camera + preload all 14 voice files
           setShowPrivacyConsent(false);
-          if (Platform.OS === 'web') { setCameraReady(true); setIsScanning(true); }
+          // Start scanning: on web waits for NexusPoseEngine, on native camera is native
+          setCameraReady(true);
+          setIsScanning(true);
           VoiceController.preloadAll().catch(() => {});
           return 0;
         }
@@ -813,16 +807,7 @@ export default function NexusBioScan() {
     return () => clearInterval(interval);
   }, [showPrivacyConsent]);
 
-  // ── Request camera permission
-  useEffect(() => {
-    if (!permission?.granted) {
-      requestPermission().then((result) => {
-        if (result && !result.granted) {
-          setCameraPermDenied(true);
-        }
-      });
-    }
-  }, []);
+  // Camera permission is managed by NativeCameraPreview on native platforms
 
   // ===================================================================
   // EMA SKELETON LOOP — suppressed when real MediaPipe data is flowing
@@ -1438,13 +1423,20 @@ export default function NexusBioScan() {
       {/* ── CAMERA + SKELETON AREA ── */}
       <View style={[s.scanArea, { width: SCAN_W, height: SCAN_H }]}>
 
-        {/* ── MEDIAPIPE POSE ENGINE — unmounted when approved (frees memory) ── */}
-        {!showPrivacyConsent && phase !== 'approved' && (
+        {/* ── NATIVE CAMERA (iOS/Android): Shows live camera feed directly ── */}
+        {!showPrivacyConsent && Platform.OS !== 'web' && (
+          <View style={StyleSheet.absoluteFill}>
+            <NativeCameraPreview facing="front" />
+          </View>
+        )}
+
+        {/* ── MEDIAPIPE POSE ENGINE (Web only or native bonus overlay) ── */}
+        {!showPrivacyConsent && phase !== 'approved' && Platform.OS === 'web' && (
           <NexusPoseEngine onPoseData={handlePoseData} enabled />
         )}
 
-        {/* Fallback dark grid when engine not yet started or permission denied */}
-        {(showPrivacyConsent || (!poseEngineReady && !cameraPermDenied)) && (
+        {/* Fallback dark grid ONLY during privacy consent */}
+        {showPrivacyConsent && (
           <View style={[StyleSheet.absoluteFill, s.webCamFallback]} pointerEvents="none">
             <View style={s.gridOverlay} />
           </View>
