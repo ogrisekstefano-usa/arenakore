@@ -503,6 +503,9 @@ export const api = {
   deleteCoverPhoto: (token: string) =>
     request('/user/cover-photo', { method: 'DELETE' }, token),
 
+  deleteProfilePicture: (token: string) =>
+    request('/user/profile-picture', { method: 'DELETE' }, token),
+
   // ========== COACH STUDIO — MOBILE-TO-WEB BRIDGE ==========
   generateWebToken: (token: string) =>
     request('/coach/web-token', { method: 'POST' }, token),

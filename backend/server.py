@@ -988,6 +988,18 @@ async def upload_profile_picture(body: ProfilePictureBody, current_user: dict = 
     return {"detail": "Foto profilo aggiornata", "user": user_to_response(updated)}
 
 
+@api_router.delete("/user/profile-picture")
+async def delete_profile_picture(current_user: dict = Depends(get_current_user)):
+    """Delete avatar / profile picture."""
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$unset": {"profile_picture": "", "profile_picture_updated_at": ""}},
+    )
+    updated = await db.users.find_one({"_id": current_user["_id"]})
+    return {"detail": "Foto profilo rimossa", "user": user_to_response(updated)}
+
+
+
 # ── COVER PHOTO (Separate Hero Background for KORE Tab) ──
 
 class CoverPhotoBody(BaseModel):

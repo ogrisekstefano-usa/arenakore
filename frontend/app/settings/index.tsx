@@ -156,52 +156,48 @@ export default function SettingsScreen() {
   }, [token, refreshUser]);
 
   const handleDeleteCover = useCallback(async () => {
-    Alert.alert('Rimuovi Copertina', 'Vuoi eliminare la foto copertina del KORE?', [
-      { text: 'Annulla', style: 'cancel' },
-      {
-        text: 'Elimina', style: 'destructive', onPress: async () => {
-          try {
-            setUploadingCover(true);
-            await api.deleteCoverPhoto(token);
-            setCoverPhoto(null);
-            if (refreshUser) await refreshUser();
-          } catch {}
-          setUploadingCover(false);
-        }
-      }
-    ]);
+    try {
+      setUploadingCover(true);
+      await api.deleteCoverPhoto(token);
+      setCoverPhoto(null);
+      if (refreshUser) await refreshUser();
+    } catch (e) {
+      console.log('Delete cover error', e);
+    }
+    setUploadingCover(false);
+  }, [token, refreshUser]);
+
+  // ── Delete Avatar ──
+  const handleDeleteAvatar = useCallback(async () => {
+    try {
+      setUploading(true);
+      await api.deleteProfilePicture(token);
+      setProfilePic(null);
+      if (refreshUser) await refreshUser();
+    } catch (e) {
+      console.log('Delete avatar error', e);
+    }
+    setUploading(false);
   }, [token, refreshUser]);
 
   // ── Unified Avatar Picker (Gallery or Camera via ActionSheet) ──
   const handleAvatarPress = useCallback(() => {
     if (Platform.OS === 'web') {
-      // Web: just open gallery
       handlePickImage();
       return;
     }
     Alert.alert('Foto Profilo', 'Come vuoi caricare la foto?', [
       { text: 'Galleria', onPress: handlePickImage },
       { text: 'Scatta Foto', onPress: handleTakePhoto },
-      ...(profilePic ? [{ text: 'Rimuovi', style: 'destructive' as const, onPress: () => {
-        setProfilePic(null);
-        // Optionally call API to remove
-      }}] : []),
       { text: 'Annulla', style: 'cancel' as const }
     ]);
-  }, [handlePickImage, handleTakePhoto, profilePic]);
+  }, [handlePickImage, handleTakePhoto]);
 
   // ── Unified Cover Photo Picker ──
   const handleCoverPress = useCallback(() => {
-    if (Platform.OS === 'web') {
-      handlePickCover();
-      return;
-    }
-    Alert.alert('Foto Copertina KORE', 'Come vuoi caricare la foto?', [
-      { text: 'Galleria', onPress: handlePickCover },
-      ...(coverPhoto ? [{ text: 'Elimina', style: 'destructive' as const, onPress: () => handleDeleteCover() }] : []),
-      { text: 'Annulla', style: 'cancel' as const }
-    ]);
-  }, [handlePickCover, handleDeleteCover, coverPhoto]);
+    // Directly open gallery picker (no Alert)
+    handlePickCover();
+  }, [handlePickCover]);
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
@@ -274,7 +270,27 @@ export default function SettingsScreen() {
                   <Ionicons name="camera" size={14} color="#000" />
                 </View>
               </TouchableOpacity>
-              <Text style={s.sportHint}>Tocca l'avatar per cambiare foto (con editor ritaglio)</Text>
+              {/* ── Avatar Action Buttons ── */}
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                <TouchableOpacity
+                  onPress={handleAvatarPress}
+                  activeOpacity={0.7}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(0,229,255,0.1)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(0,229,255,0.2)' }}
+                >
+                  <Ionicons name="pencil" size={12} color="#00E5FF" />
+                  <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 }}>MODIFICA</Text>
+                </TouchableOpacity>
+                {profilePic ? (
+                  <TouchableOpacity
+                    onPress={handleDeleteAvatar}
+                    activeOpacity={0.7}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,59,48,0.1)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)' }}
+                  >
+                    <Ionicons name="trash-outline" size={12} color="#FF3B30" />
+                    <Text style={{ color: '#FF3B30', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 }}>ELIMINA</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
             </View>
           </Animated.View>
 
