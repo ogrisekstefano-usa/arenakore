@@ -377,26 +377,24 @@ export default function KoreTab() {
       >
         {/* ═══ NIKE HERO BANNER ═══ */}
         <View style={hero.container}>
-          {/* Cross-fading images */}
-          <Animated.View style={[hero.imgLayer, heroStyleA]}>
+          {/* Cross-fading images — BEHIND everything */}
+          <Animated.View style={[StyleSheet.absoluteFillObject, { zIndex: 1, elevation: 1 }, heroStyleA]}>
             <Image source={{ uri: heroImgA }} style={hero.img} resizeMode="cover" />
           </Animated.View>
-          <Animated.View style={[hero.imgLayer, heroStyleB]}>
+          <Animated.View style={[StyleSheet.absoluteFillObject, { zIndex: 1, elevation: 1 }, heroStyleB]}>
             <Image source={{ uri: heroImgB }} style={hero.img} resizeMode="cover" />
           </Animated.View>
-          {/* Heavy gradient vignette — VELINA NERA 30% + gradient */}
-          <View style={StyleSheet.absoluteFillObject}>
-            {/* Base solid black velina at 30% */}
-            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.30)', zIndex: 1 }]} />
-            {/* Gradient from bottom for text legibility */}
+          {/* Gradient overlay — MIDDLE layer */}
+          <View style={[StyleSheet.absoluteFillObject, { zIndex: 5, elevation: 5 }]} pointerEvents="none">
+            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.30)' }]} />
             <LinearGradient
               colors={['transparent', 'rgba(0,0,0,0.30)', 'rgba(0,0,0,0.80)', '#0A0A0A']}
               locations={[0, 0.25, 0.65, 1]}
-              style={[StyleSheet.absoluteFillObject, { zIndex: 2 }]}
+              style={StyleSheet.absoluteFillObject}
             />
           </View>
-          {/* Hero content — IDENTITY BLOCK */}
-          <View style={hero.content}>
+          {/* Hero content — TOP layer (MUST be last in JSX for Android) */}
+          <View style={[hero.content, { zIndex: 20, elevation: 20 }]}>
             {/* ── AVATAR + IDENTITY ROW ── */}
             <Animated.View entering={FadeIn.duration(600)} style={hero.identityBlock}>
               {/* Circular Avatar with Neon Ring */}
@@ -982,7 +980,8 @@ const hero = StyleSheet.create({
   },
   imgLayer: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 0
+    zIndex: 0,
+    elevation: 0,
   },
   img: { width: '100%', height: '100%' },
   topRow: {
@@ -1009,7 +1008,8 @@ const hero = StyleSheet.create({
   fluxVal: { color: '#FFD700', fontSize: 15, fontWeight: '900', fontFamily: FONT_J, letterSpacing: 0.5 },
   content: {
     position: 'absolute', bottom: 20, left: 20, right: 20,
-    zIndex: 10
+    zIndex: 10,
+    elevation: 10,
   },
   chips: {
     flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10
