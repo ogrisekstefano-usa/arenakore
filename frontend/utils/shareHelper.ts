@@ -7,7 +7,6 @@
  * On Web: fallback to download link or window.open
  */
 import { Share, Platform, Alert } from 'react-native';
-import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 
 /**
@@ -35,6 +34,7 @@ export async function shareImageWithText(
     }
 
     // Native: Check if expo-sharing is available
+    const Sharing = require('expo-sharing');
     const isAvailable = await Sharing.isAvailableAsync();
 
     if (isAvailable && imageUri) {

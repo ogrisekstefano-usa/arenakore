@@ -1,5 +1,5 @@
 /**
- * ARENAKORE — KORE DNA ID
+ * ARENAKORE — KORE ID
  * KORE ID: trofeo digitale del biometric scan.
  * Layout: KORE ID · DNA SCORE gigante · Barre Stabilità/Ampiezza · Badge CERTIFIED IN CITY
  * CTA: DOWNLOAD KORE ID (cattura il card come immagine) + CONTINUA REGISTRAZIONE
@@ -15,7 +15,6 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle, Easing } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { captureRef } from 'react-native-view-shot';
-import * as Sharing from 'expo-sharing';
 
 // ── Design tokens
 const GOLD   = '#FFD700';
@@ -64,7 +63,7 @@ const bar$ = StyleSheet.create({
 });
 
 // ── Main ──────────────────────────────────────────────────────────
-export default function PassportScreen() {
+export default function KoreIDScreen() {
   const router  = useRouter();
   const insets  = useSafeAreaInsets();
   const { width: W } = useWindowDimensions();
@@ -120,16 +119,17 @@ export default function PassportScreen() {
     setSharing(true);
     try {
       const uri = await captureRef(cardRef, { format: 'png', quality: 0.95 });
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri, {
+      const ExpoSharing = require('expo-sharing');
+      if (await ExpoSharing.isAvailableAsync()) {
+        await ExpoSharing.shareAsync(uri, {
           mimeType: 'image/png',
-          dialogTitle: 'ARENAKORE — KORE DNA ID'
+          dialogTitle: 'ARENAKORE — KORE ID'
         });
       } else {
         // Fallback: native Share sheet
         await Share.share({
-          message: `ARENAKORE — KORE DNA ID\n\nDNA SCORE: ${result?.kore_score}/100\nSTABILITÀ: ${result?.stability}% | AMPIEZZA: ${result?.amplitude}%\nCERTIFIED IN ${result?.city}\n${result ? formatDate(result.scan_date) : ''}\n\nhttps://arena-scan-lab.preview.emergentagent.com`,
-          title: 'KORE DNA ID'
+          message: `ARENAKORE — KORE ID\n\nDNA SCORE: ${result?.kore_score}/100\nSTABILITÀ: ${result?.stability}% | AMPIEZZA: ${result?.amplitude}%\nCERTIFIED IN ${result?.city}\n${result ? formatDate(result.scan_date) : ''}\n\nhttps://arena-scan-lab.preview.emergentagent.com`,
+          title: 'KORE ID'
         });
       }
       setDownloadOk(true);

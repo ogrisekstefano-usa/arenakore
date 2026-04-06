@@ -13,7 +13,6 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── Design tokens
@@ -67,13 +66,14 @@ export default function LegacyStep3() {
   useEffect(() => {
     (async () => {
       try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
+        const ExpoLocation = require('expo-location');
+        const { status } = await ExpoLocation.requestForegroundPermissionsAsync();
         if (status !== 'granted') return;
 
-        const pos = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced
+        const pos = await ExpoLocation.getCurrentPositionAsync({
+          accuracy: ExpoLocation.Accuracy.Balanced
         });
-        const [geo] = await Location.reverseGeocodeAsync(pos.coords);
+        const [geo] = await ExpoLocation.reverseGeocodeAsync(pos.coords);
         const city = (geo?.city || geo?.subregion || geo?.region || 'CHICAGO')
           .toUpperCase()
           .trim();

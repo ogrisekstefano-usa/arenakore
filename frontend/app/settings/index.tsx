@@ -14,7 +14,6 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { SPORTS_LIST, getSportIcon, getSportHeroImages } from '../../utils/sportAssets';
-import * as ImagePicker from 'expo-image-picker';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const FONT_J = Platform.select({ ios: 'PlusJakartaSans-ExtraBold', android: 'PlusJakartaSans-ExtraBold', default: 'Plus Jakarta Sans' });
@@ -67,6 +66,7 @@ export default function SettingsScreen() {
   // ── Profile Picture Upload ──
   const handlePickImage = useCallback(async () => {
     try {
+      const ImagePicker = require('expo-image-picker');
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permesso negato', 'Serve il permesso per accedere alla galleria.');
@@ -98,6 +98,7 @@ export default function SettingsScreen() {
 
   const handleTakePhoto = useCallback(async () => {
     try {
+      const ImagePicker = require('expo-image-picker');
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permesso negato', 'Serve il permesso per usare la fotocamera.');
@@ -129,6 +130,7 @@ export default function SettingsScreen() {
   // ── Cover Photo Upload (Separate from Avatar) ──
   const handlePickCover = useCallback(async () => {
     try {
+      const ImagePicker = require('expo-image-picker');
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permesso negato', 'Serve il permesso per accedere alla galleria.');

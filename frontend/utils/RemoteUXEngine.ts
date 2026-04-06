@@ -9,8 +9,6 @@
  * scripts.json → multilanguage (IT/EN/ES)
  */
 import { Platform } from 'react-native';
-import * as Speech from 'expo-speech';
-import * as Haptics from 'expo-haptics';
 import SCRIPTS from '../assets/scripts/voice_scripts.json';
 
 type Lang = 'it' | 'en' | 'es';
@@ -90,6 +88,7 @@ class PingEngine {
     const ctx = this.getCtx();
     if (!ctx) {
       // Native fallback: haptic
+      const Haptics = require('expo-haptics');
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
       return;
     }
@@ -169,6 +168,7 @@ class RemoteUXEngineClass {
     } else {
       // Native fallback with expo-speech
       try {
+        const Speech = require('expo-speech');
         const voiceMap: Record<Lang, string> = { it: 'it-IT', en: 'en-US', es: 'es-ES' };
         Speech.speak(text, {
           language: voiceMap[this.lang],
@@ -184,6 +184,7 @@ class RemoteUXEngineClass {
     if (this.webVoice.available) {
       await this.webVoice.speak(text);
     } else {
+      const Speech = require('expo-speech');
       const voiceMap: Record<Lang, string> = { it: 'it-IT', en: 'en-US', es: 'es-ES' };
       Speech.speak(text, { language: voiceMap[this.lang], rate: 0.92 });
     }
@@ -191,7 +192,7 @@ class RemoteUXEngineClass {
 
   stop() {
     this.webVoice.stop();
-    Speech.stop();
+    try { const Speech = require('expo-speech'); Speech.stop(); } catch (_) {}
     this.ping.stopSequence();
   }
 

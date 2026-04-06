@@ -1790,6 +1790,39 @@ export default function NexusTriggerScreen() {
   const [dropsEarned, setDropsEarned] = useState(0);
   const [isVictory, setIsVictory] = useState(false);
 
+  // ═══ KORE ATLAS: GPS capture for geo-tagged performance records ═══
+  const geoRef = useRef<{ latitude: number; longitude: number; city_name: string } | null>(null);
+  const geoFetchedRef = useRef(false);
+
+  // Capture geolocation lazily when challenge starts (countdown or scanning phase)
+  useEffect(() => {
+    if ((phase === 'countdown' || phase === 'scanning') && !geoFetchedRef.current) {
+      geoFetchedRef.current = true;
+      (async () => {
+        try {
+          const ExpoLocation = require('expo-location');
+          const { status } = await ExpoLocation.requestForegroundPermissionsAsync();
+          if (status !== 'granted') return;
+          const pos = await ExpoLocation.getCurrentPositionAsync({ accuracy: ExpoLocation.Accuracy.Balanced });
+          const [geo] = await ExpoLocation.reverseGeocodeAsync(pos.coords);
+          const city = (geo?.city || geo?.subregion || geo?.region || '').toUpperCase().trim();
+          geoRef.current = {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            city_name: city || 'UNKNOWN',
+          };
+        } catch (_) {
+          // GPS unavailable — non-blocking, record saved without geo
+        }
+      })();
+    }
+    // Reset geo when going back to console
+    if (phase === 'console') {
+      geoFetchedRef.current = false;
+      geoRef.current = null;
+    }
+  }, [phase]);
+
   // ═══ AUTO-SNAPSHOT: PEAK capture at ~50% reps ═══
   useEffect(() => {
     if (phase !== 'scanning' || Platform.OS !== 'web') return;
@@ -2341,7 +2374,12 @@ export default function NexusTriggerScreen() {
           template_name: scanResult.training_name || scanResult.ugc_title,
           validation_status: scanResult.verification_status || (scanResult.is_verified ? 'AI_VERIFIED' : 'UNVERIFIED'),
           flux_earned: scanResult.flux_earned || scanResult.xp_earned || 0,
-          duration_seconds: timer
+          duration_seconds: timer,
+          extra_meta: geoRef.current ? {
+            latitude: geoRef.current.latitude,
+            longitude: geoRef.current.longitude,
+            city_name: geoRef.current.city_name,
+          } : undefined
         }, token);
       } catch (_) { /* silent — backend already has core record, this enriches with snapshots */ }
     })();

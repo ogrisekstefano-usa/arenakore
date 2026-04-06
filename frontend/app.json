@@ -14,7 +14,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Analizza la tua biomeccanica in tempo reale",
         "NSMicrophoneUsageDescription": "Attiva comandi vocali e sessioni Nexus",
-        "NSMotionUsageDescription": "Traccia i movimenti per contare le ripetizioni"
+        "NSMotionUsageDescription": "Traccia i movimenti per contare le ripetizioni",
+        "NSLocationWhenInUseUsageDescription": "Geolocalizza le sfide completate su KORE ATLAS"
       }
     },
     "android": {
