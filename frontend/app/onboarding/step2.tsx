@@ -1493,10 +1493,10 @@ export default function NexusBioScan() {
           {/* ── SKELETON — Canvas WebView is sole renderer when poseEngineReady ── */}
           {(() => {
             // When poseEngineReady: WebView canvas draws video + skeleton → SVG disabled
-            // When NOT ready: no simulation
             if (poseEngineReady) return null;  // Canvas handles ALL rendering
 
-            const displayPts: [number, number][] | null = realPts;
+            // Use real MediaPipe data if available, otherwise use simulated pts
+            const displayPts: [number, number][] | null = realPts || (pts && pts.length === 17 ? pts : null);
             if (!displayPts) return null;
 
             return (
@@ -1518,8 +1518,8 @@ export default function NexusBioScan() {
                 {displayPts.map(([x, y], i) => {
                   if (isPositioning && !visibleMask[i]) return null;
                   const isHead = i < 5;
-                  const conf = realPts && realLandmarks?.[i]?.v;
-                  const glow = conf != null ? Math.min(1, conf) : 0.08;
+                  const conf = realLandmarks?.[i]?.v;
+                  const glow = conf != null ? Math.min(1, conf) : (realPts ? 0.08 : 0.6);
                   return (
                     <G key={`pt-${i}`}>
                       <Circle cx={x} cy={y} r={isHead ? 10 : 8}
