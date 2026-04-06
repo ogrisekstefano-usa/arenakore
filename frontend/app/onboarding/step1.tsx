@@ -258,7 +258,7 @@ export default function LegacyStep1() {
   const insets = useSafeAreaInsets();
 
   const handleNavigate = useCallback(() => {
-    router.push('/onboarding/step2');
+    router.push('/onboarding/choice');
   }, [router]);
 
   const { state: voiceState, transcript, micPermission, manualTrigger } = useVoiceEngine(handleNavigate);
