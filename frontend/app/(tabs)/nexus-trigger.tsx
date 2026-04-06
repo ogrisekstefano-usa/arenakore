@@ -90,7 +90,7 @@ function BioScanTrigger({ user, onComplete, onCancel }: { user: any; onComplete:
 
   const PHASES = ['SCANNING BIOMETRICS', 'DETECTING BIO-SIGNATURE', 'MAPPING KORE POINTS', 'CALIBRATING SENSORS'];
   const isFounder = user?.is_founder || user?.is_admin;
-  const fullMatch = `${(user?.username || 'ATHLETE').toUpperCase()} \u00b7 ${isFounder ? 'FOUNDER' : 'KORE ATHLETE'}`;
+  const fullMatch = `${(user?.username || 'ATHLETE').toUpperCase()} \u00b7 KORE ATHLETE`;
 
   useEffect(() => {
     laserY.value = withRepeat(withTiming(SH, { duration: 1600, easing: Easing.inOut(Easing.ease) }), -1, true);
@@ -164,7 +164,6 @@ function BioScanTrigger({ user, onComplete, onCancel }: { user: any; onComplete:
           <>
             <Text style={bio$.matchLabel}>BIO-SIGNATURE MATCHED</Text>
             <Text style={bio$.matchText}>{matchText}</Text>
-            {isFounder && <Text style={bio$.founderGlow}><Ionicons name="star" size={12} color="#FFD700" /> FOUNDER #{user?.founder_number || '?'}</Text>}
             {readyToStart && (
               <TouchableOpacity style={bio$.avviaBtn} onPress={onComplete} activeOpacity={0.7}>
                 <Text style={bio$.avviaBtnText}>AVVIA ORA</Text>
