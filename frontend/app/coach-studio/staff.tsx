@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 /**
  * STAFF MANAGEMENT — GYM_OWNER adds/removes coaches and changes roles
  */
@@ -8,7 +9,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 

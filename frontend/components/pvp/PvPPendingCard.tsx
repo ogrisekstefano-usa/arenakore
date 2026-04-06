@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 /**
  * ARENAKORE — PvP PENDING CARD
  * Shows pending/active PvP challenges in NEXUS console
@@ -9,7 +10,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 

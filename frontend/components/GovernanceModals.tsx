@@ -1,3 +1,4 @@
+import Haptics from '../utils/haptics';
 /**
  * ARENAKORE — Governance Modals
  * 1. TemplateRequestModal: "Manca un Template? Chiedilo ai Coach"
@@ -13,7 +14,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 import { useAuth } from '../contexts/AuthContext';
 
 const FONT_M = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });

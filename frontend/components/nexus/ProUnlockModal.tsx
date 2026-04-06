@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 /**
  * ARENAKORE — PRO UNLOCK CINEMATIC MODAL
  * SPRINT 7: One-time cinematic event when bio-signature exceeds 75/100
@@ -13,7 +14,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 
 const { width: SW } = Dimensions.get('window');
 

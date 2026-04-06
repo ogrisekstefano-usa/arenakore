@@ -1,3 +1,4 @@
+import Haptics from '../utils/haptics';
 /**
  * ARENAKORE — TILT GUIDE OVERLAY
  * Pre-scan positioning system for 3-meter athlete UX.
@@ -19,7 +20,6 @@ import Animated, {
   useAnimatedStyle, Easing, FadeIn, FadeOut,
   interpolate, Extrapolation
 } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 // DeviceMotion lazy-loaded to prevent Expo Go crash
 import { RemoteUXEngine } from '../utils/RemoteUXEngine';
 

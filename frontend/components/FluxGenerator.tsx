@@ -1,3 +1,4 @@
+import Haptics from '../utils/haptics';
 /**
  * ARENAKORE — FLUX GENERATOR v1.0 "NIKE ELITE SHOP"
  * Premium FLUX recharge with Crew Squad Boost.
@@ -13,7 +14,6 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
-import * as Haptics from 'expo-haptics';
 
 const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
 const FONT_M = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });

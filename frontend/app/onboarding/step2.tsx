@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 /**
  * ARENAKORE LEGACY INITIATION — STEP 2
  * NEXUS 5-BEAT BIO-SCAN: Human-Centric HUD (Minority Report / Iron Man)
@@ -23,7 +24,6 @@ try { Speech = require('expo-speech'); } catch {}
 import { VoiceController } from '../../utils/VoiceController';
 
 // NativeCameraPreview handles expo-camera lazy loading & permissions internally
-import * as Haptics from 'expo-haptics';
 import { api } from '../../utils/api';
 import { NexusPoseEngine, type PoseData, type LandmarkPoint } from '../../components/NexusPoseEngine';
 import { NativeCameraPreview } from '../../components/nexus/NativeCameraPreview';

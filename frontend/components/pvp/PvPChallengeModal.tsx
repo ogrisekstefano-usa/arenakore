@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 /**
  * ARENAKORE — PvP CHALLENGE MODAL
  * Send a 1v1 challenge: choose discipline + FLUX stake
@@ -9,7 +10,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 

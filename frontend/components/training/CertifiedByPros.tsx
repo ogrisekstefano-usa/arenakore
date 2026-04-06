@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 /**
  * CERTIFIED BY PROS — TalosFit Master Template Section
  * Mostra template certificati da coach professionisti.
@@ -7,7 +8,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, useSharedValue, withSequence, withTiming, withRepeat, useAnimatedStyle, Easing } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';

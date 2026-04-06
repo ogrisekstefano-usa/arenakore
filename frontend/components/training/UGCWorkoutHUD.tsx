@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 /**
  * ARENAKORE — UGC WORKOUT HUD v1.0
  * Real-time overlay during NÈXUS scanning for UGC challenges.
@@ -11,7 +12,6 @@ import Animated, {
   Easing
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 
 const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
 const FONT_M = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });

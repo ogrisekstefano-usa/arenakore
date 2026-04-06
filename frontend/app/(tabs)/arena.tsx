@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 /**
  * ARENAKORE — ARENA TAB v4.0 — CREW BATTLE ENGINE
  */
@@ -13,7 +14,6 @@ import Animated, {
   withRepeat, withSequence, withTiming, useAnimatedStyle, Easing, withSpring,
   interpolateColor
 } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { Header } from '../../components/Header';
 import { TAB_BACKGROUNDS } from '../../utils/images';

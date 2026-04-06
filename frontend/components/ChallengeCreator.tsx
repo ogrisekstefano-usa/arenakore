@@ -1,3 +1,4 @@
+import Haptics from '../utils/haptics';
 /**
  * ARENAKORE — CHALLENGE CREATOR v1.0
  * 4-Step UGC Challenge Creation Flow:
@@ -16,7 +17,6 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
-import * as Haptics from 'expo-haptics';
 
 const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
 const FONT_M = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });

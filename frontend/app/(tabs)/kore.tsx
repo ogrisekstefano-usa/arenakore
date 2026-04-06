@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 /**
  * ARENAKORE — KORE TAB v10.0 "NIKE DYNAMIC DASHBOARD"
  * 4 Macro-Cards with cross-fade athlete imagery (3s cycle).
@@ -28,7 +29,6 @@ import { QRScannerModal } from '../../components/QRScannerModal';
 import { PerformanceDetailModal } from '../../components/kore/PerformanceDetailModal';
 import { SiloRadar } from '../../components/kore/SiloRadar';
 import { useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../../utils/api';
 import { getSportHeroImages, getSportAuraColor, getSportIcon, getSportDisplayName, getSportAvatarPlaceholder } from '../../utils/sportAssets';

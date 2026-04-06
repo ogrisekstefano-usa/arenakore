@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 /**
  * ARENAKORE — POST-RACE VALIDATION (QR KORE CROSS-CHECK)
  * ═══════════════════════════════════════════════════════
@@ -22,7 +23,6 @@ import Animated, {
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, G, Text as SvgText } from 'react-native-svg';
 import QRCode from 'react-native-qrcode-svg';
-import * as Haptics from 'expo-haptics';
 import { api } from '../../utils/api';
 import { FluxIcon } from '../FluxIcon';
 import { EL, FONT_MONT, FONT_JAKARTA } from '../../utils/eliteTheme';

@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 /**
  * NÈXUS COMMAND CENTER — MULTISPORT CHALLENGE BUILDER
  * Tab 1: Visual Timeline  |  Tab 2: Automation Engine  |  Tab 3: Global Leaderboard
@@ -10,7 +11,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Rect, Text as SvgText, G, Line, Polygon } from 'react-native-svg';
 import Animated, { FadeInDown, FadeIn, useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme, PJS, MONT, fz } from '../../contexts/ThemeContext';
 import { api } from '../../utils/api';

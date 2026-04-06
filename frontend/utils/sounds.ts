@@ -1,8 +1,8 @@
+import Haptics from './haptics';
 // ARENAKORE Sound Kit
 // Deep Woosh (sub-bass sweep) + Metallic Ping (high-freq shimmer)
 // Uses Web Audio API for web, expo-haptics for native tactile feedback
 import { Platform } from 'react-native';
-import * as Haptics from 'expo-haptics';
 
 // ============================================================
 // WEB AUDIO SYNTHESIS (only on web platform)

@@ -1,3 +1,4 @@
+import Haptics from '../utils/haptics';
 /**
  * ARENAKORE — CHALLENGE SHARE CARD v1.0
  * Nike-style snapshot PNG with QR Code for UGC challenge sharing.
@@ -13,7 +14,6 @@ import { Ionicons } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as Haptics from 'expo-haptics';
 import { shareImageWithText, shareText } from '../utils/shareHelper';
 
 const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });

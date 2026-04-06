@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 /**
  * CREW STRATEGIST — Battle Control & Weighted Average Calculator
  */
@@ -5,7 +6,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { SectionHeader } from '../../components/studio/StudioComponents';

@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 import { TAB_BACKGROUNDS } from '../../utils/images';
 /**
  * ARENAKORE — NEXUS TRIGGER TAB v3.2 (Camera Lazy-Load Fix)
@@ -22,7 +23,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Text as SvgText, Polygon } from 'react-native-svg';
-import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth, UserRole, ROLE_CONFIG } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';

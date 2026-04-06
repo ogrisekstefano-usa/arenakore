@@ -1,3 +1,4 @@
+import Haptics from './haptics';
 /**
  * ARENAKORE — REMOTE UX ENGINE
  * 4-layer feedback system for 3-meter athlete positioning:
@@ -88,8 +89,7 @@ class PingEngine {
     const ctx = this.getCtx();
     if (!ctx) {
       // Native fallback: haptic
-      const Haptics = require('expo-haptics');
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      Haptics.impactAsync('Light');
       return;
     }
     try {

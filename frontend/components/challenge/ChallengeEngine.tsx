@@ -1,3 +1,4 @@
+import Haptics from '../../utils/haptics';
 /**
  * ARENAKORE — CHALLENGE ENGINE v2.0
  * Tag Selection → Validation Mode → Manual Entry / Auto / Sensor → Sanity Check → THE VERDICT
@@ -16,7 +17,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, Polygon, Text as SvgText } from 'react-native-svg';
-import * as Haptics from 'expo-haptics';
 import { api } from '../../utils/api';
 import { FluxIcon } from '../FluxIcon';
 import { EL, FONT_MONT, FONT_JAKARTA } from '../../utils/eliteTheme';

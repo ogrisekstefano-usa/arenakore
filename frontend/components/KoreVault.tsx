@@ -1,3 +1,4 @@
+import Haptics from '../utils/haptics';
 /**
  * ARENAKORE — KORE VAULT
  * Premium Tool Shop nel tab KORE.
@@ -14,7 +15,6 @@ import Animated, {
   useSharedValue, withSequence, withTiming, withRepeat,
   useAnimatedStyle, Easing
 } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../utils/api';
 
