@@ -1534,7 +1534,8 @@ export default function NexusBioScan() {
 
             return (
               <>
-                {/* Skeleton Connections */}
+                {/* ═══ NÈXUS ENGINE: Neon Thin-Line Skeleton ═══ */}
+                {/* Connections — thin neon lines */}
                 {CONNECTIONS.map(([a, b], i) => {
                   if (isPositioning && (!visibleMask[a] || !visibleMask[b])) return null;
                   return (
@@ -1542,25 +1543,26 @@ export default function NexusBioScan() {
                       key={`conn-${i}`}
                       x1={displayPts[a]?.[0] ?? 0} y1={displayPts[a]?.[1] ?? 0}
                       x2={displayPts[b]?.[0] ?? 0} y2={displayPts[b]?.[1] ?? 0}
-                      stroke={skelColor} strokeWidth={realPts ? 2.5 : 2} opacity={skelOpacity * 0.65}
+                      stroke={skelColor} strokeWidth={1.5} opacity={skelOpacity * 0.8}
                     />
                   );
                 })}
 
-                {/* Keypoints */}
+                {/* Keypoints — small neon dots with glow ring */}
                 {displayPts.map(([x, y], i) => {
                   if (isPositioning && !visibleMask[i]) return null;
                   const isHead = i < 5;
                   const conf = realLandmarks?.[i]?.v;
-                  const glow = conf != null ? Math.min(1, conf) : (realPts ? 0.08 : 0.6);
+                  const glow = conf != null ? Math.min(1, conf) : (realPts ? 0.08 : 0.7);
                   return (
                     <G key={`pt-${i}`}>
-                      <Circle cx={x} cy={y} r={isHead ? 10 : 8}
-                        fill={skelColor} opacity={glow} />
-                      <Circle cx={x} cy={y} r={isHead ? 5 : 4}
-                        fill={skelColor} opacity={skelOpacity} />
-                      <Circle cx={x} cy={y} r={1.5}
-                        fill="#FFFFFF" opacity={skelOpacity * 0.9} />
+                      {/* Outer glow ring */}
+                      <Circle cx={x} cy={y} r={isHead ? 6 : 5}
+                        fill="none" stroke={skelColor} strokeWidth={1}
+                        opacity={glow * 0.4} />
+                      {/* Inner solid dot */}
+                      <Circle cx={x} cy={y} r={isHead ? 3 : 2.5}
+                        fill={skelColor} opacity={skelOpacity * 0.9} />
                     </G>
                   );
                 })}

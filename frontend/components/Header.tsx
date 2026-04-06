@@ -1,12 +1,11 @@
 /**
- * ARENAKORE — Unified Global Header v2.0
+ * ARENAKORE — Unified Global Header v3.0
  * ═══════════════════════════════════════
  * LEFT:   Bell icon (Notifications)
- * CENTER: Tab Title (bold)
- * RIGHT:  Multi-Wallet FLUX (Neon / Master / Diamond) + Menu
+ * CENTER: Tab Title (bold, centered)
+ * RIGHT:  Multi-Wallet FLUX (Neon / Master / Diamond)
  *
  * IMPORTANT: This header is shared by ALL tabs.
- * Colors are globally synced via eliteTheme.ts EL constants.
  */
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
@@ -17,7 +16,7 @@ import { ControlCenter } from './ControlCenter';
 import { NotificationSheet, Notification } from './NotificationSheet';
 import { EL, FONT_JAKARTA, FONT_MONT } from '../utils/eliteTheme';
 
-// ═══ FLUX WALLET TIERS — Global Color Definitions ═══
+// ═══ FLUX WALLET TIERS ═══
 const FLUX_TIERS = {
   neon:    { icon: 'flash' as const,         color: '#00E5FF', label: 'N' },
   master:  { icon: 'shield-half' as const,   color: '#FFD700', label: 'M' },
@@ -35,14 +34,10 @@ export function Header({ title, rightAction }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
 
-  // FLUX balances — uses ak_credits as total, split into tiers
-  const totalFlux = user?.ak_credits || 0;
-  // For now: all flux goes to Neon tier until backend multi-wallet is implemented
-  const neonFlux = totalFlux;
+  const neonFlux = user?.ak_credits || 0;
   const masterFlux = user?.master_flux || 0;
   const diamondFlux = user?.diamond_flux || 0;
 
-  // Notifications — TODO: fetch from backend
   const notifications: Notification[] = [];
 
   return (
@@ -50,10 +45,22 @@ export function Header({ title, rightAction }: HeaderProps) {
       <View style={[h.container, { paddingTop: insets.top + 4 }]}>
         <View style={h.row}>
 
-          {/* ═══ LEFT: Tab Title — aligned left ═══ */}
+          {/* ═══ LEFT: Notification Bell ═══ */}
+          <View style={h.leftGroup}>
+            <TouchableOpacity
+              style={h.bellBtn}
+              onPress={() => setNotifOpen(true)}
+              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
+            >
+              <Ionicons name="notifications-outline" size={20} color={EL.TEXT_SEC} />
+              {notifications.length > 0 && <View style={h.bellDot} />}
+            </TouchableOpacity>
+          </View>
+
+          {/* ═══ CENTER: Tab Title ═══ */}
           <Text style={h.title} numberOfLines={1}>{title}</Text>
 
-          {/* ═══ RIGHT: Multi-Wallet FLUX + Bell + Menu ═══ */}
+          {/* ═══ RIGHT: Multi-Wallet FLUX ═══ */}
           <View style={h.rightGroup}>
             {/* Neon FLUX */}
             <View style={[h.fluxChip, { borderColor: `${FLUX_TIERS.neon.color}25` }]}>
@@ -66,32 +73,16 @@ export function Header({ title, rightAction }: HeaderProps) {
             {/* Master FLUX */}
             <View style={[h.fluxChip, { borderColor: `${FLUX_TIERS.master.color}25` }]}>
               <Ionicons name={FLUX_TIERS.master.icon} size={11} color={FLUX_TIERS.master.color} />
-              <Text style={[h.fluxVal, { color: FLUX_TIERS.master.color }]}>
-                {masterFlux}
-              </Text>
+              <Text style={[h.fluxVal, { color: FLUX_TIERS.master.color }]}>{masterFlux}</Text>
             </View>
 
             {/* Diamond FLUX */}
             <View style={[h.fluxChip, { borderColor: `${FLUX_TIERS.diamond.color}25` }]}>
               <Ionicons name={FLUX_TIERS.diamond.icon} size={11} color={FLUX_TIERS.diamond.color} />
-              <Text style={[h.fluxVal, { color: FLUX_TIERS.diamond.color }]}>
-                {diamondFlux}
-              </Text>
+              <Text style={[h.fluxVal, { color: FLUX_TIERS.diamond.color }]}>{diamondFlux}</Text>
             </View>
 
             {rightAction}
-
-            {/* Notification Bell */}
-            <TouchableOpacity
-              style={h.bellBtn}
-              onPress={() => setNotifOpen(true)}
-              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
-            >
-              <Ionicons name="notifications-outline" size={20} color={EL.TEXT_SEC} />
-              {notifications.length > 0 && (
-                <View style={h.bellDot} />
-              )}
-            </TouchableOpacity>
 
             {/* Menu ••• */}
             <TouchableOpacity
@@ -105,20 +96,12 @@ export function Header({ title, rightAction }: HeaderProps) {
         </View>
       </View>
 
-      {/* Modals */}
       <ControlCenter visible={menuOpen} onClose={() => setMenuOpen(false)} />
-      <NotificationSheet
-        visible={notifOpen}
-        onClose={() => setNotifOpen(false)}
-        notifications={notifications}
-      />
+      <NotificationSheet visible={notifOpen} onClose={() => setNotifOpen(false)} notifications={notifications} />
     </>
   );
 }
 
-// ══════════════════════════════════════════════════════════════
-// STYLES — Globally synced colors from EL (eliteTheme)
-// ══════════════════════════════════════════════════════════════
 const h = StyleSheet.create({
   container: {
     backgroundColor: EL.BG,
@@ -132,7 +115,11 @@ const h = StyleSheet.create({
     minHeight: 44,
   },
 
-  // ─── LEFT: Bell ───
+  leftGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: 44,
+  },
   bellBtn: {
     width: 36,
     height: 36,
@@ -152,19 +139,16 @@ const h = StyleSheet.create({
     borderColor: EL.BG,
   },
 
-  // ─── LEFT: Title ───
   title: {
     fontFamily: FONT_MONT,
     fontWeight: '800',
-    fontSize: 18,
+    fontSize: 16,
     color: EL.TEXT,
     letterSpacing: 2,
-    textAlign: 'left',
+    textAlign: 'center',
     flex: 1,
-    marginRight: 8,
   },
 
-  // ─── RIGHT: Multi-Wallet + Menu ───
   rightGroup: {
     flexDirection: 'row',
     alignItems: 'center',

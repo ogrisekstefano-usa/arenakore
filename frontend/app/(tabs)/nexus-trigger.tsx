@@ -463,10 +463,6 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
 }) {
   const router = useRouter();
   const { width: screenWidth } = Dimensions.get('window');
-  const isFounder = user?.is_founder || user?.is_admin;
-  const founderShimmer = useSharedValue(0.7);
-  useEffect(() => { founderShimmer.value = withRepeat(withSequence(withTiming(1, { duration: 1500 }), withTiming(0.7, { duration: 1500 })), -1, false); }, []);
-  const shimmerStyle = useAnimatedStyle(() => ({ opacity: founderShimmer.value }));
 
   // ─── 4 DEFINITIVE CARDS ───
   const userSport = user?.preferred_sport || user?.sport || 'Fitness';
