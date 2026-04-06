@@ -5,7 +5,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput,
-  Image, Platform, Alert, ActivityIndicator, Modal, FlatList, KeyboardAvoidingView
+  Image, ImageBackground, Platform, Alert, ActivityIndicator, Modal, FlatList, KeyboardAvoidingView
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
-import { SPORTS_LIST, getSportIcon } from '../../utils/sportAssets';
+import { SPORTS_LIST, getSportIcon, getSportHeroImages } from '../../utils/sportAssets';
 import * as ImagePicker from 'expo-image-picker';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
@@ -283,28 +283,52 @@ export default function SettingsScreen() {
             <Text style={s.sectionTitle}>FOTO COPERTINA KORE</Text>
             <Text style={[s.sportHint, { marginBottom: 10 }]}>Questa foto verrà usata come sfondo nel tuo profilo KORE. Tocca per modificare.</Text>
             {coverPhoto ? (
-              <TouchableOpacity onPress={handleCoverPress} activeOpacity={0.85} style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }}>
-                <Image source={{ uri: coverPhoto }} style={{ width: '100%', height: 140 }} resizeMode="cover" />
-                {uploadingCover && (
-                  <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}>
-                    <ActivityIndicator color="#00E5FF" size="small" />
-                  </View>
-                )}
-                <View style={{ position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <Ionicons name="pencil" size={12} color="#00E5FF" />
-                  <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 }}>MODIFICA</Text>
+              <View style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }}>
+                <TouchableOpacity onPress={handleCoverPress} activeOpacity={0.85}>
+                  <Image source={{ uri: coverPhoto }} style={{ width: '100%', height: 140 }} resizeMode="cover" />
+                  {uploadingCover && (
+                    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}>
+                      <ActivityIndicator color="#00E5FF" size="small" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+                {/* ── Action buttons: MODIFICA + ELIMINA ── */}
+                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8, padding: 8, backgroundColor: 'rgba(255,255,255,0.03)' }}>
+                  <TouchableOpacity
+                    onPress={handleCoverPress}
+                    activeOpacity={0.7}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(0,229,255,0.1)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(0,229,255,0.2)' }}
+                  >
+                    <Ionicons name="pencil" size={12} color="#00E5FF" />
+                    <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 }}>MODIFICA</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleDeleteCover}
+                    activeOpacity={0.7}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,59,48,0.1)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)' }}
+                  >
+                    <Ionicons name="trash-outline" size={12} color="#FF3B30" />
+                    <Text style={{ color: '#FF3B30', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 }}>ELIMINA</Text>
+                  </TouchableOpacity>
                 </View>
-              </TouchableOpacity>
+              </View>
             ) : (
-              <TouchableOpacity onPress={handleCoverPress} style={{ height: 100, borderRadius: 12, borderWidth: 1.5, borderColor: 'rgba(0,229,255,0.2)', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,229,255,0.03)' }} activeOpacity={0.7}>
-                {uploadingCover ? (
-                  <ActivityIndicator color="#00E5FF" size="small" />
-                ) : (
-                  <>
-                    <Ionicons name="image-outline" size={28} color="rgba(0,229,255,0.4)" />
-                    <Text style={{ color: 'rgba(0,229,255,0.5)', fontSize: 11, fontWeight: '700', marginTop: 6, fontFamily: FONT_M }}>CARICA FOTO COPERTINA</Text>
-                  </>
-                )}
+              <TouchableOpacity onPress={handleCoverPress} style={{ height: 120, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }} activeOpacity={0.8}>
+                <ImageBackground
+                  source={{ uri: getSportHeroImages(selectedSport)[0] }}
+                  style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+                  imageStyle={{ opacity: 0.35 }}
+                >
+                  {uploadingCover ? (
+                    <ActivityIndicator color="#00E5FF" size="small" />
+                  ) : (
+                    <View style={{ alignItems: 'center', gap: 6 }}>
+                      <Ionicons name="camera-outline" size={28} color="rgba(255,255,255,0.5)" />
+                      <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '700', fontFamily: FONT_M, letterSpacing: 0.5 }}>CARICA FOTO COPERTINA</Text>
+                      <Text style={{ color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '500' }}>Placeholder: {selectedSport}</Text>
+                    </View>
+                  )}
+                </ImageBackground>
               </TouchableOpacity>
             )}
           </Animated.View>
