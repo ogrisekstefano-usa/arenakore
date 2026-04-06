@@ -9262,6 +9262,9 @@ async def save_scan_result(body: dict, current_user: dict = Depends(get_current_
     stability   = min(100.0, max(0.0, float(body.get("stability", 50))))
     amplitude   = min(100.0, max(0.0, float(body.get("amplitude", 50))))
     city        = (body.get("city") or "CHICAGO").upper().strip()
+    latitude    = body.get("latitude")
+    longitude   = body.get("longitude")
+    city_name   = body.get("city_name") or city
     scan_date   = body.get("scan_date") or datetime.now(timezone.utc).isoformat()
     rescan_mode = bool(body.get("rescan_mode", False))
 
@@ -9313,6 +9316,9 @@ async def save_scan_result(body: dict, current_user: dict = Depends(get_current_
             "stability":   stability,
             "amplitude":   amplitude,
             "city":        city,
+            "city_name":   city_name,
+            "latitude":    float(latitude) if latitude is not None else None,
+            "longitude":   float(longitude) if longitude is not None else None,
             "scan_date":   scan_date,
             "xp_earned":   xp_reward,
             "rescan_mode": rescan_mode,
@@ -10867,6 +10873,11 @@ async def save_performance_record(
     }
     if extra_meta:
         record["meta"] = extra_meta
+    # Geo-data (KORE ATLAS)
+    if extra_meta and extra_meta.get("latitude") is not None:
+        record["latitude"] = float(extra_meta["latitude"])
+        record["longitude"] = float(extra_meta.get("longitude", 0))
+        record["city_name"] = extra_meta.get("city_name", "")
 
     result = await db.performance_records.insert_one(record)
     return str(result.inserted_id)
@@ -10964,6 +10975,9 @@ async def get_kore_history(
             "flux_earned": r.get("flux_earned", 0),
             "completed_at": r["completed_at"].isoformat() if r.get("completed_at") else None,
             "meta": r.get("meta", {}),
+            "latitude": r.get("latitude"),
+            "longitude": r.get("longitude"),
+            "city_name": r.get("city_name"),
         })
 
     # ── Aggregate stats ──
@@ -11053,6 +11067,68 @@ async def get_kore_stats(current_user: dict = Depends(get_current_user)):
         "tipo_breakdown": tipo_map,
         "weekly_trend": weekly,
     }
+
+
+# ────────────────────────────────────────
+# KORE ATLAS — Geo-tagged performance map
+# ────────────────────────────────────────
+@api_router.get("/kore/atlas")
+async def get_kore_atlas(current_user: dict = Depends(get_current_user)):
+    """
+    Returns all geo-tagged performance records for the interactive KORE ATLAS map.
+    Also aggregates from scan_results for older data.
+    """
+    user_id = current_user["_id"]
+    pins = []
+
+    # 1. From performance_records (has lat/lng)
+    cursor = db.performance_records.find(
+        {"user_id": user_id, "latitude": {"$exists": True, "$ne": None}},
+        {"latitude": 1, "longitude": 1, "city_name": 1, "disciplina": 1,
+         "tipo": 1, "kpi": 1, "completed_at": 1, "flux_earned": 1}
+    ).sort("completed_at", -1).limit(200)
+    async for r in cursor:
+        pins.append({
+            "id": str(r["_id"]),
+            "lat": r["latitude"],
+            "lng": r["longitude"],
+            "city": r.get("city_name", ""),
+            "sport": r.get("disciplina", "Fitness"),
+            "tipo": r.get("tipo", "ALLENAMENTO"),
+            "quality": (r.get("kpi") or {}).get("quality_score", 0),
+            "flux": r.get("flux_earned", 0),
+            "date": r["completed_at"].isoformat() if r.get("completed_at") else None,
+        })
+
+    # 2. From scan_results (legacy/bio-scan data)
+    cursor2 = db.scan_results.find(
+        {"user_id": user_id, "latitude": {"$exists": True, "$ne": None}},
+        {"latitude": 1, "longitude": 1, "city_name": 1, "city": 1,
+         "kore_score": 1, "created_at": 1}
+    ).sort("created_at", -1).limit(100)
+    async for s in cursor2:
+        pins.append({
+            "id": str(s["_id"]),
+            "lat": s["latitude"],
+            "lng": s["longitude"],
+            "city": s.get("city_name") or s.get("city", ""),
+            "sport": "BioScan",
+            "tipo": "NEXUS_SCAN",
+            "quality": s.get("kore_score", 0),
+            "flux": 0,
+            "date": s["created_at"].isoformat() if s.get("created_at") else None,
+        })
+
+    # Deduplicate by id
+    seen = set()
+    unique_pins = []
+    for p in pins:
+        if p["id"] not in seen:
+            seen.add(p["id"])
+            unique_pins.append(p)
+
+    return {"pins": unique_pins, "total": len(unique_pins)}
+
 
 
 @api_router.get("/kore/personal-record")

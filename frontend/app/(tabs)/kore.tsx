@@ -471,6 +471,24 @@ export default function KoreTab() {
             </View>
           </Animated.View>
 
+          {/* ═══ KORE ATLAS — Mappa Interattiva ═══ */}
+          <Animated.View entering={FadeInDown.delay(150).duration(400)}>
+            <TouchableOpacity
+              style={atlas.card}
+              onPress={() => router.push('/kore-atlas')}
+              activeOpacity={0.8}
+            >
+              <View style={atlas.iconContainer}>
+                <Ionicons name="globe-outline" size={28} color="#00E5FF" />
+              </View>
+              <View style={atlas.textGroup}>
+                <Text style={atlas.title}>KORE ATLAS</Text>
+                <Text style={atlas.sub}>La mappa delle tue performance</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.3)" />
+            </TouchableOpacity>
+          </Animated.View>
+
           {/* ═══ DNA RADAR — Nike-style with BG image ═══ */}
           <Animated.View entering={FadeInDown.delay(200).duration(400)} style={dna.section}>
             <View style={dna.radarCard}>
@@ -1367,4 +1385,30 @@ const si = StyleSheet.create({
   statItem: { alignItems: 'center' },
   statVal: { color: '#FFF', fontSize: 18, fontWeight: '900', fontFamily: FONT_J },
   statLabel: { color: 'rgba(255,255,255,0.20)', fontSize: 8, fontWeight: '800', letterSpacing: 1.5, marginTop: 2 }
+});
+
+
+// ── KORE ATLAS Widget ──
+const atlas = StyleSheet.create({
+  card: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    marginHorizontal: 16, marginTop: 12, marginBottom: 4,
+    backgroundColor: 'rgba(0,229,255,0.04)',
+    borderRadius: 16, padding: 14,
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)',
+  },
+  iconContainer: {
+    width: 48, height: 48, borderRadius: 14,
+    backgroundColor: 'rgba(0,229,255,0.08)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  textGroup: { flex: 1 },
+  title: {
+    color: '#FFF', fontSize: 14, fontWeight: '900',
+    letterSpacing: 1.5, fontFamily: FONT_M,
+  },
+  sub: {
+    color: 'rgba(255,255,255,0.30)', fontSize: 11, fontWeight: '500',
+    marginTop: 1, fontFamily: FONT_M,
+  },
 });
