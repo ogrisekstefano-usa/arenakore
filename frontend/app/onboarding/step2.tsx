@@ -15,11 +15,21 @@ import Animated, {
   useSharedValue, withTiming, withSequence, withRepeat, withDelay,
   useAnimatedStyle, FadeIn, FadeInDown, Easing, runOnJS
 } from 'react-native-reanimated';
-import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Speech from 'expo-speech';
 import { VoiceController } from '../../utils/VoiceController';
+
+// ═══ LAZY LOAD expo-camera to prevent Expo Go crash ═══
+let CameraViewLazy: any = null;
+let useCameraPermissionsLazy: any = null;
+try {
+  const mod = require('expo-camera');
+  CameraViewLazy = mod.CameraView;
+  useCameraPermissionsLazy = mod.useCameraPermissions;
+} catch (e) {
+  console.warn('[Step2] expo-camera not available');
+}
 import * as Haptics from 'expo-haptics';
 import { api } from '../../utils/api';
 import { NexusPoseEngine, type PoseData, type LandmarkPoint } from '../../components/NexusPoseEngine';
@@ -298,7 +308,7 @@ export default function NexusBioScan() {
   const isRescan = mode === 'rescan';
   const insets = useSafeAreaInsets();
   const { width: SW, height: SH } = useWindowDimensions();
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission] = useCameraPermissionsLazy ? useCameraPermissionsLazy() : [null, async () => {}];
 
   // Layout
   const HEADER_H = insets.top + 70;

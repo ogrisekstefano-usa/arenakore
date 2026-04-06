@@ -23,10 +23,20 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, G, Text as SvgText } from 'react-native-svg';
 import QRCode from 'react-native-qrcode-svg';
 import * as Haptics from 'expo-haptics';
-import { CameraView, useCameraPermissions } from 'expo-camera';
 import { api } from '../../utils/api';
 import { FluxIcon } from '../FluxIcon';
 import { EL, FONT_MONT, FONT_JAKARTA } from '../../utils/eliteTheme';
+
+// ═══ LAZY LOAD expo-camera to prevent Expo Go crash ═══
+let CameraViewLazy: any = null;
+let useCameraPermissionsLazy: any = null;
+try {
+  const mod = require('expo-camera');
+  CameraViewLazy = mod.CameraView;
+  useCameraPermissionsLazy = mod.useCameraPermissions;
+} catch (e) {
+  console.warn('[PostRaceValidation] expo-camera not available');
+}
 
 const { width: SW } = Dimensions.get('window');
 
@@ -193,7 +203,7 @@ export function PostRaceValidation({
   const [participants, setParticipants] = useState<any[]>([]);
 
   // Camera permissions
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission] = useCameraPermissionsLazy ? useCameraPermissionsLazy() : [null, async () => {}];
   const [scanned, setScanned] = useState(false);
 
   // Polling for live status updates
@@ -506,7 +516,7 @@ export function PostRaceValidation({
             {/* Camera View */}
             <View style={s.cameraContainer}>
               {hasPermission ? (
-                <CameraView
+                <CameraViewLazy
                   style={s.camera}
                   barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
                   onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
@@ -526,7 +536,7 @@ export function PostRaceValidation({
                       </View>
                     )}
                   </View>
-                </CameraView>
+                </CameraViewLazy>
               ) : (
                 <View style={s.noCameraCard}>
                   <Ionicons name="camera-outline" size={48} color="#555" />

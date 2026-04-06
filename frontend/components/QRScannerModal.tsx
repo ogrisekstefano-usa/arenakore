@@ -10,8 +10,18 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
-import { CameraView, useCameraPermissions, BarcodeScanningResult } from 'expo-camera';
 import { useAuth } from '../contexts/AuthContext';
+
+// ═══ LAZY LOAD expo-camera to prevent Expo Go crash ═══
+let CameraViewLazy: any = null;
+let useCameraPermissionsLazy: any = null;
+try {
+  const mod = require('expo-camera');
+  CameraViewLazy = mod.CameraView;
+  useCameraPermissionsLazy = mod.useCameraPermissions;
+} catch (e) {
+  console.warn('[QRScanner] expo-camera not available');
+}
 
 const { width: SW } = Dimensions.get('window');
 const SCAN_SIZE = SW * 0.65;
@@ -23,9 +33,10 @@ interface QRScannerModalProps {
   onChallengeFound?: (challengeData: any) => void;
 }
 
-export function QRScannerModal({ visible, onClose, onUserFound, onChallengeFound }: QRScannerModalProps) {
+// Inner component that safely uses the camera hook
+function QRScannerInner({ visible, onClose, onUserFound, onChallengeFound }: QRScannerModalProps) {
   const { token } = useAuth();
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission] = useCameraPermissionsLazy ? useCameraPermissionsLazy() : [null, async () => {}];
   const [scanning, setScanning] = useState(false);
   const [lookupLoading, setLookupLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -213,7 +224,7 @@ export function QRScannerModal({ visible, onClose, onUserFound, onChallengeFound
               </View>
             ) : (
               <>
-                <CameraView
+                <CameraViewLazy
                   style={qs$.camera}
                   facing="back"
                   barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
@@ -305,3 +316,9 @@ const qs$ = StyleSheet.create({
   webFallbackText: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '800', letterSpacing: 1, textAlign: 'center' },
   webFallbackSub: { color: 'rgba(255,255,255,0.15)', fontSize: 12, fontWeight: '400', textAlign: 'center' }
 });
+
+// ═══ PUBLIC WRAPPER — renders Inner only when visible ═══
+export function QRScannerModal(props: QRScannerModalProps) {
+  if (!props.visible) return null;
+  return <QRScannerInner {...props} />;
+}

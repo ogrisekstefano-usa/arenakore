@@ -1,15 +1,18 @@
 import { TAB_BACKGROUNDS } from '../../utils/images';
 /**
- * ARENAKORE — NEXUS TRIGGER TAB v3.1 (Camera Native Fix)
+ * ARENAKORE — NEXUS TRIGGER TAB v3.2 (Camera Lazy-Load Fix)
  * Nike Elite Aesthetic — Motion tracking, Bio-scan, Challenge Forge
  * Heavy sub-components extracted to /components/nexus/
+ * 
+ * CRITICAL: Do NOT import CameraView/useCameraPermissions at top-level.
+ * It crashes Expo Go during module initialization. Camera is lazy-loaded
+ * via NativeCameraPreview component only when entering scanning phases.
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, TouchableOpacity,
   Dimensions, Platform, Modal, ScrollView, ImageBackground, TextInput, Image
 } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, {
@@ -34,6 +37,7 @@ import { ExitButton } from '../../components/nexus/ExitButton';
 import { LiveBPMWidget } from '../../components/health/HealthHub';
 import { useVoiceCommands, speakCoach, cancelCoachSpeech } from '../../utils/VoiceCommandEngine';
 import { PanopticonBridge } from '../../components/nexus/PanopticonBridge';
+import { NativeCameraPreview } from '../../components/nexus/NativeCameraPreview';
 
 // Extracted sub-components
 import { CyberGrid, DigitalShadow, ScanLine } from '../../components/nexus/NexusVisuals';
@@ -1731,8 +1735,7 @@ export default function NexusTriggerScreen() {
   const { user, token, logout, activeRole, setActiveRole, updateUser } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  // ═══ NATIVE CAMERA PERMISSION ═══
-  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  // Camera permission handled lazily via NativeCameraPreview component
   const [phase, setPhase] = useState<'console' | 'bioscan' | 'forge' | 'challenge_engine' | 'tilt_setup' | 'body_lock' | 'countdown' | 'stabilizing' | 'scanning' | 'results' | 'live_queue' | 'qr_validation'>('console');
   const [exercise, setExercise] = useState<ExerciseType>('squat');
   const [forgeMode, setForgeMode] = useState<ForgeMode>('personal');
@@ -1968,16 +1971,6 @@ export default function NexusTriggerScreen() {
   }, []);
 
   useEffect(() => { const dp = profileDevice(); setDeviceTier(dp.tier); }, []);
-
-  // ═══ AUTO-REQUEST CAMERA PERMISSION on native when entering active scan phases ═══
-  useEffect(() => {
-    if (Platform.OS === 'web') return;
-    if (['tilt_setup', 'body_lock', 'countdown', 'stabilizing', 'scanning'].includes(phase)) {
-      if (!cameraPermission?.granted) {
-        requestCameraPermission().catch(() => {});
-      }
-    }
-  }, [phase, cameraPermission?.granted]);
 
   // SPRINT 7: Fetch bio-scan eligibility on mount
   useEffect(() => {
@@ -2479,14 +2472,8 @@ export default function NexusTriggerScreen() {
     return (
       <View style={main$.container}>
         <StatusBar barStyle="light-content" />
-        {/* ═══ NATIVE CAMERA PREVIEW — Body Lock Phase ═══ */}
-        {Platform.OS !== 'web' && cameraPermission?.granted && (
-          <CameraView
-            style={StyleSheet.absoluteFillObject}
-            facing={cameraFacing === 'user' ? 'front' : 'back'}
-            mode="video"
-          />
-        )}
+        {/* ═══ NATIVE CAMERA PREVIEW — Body Lock Phase (Lazy-loaded) ═══ */}
+        <NativeCameraPreview facing={cameraFacing === 'user' ? 'front' : 'back'} />
         <View style={main$.cameraOverlay} />
         <CyberGrid intensity={0.3} />
         <BodyLockOverlay
@@ -2573,18 +2560,14 @@ export default function NexusTriggerScreen() {
 
   // ═══ NATIVE CAMERA FACING MAPPING ═══
   const nativeCamFacing = cameraFacing === 'user' ? 'front' as const : 'back' as const;
-  const showNativeCamera = Platform.OS !== 'web' && cameraPermission?.granted && ['scanning', 'countdown', 'stabilizing'].includes(phase);
+  const showNativeCamera = ['scanning', 'countdown', 'stabilizing'].includes(phase);
 
   return (
     <View style={main$.container}>
       <StatusBar barStyle="light-content" />
-      {/* ═══ NATIVE CAMERA PREVIEW — Scanning/Countdown/Stabilizing Phases ═══ */}
+      {/* ═══ NATIVE CAMERA PREVIEW — Scanning/Countdown/Stabilizing (Lazy-loaded) ═══ */}
       {showNativeCamera && (
-        <CameraView
-          style={StyleSheet.absoluteFillObject}
-          facing={nativeCamFacing}
-          mode="video"
-        />
+        <NativeCameraPreview facing={nativeCamFacing} />
       )}
       {/* SPRINT 5: Camera-transparent dark overlay at 0.3 opacity */}
       <View style={main$.cameraOverlay} />
