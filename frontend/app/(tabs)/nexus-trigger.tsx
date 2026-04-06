@@ -908,7 +908,7 @@ const cn$ = StyleSheet.create({
   eligReadyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#00E5FF' }
 });
 
-// ========== CHALLENGE FORGE ==========
+// ========== THE FORGE ==========
 type ForgeMode = 'personal' | 'battle' | 'duel';
 
 function ForgeCard({ title, subtitle, image, iconEl, onPress }: {
@@ -945,7 +945,7 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
   if (mode) {
     return (
       <Animated.View entering={FadeIn.duration(300)} style={fg$.selectWrap}>
-        <Text style={fg$.selectTitle}>SELEZIONA SFIDA</Text>
+        <Text style={fg$.selectTitle}>SELEZIONA PROTOCOLLO</Text>
         <Text style={fg$.selectSub}>
           {mode === 'personal' ? 'Focus DNA \u2014 Migliora le tue stats' : mode === 'battle' ? 'FLUX Massimo \u2014 Scala il Rank' : 'Combatti in tempo reale'}
         </Text>
@@ -972,7 +972,7 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
   return (
     <Animated.View entering={FadeIn.duration(400)} style={fg$.container}>
       <Text style={fg$.title}>THE FORGE</Text>
-      <Text style={fg$.sub}>Scegli la tua sfida</Text>
+      <Text style={fg$.sub}>Scegli il tuo protocollo</Text>
       <View style={fg$.cardsCol}>
         <ForgeCard title="PERSONAL TRAINING" subtitle={"Focus DNA \u00b7 Migliora le tue stats atletiche"}
           image={FORGE_IMAGES.personal} onPress={() => setMode('personal')}

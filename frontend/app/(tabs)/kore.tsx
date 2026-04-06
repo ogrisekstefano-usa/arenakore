@@ -663,7 +663,7 @@ export default function KoreTab() {
                 {myChallenges.filter(ch => !activeDiscipline || ch.discipline === activeDiscipline).length === 0 && (
                   <View style={ugc.emptyCard}>
                     <Ionicons name="filter" size={22} color="rgba(255,255,255,0.15)" />
-                    <Text style={ugc.emptyText}>Nessuna sfida in questo silo</Text>
+                    <Text style={ugc.emptyText}>Nessun protocollo in questo silo</Text>
                   </View>
                 )}
               </ScrollView>

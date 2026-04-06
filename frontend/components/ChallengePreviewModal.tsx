@@ -74,7 +74,7 @@ export function ChallengePreviewModal({ visible, challengeData, onClose, onImpor
             <TouchableOpacity onPress={onClose} style={s.closeBtn}>
               <Ionicons name="close" size={22} color="#FFF" />
             </TouchableOpacity>
-            <Text style={s.headerTitle}>SFIDA TROVATA</Text>
+            <Text style={s.headerTitle}>PROTOCOLLO TROVATO</Text>
             <View style={{ width: 40 }} />
           </Animated.View>
 

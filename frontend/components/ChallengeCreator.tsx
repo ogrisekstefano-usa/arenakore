@@ -42,7 +42,7 @@ const FLUX_FEES: Record<string, number> = { solo: 0, ranked: 10, friend: 0, live
 const DESTINATIONS = [
   { key: 'solo', label: 'SOLO ALLENAMENTO', icon: 'person' as const, color: '#00E5FF', sub: 'Solo tu. Focus puro.', fee: 0 },
   { key: 'ranked', label: 'CLASSIFICA PERSONALE', icon: 'podium' as const, color: '#FFD700', sub: 'Entra nella classifica globale.', fee: 10 },
-  { key: 'friend', label: 'SFIDA AMICO / CREW', icon: 'people' as const, color: '#FF3B30', sub: 'Manda il guanto di sfida.', fee: 0 },
+  { key: 'friend', label: 'PROTOCOLLO CREW', icon: 'people' as const, color: '#FF3B30', sub: 'Condividi con amici o crew.', fee: 0 },
   { key: 'live', label: 'CREA LIVE EVENT', icon: 'radio' as const, color: '#00FF87', sub: 'Trasmetti nell\'Arena.', fee: 15 },
 ];
 
@@ -180,7 +180,7 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
               <Ionicons name={step > 1 ? 'arrow-back' : 'close'} size={22} color="#FFF" />
             </TouchableOpacity>
             <View style={s.headerCenter}>
-              <Text style={s.headerTitle}>CREA LA TUA SFIDA</Text>
+              <Text style={s.headerTitle}>CREA PROTOCOLLO</Text>
               <Text style={s.headerStep}>STEP {step}/4 — {stepLabel}</Text>
             </View>
             <View style={{ width: 40 }} />
@@ -200,7 +200,7 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
             {step === 1 && (
               <Animated.View entering={FadeIn.duration(300)}>
                 <Text style={s.sectionTitle}>Scegli il Framework</Text>
-                <Text style={s.sectionSub}>La struttura della tua sfida.</Text>
+                <Text style={s.sectionSub}>La struttura del tuo protocollo.</Text>
                 {TEMPLATES.map(t => (
                   <TouchableOpacity
                     key={t.key}
@@ -225,7 +225,7 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
             {/* ═══ STEP 2: DEFINIZIONE ═══ */}
             {step === 2 && (
               <Animated.View entering={FadeIn.duration(300)}>
-                <Text style={s.sectionTitle}>Costruisci la Sfida</Text>
+                <Text style={s.sectionTitle}>Costruisci il Protocollo</Text>
 
                 {/* Discipline Selector (MANDATORY) */}
                 <Text style={s.inputLabel}>DISCIPLINA SPORTIVA *</Text>
@@ -244,7 +244,7 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
                 </ScrollView>
 
                 {/* Title */}
-                <Text style={s.inputLabel}>NOME SFIDA</Text>
+                <Text style={s.inputLabel}>NOME PROTOCOLLO</Text>
                 <TextInput
                   style={s.textInput}
                   value={title}
@@ -397,7 +397,7 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
                   <Animated.View entering={FadeInDown.delay(200)} style={s.summaryBox}>
                     <Text style={s.summaryTitle}>📋 RIEPILOGO</Text>
                     <Text style={s.summaryLine}>
-                      <Text style={s.summaryKey}>Sfida: </Text>{title || '—'}
+                      <Text style={s.summaryKey}>Protocollo: </Text>{title || '—'}
                     </Text>
                     <Text style={s.summaryLine}>
                       <Text style={s.summaryKey}>Disciplina: </Text>{discipline || '—'}
@@ -450,7 +450,7 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
                 disabled={!canNext() || submitting}
               >
                 <Ionicons name="flash" size={18} color="#0A0A0A" />
-                <Text style={s.submitBtnText}>{submitting ? 'CREANDO...' : 'LANCIA LA SFIDA'}</Text>
+                <Text style={s.submitBtnText}>{submitting ? 'CREANDO...' : 'PUBBLICA PROTOCOLLO'}</Text>
               </TouchableOpacity>
             )}
           </View>
