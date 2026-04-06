@@ -224,6 +224,8 @@ class UserRegister(BaseModel):
     age: int | None = None
     training_level: str | None = None
     gender: str | None = None  # UOMO | DONNA | ALTRO
+    preferred_sport: str | None = None
+    is_nexus_certified: bool = False
 
 
 class UserLogin(BaseModel):
@@ -729,7 +731,8 @@ async def register(data: UserRegister):
         "email": data.email.strip().lower(),
         "password_hash": hash_password(data.password),
         "role": None,
-        "sport": "ATHLETICS",
+        "sport": data.preferred_sport or "ATHLETICS",
+        "preferred_sport": data.preferred_sport or "ATHLETICS",
         "training_level": data.training_level or "LEGACY",
         "height_cm": data.height_cm,
         "weight_kg": data.weight_kg,

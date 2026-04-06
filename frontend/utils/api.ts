@@ -32,6 +32,7 @@ export const api = {
   register: (data: {
     username: string; email: string; password: string;
     height_cm?: number; weight_kg?: number; age?: number; training_level?: string;
+    gender?: string; preferred_sport?: string;
   }) => request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
 
   login: (data: { email: string; password: string }) =>

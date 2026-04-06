@@ -192,7 +192,7 @@ export default function OnboardingChoice() {
         <TouchableOpacity
           style={s.cardSecondary}
           activeOpacity={0.85}
-          onPress={() => router.push('/onboarding/manual-onboarding')}
+          onPress={() => router.push({ pathname: '/onboarding/register-profile', params: { is_nexus_certified: 'false' } })}
         >
           <View style={s.cardContent}>
             <View style={s.cardTitleRow}>

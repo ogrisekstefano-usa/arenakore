@@ -1254,11 +1254,19 @@ export default function NexusBioScan() {
 
     // ── Navigate after Gold Flash
     // Rescan mode: go back to KORE tab with updated scores
-    // Onboarding mode: go to KORE ID
+    // Onboarding mode: go to unified register-profile with bio data
     if (isRescan) {
       setTimeout(() => router.replace('/(tabs)/nexus-trigger'), 4000);
     } else {
-      setTimeout(() => router.push('/onboarding/passport'), 4000);
+      setTimeout(() => router.push({
+        pathname: '/onboarding/register-profile',
+        params: {
+          is_nexus_certified: 'true',
+          kore_score: String(koScoreRef.current || 50),
+          stability: String(stabilityRef.current || 50),
+          amplitude: String(Math.round((scoreBreakRef.current.amplitude || 0.5) * 100)),
+        }
+      }), 4000);
     }
   }, []);
 
