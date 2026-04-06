@@ -1259,8 +1259,6 @@ const smv$ = StyleSheet.create({
 
 // ========== COUNTDOWN ==========
 // ========== BATTLE INTRO OVERLAY (Cinematic Countdown) ==========
-import { Animated as RNAnimated } from 'react-native';
-import { playChargingSound, playStartBeep, playCountTick } from '../../utils/ChargingAudio';
 
 function BattleIntroOverlay({ user, pvpChallenge, onComplete }: {
   user: any;
