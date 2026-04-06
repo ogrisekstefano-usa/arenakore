@@ -469,8 +469,6 @@ export default function KoreTab() {
             </View>
           </Animated.View>
 
-          </Animated.View>
-
           {/* ═══ DNA RADAR — Nike-style with BG image ═══ */}
           <Animated.View entering={FadeInDown.delay(200).duration(400)} style={dna.section}>
             <View style={dna.radarCard}>
