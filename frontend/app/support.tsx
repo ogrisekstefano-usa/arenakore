@@ -53,7 +53,7 @@ export default function SupportPage() {
           <Text style={sp$.faqTitle}>FAQ RAPIDE</Text>
           {[
             { q: 'Il mio Apple Watch non si connette', a: 'Vai in Health Hub → FORZA SINCRONIZZAZIONE.' },
-            { q: 'Come funziona il punteggio FLUX?', a: 'Guadagni FLUX completando sfide. Più alta la qualità, più FLUX.' },
+            { q: 'Come funziona il punteggio FLUX?', a: 'Guadagni FLUX completando protocolli certificati. Più alta la qualità, più FLUX.' },
             { q: 'Il QR Code non viene scansionato', a: 'Assicurati che la luminosità dello schermo sia al massimo.' },
           ].map((faq, i) => (
             <View key={i} style={sp$.faqCard}>

@@ -427,7 +427,7 @@ export default function DNATab() {
             >
               <View style={styles.historyToggleLeft}>
                 <Ionicons name="analytics" size={13} color="#FFD700" />
-                <Text style={styles.historyToggleLabel}>CRONOLOGIA BIO-SIGNATURE</Text>
+                <Text style={styles.historyToggleLabel}>REGISTRO BIO-SIGNATURE</Text>
                 <View style={styles.historyCountBadge}>
                   <Text style={styles.historyCountText}>{historyScans.length}</Text>
                 </View>

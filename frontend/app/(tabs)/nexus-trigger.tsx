@@ -972,7 +972,7 @@ function ChallengeForge({ onSelect, user }: { onSelect: (mode: ForgeMode, exerci
 
   return (
     <Animated.View entering={FadeIn.duration(400)} style={fg$.container}>
-      <Text style={fg$.title}>CHALLENGE FORGE</Text>
+      <Text style={fg$.title}>THE FORGE</Text>
       <Text style={fg$.sub}>Scegli la tua sfida</Text>
       <View style={fg$.cardsCol}>
         <ForgeCard title="PERSONAL TRAINING" subtitle={"Focus DNA \u00b7 Migliora le tue stats atletiche"}

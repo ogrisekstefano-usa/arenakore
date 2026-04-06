@@ -227,7 +227,7 @@ export default function KoreTab() {
     setLoadingWarLog(true);
     try {
       const filterMap: Record<string, string> = {
-        'Sfide': 'SFIDA_UGC',
+        'Validati': 'SFIDA_UGC',
         'Live': 'LIVE_ARENA',
         'Crew': 'CREW_BATTLE',
         'Allenamenti': 'ALLENAMENTO',
@@ -331,9 +331,9 @@ export default function KoreTab() {
       onPress: () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {}); router.push('/(tabs)/nexus-trigger'); } },
     { key: 'koreid', images: CARD_IMAGES.koreid, label: 'KORE ID', sub: 'La tua identità digitale.', color: '#00E5FF',
       onPress: () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); setKoreIdVisible(true); } },
-    { key: 'arena', images: CARD_IMAGES.arena, label: 'LIVE ARENA', sub: 'Le sfide LIVE, entra in Arena!', color: '#FFD700',
+    { key: 'arena', images: CARD_IMAGES.arena, label: 'LIVE ARENA', sub: 'Entra nell\'Arena LIVE!', color: '#FFD700',
       onPress: () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); router.push('/live-events'); } },
-    { key: 'coach', images: CARD_IMAGES.coach, label: 'COACH', sub: 'Preparati per le sfide.', color: '#00FF87',
+    { key: 'coach', images: CARD_IMAGES.coach, label: 'COACH', sub: 'Preparati con il Coach.', color: '#00FF87',
       onPress: () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); router.push('/reward-store'); } },
   ];
 
@@ -559,12 +559,12 @@ export default function KoreTab() {
             </Animated.View>
           )}
 
-          {/* ═══ SFIDE — PERFORMANCE CARDS ═══ */}
+          {/* ═══ KORE LEDGER — Registro Certificato ═══ */}
           <Animated.View entering={FadeInDown.delay(300).duration(400)} style={wl.section}>
             <View style={wl.headerRow}>
               <View>
-                <Text style={wl.title}>SFIDE</Text>
-                <Text style={wl.sub}>{warLog.length} performance registrate</Text>
+                <Text style={wl.title}>KORE LEDGER</Text>
+                <Text style={wl.sub}>{warLog.length} movimenti certificati</Text>
               </View>
               {warLogStats.total_sessions > 0 && (
                 <View style={wl.statPill}>
@@ -576,7 +576,7 @@ export default function KoreTab() {
 
             {/* Filter Pills */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={wl.filterRow}>
-              {['Tutte', 'Sfide', 'Live', 'Crew', 'Allenamenti', 'Duelli'].map((f) => {
+              {['Tutte', 'Validati', 'Live', 'Crew', 'Allenamenti', 'Duelli'].map((f) => {
                 const isActive = (f === 'Tutte' && !activeFilter) || activeFilter === f;
                 return (
                   <TouchableOpacity
@@ -598,9 +598,9 @@ export default function KoreTab() {
               </View>
             ) : warLog.length === 0 ? (
               <View style={wl.emptyCard}>
-                <Ionicons name="barbell-outline" size={28} color="rgba(255,255,255,0.15)" />
-                <Text style={wl.emptyText}>Nessuna performance registrata</Text>
-                <Text style={wl.emptySub}>Completa una sfida per riempire il tuo War Log.</Text>
+                <Ionicons name="document-text-outline" size={28} color="rgba(255,255,255,0.15)" />
+                <Text style={wl.emptyText}>Nessun movimento nel Ledger</Text>
+                <Text style={wl.emptySub}>Completa un protocollo per iniziare a riempire il tuo Kore Ledger.</Text>
               </View>
             ) : (
               warLog.map((rec, i) => (
@@ -609,12 +609,12 @@ export default function KoreTab() {
             )}
           </Animated.View>
 
-          {/* ═══ LE MIE SFIDE ═══ */}
+          {/* ═══ I MIEI PROTOCOLLI ═══ */}
           <Animated.View entering={FadeInDown.delay(400).duration(400)} style={ugc.section}>
             <View style={ugc.headerRow}>
               <View>
-                <Text style={ugc.title}>LE MIE SFIDE</Text>
-                <Text style={ugc.sub}>{myChallenges.length} sfide create</Text>
+                <Text style={ugc.title}>I MIEI PROTOCOLLI</Text>
+                <Text style={ugc.sub}>{myChallenges.length} protocolli creati</Text>
               </View>
               <TouchableOpacity
                 style={ugc.createBtn}
@@ -628,9 +628,9 @@ export default function KoreTab() {
 
             {myChallenges.length === 0 ? (
               <TouchableOpacity style={ugc.emptyCard} onPress={() => setCreatorVisible(true)} activeOpacity={0.8}>
-                <Ionicons name="construct-outline" size={28} color="rgba(255,255,255,0.15)" />
-                <Text style={ugc.emptyText}>Crea la tua prima sfida</Text>
-                <Text style={ugc.emptySub}>Diventa il protagonista dell'Arena.</Text>
+                <Ionicons name="document-text-outline" size={28} color="rgba(255,255,255,0.15)" />
+                <Text style={ugc.emptyText}>Crea il tuo primo protocollo</Text>
+                <Text style={ugc.emptySub}>Forgialo in The Forge, certificalo nel tuo Kore Ledger.</Text>
               </TouchableOpacity>
             ) : (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={ugc.listScroll}>

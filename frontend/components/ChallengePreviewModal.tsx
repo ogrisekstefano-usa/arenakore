@@ -155,7 +155,7 @@ export function ChallengePreviewModal({ visible, challengeData, onClose, onImpor
               ) : (
                 <>
                   <Ionicons name="download" size={18} color="#0A0A0A" />
-                  <Text style={s.importBtnText}>IMPORTA NELLE MIE SFIDE</Text>
+                  <Text style={s.importBtnText}>IMPORTA NEL LEDGER</Text>
                 </>
               )}
             </TouchableOpacity>
