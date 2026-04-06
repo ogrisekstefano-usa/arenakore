@@ -46,6 +46,15 @@ const DISCIPLINES = [
   { key: 'Running', icon: 'walk' as const, color: '#FF6EC7' },
 ];
 
+// ─── COMPETENCY LEVEL CONFIG ───
+const COMP_LEVELS: Record<string, { label: string; color: string }> = {
+  'Rookie':   { label: 'ROOKIE',    color: '#8E8E93' },
+  'Amateur':  { label: 'AMATEUR',   color: '#34C759' },
+  'Semi-Pro': { label: 'SEMI-PRO',  color: '#007AFF' },
+  'Pro':      { label: 'PRO',       color: '#FF9500' },
+  'Elite':    { label: 'ELITE',     color: '#FFD700' },
+};
+
 // ─── IMAGE SETS PER CARD ───
 const CARD_IMAGES = {
   sfida: [
@@ -403,12 +412,17 @@ export default function KoreTab() {
               {/* Name + Title + Sport column */}
               <View style={hero.identityInfo}>
                 <Text style={hero.heroName} numberOfLines={1}>{firstName}</Text>
-                {siloProfile?.title ? (
-                  <View style={[hero.titleChip, { borderColor: (siloProfile.aura_color || sportAura) + '40' }]}>
-                    <View style={[hero.titleDot, { backgroundColor: siloProfile.aura_color || sportAura }]} />
-                    <Text style={[hero.titleText, { color: siloProfile.aura_color || sportAura }]}>{siloProfile.title.toUpperCase()}</Text>
-                  </View>
-                ) : null}
+                {/* ── COMPETENCY BADGE ── */}
+                {(() => {
+                  const cl = user?.training_level || 'Amateur';
+                  const comp = COMP_LEVELS[cl] || COMP_LEVELS['Amateur'];
+                  return (
+                    <View style={[hero.titleChip, { borderColor: comp.color + '40' }]}>
+                      <View style={[hero.titleDot, { backgroundColor: comp.color }]} />
+                      <Text style={[hero.titleText, { color: comp.color }]}>{comp.label}</Text>
+                    </View>
+                  );
+                })()}
                 <View style={[hero.sportChip, { borderColor: sportAura + '35', backgroundColor: sportAura + '10' }]}>
                   <Text style={hero.sportChipIcon}>{sportIcon}</Text>
                   <Text style={[hero.sportChipText, { color: sportAura }]}>{sportDisplayName.toUpperCase()}</Text>

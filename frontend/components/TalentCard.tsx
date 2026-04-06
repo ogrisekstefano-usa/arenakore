@@ -116,7 +116,22 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
               </View>
             )}
           </View>
-          <Text style={styles.sport}>{user.sport?.toUpperCase() || 'KORE'}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 1 }}>
+            <Text style={styles.sport}>{user.sport?.toUpperCase() || 'KORE'}</Text>
+            {(() => {
+              const tl = (user as any)?.training_level || 'Amateur';
+              const compColors: Record<string, string> = {
+                'Rookie': '#8E8E93', 'Amateur': '#34C759', 'Semi-Pro': '#007AFF', 'Pro': '#FF9500', 'Elite': '#FFD700'
+              };
+              const c = compColors[tl] || '#34C759';
+              return (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: c + '14', borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1 }}>
+                  <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: c }} />
+                  <Text style={{ color: c, fontSize: 9, fontWeight: '800', letterSpacing: 0.8 }}>{tl.toUpperCase()}</Text>
+                </View>
+              );
+            })()}
+          </View>
           <View style={styles.levelRow}>
             <Text style={styles.levelBadge}>LVL {user.level}</Text>
             <Text style={styles.xpBadge}>{user.ak_credits || 0} FLUX</Text>

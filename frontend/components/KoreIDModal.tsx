@@ -149,6 +149,39 @@ export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
                 <View style={ki$.identInfo}>
                   <Text style={ki$.username} numberOfLines={1}>{username}</Text>
                   <View style={ki$.badgeRow}>
+                    {/* ── Competency Badge ── */}
+                    {(() => {
+                      const tl = user?.training_level || 'Amateur';
+                      const compMap: Record<string, { label: string; color: string }> = {
+                        'Rookie':   { label: 'ROOKIE',    color: '#8E8E93' },
+                        'Amateur':  { label: 'AMATEUR',   color: '#34C759' },
+                        'Semi-Pro': { label: 'SEMI-PRO',  color: '#007AFF' },
+                        'Pro':      { label: 'PRO',       color: '#FF9500' },
+                        'Elite':    { label: 'ELITE',     color: '#FFD700' },
+                      };
+                      const comp = compMap[tl] || compMap['Amateur'];
+                      return (
+                        <View style={[ki$.certBadge, { borderColor: comp.color + '40', backgroundColor: comp.color + '10' }]}>
+                          <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: comp.color }} />
+                          <Text style={[ki$.certText, { color: comp.color }]}>{comp.label}</Text>
+                        </View>
+                      );
+                    })()}
+                    {/* ── Sport Icon Badge ── */}
+                    {user?.preferred_sport ? (
+                      <View style={[ki$.certBadge, { borderColor: 'rgba(255,255,255,0.1)', backgroundColor: 'rgba(255,255,255,0.04)' }]}>
+                        <Text style={{ fontSize: 9 }}>{(() => {
+                          const sportIcons: Record<string, string> = {
+                            'Basket': '🏀', 'Calcio': '⚽', 'Tennis': '🎾', 'Padel': '🏓', 'Running': '🏃',
+                            'CrossFit': '🏋️', 'Fitness': '💪', 'Nuoto': '🏊', 'Boxe': '🥊', 'MMA': '🥋',
+                            'Bodybuilding': '🏋️', 'Golf': '⛳', 'Ciclismo': '🚴', 'Atletica': '🏃', 'Rugby': '🏉',
+                            'Volley': '🏐', 'Sci': '⛷️', 'Arrampicata': '🧗',
+                          };
+                          return sportIcons[user.preferred_sport] || '🔥';
+                        })()}</Text>
+                        <Text style={[ki$.certText, { color: 'rgba(255,255,255,0.6)' }]}>{user.preferred_sport.toUpperCase()}</Text>
+                      </View>
+                    ) : null}
                     {isFounder && (
                       <Animated.View style={[ki$.founderBadge, shimmerStyle]}>
                         <Ionicons name="star" size={9} color="#FFD700" />

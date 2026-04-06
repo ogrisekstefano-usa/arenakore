@@ -703,6 +703,7 @@ def user_to_response(user: dict) -> dict:
         "profile_picture": user.get("profile_picture"),
         "cover_photo": user.get("cover_photo"),
         "preferred_sport": user.get("preferred_sport") or user.get("sport"),
+        "training_level": user.get("training_level", "Amateur"),
     }
 
 
@@ -894,6 +895,7 @@ class ProfileUpdate(BaseModel):
     gender: str | None = None
     language: str | None = None
     preferred_sport: str | None = None
+    training_level: str | None = None
 
 @api_router.put("/auth/update-profile")
 async def update_profile(data: ProfileUpdate, current_user: dict = Depends(get_current_user)):
@@ -916,6 +918,13 @@ async def update_profile(data: ProfileUpdate, current_user: dict = Depends(get_c
         if existing:
             raise HTTPException(status_code=400, detail="Username già in uso")
         update_fields["username"] = new_username
+
+    # Training level / Competency
+    if data.training_level is not None:
+        valid_levels = ["Rookie", "Amateur", "Semi-Pro", "Pro", "Elite"]
+        tl = data.training_level.strip()
+        if tl in valid_levels:
+            update_fields["training_level"] = tl
 
     # Preferred sport
     if data.preferred_sport is not None:

@@ -38,6 +38,7 @@ import { LiveBPMWidget } from '../../components/health/HealthHub';
 import { useVoiceCommands, speakCoach, cancelCoachSpeech } from '../../utils/VoiceCommandEngine';
 import { PanopticonBridge } from '../../components/nexus/PanopticonBridge';
 import { NativeCameraPreview } from '../../components/nexus/NativeCameraPreview';
+import { getSportHeroImages, getSportAuraColor } from '../../utils/sportAssets';
 
 // Extracted sub-components
 import { CyberGrid, DigitalShadow, ScanLine } from '../../components/nexus/NexusVisuals';
@@ -470,15 +471,15 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
   const shimmerStyle = useAnimatedStyle(() => ({ opacity: founderShimmer.value }));
 
   // ─── 4 DEFINITIVE CARDS ───
+  const userSport = user?.preferred_sport || user?.sport || 'Fitness';
+  const sportHeroImgs = getSportHeroImages(userSport);
+  const sportAura = getSportAuraColor(userSport);
+
   const NEXUS_CARDS = [
     {
       key: 'sfida', label: 'SFIDA', sub: 'Mettiti alla prova.',
-      color: '#FF3B30', icon: 'flame' as keyof typeof Ionicons.glyphMap,
-      images: [
-        'https://images.unsplash.com/photo-1636581563711-cd454f1bf99a?w=600&q=50',
-        'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600&q=50',
-        'https://images.unsplash.com/photo-1663791088119-07535b0fafeb?w=600&q=50',
-      ],
+      color: sportAura || '#FF3B30', icon: 'flame' as keyof typeof Ionicons.glyphMap,
+      images: sportHeroImgs,
       action: () => { onPillarAction('sfida_hub'); }
     },
     {

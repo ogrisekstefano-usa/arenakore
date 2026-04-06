@@ -320,6 +320,21 @@ export default function SettingsScreen() {
             <Text style={s.sportHint}>Questo definisce la tua identità visiva e il tuo Silo dominante.</Text>
           </Animated.View>
 
+          {/* ═══ COMPETENCY LEVEL ═══ */}
+          <Animated.View entering={FadeInDown.delay(170).duration(400)} style={s.section}>
+            <Text style={s.sectionTitle}>LIVELLO DI COMPETENZA</Text>
+            <TouchableOpacity style={s.sportPicker} onPress={() => setShowCompetencyPicker(true)} activeOpacity={0.8}>
+              <View style={[s.compDot, { backgroundColor: COMPETENCY_LEVELS.find(c => c.key === competencyLevel)?.color || '#8E8E93' }]} />
+              <Text style={[s.sportName, { color: COMPETENCY_LEVELS.find(c => c.key === competencyLevel)?.color || '#FFF' }]}>
+                {COMPETENCY_LEVELS.find(c => c.key === competencyLevel)?.label || competencyLevel.toUpperCase()}
+              </Text>
+              <Ionicons name="chevron-down" size={18} color="rgba(255,255,255,0.35)" />
+            </TouchableOpacity>
+            <Text style={s.sportHint}>
+              {COMPETENCY_LEVELS.find(c => c.key === competencyLevel)?.desc || 'Seleziona il tuo livello atletico.'}
+            </Text>
+          </Animated.View>
+
           {/* ═══ PERSONAL INFO ═══ */}
           <Animated.View entering={FadeInDown.delay(200).duration(400)} style={s.section}>
             <Text style={s.sectionTitle}>INFORMAZIONI PERSONALI</Text>
@@ -420,6 +435,44 @@ export default function SettingsScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* ═══ COMPETENCY PICKER MODAL ═══ */}
+      <Modal visible={showCompetencyPicker} animationType="slide" transparent statusBarTranslucent>
+        <View style={sp.overlay}>
+          <View style={[sp.sheet, { paddingBottom: insets.bottom + 20, maxHeight: '55%' }]}>
+            <View style={sp.handle} />
+            <View style={sp.header}>
+              <Text style={sp.title}>LIVELLO COMPETENZA</Text>
+              <TouchableOpacity onPress={() => setShowCompetencyPicker(false)}>
+                <Ionicons name="close" size={22} color="#FFF" />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={COMPETENCY_LEVELS}
+              keyExtractor={(item) => item.key}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              renderItem={({ item }) => {
+                const isSelected = item.key === competencyLevel;
+                return (
+                  <TouchableOpacity
+                    style={[cp.item, isSelected && { backgroundColor: item.color + '12' }]}
+                    onPress={() => { setCompetencyLevel(item.key); setShowCompetencyPicker(false); }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[cp.dot, { backgroundColor: item.color }]} />
+                    <View style={cp.itemInfo}>
+                      <Text style={[cp.itemLabel, { color: isSelected ? item.color : '#FFF' }]}>{item.label}</Text>
+                      <Text style={cp.itemDesc}>{item.desc}</Text>
+                    </View>
+                    {isSelected && <Ionicons name="checkmark-circle" size={20} color={item.color} />}
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -481,6 +534,9 @@ const s = StyleSheet.create({
   sportIcon: { fontSize: 22 },
   sportName: { color: '#FFF', fontSize: 16, fontWeight: '800', flex: 1, fontFamily: FONT_J },
   sportHint: { color: 'rgba(255,255,255,0.15)', fontSize: 11, fontWeight: '500', marginTop: 6, fontFamily: FONT_M },
+
+  // Competency dot
+  compDot: { width: 14, height: 14, borderRadius: 7 },
 
   // Inputs
   inputRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
@@ -546,4 +602,23 @@ const sp = StyleSheet.create({
   itemIcon: { fontSize: 20, width: 30, textAlign: 'center' },
   itemText: { color: 'rgba(255,255,255,0.65)', fontSize: 15, fontWeight: '700', flex: 1, fontFamily: FONT_M },
   itemTextActive: { color: '#00E5FF', fontWeight: '900' }
+});
+
+// ── Competency Picker Modal ──
+const cp = StyleSheet.create({
+  item: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingVertical: 14, paddingHorizontal: 12, borderRadius: 12,
+    marginBottom: 4
+  },
+  dot: {
+    width: 12, height: 12, borderRadius: 6
+  },
+  itemInfo: { flex: 1, gap: 2 },
+  itemLabel: {
+    fontSize: 16, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_J
+  },
+  itemDesc: {
+    color: 'rgba(255,255,255,0.30)', fontSize: 12, fontWeight: '500', fontFamily: FONT_M
+  }
 });
