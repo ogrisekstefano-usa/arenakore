@@ -405,7 +405,9 @@ export function HallOfKore() {
               <Text style={[gl$.tabText, activeTab === t.key && gl$.tabTextActive]}>{t.label}</Text>
             </TouchableOpacity>
           ))}
-          {/* VERIFIED ONLY toggle */}
+        </View>
+        {/* Verified + Category on second row */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 16, marginTop: 6, gap: 6 }}>
           <TouchableOpacity
             style={[gl$.verifiedToggle, verifiedOnly && gl$.verifiedToggleOn]}
             onPress={() => setVerifiedOnly(v => !v)}
@@ -545,10 +547,10 @@ const gl$ = StyleSheet.create({
   verifiedText: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   // Certified row glow border
   certifiedRow: { borderLeftWidth: 2, borderLeftColor: '#00E5FF', borderRadius: 4 },
-  catRow: { paddingHorizontal: 24, paddingVertical: 10, gap: 8 },
+  catRow: { paddingHorizontal: 16, paddingVertical: 8, gap: 6, flexDirection: 'row', alignItems: 'center' },
   catChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+    paddingHorizontal: 10, paddingVertical: 7, borderRadius: 16,
     borderWidth: 1.5, borderColor: '#3A3A3A', backgroundColor: 'rgba(30,30,30,0.8)'
   },
   catChipActive: { borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.15)' },
