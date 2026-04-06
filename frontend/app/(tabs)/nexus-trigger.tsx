@@ -78,8 +78,7 @@ const CONSOLE_IMAGES = {
 };
 
 // ========== BIO-SCAN TRIGGER ==========
-function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => void }) {
-  const router = useRouter();
+function BioScanTrigger({ user, onComplete, onCancel }: { user: any; onComplete: () => void; onCancel?: () => void }) {
   const laserY = useSharedValue(0);
   const laserGlow = useSharedValue(0.5);
   const [progress, setProgress] = useState(0);
@@ -136,7 +135,7 @@ function BioScanTrigger({ user, onComplete }: { user: any; onComplete: () => voi
     <ImageBackground source={{ uri: TAB_BACKGROUNDS.nexus }} style={bio$.overlay} imageStyle={{ opacity: 0.10 }}>
       <TouchableOpacity 
         style={{ position: 'absolute', top: 12, right: 16, zIndex: 99, width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }}
-        onPress={() => router.back()}
+        onPress={() => onCancel ? onCancel() : undefined}
         activeOpacity={0.7}
       >
         <Ionicons name="close" size={18} color="rgba(255,255,255,0.7)" />
@@ -1949,9 +1948,9 @@ export default function NexusTriggerScreen() {
   const handleEmergencyExit = useCallback(() => {
     cancelCoachSpeech();
     // Clear all timers
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (motionTimeoutRef.current) clearTimeout(motionTimeoutRef.current);
-    // Reset all challenge state
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    if (motionTimeoutRef.current) { clearTimeout(motionTimeoutRef.current); motionTimeoutRef.current = null; }
+    // Reset all scan & challenge state → back to console
     setPhase('console');
     setMotionState(null);
     setMotionActive(false);
@@ -1963,6 +1962,11 @@ export default function NexusTriggerScreen() {
     bodyLockedRef.current = false;
     setBodyLockedUI(false);
     setIsProntoConfirmed(false);
+    setTimer(0);
+    setSessionMode('scan');
+    setForgeMode('personal');
+    // Camera/MediaPipe cleanup is handled by React unmount of NativeCameraPreview
+    // since phase='console' removes it from the render tree
   }, []);
 
   useEffect(() => { const dp = profileDevice(); setDeviceTier(dp.tier); }, []);
@@ -2560,6 +2564,8 @@ export default function NexusTriggerScreen() {
   return (
     <View style={main$.container}>
       <StatusBar barStyle="light-content" />
+      {/* ═══ EXIT BUTTON — Always accessible during scan phases ═══ */}
+      <ExitButton onExit={handleEmergencyExit} />
       {/* ═══ NATIVE CAMERA PREVIEW — Scanning/Countdown/Stabilizing (Lazy-loaded) ═══ */}
       {showNativeCamera && (
         <NativeCameraPreview facing={nativeCamFacing} />
@@ -2638,7 +2644,7 @@ export default function NexusTriggerScreen() {
       {phase === 'stabilizing' && (
         <SmoothedValidation exercise={exercise} onComplete={handleStabilizingComplete} />
       )}
-      {phase === 'bioscan' && <BioScanTrigger user={user} onComplete={async () => {
+      {phase === 'bioscan' && <BioScanTrigger user={user} onCancel={handleEmergencyExit} onComplete={async () => {
         setPhase('forge');
         // SPRINT 7: Record bioscan snapshot + check PRO unlock
         if (token) {
