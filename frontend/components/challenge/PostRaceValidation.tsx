@@ -515,12 +515,13 @@ export function PostRaceValidation({
 
             {/* Camera View */}
             <View style={s.cameraContainer}>
-              {hasPermission ? (
-                <CameraViewLazy
-                  style={s.camera}
-                  barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-                  onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-                >
+              {hasPermission && CameraViewLazy ? (
+                <View style={s.camera}>
+                  <CameraViewLazy
+                    style={StyleSheet.absoluteFillObject}
+                    barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+                    onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+                  />
                   {/* Scan overlay frame */}
                   <View style={s.scanOverlay}>
                     <View style={s.scanFrame}>
@@ -536,7 +537,7 @@ export function PostRaceValidation({
                       </View>
                     )}
                   </View>
-                </CameraViewLazy>
+                </View>
               ) : (
                 <View style={s.noCameraCard}>
                   <Ionicons name="camera-outline" size={48} color="#555" />
