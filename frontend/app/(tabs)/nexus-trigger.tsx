@@ -515,13 +515,7 @@ function NexusConsole({ user, onScan, onForge, onPillarAction, deviceTier, eligi
 
   return (
     <View style={cn$.container} testID="nexus-console">
-      <Header title="NEXUS" rightAction={
-        isFounder ? (
-          <Animated.View style={[cn$.founderBadge, shimmerStyle]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}><Ionicons name="star" size={9} color="#FFD700" /><Text style={cn$.founderText}>FOUNDER</Text></View>
-          </Animated.View>
-        ) : undefined
-      } />
+      <Header title="NÈXUS" />
       <SafeAreaView style={cn$.safe} edges={['left', 'right', 'bottom']}>
         {/* Tier indicator */}
         <View style={cn$.tierBar}>

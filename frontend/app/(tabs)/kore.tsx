@@ -17,6 +17,7 @@ import Animated, {
   useAnimatedStyle, Easing, interpolateColor
 } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
+import { Header } from '../../components/Header';
 import { KoreIDModal } from '../../components/KoreIDModal';
 import { ControlCenter } from '../../components/ControlCenter';
 import { ChallengeCreator } from '../../components/ChallengeCreator';
@@ -359,6 +360,7 @@ export default function KoreTab() {
   return (
     <View style={s.root}>
       <StatusBar barStyle="light-content" />
+      <Header title="KORE" />
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#00E5FF" />}
@@ -383,26 +385,6 @@ export default function KoreTab() {
               locations={[0, 0.25, 0.65, 1]}
               style={[StyleSheet.absoluteFillObject, { zIndex: 2 }]}
             />
-          </View>
-          {/* Top row: QR + FLUX + Menu */}
-          <View style={[hero.topRow, { paddingTop: insets.top + 8 }]}>
-            <View style={{ flex: 1 }} />
-            <View style={hero.topActions}>
-              <TouchableOpacity onPress={() => { setScannerVisible(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); }}>
-                <View style={hero.iconBtn}>
-                  <Ionicons name="qr-code" size={15} color="#00E5FF" />
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => { setShopVisible(true); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); }}>
-                <Animated.View style={[hero.fluxBadge, fluxBadgeStyle]}>
-                  <Ionicons name="flash" size={13} color="#FFD700" />
-                  <Text style={hero.fluxVal}>{flux.toLocaleString()}</Text>
-                </Animated.View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setSidebarOpen(true)} style={hero.iconBtn}>
-                <Ionicons name="ellipsis-horizontal" size={18} color="rgba(255,255,255,0.50)" />
-              </TouchableOpacity>
-            </View>
           </View>
           {/* Hero content — IDENTITY BLOCK */}
           <View style={hero.content}>
