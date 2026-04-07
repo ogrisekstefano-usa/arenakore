@@ -214,6 +214,20 @@ export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
               {/* Divider */}
               <View style={[ki$.divider, { backgroundColor: mood.color + '15' }]} />
 
+              {/* Identity Details */}
+              <View style={{ paddingHorizontal: 20, gap: 6, marginBottom: 8 }}>
+                {user?.email ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Ionicons name="mail-outline" size={12} color="rgba(255,255,255,0.35)" />
+                    <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '500', letterSpacing: 0.5 }}>{user.email}</Text>
+                  </View>
+                ) : null}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Ionicons name="finger-print-outline" size={12} color="rgba(255,255,255,0.35)" />
+                  <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '500', letterSpacing: 0.5 }}>ID: {uid.substring(0, 12).toUpperCase()}</Text>
+                </View>
+              </View>
+
               {/* Stats Grid */}
               <Animated.View entering={FadeInUp.delay(200).duration(300)} style={ki$.statsGrid}>
                 <View style={ki$.stat}>

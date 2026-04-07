@@ -122,9 +122,19 @@ export default function KoreAtlasScreen() {
     // Zoom control bottom-right
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // Custom pin icon
-    function createPinIcon(quality) {
-      var color = quality >= 80 ? '#FFD700' : quality >= 60 ? '#00E5FF' : quality >= 40 ? '#00FF87' : '#FF3B30';
+    // Custom pin icon — color by challenge CATEGORY (tipo)
+    function createPinIcon(tipo, quality) {
+      var colorMap = {
+        'POTENZA': '#FF3B30',
+        'RESISTENZA': '#007AFF',
+        'VELOCITA': '#00FF87',
+        'TECNICA': '#FFD700',
+        'AGILITA': '#FF9500',
+        'BIOSCAN': '#00E5FF',
+        'DUELLO': '#FF2D55',
+        'CREW_BATTLE': '#AF52DE'
+      };
+      var color = colorMap[(tipo || '').toUpperCase()] || (quality >= 70 ? '#FFD700' : '#00E5FF');
       return L.divIcon({
         className: '',
         html: '<div style="width:16px;height:16px;border-radius:50%;background:' + color + ';border:2px solid #FFF;box-shadow:0 0 12px ' + color + '60;"></div>',
@@ -137,7 +147,7 @@ export default function KoreAtlasScreen() {
     var bounds = [];
     pins.forEach(function(pin) {
       if (pin.lat && pin.lng) {
-        var marker = L.marker([pin.lat, pin.lng], { icon: createPinIcon(pin.quality) }).addTo(map);
+        var marker = L.marker([pin.lat, pin.lng], { icon: createPinIcon(pin.tipo, pin.quality) }).addTo(map);
         var dateStr = pin.date ? new Date(pin.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
         var popup = '<div class="pin-popup">' +
           '<div class="city">' + (pin.city || 'POSIZIONE') + '</div>' +

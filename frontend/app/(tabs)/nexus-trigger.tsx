@@ -1717,7 +1717,7 @@ const lw$ = StyleSheet.create({
 
 // ========== MAIN SCREEN ==========
 export default function NexusTriggerScreen() {
-  const { user, token, logout, activeRole, setActiveRole, updateUser } = useAuth();
+  const { user, token, logout, activeRole, setActiveRole, updateUser, refreshUser } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   // Camera permission handled lazily via NativeCameraPreview component
@@ -2382,6 +2382,9 @@ export default function NexusTriggerScreen() {
             city_name: geoRef.current.city_name,
           } : undefined
         }, token);
+        // FLUX WALLET SYNC: Refresh user data after challenge save
+        // so Header shows updated FLUX values in real-time
+        await refreshUser();
       } catch (_) { /* silent — backend already has core record, this enriches with snapshots */ }
     })();
   }, [phase === 'results' && !!scanResult]);

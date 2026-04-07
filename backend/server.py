@@ -698,6 +698,8 @@ def user_to_response(user: dict) -> dict:
         "mic_enabled": user.get("mic_enabled", False),
         "city": user.get("city"),
         "ak_credits": user.get("ak_credits", 0),
+        "master_flux": user.get("master_flux", 0),
+        "diamond_flux": user.get("diamond_flux", 0),
         "unlocked_tools": user.get("unlocked_tools", []),
         "total_scans": total_scans,
         "bmi": user.get("bmi"),

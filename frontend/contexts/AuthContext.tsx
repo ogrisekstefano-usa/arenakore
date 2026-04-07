@@ -36,6 +36,8 @@ export interface User {
   baseline_scanned_at?: string | null;
   gym_id?: string | null;
   ak_credits?: number;
+  master_flux?: number;
+  diamond_flux?: number;
   unlocked_tools?: string[];
   sport?: string;
   preferred_sport?: string;
