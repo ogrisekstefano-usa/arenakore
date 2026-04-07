@@ -1906,38 +1906,9 @@ export default function NexusTriggerScreen() {
   const [dropsEarned, setDropsEarned] = useState(0);
   const [isVictory, setIsVictory] = useState(false);
 
-  // ═══ KORE ATLAS: GPS capture for geo-tagged performance records ═══
-  const geoRef = useRef<{ latitude: number; longitude: number; city_name: string } | null>(null);
+  // ═══ GEO-CAPTURE REMOVED: Map functionality eliminated for iOS stability ═══
+  const geoRef = useRef<any>(null);
   const geoFetchedRef = useRef(false);
-
-  // Capture geolocation lazily when challenge starts (countdown or scanning phase)
-  useEffect(() => {
-    if ((phase === 'countdown' || phase === 'scanning') && !geoFetchedRef.current) {
-      geoFetchedRef.current = true;
-      (async () => {
-        try {
-          const ExpoLocation = require('expo-location');
-          const { status } = await ExpoLocation.requestForegroundPermissionsAsync();
-          if (status !== 'granted') return;
-          const pos = await ExpoLocation.getCurrentPositionAsync({ accuracy: ExpoLocation.Accuracy.Balanced });
-          const [geo] = await ExpoLocation.reverseGeocodeAsync(pos.coords);
-          const city = (geo?.city || geo?.subregion || geo?.region || '').toUpperCase().trim();
-          geoRef.current = {
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-            city_name: city || 'UNKNOWN',
-          };
-        } catch (_) {
-          // GPS unavailable — non-blocking, record saved without geo
-        }
-      })();
-    }
-    // Reset geo when going back to console
-    if (phase === 'console') {
-      geoFetchedRef.current = false;
-      geoRef.current = null;
-    }
-  }, [phase]);
 
   // ═══ AUTO-SNAPSHOT: PEAK capture at ~50% reps ═══
   useEffect(() => {

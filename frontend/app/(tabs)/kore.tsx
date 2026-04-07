@@ -1,11 +1,12 @@
 /**
- * ARENAKORE — KORE TAB v12.0 "LIGHT-FIRST"
- * ══════════════════════════════════════════
- * ZERO SVG / ZERO Reanimated al boot.
- * Radar e grafici caricati SOLO su pressione utente.
- * Risolve crash iOS Expo Go per saturazione memoria.
+ * ARENAKORE — KORE TAB v13.0 "ZERO-MAP LIGHT-FIRST"
+ * ══════════════════════════════════════════════════════
+ * ZERO SVG / ZERO Reanimated / ZERO Maps al boot.
+ * Radar caricati SOLO su pressione utente.
+ * KORE ATLAS rimossa completamente.
+ * Sostituita con pannello "Prossime Sfide Disponibili".
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, RefreshControl, Platform
@@ -24,7 +25,7 @@ const API = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL
 const FONT_M = Platform.select({ web: "'Montserrat', sans-serif", default: undefined });
 const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
 
-// ═══ NO SVG / NO Reanimated import at top level ═══
+// ═══ NO SVG / NO Reanimated / NO Maps at module scope ═══
 
 export default function KoreScreen() {
   const { user, token } = useAuth();
@@ -38,8 +39,25 @@ export default function KoreScreen() {
   const [siloProfile, setSiloProfile] = useState<any>(null);
   const [dnaData, setDnaData] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [challenges, setChallenges] = useState<any[]>([]);
 
-  // ═══ LAZY: Only fetch + render when user presses "CARICA ANALISI" ═══
+  // ═══ Fetch lightweight challenges for "Prossime Sfide" panel ═══
+  useEffect(() => {
+    if (!token) return;
+    (async () => {
+      try {
+        const res = await fetch(`${API}/api/certified-templates`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setChallenges(Array.isArray(data) ? data.slice(0, 4) : []);
+        }
+      } catch (_) {}
+    })();
+  }, [token]);
+
+  // ═══ LAZY: Only fetch biometrics when user presses "CARICA ANALISI" ═══
   const loadBiometrics = useCallback(async () => {
     if (!token || biometricsLoading) return;
     setBiometricsLoading(true);
@@ -58,7 +76,6 @@ export default function KoreScreen() {
           title: raw.title || 'Rookie',
           title_tier: raw.title_tier || 'rookie',
           total_challenges_30d: raw.total_challenges_30d || 0,
-          total_challenges_all: raw.total_challenges_all || 0,
           radar: Array.isArray(raw.radar) ? raw.radar : [],
         });
       }
@@ -191,21 +208,47 @@ export default function KoreScreen() {
           </>
         )}
 
-        {/* ═══ KORE ATLAS — Static Widget (No WebView) ═══ */}
-        <TouchableOpacity
-          style={s.atlasCard}
-          onPress={() => router.push('/kore-atlas')}
-          activeOpacity={0.8}
-        >
-          <View style={s.atlasIcon}>
-            <Ionicons name="globe-outline" size={28} color="#00E5FF" />
+        {/* ═══ PROSSIME SFIDE DISPONIBILI — Replaces KORE ATLAS ═══ */}
+        <View style={s.challengePanel}>
+          <View style={s.challengeHeader}>
+            <Ionicons name="flame" size={16} color="#FFD700" />
+            <Text style={s.challengePanelTitle}>PROSSIME SFIDE</Text>
           </View>
-          <View style={s.atlasTextGroup}>
-            <Text style={s.atlasTitle}>KORE ATLAS</Text>
-            <Text style={s.atlasSub}>Mappa delle tue performance</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.3)" />
-        </TouchableOpacity>
+          {challenges.length === 0 ? (
+            <View style={s.emptyInner}>
+              <Text style={s.emptyText}>Nessuna sfida disponibile</Text>
+            </View>
+          ) : (
+            challenges.map((ch: any, i: number) => (
+              <TouchableOpacity
+                key={ch._id || i}
+                style={s.challengeItem}
+                onPress={() => router.push('/(tabs)/nexus-trigger')}
+                activeOpacity={0.8}
+              >
+                <View style={s.challengeLeft}>
+                  <Ionicons
+                    name={ch.difficulty === 'hard' ? 'flash' : ch.difficulty === 'medium' ? 'barbell' : 'fitness'}
+                    size={18}
+                    color={ch.difficulty === 'hard' ? '#FF3B30' : ch.difficulty === 'medium' ? '#FFD700' : '#00E5FF'}
+                  />
+                  <View style={s.challengeTextGroup}>
+                    <Text style={s.challengeName} numberOfLines={1}>
+                      {(ch.exercise || ch.name || 'Challenge').toUpperCase()}
+                    </Text>
+                    <Text style={s.challengeMeta}>
+                      {ch.target_reps ? `${ch.target_reps} reps` : ''}{ch.target_time ? ` · ${ch.target_time}s` : ''}{ch.difficulty ? ` · ${ch.difficulty.toUpperCase()}` : ''}
+                    </Text>
+                  </View>
+                </View>
+                <View style={s.challengeFlux}>
+                  <Text style={s.challengeFluxText}>+{ch.required_drops || ch.flux_reward || 5}</Text>
+                  <Ionicons name="water" size={10} color="#00E5FF" />
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
 
         {/* ═══ QUICK NAV ═══ */}
         <View style={s.quickNav}>
@@ -251,7 +294,7 @@ function LazyKoreIdModal({ visible, onClose }: { visible: boolean; onClose: () =
 function LazyDnaRadar({ dna, keys }: { dna: Record<string, number>; keys: string[] }) {
   try {
     const { default: Svg, Polygon, Line, Circle, Text: SvgText } = require('react-native-svg');
-    const radarSize = 200;
+    const radarSize = 220;
     const center = radarSize / 2;
     const maxR = radarSize / 2 - 28;
     const n = Math.max(keys.length, 3);
@@ -267,35 +310,35 @@ function LazyDnaRadar({ dna, keys }: { dna: Record<string, number>; keys: string
     const poly = points.map(p => `${p.x},${p.y}`).join(' ');
 
     return (
-      <View style={{ alignItems: 'center' }}>
+      <View style={{ alignItems: 'center', paddingVertical: 8 }}>
         <Svg width={radarSize} height={radarSize}>
           {[25, 50, 75, 100].map((r: number) => (
             <Circle key={r} cx={center} cy={center} r={(r / 100) * maxR}
-              fill="none" stroke="rgba(0,229,255,0.06)" strokeWidth={1} />
+              fill="none" stroke="rgba(0,229,255,0.08)" strokeWidth={1} />
           ))}
           {keys.map((_: string, i: number) => {
             const ep = pt(i, 100);
             return <Line key={i} x1={center} y1={center} x2={ep.x} y2={ep.y}
               stroke="rgba(255,255,255,0.06)" strokeWidth={1} />;
           })}
-          <Polygon points={poly} fill="rgba(0,229,255,0.12)" stroke="#00E5FF" strokeWidth={1.5} />
+          <Polygon points={poly} fill="rgba(0,229,255,0.15)" stroke="#00E5FF" strokeWidth={2} />
           {points.map((p: { x: number; y: number }, i: number) => (
-            <Circle key={i} cx={p.x} cy={p.y} r={3} fill="#00E5FF" stroke="#000" strokeWidth={1.5} />
+            <Circle key={i} cx={p.x} cy={p.y} r={4} fill="#00E5FF" stroke="#000" strokeWidth={2} />
           ))}
           {keys.map((k: string, i: number) => {
-            const lp = pt(i, 120);
+            const lp = pt(i, 125);
             return (
-              <SvgText key={k} x={lp.x} y={lp.y} fill="rgba(255,255,255,0.5)"
-                fontSize={8} fontWeight="700" textAnchor="middle">
+              <SvgText key={k} x={lp.x} y={lp.y} fill="rgba(255,255,255,0.6)"
+                fontSize={9} fontWeight="700" textAnchor="middle">
                 {k.toUpperCase().slice(0, 4)}
               </SvgText>
             );
           })}
         </Svg>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 8 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginTop: 10 }}>
           {keys.map((k: string) => (
             <View key={k} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text style={{ color: '#00E5FF', fontSize: 12, fontWeight: '800', fontFamily: FONT_J }}>{dna[k]}</Text>
+              <Text style={{ color: '#00E5FF', fontSize: 13, fontWeight: '800', fontFamily: FONT_J }}>{dna[k]}</Text>
               <Text style={{ color: '#555', fontSize: 10, fontWeight: '600', fontFamily: FONT_M }}>{k.toUpperCase()}</Text>
             </View>
           ))}
@@ -313,7 +356,7 @@ function LazySiloRadar({ data, auraColor }: { data: any[]; auraColor: string }) 
   }
   try {
     const { SiloRadar } = require('../../components/kore/SiloRadar');
-    return <SiloRadar data={data} size={200} auraColor={auraColor} />;
+    return <SiloRadar data={data} size={220} auraColor={auraColor} />;
   } catch (e) {
     return <View style={s.emptyInner}><Text style={s.emptyText}>Silo Radar non disponibile</Text></View>;
   }
@@ -322,9 +365,6 @@ function LazySiloRadar({ data, auraColor }: { data: any[]; auraColor: string }) 
 // ═══════════════════════════════════════════════════════════
 // STYLES
 // ═══════════════════════════════════════════════════════════
-const FONT_M_S = Platform.select({ web: "'Montserrat', sans-serif", default: undefined });
-const FONT_J_S = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
-
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#000' },
   scroll: { paddingHorizontal: 16 },
@@ -337,12 +377,12 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.04)', marginBottom: 8,
   },
-  avatarLetter: { color: '#FFF', fontSize: 28, fontWeight: '900', fontFamily: FONT_J_S },
-  username: { color: '#FFF', fontSize: 26, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J_S },
-  subtitle: { color: '#888', fontSize: 12, fontWeight: '600', letterSpacing: 1, fontFamily: FONT_M_S },
+  avatarLetter: { color: '#FFF', fontSize: 28, fontWeight: '900', fontFamily: FONT_J },
+  username: { color: '#FFF', fontSize: 26, fontWeight: '900', letterSpacing: 2, fontFamily: FONT_J },
+  subtitle: { color: '#888', fontSize: 12, fontWeight: '600', letterSpacing: 1, fontFamily: FONT_M },
   badgeRow: { flexDirection: 'row', gap: 6, marginTop: 6 },
   badge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: '#00E5FF' },
-  badgeText: { color: '#00E5FF', fontSize: 10, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_M_S },
+  badgeText: { color: '#00E5FF', fontSize: 10, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_M },
 
   // Stats
   statsRow: {
@@ -351,8 +391,8 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
   },
   statBox: { alignItems: 'center', gap: 4, flex: 1 },
-  statNum: { color: '#FFF', fontSize: 20, fontWeight: '900', fontFamily: FONT_J_S },
-  statLabel: { color: '#555', fontSize: 9, fontWeight: '700', letterSpacing: 2, fontFamily: FONT_M_S },
+  statNum: { color: '#FFF', fontSize: 20, fontWeight: '900', fontFamily: FONT_J },
+  statLabel: { color: '#555', fontSize: 9, fontWeight: '700', letterSpacing: 2, fontFamily: FONT_M },
   statDivider: { width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.06)' },
 
   // Buttons
@@ -361,15 +401,15 @@ const s = StyleSheet.create({
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 6, backgroundColor: '#00E5FF', borderRadius: 12, paddingVertical: 14,
   },
-  cyanBtnText: { color: '#000', fontSize: 12, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_M_S },
+  cyanBtnText: { color: '#000', fontSize: 12, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_M },
   outlineBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 6, borderRadius: 12, paddingVertical: 14,
     borderWidth: 1, borderColor: '#00E5FF',
   },
-  outlineBtnText: { color: '#00E5FF', fontSize: 12, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_M_S },
+  outlineBtnText: { color: '#00E5FF', fontSize: 12, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_M },
 
-  // Load Card — The "CARICA ANALISI BIOMETRICA" button
+  // Load Card
   loadCard: {
     marginTop: 20, backgroundColor: '#111', borderRadius: 16, padding: 24,
     borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)',
@@ -380,13 +420,13 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(0,229,255,0.06)',
     alignItems: 'center', justifyContent: 'center', marginBottom: 4,
   },
-  loadTitle: { color: '#FFF', fontSize: 14, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_M_S, textAlign: 'center' },
-  loadSub: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '500', fontFamily: FONT_M_S },
+  loadTitle: { color: '#FFF', fontSize: 14, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_M, textAlign: 'center' },
+  loadSub: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '500', fontFamily: FONT_M },
   loadBtnInner: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: '#00E5FF', borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10, marginTop: 8,
   },
-  loadBtnText: { color: '#000', fontSize: 11, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_M_S },
+  loadBtnText: { color: '#000', fontSize: 11, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_M },
 
   // Sections
   section: {
@@ -394,29 +434,31 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
   },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  sectionTitle: { color: '#00E5FF', fontSize: 13, fontWeight: '800', letterSpacing: 2, fontFamily: FONT_M_S },
+  sectionTitle: { color: '#00E5FF', fontSize: 13, fontWeight: '800', letterSpacing: 2, fontFamily: FONT_M },
   domBadge: {
     paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1,
   },
-  domText: { fontSize: 9, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_M_S },
+  domText: { fontSize: 9, fontWeight: '800', letterSpacing: 1, fontFamily: FONT_M },
   emptyInner: { alignItems: 'center', justifyContent: 'center', padding: 24, gap: 8 },
-  emptyText: { color: 'rgba(255,255,255,0.15)', fontSize: 12, fontWeight: '600', fontFamily: FONT_M_S, textAlign: 'center' },
+  emptyText: { color: 'rgba(255,255,255,0.15)', fontSize: 12, fontWeight: '600', fontFamily: FONT_M, textAlign: 'center' },
 
-  // KORE ATLAS — Static widget
-  atlasCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 14,
-    marginTop: 20, backgroundColor: 'rgba(0,229,255,0.04)',
-    borderRadius: 16, padding: 14,
-    borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)',
+  // Challenge Panel — Replaces KORE ATLAS
+  challengePanel: {
+    marginTop: 20, backgroundColor: '#111', borderRadius: 16, padding: 16,
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)',
   },
-  atlasIcon: {
-    width: 48, height: 48, borderRadius: 14,
-    backgroundColor: 'rgba(0,229,255,0.08)',
-    alignItems: 'center', justifyContent: 'center',
+  challengeHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  challengePanelTitle: { color: '#FFD700', fontSize: 13, fontWeight: '800', letterSpacing: 2, fontFamily: FONT_M },
+  challengeItem: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
   },
-  atlasTextGroup: { flex: 1 },
-  atlasTitle: { color: '#FFF', fontSize: 14, fontWeight: '900', letterSpacing: 1.5, fontFamily: FONT_M_S },
-  atlasSub: { color: 'rgba(255,255,255,0.30)', fontSize: 11, fontWeight: '500', marginTop: 1, fontFamily: FONT_M_S },
+  challengeLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  challengeTextGroup: { flex: 1 },
+  challengeName: { color: '#FFF', fontSize: 12, fontWeight: '800', letterSpacing: 0.5, fontFamily: FONT_M },
+  challengeMeta: { color: '#555', fontSize: 10, fontWeight: '600', marginTop: 2, fontFamily: FONT_M },
+  challengeFlux: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  challengeFluxText: { color: '#00E5FF', fontSize: 12, fontWeight: '800', fontFamily: FONT_J },
 
   // Quick Nav
   quickNav: { flexDirection: 'row', gap: 10, marginTop: 20 },
@@ -425,5 +467,5 @@ const s = StyleSheet.create({
     gap: 6, backgroundColor: '#111', borderRadius: 12, paddingVertical: 14,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
   },
-  navText: { color: '#FFF', fontSize: 11, fontWeight: '700', letterSpacing: 1, fontFamily: FONT_M_S },
+  navText: { color: '#FFF', fontSize: 11, fontWeight: '700', letterSpacing: 1, fontFamily: FONT_M },
 });

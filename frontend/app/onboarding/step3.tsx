@@ -62,37 +62,8 @@ export default function LegacyStep3() {
   const [ghostMode, setGhostMode] = useState(false);
   const [detectedCity, setDetectedCity] = useState<string>('CHICAGO');
 
-  // ── GPS: detect real city on mount, update scan result for KORE ID
-  useEffect(() => {
-    (async () => {
-      try {
-        const ExpoLocation = require('expo-location');
-        const { status } = await ExpoLocation.requestForegroundPermissionsAsync();
-        if (status !== 'granted') return;
-
-        const pos = await ExpoLocation.getCurrentPositionAsync({
-          accuracy: ExpoLocation.Accuracy.Balanced
-        });
-        const [geo] = await ExpoLocation.reverseGeocodeAsync(pos.coords);
-        const city = (geo?.city || geo?.subregion || geo?.region || 'CHICAGO')
-          .toUpperCase()
-          .trim();
-
-        setDetectedCity(city);
-
-        // Update scan result with real city (KORE ID will show it on next render)
-        const existing = await AsyncStorage.getItem('@kore_scan_result');
-        if (existing) {
-          const parsed = JSON.parse(existing);
-          await AsyncStorage.setItem('@kore_scan_result', JSON.stringify({ ...parsed, city }));
-        }
-        // Also save as standalone GPS city for step4 registration
-        await AsyncStorage.setItem('@kore_gps_city', city);
-      } catch (_e) {
-        // GPS unavailable — keep CHICAGO as fallback, non-blocking
-      }
-    })();
-  }, []);
+  // ── GPS removed for iOS stability — city fallback used
+  // City detection was non-critical and caused permission popups
 
   const handleContinue = useCallback(() => {
     if (!height || !weight || !age || !level) {
