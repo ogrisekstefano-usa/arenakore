@@ -1,13 +1,12 @@
-import Haptics from '../../utils/haptics';
-import { TAB_BACKGROUNDS } from '../../utils/images';
 /**
- * ARENAKORE — NEXUS TRIGGER TAB v3.2 (Camera Lazy-Load Fix)
- * Nike Elite Aesthetic — Motion tracking, Bio-scan, Challenge Forge
- * Heavy sub-components extracted to /components/nexus/
- * 
+ * ARENAKORE — NEXUS TRIGGER TAB v4.0 "LIGHT-FIRST"
+ * ══════════════════════════════════════════════════════
+ * MEMORY OVERFLOW FIX: All heavy sub-components are lazy-loaded.
+ * Only React, RN core, router, and auth are imported at boot.
+ * Everything else is require()'d ON-DEMAND when the specific phase activates.
+ *
  * CRITICAL: Do NOT import CameraView/useCameraPermissions at top-level.
- * It crashes Expo Go during module initialization. Camera is lazy-loaded
- * via NativeCameraPreview component only when entering scanning phases.
+ * Do NOT add any import for heavy native modules (expo-camera, expo-location, expo-haptics).
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
@@ -22,46 +21,168 @@ import Animated, {
   useAnimatedStyle, withSpring, withDelay, Easing, interpolate, interpolateColor,
   FadeIn, FadeInDown, FadeInUp
 } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Text as SvgText, Polygon } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth, UserRole, ROLE_CONFIG } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
-import { playAcceptPing, playRecordBroken, startBioScanHum, playBioMatchPing } from '../../utils/sounds';
-import { playChargingSound, playCountTick, playStartBeep } from '../../utils/ChargingAudio';
-import { MotionAnalyzer, MotionState, ExerciseType, SkeletonPose } from '../../utils/MotionAnalyzer';
-import { profileDevice, DeviceProfile, DeviceTier, getTierLabel, getTrackingMode } from '../../utils/DeviceIntelligence';
-import { RemoteUXEngine } from '../../utils/RemoteUXEngine';
-import { FluxIcon } from '../../components/FluxIcon';
-import { Header } from '../../components/Header';
-import { BodyLockOverlay } from '../../components/nexus/BodyLockOverlay';
-import { ExitButton } from '../../components/nexus/ExitButton';
-import { LiveBPMWidget } from '../../components/health/HealthHub';
-import { useVoiceCommands, speakCoach, cancelCoachSpeech } from '../../utils/VoiceCommandEngine';
-import { PanopticonBridge } from '../../components/nexus/PanopticonBridge';
-import { NativeCameraPreview } from '../../components/nexus/NativeCameraPreview';
-import { getSportHeroImages, getSportAuraColor } from '../../utils/sportAssets';
 
-// Extracted sub-components
-import { CyberGrid, DigitalShadow, ScanLine } from '../../components/nexus/NexusVisuals';
-import { BurgerMenu } from '../../components/nexus/NexusBurgerMenu';
-import { CinemaResults } from '../../components/nexus/NexusCinemaResults';
-import { ProUnlockModal } from '../../components/nexus/ProUnlockModal';
-import { PvPPendingCard } from '../../components/pvp/PvPPendingCard';
-import { TrainingTemplateCard } from '../../components/training/TrainingTemplateCard';
-import { BioFeedbackHUD, BioFeedbackState } from '../../components/training/BioFeedbackHUD';
-import { UGCWorkoutHUD, UGCExercise } from '../../components/training/UGCWorkoutHUD';
-import { EfficiencyGhostHUD } from '../../components/training/EfficiencyGhostHUD';
-import { AKBadge } from '../../components/KoreVault';
-import { CertifiedByPros } from '../../components/training/CertifiedByPros';
-import { TiltGuideOverlay } from '../../components/TiltGuideOverlay';
-import { ChallengeEngine } from '../../components/challenge/ChallengeEngine';
-import { PostRaceValidation } from '../../components/challenge/PostRaceValidation';
-import { QRScannerModal } from '../../components/QRScannerModal';
-import { ChallengePreviewModal } from '../../components/ChallengePreviewModal';
-import { TemplateRequestModal, CategoryProposalModal } from '../../components/GovernanceModals';
-import { FluxStoreModal } from '../../components/FluxStoreModal';
-import { CrewBattleProgressBar } from '../../components/CrewBattleProgressBar';
+// ═══════════════════════════════════════════════════════════
+// LAZY-LOAD REGISTRY — All heavy components loaded ON-DEMAND
+// ═══════════════════════════════════════════════════════════
+let _lazyBoot = false;
+let _lazyScan = false;
+let _lazyModals = false;
+
+// Boot-level (loaded when console renders)
+let Haptics: any = null;
+let TAB_BACKGROUNDS: any = {};
+let LinearGradient: any = View;
+let Svg: any = null, SvgCircle: any = null, SvgText: any = null, SvgPolygon: any = null;
+let FluxIcon: any = () => null;
+let Header: any = ({ title }: any) => <View><Text style={{ color: '#FFF' }}>{title}</Text></View>;
+let ExitButton: any = () => null;
+let BurgerMenu: any = () => null;
+let getSportHeroImages: any = () => ({});
+let getSportAuraColor: any = () => '#00E5FF';
+let PvPPendingCard: any = () => null;
+let TrainingTemplateCard: any = () => null;
+let AKBadge: any = () => null;
+let CertifiedByPros: any = () => null;
+let CrewBattleProgressBar: any = () => null;
+let ProUnlockModal: any = () => null;
+
+// Scan-level (loaded when user enters bioscan/scanning/challenge phases)
+let playAcceptPing: any = () => {};
+let playRecordBroken: any = () => {};
+let startBioScanHum: any = () => () => {};
+let playBioMatchPing: any = () => {};
+let playChargingSound: any = () => {};
+let playCountTick: any = () => {};
+let playStartBeep: any = () => {};
+let MotionAnalyzer: any = null;
+let MotionState: any = {};
+let ExerciseType: any = {};
+let SkeletonPose: any = {};
+let profileDevice: any = () => ({});
+let DeviceProfile: any = {};
+let DeviceTier: any = {};
+let getTierLabel: any = () => 'Unknown';
+let getTrackingMode: any = () => 'basic';
+let RemoteUXEngine: any = { create: () => ({ start: () => {}, stop: () => {} }) };
+let BodyLockOverlay: any = () => null;
+let LiveBPMWidget: any = () => null;
+let useVoiceCommands: any = () => ({});
+let speakCoach: any = () => {};
+let cancelCoachSpeech: any = () => {};
+let PanopticonBridge: any = () => null;
+let NativeCameraPreview: any = () => null;
+let CyberGrid: any = () => null;
+let DigitalShadow: any = () => null;
+let ScanLine: any = () => null;
+let CinemaResults: any = () => null;
+let BioFeedbackHUD: any = () => null;
+let BioFeedbackState: any = {};
+let UGCWorkoutHUD: any = () => null;
+let UGCExercise: any = {};
+let EfficiencyGhostHUD: any = () => null;
+let TiltGuideOverlay: any = () => null;
+let ChallengeEngine: any = () => null;
+let PostRaceValidation: any = () => null;
+
+// Modal-level (loaded when modals open)
+let QRScannerModal: any = () => null;
+let ChallengePreviewModal: any = () => null;
+let TemplateRequestModal: any = () => null;
+let CategoryProposalModal: any = () => null;
+let FluxStoreModal: any = () => null;
+
+// ═══ LAZY LOADERS ═══
+function loadBootComponents() {
+  if (_lazyBoot) return;
+  try { Haptics = require('../../utils/haptics').default; } catch(e) {}
+  try { TAB_BACKGROUNDS = require('../../utils/images').TAB_BACKGROUNDS || {}; } catch(e) {}
+  try { LinearGradient = require('expo-linear-gradient').LinearGradient; } catch(e) {}
+  try {
+    const svg = require('react-native-svg');
+    Svg = svg.default; SvgCircle = svg.Circle; SvgText = svg.Text; SvgPolygon = svg.Polygon;
+  } catch(e) {}
+  try { FluxIcon = require('../../components/FluxIcon').FluxIcon; } catch(e) {}
+  try { Header = require('../../components/Header').Header; } catch(e) {}
+  try { ExitButton = require('../../components/nexus/ExitButton').ExitButton; } catch(e) {}
+  try { BurgerMenu = require('../../components/nexus/NexusBurgerMenu').BurgerMenu; } catch(e) {}
+  try {
+    const sa = require('../../utils/sportAssets');
+    getSportHeroImages = sa.getSportHeroImages; getSportAuraColor = sa.getSportAuraColor;
+  } catch(e) {}
+  try { PvPPendingCard = require('../../components/pvp/PvPPendingCard').PvPPendingCard; } catch(e) {}
+  try { TrainingTemplateCard = require('../../components/training/TrainingTemplateCard').TrainingTemplateCard; } catch(e) {}
+  try { AKBadge = require('../../components/KoreVault').AKBadge; } catch(e) {}
+  try { CertifiedByPros = require('../../components/training/CertifiedByPros').CertifiedByPros; } catch(e) {}
+  try { CrewBattleProgressBar = require('../../components/CrewBattleProgressBar').CrewBattleProgressBar; } catch(e) {}
+  try { ProUnlockModal = require('../../components/nexus/ProUnlockModal').ProUnlockModal; } catch(e) {}
+  _lazyBoot = true;
+}
+
+function loadScanComponents() {
+  if (_lazyScan) return;
+  try {
+    const snd = require('../../utils/sounds');
+    playAcceptPing = snd.playAcceptPing; playRecordBroken = snd.playRecordBroken;
+    startBioScanHum = snd.startBioScanHum; playBioMatchPing = snd.playBioMatchPing;
+  } catch(e) {}
+  try {
+    const ca = require('../../utils/ChargingAudio');
+    playChargingSound = ca.playChargingSound; playCountTick = ca.playCountTick; playStartBeep = ca.playStartBeep;
+  } catch(e) {}
+  try {
+    const ma = require('../../utils/MotionAnalyzer');
+    MotionAnalyzer = ma.MotionAnalyzer; MotionState = ma.MotionState;
+    ExerciseType = ma.ExerciseType; SkeletonPose = ma.SkeletonPose;
+  } catch(e) {}
+  try {
+    const di = require('../../utils/DeviceIntelligence');
+    profileDevice = di.profileDevice; DeviceProfile = di.DeviceProfile;
+    DeviceTier = di.DeviceTier; getTierLabel = di.getTierLabel; getTrackingMode = di.getTrackingMode;
+  } catch(e) {}
+  try { RemoteUXEngine = require('../../utils/RemoteUXEngine').RemoteUXEngine; } catch(e) {}
+  try { BodyLockOverlay = require('../../components/nexus/BodyLockOverlay').BodyLockOverlay; } catch(e) {}
+  try { LiveBPMWidget = require('../../components/health/HealthHub').LiveBPMWidget; } catch(e) {}
+  try {
+    const vc = require('../../utils/VoiceCommandEngine');
+    useVoiceCommands = vc.useVoiceCommands; speakCoach = vc.speakCoach; cancelCoachSpeech = vc.cancelCoachSpeech;
+  } catch(e) {}
+  try { PanopticonBridge = require('../../components/nexus/PanopticonBridge').PanopticonBridge; } catch(e) {}
+  try { NativeCameraPreview = require('../../components/nexus/NativeCameraPreview').NativeCameraPreview; } catch(e) {}
+  try {
+    const nv = require('../../components/nexus/NexusVisuals');
+    CyberGrid = nv.CyberGrid; DigitalShadow = nv.DigitalShadow; ScanLine = nv.ScanLine;
+  } catch(e) {}
+  try { CinemaResults = require('../../components/nexus/NexusCinemaResults').CinemaResults; } catch(e) {}
+  try {
+    const bfh = require('../../components/training/BioFeedbackHUD');
+    BioFeedbackHUD = bfh.BioFeedbackHUD; BioFeedbackState = bfh.BioFeedbackState;
+  } catch(e) {}
+  try {
+    const uwh = require('../../components/training/UGCWorkoutHUD');
+    UGCWorkoutHUD = uwh.UGCWorkoutHUD; UGCExercise = uwh.UGCExercise;
+  } catch(e) {}
+  try { EfficiencyGhostHUD = require('../../components/training/EfficiencyGhostHUD').EfficiencyGhostHUD; } catch(e) {}
+  try { TiltGuideOverlay = require('../../components/TiltGuideOverlay').TiltGuideOverlay; } catch(e) {}
+  try { ChallengeEngine = require('../../components/challenge/ChallengeEngine').ChallengeEngine; } catch(e) {}
+  try { PostRaceValidation = require('../../components/challenge/PostRaceValidation').PostRaceValidation; } catch(e) {}
+  _lazyScan = true;
+}
+
+function loadModalComponents() {
+  if (_lazyModals) return;
+  try { QRScannerModal = require('../../components/QRScannerModal').QRScannerModal; } catch(e) {}
+  try { ChallengePreviewModal = require('../../components/ChallengePreviewModal').ChallengePreviewModal; } catch(e) {}
+  try {
+    const gm = require('../../components/GovernanceModals');
+    TemplateRequestModal = gm.TemplateRequestModal; CategoryProposalModal = gm.CategoryProposalModal;
+  } catch(e) {}
+  try { FluxStoreModal = require('../../components/FluxStoreModal').FluxStoreModal; } catch(e) {}
+  _lazyModals = true;
+}
 
 let SW = 390, SH = 844; try { const _d = Dimensions.get('window'); SW = _d.width; SH = _d.height; } catch(e) {}
 
@@ -1717,6 +1838,9 @@ const lw$ = StyleSheet.create({
 
 // ========== MAIN SCREEN ==========
 export default function NexusTriggerScreen() {
+  // ═══ LAZY BOOT: Load minimal console components on first render ═══
+  loadBootComponents();
+
   const { user, token, logout, activeRole, setActiveRole, updateUser, refreshUser } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -2468,6 +2592,8 @@ export default function NexusTriggerScreen() {
 
   // ═══ CHALLENGE ENGINE PHASE ═══
   if (phase === 'challenge_engine') {
+    loadScanComponents();
+    loadModalComponents();
     return (
       <ChallengeEngine
         user={user}
@@ -2486,6 +2612,7 @@ export default function NexusTriggerScreen() {
 
   // ═══ LIVE WAITING ROOM PHASE ═══
   if (phase === 'live_queue') {
+    loadScanComponents();
     return <LiveWaitingRoom user={user} token={token} onBack={() => setPhase('console')} onMatchFound={(battleId) => {
       // Future: start a live 1v1 scanning session
       setPhase('forge');
@@ -2494,6 +2621,8 @@ export default function NexusTriggerScreen() {
 
   // ═══ QR KORE CROSS-CHECK VALIDATION PHASE ═══
   if (phase === 'qr_validation' && qrContext) {
+    loadScanComponents();
+    loadModalComponents();
     return (
       <PostRaceValidation
         user={user}
@@ -2510,6 +2639,7 @@ export default function NexusTriggerScreen() {
   }
 
   if (phase === 'tilt_setup') {
+    loadScanComponents();
     return (
       <TiltGuideOverlay
         lang="it"
@@ -2520,6 +2650,7 @@ export default function NexusTriggerScreen() {
   }
 
   if (phase === 'body_lock') {
+    loadScanComponents();
     return (
       <View style={main$.container}>
         <StatusBar barStyle="light-content" />
@@ -2595,6 +2726,7 @@ export default function NexusTriggerScreen() {
   }
 
   if (phase === 'forge') {
+    loadScanComponents();
     return (
       <View style={main$.container}>
         <CyberGrid intensity={0.2} />
@@ -2607,6 +2739,9 @@ export default function NexusTriggerScreen() {
   }
 
   // Scanning / Countdown / BioScan / Results
+  // ═══ LAZY LOAD ALL SCAN COMPONENTS BEFORE HEAVY RENDER ═══
+  loadScanComponents();
+  loadModalComponents();
   const skeleton: SkeletonPose = motionState?.skeletonPose || { torsoTilt: 0, kneeAngle: 0, armExtension: 0, shoulderRotation: 0, hipDrop: 0, intensity: 0.15 };
 
   // ═══ NATIVE CAMERA FACING MAPPING ═══

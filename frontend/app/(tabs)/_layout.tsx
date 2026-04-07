@@ -5,7 +5,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useSharedValue, withSpring, useAnimatedStyle, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth, UserRole } from '../../contexts/AuthContext';
-import { playTabSwitch } from '../../utils/sounds';
+
+// Lazy-load sound to avoid importing audio module at boot
+let playTabSwitch: any = () => {};
+try { playTabSwitch = require('../../utils/sounds').playTabSwitch; } catch(e) {}
 
 // Dynamic tab config based on active role
 function getTabConfig(activeRole: UserRole) {
