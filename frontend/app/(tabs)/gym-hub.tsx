@@ -1,24 +1,20 @@
 /**
- * ARENAKORE — GYM HUB TAB
- * Mostrato solo quando role === 'GYM'
+ * ISOLATION TEST — GYM HUB TAB (EMPTY)
  */
 import React from 'react';
-import { View, Text, StyleSheet, ImageBackground } from 'react-native';
-import { GymHub } from '../../components/GymHub';
-import { Header } from '../../components/Header';
-import { TAB_BACKGROUNDS } from '../../utils/images';
-import { useAuth } from '../../contexts/AuthContext';
+import { View, Text, StyleSheet } from 'react-native';
 
-export default function GymHubTab() {
-  const { token } = useAuth();
+export default function GymHubScreen() {
   return (
-    <ImageBackground source={{ uri: TAB_BACKGROUNDS.crews }} style={s.root} imageStyle={{ opacity: 0.10 }}>
-      <Header title="GYM HUB" />
-      <GymHub />
-    </ImageBackground>
+    <View style={s.root}>
+      <Text style={s.title}>GYM HUB</Text>
+      <Text style={s.ok}>BOOT OK — TEST MODE</Text>
+    </View>
   );
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#050505' }
+  root: { flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' },
+  title: { color: '#00E5FF', fontSize: 28, fontWeight: '900', letterSpacing: 4 },
+  ok: { color: '#00FF87', fontSize: 18, fontWeight: '700', marginTop: 16 },
 });

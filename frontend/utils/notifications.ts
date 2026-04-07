@@ -1,6 +1,7 @@
-import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
+// LAZY LOAD: expo-notifications and expo-device loaded only when needed
 import { Platform } from 'react-native';
+function getNotifications(): any { try { return require('expo-notifications'); } catch { return null; } }
+function getDevice(): any { try { return require('expo-device'); } catch { return null; } }
 
 // Sport-specific notification profiles
 export type NotificationTone = 'adrenalina' | 'precisione' | 'power';

@@ -1,18 +1,20 @@
+/**
+ * ISOLATION TEST — HALL TAB (EMPTY)
+ */
 import React from 'react';
-import { View, StyleSheet, StatusBar } from 'react-native';
-import { HallOfKore } from '../../components/GloryWall';
-import { Header } from '../../components/Header';
+import { View, Text, StyleSheet } from 'react-native';
 
-export default function HallTab() {
+export default function HallScreen() {
   return (
-    <View style={styles.container} testID="hall-tab">
-      <StatusBar barStyle="light-content" />
-      <Header title="RANKING" />
-      <HallOfKore />
+    <View style={s.root}>
+      <Text style={s.title}>RANK</Text>
+      <Text style={s.ok}>BOOT OK — TEST MODE</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000000' }
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' },
+  title: { color: '#00E5FF', fontSize: 28, fontWeight: '900', letterSpacing: 4 },
+  ok: { color: '#00FF87', fontSize: 18, fontWeight: '700', marginTop: 16 },
 });
