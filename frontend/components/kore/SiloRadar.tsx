@@ -7,8 +7,8 @@ import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import Svg, { Polygon, Line, Circle, Text as SvgText } from 'react-native-svg';
 
-const FONT_J = Platform.select({ ios: 'PlusJakartaSans-ExtraBold', android: 'PlusJakartaSans-ExtraBold', default: 'Plus Jakarta Sans' });
-const FONT_M = Platform.select({ ios: 'Montserrat-Regular', android: 'Montserrat-Regular', default: 'Montserrat' });
+const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
+const FONT_M = Platform.select({ web: "'Montserrat', sans-serif", default: undefined });
 
 interface SiloData {
   silo: string;
@@ -31,7 +31,8 @@ const DISC_ICONS: Record<string, string> = {
 };
 
 export function SiloRadar({ data, size = 220, auraColor = '#00E5FF' }: Props) {
-  if (!data || data.length === 0) {
+  // ═══ DEFENSIVE: Ensure data is a valid array ═══
+  if (!data || !Array.isArray(data) || data.length === 0) {
     return (
       <View style={s.emptyContainer}>
         <Text style={s.emptyText}>Completa sfide per sbloccare il Radar Silo</Text>
