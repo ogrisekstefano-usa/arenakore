@@ -1,20 +1,19 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+/**
+ * ARENAKORE — TAB LAYOUT "MINIMAL"
+ * ZERO sounds, ZERO withRepeat animations.
+ * Pure static tab bar for maximum iOS stability.
+ */
+import React, { useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { useSharedValue, withSpring, useAnimatedStyle, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth, UserRole } from '../../contexts/AuthContext';
 
-// Lazy-load sound to avoid importing audio module at boot
-let playTabSwitch: any = () => {};
-try { playTabSwitch = require('../../utils/sounds').playTabSwitch; } catch(e) {}
-
-// Dynamic tab config based on active role
 function getTabConfig(activeRole: UserRole) {
+  const isGym = activeRole === 'GYM_OWNER';
   const isCoach = activeRole === 'COACH';
-  const isGym   = activeRole === 'GYM_OWNER';
-  const tabs = [
+  return [
     isGym
       ? { name: 'gym-hub', icon: 'business-outline', iconBold: 'business', label: 'GYM HUB' }
       : { name: 'kore', icon: 'shield-outline', iconBold: 'shield', label: 'KORE' },
@@ -22,60 +21,15 @@ function getTabConfig(activeRole: UserRole) {
     { name: 'nexus-trigger', icon: 'flash', iconBold: 'flash-sharp', label: 'NÈXUS', isCenter: true },
     { name: 'dna', icon: 'analytics', iconBold: 'analytics-sharp', label: 'DNA' },
     { name: 'hall', icon: 'trophy', iconBold: 'trophy-sharp', label: 'RANK' },
-    // COACH role: add extra tab
     ...(isCoach ? [{ name: 'my-athletes', icon: 'people-outline', iconBold: 'people', label: 'KORE' }] : []),
   ];
-  return tabs;
-}
-
-function GoldButton({ onPress, focused }: { onPress: () => void; focused: boolean }) {
-  const scale = useSharedValue(1);
-  const glow = useSharedValue(0.4);
-
-  useEffect(() => {
-    if (focused) {
-      glow.value = withRepeat(
-        withSequence(withTiming(0.8, { duration: 800 }), withTiming(0.3, { duration: 800 })),
-        -1, false
-      );
-    }
-  }, [focused]);
-
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: 0.5 + glow.value * 0.5
-  }));
-
-  return (
-    <Animated.View style={[$.nexusWrap, animStyle]}>
-      <TouchableOpacity
-        testID="nexus-trigger-tab"
-        onPress={onPress}
-        onPressIn={() => { scale.value = withSpring(0.88, { damping: 12 }); }}
-        onPressOut={() => { scale.value = withSpring(1, { damping: 12 }); }}
-        style={$.goldBtn}
-        activeOpacity={1}
-      >
-        <Ionicons name="flash-sharp" size={26} color="#050505" />
-      </TouchableOpacity>
-    </Animated.View>
-  );
 }
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const insets = useSafeAreaInsets();
   const { activeRole } = useAuth();
-  const prevRef = useRef(state.index);
   const TAB_CONFIG = getTabConfig(activeRole);
 
-  useEffect(() => {
-    if (prevRef.current !== state.index) {
-      playTabSwitch();
-      prevRef.current = state.index;
-    }
-  }, [state.index]);
-
-  // Filter routes to only those defined in current TAB_CONFIG (excludes hidden screens like gym-hub, my-athletes)
   const visibleRoutes = state.routes.filter((route: any) =>
     TAB_CONFIG.some((cfg) => cfg.name === route.name)
   );
@@ -94,7 +48,14 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         if (cfg.isCenter) {
           return (
             <View key={route.key} style={$.centerWrap}>
-              <GoldButton onPress={onPress} focused={focused} />
+              <TouchableOpacity
+                testID="nexus-trigger-tab"
+                onPress={onPress}
+                style={$.goldBtn}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="flash-sharp" size={26} color="#050505" />
+              </TouchableOpacity>
               <Text style={[$.centerLabel, focused && $.labelActive]}>{cfg.label}</Text>
             </View>
           );
@@ -102,7 +63,6 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
         return (
           <TouchableOpacity key={route.key} testID={`tab-${cfg.name}`} onPress={onPress} style={$.tabItem}>
-            {/* Glow dot indicator */}
             {focused && <View style={$.glowDot} />}
             <Ionicons
               name={(focused ? cfg.iconBold : cfg.icon) as any}
@@ -146,8 +106,8 @@ const $ = StyleSheet.create({
     height: 76, alignItems: 'center', overflow: 'visible'
   },
   tabItem: {
-    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4, position: 'relative',
-    paddingTop: 6
+    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4,
+    position: 'relative', paddingTop: 6
   },
   glowDot: {
     position: 'absolute', top: -2, width: 5, height: 5, borderRadius: 2.5,
@@ -157,9 +117,7 @@ const $ = StyleSheet.create({
     color: '#AAAAAA', fontSize: 11, fontWeight: '900',
     letterSpacing: 2, textTransform: 'uppercase'
   },
-  labelActive: {
-    color: '#00E5FF'
-  },
+  labelActive: { color: '#00E5FF' },
   centerWrap: {
     flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'visible'
   },
@@ -167,10 +125,8 @@ const $ = StyleSheet.create({
     color: '#AAAAAA', fontSize: 11, fontWeight: '900',
     letterSpacing: 2, marginTop: 38
   },
-  nexusWrap: {
-    position: 'absolute', top: -31, alignSelf: 'center'
-  },
   goldBtn: {
+    position: 'absolute', top: -31,
     width: 64, height: 64, borderRadius: 32,
     backgroundColor: '#FFD700', alignItems: 'center', justifyContent: 'center',
     borderWidth: 3, borderColor: '#000000'
