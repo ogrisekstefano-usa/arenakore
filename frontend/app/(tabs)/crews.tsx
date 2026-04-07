@@ -1,20 +1,25 @@
 /**
- * ISOLATION TEST — CREWS TAB (EMPTY)
+ * ARENAKORE — CREWS TAB (SAFE RESTORE)
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Header } from '../../components/Header';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function CrewsScreen() {
   return (
     <View style={s.root}>
-      <Text style={s.title}>CREWS</Text>
-      <Text style={s.ok}>BOOT OK — TEST MODE</Text>
+      <Header title="CREWS" />
+      <View style={s.center}>
+        <Ionicons name="people-outline" size={40} color="#333" />
+        <Text style={s.text}>Le tue Crew appariranno qui</Text>
+      </View>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' },
-  title: { color: '#00E5FF', fontSize: 28, fontWeight: '900', letterSpacing: 4 },
-  ok: { color: '#00FF87', fontSize: 18, fontWeight: '700', marginTop: 16 },
+  root: { flex: 1, backgroundColor: '#000' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
+  text: { color: '#555', fontSize: 13 },
 });
