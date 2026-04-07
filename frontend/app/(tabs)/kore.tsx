@@ -21,7 +21,7 @@ const ENABLE_HERO = true;          // Hero image section
 const ENABLE_STATS = true;         // Stats row (SCANS, FLUX, LVL)
 const ENABLE_DNA_RADAR = true;     // DNA Radar inline (no SVG component)
 const ENABLE_KORE_ID_BTN = true;   // KORE ID button
-const ENABLE_KORE_ID_MODAL = false; // KoreIDModal import & render
+const ENABLE_KORE_ID_MODAL = true; // KoreIDModal import & render
 const ENABLE_SILO_RADAR = false;    // SiloRadar import & render
 const ENABLE_CONTROL_CENTER = false; // ControlCenter sidebar
 // ══════════════════════════════════════════════════════════
@@ -78,7 +78,7 @@ export default function KoreScreen() {
     if (!token) { setLoading(false); return; }
     (async () => {
       try {
-        const res = await fetch(`${API}/api/dna/latest`, {
+        const res = await fetch(`${API}/api/dna/history`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
