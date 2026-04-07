@@ -16,7 +16,7 @@ import Animated, {
 import { UserRole, ROLE_CONFIG } from '../../contexts/AuthContext';
 import { DeviceTier, getTierLabel, getTrackingMode } from '../../utils/DeviceIntelligence';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 
 // ========== PULSE TICKER ==========
 export function PulseTicker({ reduced }: { reduced?: boolean }) {

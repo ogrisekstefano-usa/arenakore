@@ -21,7 +21,7 @@ import Animated, {
 import { Ionicons } from '@expo/vector-icons';
 // Gyroscope lazy-loaded to prevent Expo Go crash
 
-const { width: SW, height: SH } = Dimensions.get('window');
+let SW = 390, SH = 844; try { const _d = Dimensions.get('window'); SW = _d.width; SH = _d.height; } catch(e) {}
 const CONFIDENCE_THRESHOLD = 0.85;
 const LOCK_DURATION_MS = 1500; // 1.5 seconds CONSECUTIVE required
 const GYRO_THRESHOLD = 0.5; // rad/s — above this = phone is moving

@@ -11,7 +11,7 @@ import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn } from 'react-native-rea
 import { Ionicons } from '@expo/vector-icons';
 import { apiClient } from '../utils/api';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 const FONT_M = 'Montserrat_800ExtraBold';
 const FONT_J = 'PlusJakartaSans_800ExtraBold';
 

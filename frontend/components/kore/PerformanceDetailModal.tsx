@@ -22,7 +22,7 @@ import type { TalentCardData } from './TalentCardTemplate';
 
 const FONT_J = Platform.select({ ios: 'PlusJakartaSans-ExtraBold', android: 'PlusJakartaSans-ExtraBold', default: 'Plus Jakarta Sans' });
 const FONT_M = Platform.select({ ios: 'Montserrat-Regular', android: 'Montserrat-Regular', default: 'Montserrat' });
-const { width: SCREEN_W } = Dimensions.get('window');
+let SCREEN_W = 390; try { SCREEN_W = Dimensions.get('window').width; } catch(e) {}
 
 const TIPO_CONFIG: Record<string, { color: string; label: string; icon: keyof typeof Ionicons.glyphMap }> = {
   'SFIDA_UGC':    { color: '#FF3B30', label: 'SFIDA',       icon: 'flame' },

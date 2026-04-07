@@ -38,7 +38,7 @@ try {
   console.warn('[PostRaceValidation] expo-camera not available');
 }
 
-const { width: SW } = Dimensions.get('window');
+let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 
 // ═══ Types ═══
 type ValidationPhase = 'my_qr' | 'scan' | 'manual_code' | 'result';

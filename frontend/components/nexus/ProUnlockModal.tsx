@@ -15,7 +15,7 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 
 interface ProUnlockModalProps {
   visible: boolean;

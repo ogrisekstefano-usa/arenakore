@@ -23,7 +23,7 @@ try {
   console.warn('[QRScanner] expo-camera not available');
 }
 
-const { width: SW } = Dimensions.get('window');
+let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 const SCAN_SIZE = SW * 0.65;
 
 interface QRScannerModalProps {

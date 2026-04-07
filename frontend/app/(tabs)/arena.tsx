@@ -24,7 +24,7 @@ import { ToolLock } from '../../components/KoreVault';
 import { ChallengeInviteModal } from '../../components/crew/ChallengeInviteModal';
 import { CertBadge } from '../../components/CertBadge';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 
 const KORE_OF_DAY = {
   username: 'THUNDER_MAN',

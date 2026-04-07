@@ -19,7 +19,7 @@ import Animated, {
 import { api } from '../../utils/api';
 import { DNA_HERO_IMAGE } from '../../utils/images';
 
-const { width: SCREEN_W } = Dimensions.get('window');
+let SCREEN_W = 390; try { SCREEN_W = Dimensions.get('window').width; } catch(e) {}
 
 const ATTRS: { key: string; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
   { key: 'velocita',   label: 'VELOCITA',   icon: 'flash',           color: '#00E5FF' },

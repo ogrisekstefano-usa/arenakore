@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { User, DNAStats } from '../contexts/AuthContext';
 import { shareText } from '../utils/shareHelper';
 
-const { width: SCREEN_W } = Dimensions.get('window');
+let SCREEN_W = 390; try { SCREEN_W = Dimensions.get('window').width; } catch(e) {}
 
 const ATTRS: { key: string; label: string; fullLabel: string; ionicon: keyof typeof Ionicons.glyphMap; color: string }[] = [
   { key: 'velocita', label: 'VEL', fullLabel: 'Velocit\u00e0', ionicon: 'flash', color: '#00E5FF' },

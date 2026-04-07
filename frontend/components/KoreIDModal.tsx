@@ -22,7 +22,7 @@ import { BlurView } from 'expo-blur';
 import { useAuth } from '../contexts/AuthContext';
 import { KoreIDSharer } from './KoreIDSharer';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 const QR_SIZE = Math.min(SW * 0.45, 180);
 
 interface KoreIDModalProps {

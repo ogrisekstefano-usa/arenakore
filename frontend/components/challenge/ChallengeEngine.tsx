@@ -22,7 +22,7 @@ import { FluxIcon } from '../FluxIcon';
 import { EL, FONT_MONT, FONT_JAKARTA } from '../../utils/eliteTheme';
 import { DataOriginLine } from './DataOriginBadge';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 
 // ═══ TAG DEFINITIONS ═══
 type ChallengeTag = 'POWER' | 'FLOW' | 'PULSE';

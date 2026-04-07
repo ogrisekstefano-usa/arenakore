@@ -17,7 +17,7 @@ import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 const PENDING_EVENT_KEY = '@arenakore_pending_event';
 
 const DIFF_MAP: Record<string, { label: string; color: string; icon: keyof typeof Ionicons.glyphMap }> = {

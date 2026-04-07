@@ -15,7 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { WebView } from 'react-native-webview';
 import { apiClient } from '../utils/api';
 
-const { width: W, height: H } = Dimensions.get('window');
+let W = 390, H = 844; try { const _d = Dimensions.get('window'); W = _d.width; H = _d.height; } catch(e) {}
 const FONT_M = Platform.select({ ios: 'Montserrat_800ExtraBold', android: 'Montserrat_800ExtraBold', default: 'Montserrat, sans-serif' });
 const FONT_B = Platform.select({ ios: 'Montserrat_400Regular', android: 'Montserrat_400Regular', default: 'Montserrat, sans-serif' });
 

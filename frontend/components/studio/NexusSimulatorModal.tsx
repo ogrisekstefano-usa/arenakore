@@ -24,7 +24,7 @@ import { useTheme, PJS, MONT, fz } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 
 type SimPhase = 'idle' | 'calibrating' | 'tracking' | 'analyzing' | 'complete';
 

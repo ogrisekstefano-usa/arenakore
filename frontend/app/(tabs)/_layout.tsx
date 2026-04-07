@@ -131,6 +131,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="dna" />
       <Tabs.Screen name="hall" />
       <Tabs.Screen name="my-athletes" options={{ href: null }} />
+      <Tabs.Screen name="safe-test" options={{ href: null }} />
     </Tabs>
   );
 }

@@ -17,7 +17,7 @@ import Animated, {
   withSequence, withDelay, withRepeat, Easing, FadeInDown
 } from 'react-native-reanimated';
 
-const { width: SW, height: SH } = Dimensions.get('window');
+let SW = 390, SH = 844; try { const _d = Dimensions.get('window'); SW = _d.width; SH = _d.height; } catch(e) {}
 
 // Mood engine for background color
 function getMood(qualityScore: number) {

@@ -19,7 +19,7 @@ import { useAuth, UserRole, ROLE_CONFIG } from '../contexts/AuthContext';
 import { profileDevice, getTierLabel, getTrackingMode } from '../utils/DeviceIntelligence';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 const CYAN = '#00E5FF';
 const GOLD = '#FFD700';
 const WHITE = '#FFFFFF';

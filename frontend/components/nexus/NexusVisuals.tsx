@@ -10,7 +10,7 @@ import Animated, { useSharedValue, withRepeat, withTiming, useAnimatedStyle, Eas
 import { SkeletonPose, ExerciseType } from '../../utils/MotionAnalyzer';
 import { DeviceTier, getTierLabel, getTrackingMode } from '../../utils/DeviceIntelligence';
 
-const { width: SW, height: SH } = Dimensions.get('window');
+let SW = 390, SH = 844; try { const _d = Dimensions.get('window'); SW = _d.width; SH = _d.height; } catch(e) {}
 
 // ========== CYBER GRID (reduced for scanning overlay) ==========
 export function CyberGrid({ intensity, scanning }: { intensity: number; scanning?: boolean }) {

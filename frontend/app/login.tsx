@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
-const { width: SW } = Dimensions.get('window');
+let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 const PENDING_EVENT_KEY = '@arenakore_pending_event';
 
 export default function Login() {

@@ -23,7 +23,7 @@ import Animated, {
 // DeviceMotion lazy-loaded to prevent Expo Go crash
 import { RemoteUXEngine } from '../utils/RemoteUXEngine';
 
-const { width: SW, height: SH } = Dimensions.get('window');
+let SW = 390, SH = 844; try { const _d = Dimensions.get('window'); SW = _d.width; SH = _d.height; } catch(e) {}
 const CYAN = '#00E5FF';
 const GREEN = '#00FF87';
 const ORANGE = '#FF9500';
