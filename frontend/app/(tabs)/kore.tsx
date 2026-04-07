@@ -22,7 +22,7 @@ const ENABLE_STATS = true;         // Stats row (SCANS, FLUX, LVL)
 const ENABLE_DNA_RADAR = true;     // DNA Radar inline (no SVG component)
 const ENABLE_KORE_ID_BTN = true;   // KORE ID button
 const ENABLE_KORE_ID_MODAL = true; // KoreIDModal import & render
-const ENABLE_SILO_RADAR = false;    // SiloRadar import & render
+const ENABLE_SILO_RADAR = true;    // SiloRadar import & render
 const ENABLE_CONTROL_CENTER = false; // ControlCenter sidebar
 // ══════════════════════════════════════════════════════════
 
@@ -69,6 +69,7 @@ export default function KoreScreen() {
   const [koreIdVisible, setKoreIdVisible] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dnaData, setDnaData] = useState<any>(null);
+  const [siloData, setSiloData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   console.log('[KORE_DIAG] hooks OK, user:', user?.username);
@@ -78,16 +79,14 @@ export default function KoreScreen() {
     if (!token) { setLoading(false); return; }
     (async () => {
       try {
-        const res = await fetch(`${API}/api/dna/history`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setDnaData(data);
-          console.log('[KORE_DIAG] DNA data loaded OK');
-        }
+        const [dnaRes, siloRes] = await Promise.all([
+          fetch(`${API}/api/dna/history`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API}/api/kore/silo-profile`, { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+        if (dnaRes.ok) { setDnaData(await dnaRes.json()); console.log('[KORE_DIAG] DNA data loaded OK'); }
+        if (siloRes.ok) { const sd = await siloRes.json(); setSiloData(sd.silos || sd || []); console.log('[KORE_DIAG] Silo data loaded OK'); }
       } catch (e: any) {
-        console.log('[KORE_DIAG] DNA fetch error:', e.message);
+        console.log('[KORE_DIAG] Fetch error:', e.message);
       }
       setLoading(false);
     })();
@@ -142,21 +141,62 @@ export default function KoreScreen() {
           );
         })()}
 
-        {/* ═══ DNA RADAR (TEXT ONLY — no SVG) ═══ */}
+        {/* ═══ DNA RADAR SVG ═══ */}
         {ENABLE_DNA_RADAR && (() => {
-          console.log('[KORE_DIAG] LOG_DNA_START');
+          console.log('[KORE_DIAG] LOG_DNA_RADAR_SVG_START');
           const dna = user?.dna || {};
+          const keys = Object.keys(dna);
+          if (keys.length === 0) {
+            return (
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>DNA RADAR</Text>
+                <Text style={{ color: '#555', fontSize: 12, textAlign: 'center', padding: 20 }}>Completa una scansione per visualizzare il DNA</Text>
+              </View>
+            );
+          }
+          // SVG Radar inline
+          const radarSize = 200;
+          const center = radarSize / 2;
+          const maxR = radarSize / 2 - 28;
+          const n = Math.max(keys.length, 3);
+          const step = (Math.PI * 2) / n;
+          const pt = (i: number, v: number) => {
+            const a = step * i - Math.PI / 2;
+            const r = (Math.min(v, 100) / 100) * maxR;
+            return { x: center + r * Math.cos(a), y: center + r * Math.sin(a) };
+          };
+          const Svg = require('react-native-svg').default;
+          const { Polygon, Line, Circle, Text: SvgText } = require('react-native-svg');
+          const points = keys.map((k, i) => pt(i, dna[k] || 0));
+          const poly = points.map(p => `${p.x},${p.y}`).join(' ');
+          console.log('[KORE_DIAG] LOG_DNA_RADAR_SVG_END');
           return (
             <View style={s.section}>
               <Text style={s.sectionTitle}>DNA RADAR</Text>
-              <View style={s.dnaGrid}>
-                {Object.entries(dna).map(([key, val]: [string, any]) => (
-                  <View key={key} style={s.dnaItem}>
-                    <Text style={s.dnaLabel}>{key.toUpperCase()}</Text>
-                    <View style={s.dnaBar}>
-                      <View style={[s.dnaFill, { width: `${Math.min(val || 0, 100)}%` }]} />
-                    </View>
-                    <Text style={s.dnaVal}>{val || 0}</Text>
+              <View style={{ alignItems: 'center' }}>
+                <Svg width={radarSize} height={radarSize}>
+                  {[25, 50, 75, 100].map(r => (
+                    <Circle key={r} cx={center} cy={center} r={(r / 100) * maxR} fill="none" stroke="rgba(0,229,255,0.06)" strokeWidth={1} />
+                  ))}
+                  {keys.map((_, i) => {
+                    const ep = pt(i, 100);
+                    return <Line key={i} x1={center} y1={center} x2={ep.x} y2={ep.y} stroke="rgba(255,255,255,0.06)" strokeWidth={1} />;
+                  })}
+                  <Polygon points={poly} fill="rgba(0,229,255,0.12)" stroke="#00E5FF" strokeWidth={1.5} />
+                  {points.map((p, i) => (
+                    <Circle key={i} cx={p.x} cy={p.y} r={3} fill="#00E5FF" stroke="#000" strokeWidth={1.5} />
+                  ))}
+                  {keys.map((k, i) => {
+                    const lp = pt(i, 120);
+                    return <SvgText key={k} x={lp.x} y={lp.y} fill="rgba(255,255,255,0.5)" fontSize={8} fontWeight="700" textAnchor="middle">{k.toUpperCase().slice(0, 4)}</SvgText>;
+                  })}
+                </Svg>
+              </View>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 8 }}>
+                {keys.map(k => (
+                  <View key={k} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Text style={{ color: '#00E5FF', fontSize: 12, fontWeight: '800' }}>{dna[k]}</Text>
+                    <Text style={{ color: '#555', fontSize: 10, fontWeight: '600' }}>{k.toUpperCase()}</Text>
                   </View>
                 ))}
               </View>
@@ -185,10 +225,15 @@ export default function KoreScreen() {
         {ENABLE_SILO_RADAR && SiloRadar && (() => {
           console.log('[KORE_DIAG] LOG_SILO_START');
           try {
-            return <SiloRadar />;
+            return (
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>SILO RADAR</Text>
+                <SiloRadar data={siloData} size={220} />
+              </View>
+            );
           } catch (e: any) {
             console.log('[KORE_DIAG] SiloRadar RENDER FAILED:', e.message);
-            return <Text style={{ color: 'red', padding: 16 }}>SiloRadar Error: {e.message}</Text>;
+            return <View style={s.section}><Text style={{ color: '#FF3B30', fontSize: 12 }}>Radar Error: {e.message}</Text></View>;
           }
         })()}
 
