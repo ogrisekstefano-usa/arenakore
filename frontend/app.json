@@ -15,7 +15,10 @@
         "NSCameraUsageDescription": "Analizza la tua biomeccanica in tempo reale",
         "NSMicrophoneUsageDescription": "Attiva comandi vocali e sessioni Nexus",
         "NSMotionUsageDescription": "Traccia i movimenti per contare le ripetizioni",
-        "NSLocationWhenInUseUsageDescription": "Geolocalizza le sfide completate su KORE ATLAS"
+        "NSLocationWhenInUseUsageDescription": "Geolocalizza le sfide completate su KORE ATLAS",
+        "NSSpeechRecognitionUsageDescription": "Comandi vocali hands-free durante lo scan",
+        "NSPhotoLibraryUsageDescription": "Imposta la tua foto profilo KORE ID",
+        "UIBackgroundModes": ["audio"]
       }
     },
     "android": {
@@ -33,7 +36,9 @@
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.HIGH_SAMPLING_RATE_SENSORS",
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
       ]
     },
     "web": {
@@ -46,7 +51,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow ARENAKORE to access your camera for Nexus Sync biometric analysis."
+          "cameraPermission": "Analisi biomeccanica in tempo reale via NÈXUS"
         }
       ],
       [
@@ -68,10 +73,33 @@
         }
       ],
       "expo-font",
-      "expo-audio"
+      "expo-audio",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Traccia le sfide su KORE ATLAS"
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Traccia i movimenti per conteggio ripetizioni"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Imposta la tua foto profilo KORE ID"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
     }
   }
 }
