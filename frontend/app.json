@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "arenakore",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.arenakore.app",
@@ -47,7 +47,8 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
     "web": {
@@ -107,7 +108,11 @@
       "typedRoutes": true
     },
     "extra": {
-      "eas": {}
-    }
+      "eas": {
+        "projectId": "05174b01-c27e-4ddc-ad2b-53edf79149d0"
+      },
+      "router": {}
+    },
+    "owner": "ogriusa"
   }
 }
