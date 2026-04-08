@@ -28,6 +28,13 @@ export const apiClient = async (path: string, options: RequestInit = {}) => {
   return request(cleanPath, options, token);
 };
 
+// ── Raw fetch wrapper for admin-panel pages (returns Response object, NOT parsed JSON) ──
+const RAW_BASE = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
+  const url = path.startsWith('/api') ? `${RAW_BASE}${path}` : `${RAW_BASE}/api${path}`;
+  return fetch(url, options);
+}
+
 export const api = {
   register: (data: {
     username: string; email: string; password: string;

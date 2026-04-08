@@ -2373,6 +2373,18 @@ agent_communication:
           agent: "testing"
           comment: "COMPREHENSIVE TEST PASSED: GET /api/kore/silo-profile working correctly. Admin login successful with ogrisek.stefano@gmail.com / Founder@KORE2026!. Returns all required fields: dominant_silo='Fitness', dominant_pct=50.0, aura_color='#FF3B30', title='Rookie', title_tier='rookie', total_challenges_30d=2 (>=2 as expected). Radar array contains 2 entries (Fitness and Golf) with proper structure including silo, color, count, avg_quality, max_quality, competency. Competency calculation verified: Golf (count=1, avg_quality=92%, competency=56.0) and Fitness (count=1, avg_quality=85%, competency=51.8) both calculated correctly using formula: competency = (volume_score * 0.4) + (quality * 0.6) where volume_score = min(count/50*100, 100). All silo profiling features are production-ready."
 
+  - task: "SUPER_ADMIN API Endpoints Regression Test"
+    implemented: true
+    working: true
+    file: "routes/admin.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE REGRESSION TEST PASSED: ALL 18 SUPER_ADMIN API endpoints tested successfully (100% SUCCESS RATE). Admin Dashboard returns all KPIs (users=47, gyms=4, scans=6). Inbound CRM: gym lead creation (public), listing, activation with gym_code generation (MILA565), and rejection all working correctly. CMS Content Management: full CRUD cycle (create, read, update, delete) plus public endpoint all functional. Push Notification Engine: campaign creation and history retrieval working correctly. Push Token Registration: Expo token registration successful. RBAC Enforcement: All 4 admin endpoints correctly return 403 for athlete accounts. Cross-check: Existing endpoints (/auth/me, /leaderboard, /kore/stats) remain fully functional. Admin API refactoring from monolithic server.py to modular routes/admin.py completed successfully with zero regressions."
+
 test_plan:
   current_focus: []
   stuck_tasks: []
@@ -2434,3 +2446,76 @@ agent_communication:
       message: "KORE DETAIL VIEW BACKEND TESTING COMPLETED: ALL 6 NEW ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test flow executed as specified in review request using admin credentials ogrisek.stefano@gmail.com / Founder@KORE2026!: ✅ Test 1: Admin Login - successful authentication with is_admin=true, is_founder=true ✅ Test 2: Golf Swing Personal Record (GET /api/kore/personal-record?exercise_type=swing&disciplina=Golf) - returns PR data with primary_result (15 rep), quality_score (92%), best_quality (92%), avg_stats (1 attempt, avg_value=15.0, avg_quality=92.0) ✅ Test 3: Fitness Squat Personal Record (GET /api/kore/personal-record?exercise_type=squat&disciplina=Fitness) - returns PR data with primary_result (25 rep), quality_score (85%), best_quality (85%), avg_stats (1 attempt, avg_value=25.0, avg_quality=85.0) ✅ Test 4: Nonexistent Exercise Personal Record (GET /api/kore/personal-record?exercise_type=nonexistent&disciplina=Unknown) - correctly returns null PR data, null best_quality, and 0 total_attempts ✅ Test 5: KORE History (GET /api/kore/history) - returns 2 performance records with proper structure, aggregate stats (total_sessions=2, total_flux=130, avg_quality=88.5, certified_count=1), and discipline breakdown ✅ Test 6: KORE Stats (GET /api/kore/stats) - returns comprehensive stats with tipo breakdown and weekly trend data. All KORE Detail View endpoints are production-ready with proper data aggregation, filtering, and response structures. Previously saved records appear correctly with proper metadata and timestamps."
     - agent: "testing"
       message: "SILO IDENTITY & ATHLETE PROFILING ENDPOINT TESTING COMPLETED: ALL 3 CRITICAL TEST SCENARIOS PASSED SUCCESSFULLY (100% SUCCESS RATE). Full test flow executed as specified in review request: ✅ Test 1: Admin Login - ogrisek.stefano@gmail.com / Founder@KORE2026! successful with is_admin=true, is_founder=true ✅ Test 2: Silo Profile Endpoint - GET /api/kore/silo-profile returns all required fields: dominant_silo='Fitness', dominant_pct=50.0, aura_color='#FF3B30', title='Rookie', title_tier='rookie', total_challenges_30d=2 (>=2 as expected). Radar array contains 2 entries (Fitness and Golf) with proper structure including silo, color, count, avg_quality, max_quality, competency ✅ Test 3: Competency Calculation Verification - Golf (count=1, avg_quality=92%, competency=56.0) and Fitness (count=1, avg_quality=85%, competency=51.8) both calculated correctly using formula: competency = (volume_score * 0.4) + (quality * 0.6) where volume_score = min(count/50*100, 100). All silo profiling features are production-ready. Total backend endpoints tested: 49/49 ✅"
+
+
+  - task: "SUPER_ADMIN Dashboard API (refactored)"
+    implemented: true
+    working: true
+    file: "routes/admin.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/admin/dashboard — returns platform KPIs (users, gyms, scans, leads, role distribution, top cities). Refactored from server.py to routes/admin.py using factory pattern."
+
+  - task: "SUPER_ADMIN Leads CRM API (refactored)"
+    implemented: true
+    working: true
+    file: "routes/admin.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/admin/leads, PATCH /api/admin/leads/{id}/activate, PATCH /api/admin/leads/{id}/reject, POST /api/leads/gym. Full CRUD for inbound gym lead management. Activate creates gym+owner account."
+
+  - task: "SUPER_ADMIN CMS API (refactored)"
+    implemented: true
+    working: true
+    file: "routes/admin.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "GET /api/admin/cms, POST /api/admin/cms, PATCH /api/admin/cms/{id}, DELETE /api/admin/cms/{id}, GET /api/cms/public. Full CRUD for dynamic content management with key, title, body, category, audience, priority, active toggle."
+
+  - task: "SUPER_ADMIN Push Engine API (refactored)"
+    implemented: true
+    working: true
+    file: "routes/admin.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "POST /api/admin/push (send targeted campaign with city/level/role/crew filters via Expo Push API), GET /api/admin/push/history, POST /api/push/register-token. Refactored to routes/admin.py."
+
+  - task: "Backend Refactoring - Admin Routes Module"
+    implemented: true
+    working: true
+    file: "routes/admin.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Extracted ~437 lines from server.py to routes/admin.py. Uses factory function pattern register_admin_routes(api_router, db, require_super_admin, get_current_user, hash_password). server.py reduced from ~11955 to ~11518 lines."
+
+metadata:
+  created_by: "main_agent"
+  version: "2.0"
+  test_sequence: 35
+  run_ui: false
+
+test_plan: "Test all SUPER_ADMIN API endpoints after refactoring from monolithic server.py to modular routes/admin.py. Verify: (1) GET /api/admin/dashboard returns KPIs, (2) GET /api/admin/leads?status=all returns 3 leads, (3) POST /api/leads/gym creates new lead, (4) PATCH /api/admin/leads/{id}/activate creates gym+owner, (5) PATCH /api/admin/leads/{id}/reject, (6) CMS CRUD cycle (create, update, toggle, delete), (7) POST /api/admin/push sends campaign, (8) GET /api/admin/push/history, (9) GET /api/cms/public, (10) Verify existing endpoints still work (auth/me, leaderboard). Credentials: ogrisek.stefano@gmail.com / Founder@KORE2026! (SUPER_ADMIN). Also test d.rose@chicago.kore / Seed@Chicago1 should get 403 on admin endpoints."
+
+agent_communication:
+    - agent: "testing"
+      message: "SUPER_ADMIN API ENDPOINTS REGRESSION TEST COMPLETED: ALL 18 ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). CRITICAL regression test confirms admin API refactoring from monolithic server.py to modular routes/admin.py completed with ZERO regressions. Test results: ✅ Admin Dashboard - Returns all platform KPIs (users=47, gyms=4, scans=6, role distribution, top cities) ✅ Inbound CRM (Leads) - Public gym lead creation, admin listing (all/pending filters), lead activation with gym_code generation (MILA565), and rejection all working correctly ✅ CMS Content Management - Full CRUD cycle (create, read, update, delete) plus public endpoint all functional ✅ Push Notification Engine - Campaign creation with targeting filters and history retrieval working correctly ✅ Push Token Registration - Expo push token registration successful ✅ RBAC Enforcement - All 4 admin endpoints correctly return 403 for athlete accounts (proper access control) ✅ Cross-check - Existing endpoints (/auth/me, /leaderboard, /kore/stats) remain fully functional. Admin credentials: ogrisek.stefano@gmail.com / Founder@KORE2026! (SUPER_ADMIN access confirmed). Athlete credentials: d.rose@chicago.kore / Seed@Chicago1 (403 responses confirmed). All admin routes properly extracted to routes/admin.py module and integrated successfully."
