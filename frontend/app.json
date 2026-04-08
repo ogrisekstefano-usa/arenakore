@@ -24,7 +24,10 @@
         "NSHealthShareUsageDescription": "Sincronizza i dati fitness con il tuo KORE Score",
         "NSHealthUpdateUsageDescription": "Registra i tuoi allenamenti nel profilo salute",
         "NSFaceIDUsageDescription": "Accesso rapido e sicuro al tuo profilo KORE",
-        "UIBackgroundModes": ["audio", "remote-notification"]
+        "UIBackgroundModes": [
+          "audio",
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -97,14 +100,14 @@
         {
           "photosPermission": "Imposta la tua foto profilo KORE ID"
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "eas": {
-      }
+      "eas": {}
     }
   }
 }
