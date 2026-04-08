@@ -2,6 +2,7 @@
  * ARENAKORE — TAB LAYOUT "MINIMAL"
  * ZERO sounds, ZERO withRepeat animations.
  * Pure static tab bar for maximum iOS stability.
+ * lazy: true — only active tab mounts (prevents Fabric renderer overload)
  */
 import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
@@ -9,6 +10,45 @@ import { Tabs, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth, UserRole } from '../../contexts/AuthContext';
+
+// ErrorBoundary: Catches native crashes in tab screens and prevents full app crash
+class TabErrorBoundary extends React.Component<
+  { children: React.ReactNode; name: string },
+  { hasError: boolean; error: string }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: '' };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error: error.message || 'Unknown error' };
+  }
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error(`[KORE] Tab "${this.props.name}" crashed:`, error.message, info.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <Ionicons name="warning" size={48} color="#FFD700" />
+          <Text style={{ color: '#FFD700', fontSize: 18, fontWeight: '800', marginTop: 16, textAlign: 'center' }}>
+            MODULO IN MANUTENZIONE
+          </Text>
+          <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 8, textAlign: 'center' }}>
+            {this.state.error.slice(0, 100)}
+          </Text>
+          <TouchableOpacity
+            onPress={() => this.setState({ hasError: false, error: '' })}
+            style={{ marginTop: 20, backgroundColor: '#00E5FF', paddingHorizontal: 24, paddingVertical: 10, borderRadius: 8 }}
+          >
+            <Text style={{ color: '#000', fontWeight: '800', fontSize: 14 }}>RIPROVA</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function getTabConfig(activeRole: UserRole) {
   const isGym = activeRole === 'GYM_OWNER';
@@ -86,7 +126,7 @@ export default function TabsLayout() {
   }, [token, isLoading]);
 
   return (
-    <Tabs tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false }} initialRouteName="nexus-trigger">
+    <Tabs tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false, lazy: true }} initialRouteName="nexus-trigger">
       <Tabs.Screen name="kore" />
       <Tabs.Screen name="arena" />
       <Tabs.Screen name="gym-hub" options={{ href: null }} />
