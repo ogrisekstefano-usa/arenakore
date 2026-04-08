@@ -7201,10 +7201,43 @@ async def generate_athlete_pdf(athlete_id: str, current_user: dict = Depends(req
         c.drawCentredString(bx + 60, y + 3, badge_text)
         bx += 135
 
+    # ── QR CODE — Dynamic Athlete Passport Link ──
+    try:
+        import qrcode
+        from PIL import Image as PILImage
+        from reportlab.lib.utils import ImageReader
+
+        passport_base = os.environ.get("EXPO_PUBLIC_BACKEND_URL", "https://arenakore.app")
+        passport_url = f"{passport_base}/athlete/{athlete_id}"
+
+        qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=6, border=1)
+        qr.add_data(passport_url)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color="#00E5FF", back_color="#0A0A0A")
+
+        # Convert PIL image to ReportLab ImageReader
+        qr_buffer = BytesIO()
+        qr_img.save(qr_buffer, format="PNG")
+        qr_buffer.seek(0)
+        qr_reader = ImageReader(qr_buffer)
+
+        # Draw QR code in bottom-right area
+        qr_size = 65
+        qr_x = w - 30 - qr_size
+        qr_y = 35
+        c.drawImage(qr_reader, qr_x, qr_y, width=qr_size, height=qr_size)
+
+        # Label under QR
+        c.setFillColor(HexColor("#00E5FF"))
+        c.setFont("Helvetica-Bold", 6)
+        c.drawCentredString(qr_x + qr_size / 2, qr_y - 8, "SCAN → ATHLETE PASSPORT")
+    except Exception as qr_err:
+        logger.warning(f"[PDF] QR code generation skipped: {qr_err}")
+
     # ── FOOTER ──
     c.setFillColor(HexColor("#333333"))
     c.setFont("Helvetica", 8)
-    c.drawCentredString(w / 2, 25, "ARENA KORE — Confidential Athletic Report · arenakore.app")
+    c.drawCentredString(w / 2 - 30, 25, "ARENA KORE — Confidential Athletic Report · arenakore.app")
 
     c.showPage()
     c.save()

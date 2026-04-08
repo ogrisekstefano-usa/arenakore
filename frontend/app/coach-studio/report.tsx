@@ -12,6 +12,7 @@ import Svg, {
   Polygon, Line, Circle, Text as SvgText,
   Path, G
 } from 'react-native-svg';
+import QRCode from 'react-native-qrcode-svg';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
@@ -350,12 +351,23 @@ export default function TalentReportPage() {
           )}
         </View>
 
-        {/* Card footer */}
+        {/* Card footer with QR Code */}
         <View style={rp$.cardFooter}>
-          <Text style={[rp$.footerText, MONT('300')]}>
-            Generato da {report.generated_by?.toUpperCase()} · NÈXUS Intelligence Platform
-          </Text>
-          <Text style={[rp$.footerText, MONT('300')]}>ID #{athlete.id?.slice(-8).toUpperCase()}</Text>
+          <View style={rp$.footerLeft}>
+            <Text style={[rp$.footerText, MONT('300')]}>
+              Generato da {report.generated_by?.toUpperCase()} · NÈXUS Intelligence Platform
+            </Text>
+            <Text style={[rp$.footerText, MONT('300')]}>ID #{athlete.id?.slice(-8).toUpperCase()}</Text>
+          </View>
+          <View style={rp$.qrSection}>
+            <QRCode
+              value={`${process.env.EXPO_PUBLIC_BACKEND_URL || 'https://arenakore.app'}/athlete/${athleteId}`}
+              size={56}
+              backgroundColor="transparent"
+              color="#00E5FF"
+            />
+            <Text style={[rp$.qrLabel, MONT('600')]}>PASSPORT</Text>
+          </View>
         </View>
       </Animated.View>
     </ScrollView>
@@ -427,6 +439,9 @@ const rp$ = StyleSheet.create({
   noteInput: { borderWidth: 1, borderRadius: 10, padding: 12, fontSize: 15, minHeight: 80 } as any,
   noteText: { fontSize: 14, lineHeight: 18 },
   // Footer
-  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', padding: 14, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.07)', backgroundColor: '#0A0A0A' },
-  footerText: { color: 'rgba(255,255,255,0.2)', fontSize: 12, letterSpacing: 0.5 }
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.07)', backgroundColor: '#0A0A0A' },
+  footerLeft: { flex: 1, gap: 3 },
+  footerText: { color: 'rgba(255,255,255,0.2)', fontSize: 12, letterSpacing: 0.5 },
+  qrSection: { alignItems: 'center', gap: 4, paddingLeft: 12 },
+  qrLabel: { color: '#00E5FF', fontSize: 8, letterSpacing: 3 },
 });
