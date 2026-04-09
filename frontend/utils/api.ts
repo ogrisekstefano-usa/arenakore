@@ -1,6 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
+// ── Resolve backend URL with fallback for native builds ──
+const RENDER_URL = 'https://arenakore-api.onrender.com';
+const ENV_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const RESOLVED_BACKEND = (ENV_URL && ENV_URL !== 'undefined' && ENV_URL.startsWith('http'))
+  ? ENV_URL
+  : RENDER_URL;
+const BASE_URL = RESOLVED_BACKEND + '/api';
+
+// Debug log for native builds
+console.log('[ARENAKORE API] Backend URL:', RESOLVED_BACKEND, '| ENV:', ENV_URL);
 
 async function request(path: string, options: RequestInit = {}, token?: string | null) {
   const headers: Record<string, string> = {
@@ -9,13 +18,23 @@ async function request(path: string, options: RequestInit = {}, token?: string |
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const response = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  const url = `${BASE_URL}${path}`;
+  try {
+    const response = await fetch(url, { ...options, headers });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Errore di rete' }));
-    throw new Error(error.detail || `Errore ${response.status}`);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Errore di rete' }));
+      throw new Error(error.detail || `Errore ${response.status}`);
+    }
+    return response.json();
+  } catch (err: any) {
+    // Enhanced error for debugging network issues
+    if (err.message === 'Network request failed') {
+      console.error(`[ARENAKORE] Network failed for ${url}`);
+      throw new Error(`Connessione al server fallita. Riprova tra qualche secondo.`);
+    }
+    throw err;
   }
-  return response.json();
 }
 
 // ── Generic API client for new endpoints ──
@@ -29,7 +48,7 @@ export const apiClient = async (path: string, options: RequestInit = {}) => {
 };
 
 // ── Raw fetch wrapper for admin-panel pages (returns Response object, NOT parsed JSON) ──
-const RAW_BASE = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+const RAW_BASE = RESOLVED_BACKEND;
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const url = path.startsWith('/api') ? `${RAW_BASE}${path}` : `${RAW_BASE}/api${path}`;
   return fetch(url, options);
