@@ -217,7 +217,7 @@ export default function Login() {
         {/* Version Label */}
         <View style={{ alignItems: 'center', marginTop: 16, paddingBottom: 12 }}>
           <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.7 }}>
-            v{Constants.expoConfig?.version || '?'} — Build 11 · Cloud Test
+            v{Constants.expoConfig?.version || '?'} — Build 12 · Clean
           </Text>
         </View>
 

@@ -297,7 +297,7 @@ export default function HeroIndex() {
         <View style={s.footer}>
           <Text style={s.footerTxt}>ARENAKORE · THE CORE OF PERFORMANCE</Text>
           <Text style={s.footerTxt}>CHICAGO BETA · KORE #00001 STEFANO OGRISEK</Text>
-          <Text style={s.versionLabel}>v{Constants.expoConfig?.version || '?'} — Build 11 · Cloud Test</Text>
+          <Text style={s.versionLabel}>v{Constants.expoConfig?.version || '?'} — Build 12 · Clean</Text>
         </View>
       </ScrollView>
     </View>

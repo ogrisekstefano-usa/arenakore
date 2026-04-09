@@ -1,7 +1,8 @@
-// LAZY LOAD: expo-notifications and expo-device loaded only when needed
+// LAZY LOAD: expo-notifications loaded only when needed
+// expo-device REMOVED — causes kernel sandbox violation on iPhone 15 Pro
 import { Platform } from 'react-native';
 function getNotifications(): any { try { return require('expo-notifications'); } catch { return null; } }
-function getDevice(): any { try { return require('expo-device'); } catch { return null; } }
+function getDevice(): any { return null; } // Disabled: sysctl sandbox deny
 
 // Sport-specific notification profiles
 export type NotificationTone = 'adrenalina' | 'precisione' | 'power';

@@ -2,7 +2,7 @@
   "expo": {
     "name": "ARENAKORE",
     "slug": "arenakore",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "arenakore",
@@ -16,10 +16,7 @@
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         },
-        "UIViewControllerBasedStatusBarAppearance": true,
-        "UIApplicationSceneManifest": {
-          "UIApplicationSupportsMultipleScenes": false
-        }
+        "UIViewControllerBasedStatusBarAppearance": false
       }
     },
     "android": {

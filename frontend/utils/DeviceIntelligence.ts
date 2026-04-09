@@ -5,11 +5,10 @@
  */
 import { Platform } from 'react-native';
 
-// LAZY LOAD: expo-device is loaded only when needed on native platforms
-// to prevent Expo Go crash during module evaluation
+// expo-device REMOVED — causes kernel deny(1) on iPhone 15 Pro sandbox
+// Replaced with safe Platform-based detection
 function getDevice(): any {
-  if (Platform.OS === 'web') return null;
-  try { return require('expo-device'); } catch { return null; }
+  return null; // Disabled: sysctl access violates iOS sandbox
 }
 
 export type DeviceTier = 'high' | 'standard' | 'legacy';
