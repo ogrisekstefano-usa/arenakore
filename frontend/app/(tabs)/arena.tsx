@@ -313,11 +313,12 @@ const wb$ = StyleSheet.create({
 
 function LiveBattleCard({ battle, onOpenDashboard }: { battle: any; onOpenDashboard: (id: string) => void }) {
   const router = useRouter();
-  const { remaining, minsLeft } = useCountdown(battle.ends_at);
-  const { crew_a, crew_b } = battle;
-  const pctA = crew_a.pct || 50;
-  const isMyCrewA = crew_a.is_my_crew;
-  const isMyCrewB = crew_b.is_my_crew;
+  const { remaining, minsLeft } = useCountdown(battle?.ends_at);
+  const crew_a = battle?.crew_a || {};
+  const crew_b = battle?.crew_b || {};
+  const pctA = crew_a?.pct || 50;
+  const isMyCrewA = crew_a?.is_my_crew;
+  const isMyCrewB = crew_b?.is_my_crew;
   const isLosing = (isMyCrewA && pctA < 50) || (isMyCrewB && pctA > 50);
   const diff = Math.abs(pctA - 50);
   const isLastPush = minsLeft < 10 && diff < 5 && battle.user_in_battle;
@@ -489,26 +490,30 @@ function MatchmakingPanel() {
   const [data, setData] = useState<any>(null);
   const [challenging, setChallengingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const isUnlocked = user?.unlocked_tools?.includes('ai_matchmaker');
 
   useEffect(() => {
-    if (!token) return;
+    if (!token) { setLoading(false); return; }
+    setFetchError(false);
     api.getCrewMatchmake(token)
-      .then(d => setData(d))
-      .catch(() => {})
+      .then(d => { if (d) setData(d); else setFetchError(true); })
+      .catch(() => setFetchError(true))
       .finally(() => setLoading(false));
   }, [token]);
 
   const handleChallenge = async (crewId: string, crewName: string) => {
-    if (!token) return;
+    if (!token || !data?.has_crew) return;
     setChallengingId(crewId);
     try {
       await api.challengeCrew(crewId, token, 24);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       Alert.alert('SFIDA LANCIATA', `${crewName} è stata sfidato! La battle dura 24h. Fai un NEXUS Scan per contribuire.`);
       // Refresh
-      const newData = await api.getCrewMatchmake(token);
-      setData(newData);
+      try {
+        const newData = await api.getCrewMatchmake(token);
+        if (newData) setData(newData);
+      } catch {}
     } catch (e: any) {
       Alert.alert('SFIDA FALLITA', e?.message || 'Errore nell\'avviare la battle');
     } finally {
@@ -517,6 +522,25 @@ function MatchmakingPanel() {
   };
 
   if (loading) return null;
+
+  // ── BUILD 17: Network error fallback ──
+  if (fetchError || !data) {
+    return (
+      <View style={mp$.section}>
+        <View style={mp$.header}>
+          <View style={mp$.headerLeft}>
+            <Ionicons name="analytics" size={12} color="#FFD700" />
+            <Text style={mp$.title}>MATCHMAKING AI</Text>
+          </View>
+        </View>
+        <View style={mp$.noCrew}>
+          <Ionicons name="cloud-offline-outline" size={16} color="rgba(255,215,0,0.5)" />
+          <Text style={mp$.noCrewText}>Dati non disponibili. Tira giù per aggiornare.</Text>
+        </View>
+      </View>
+    );
+  }
+
   if (!data?.suggestions?.length && isUnlocked) return null;
 
   return (
@@ -535,15 +559,15 @@ function MatchmakingPanel() {
           <Ionicons name="analytics" size={12} color="#FFD700" />
           <Text style={mp$.title}>MATCHMAKING AI</Text>
         </View>
-        {data.has_crew && (
+        {data?.has_crew && (
           <View style={mp$.myScorePill}>
             <Text style={mp$.myScoreLabel}>IL TUO KORE</Text>
-            <Text style={mp$.myScoreVal}>{data.my_kore_score}</Text>
+            <Text style={mp$.myScoreVal}>{data?.my_kore_score ?? '—'}</Text>
           </View>
         )}
       </View>
 
-      {!data.has_crew && (
+      {!data?.has_crew && (
         <View style={mp$.noCrew}>
           <Ionicons name="people" size={16} color="rgba(255,215,0,0.5)" />
           <Text style={mp$.noCrewText}>Unisciti a una Crew per sfidare avversari compatibili</Text>
@@ -551,7 +575,7 @@ function MatchmakingPanel() {
       )}
 
       {/* Suggested opponents */}
-      {data.suggestions.map((opp: any, idx: number) => {
+      {(data?.suggestions || []).map((opp: any, idx: number) => {
         const diff = opp.score_diff;
         const matchLabel = diff <= 2 ? 'MATCH PERFETTO' : diff <= 8 ? 'MATCH BUONO' : 'MATCH ACCETTABILE';
         const matchColor = diff <= 2 ? '#00E5FF' : diff <= 8 ? '#FFD700' : '#FF9500';
@@ -580,9 +604,9 @@ function MatchmakingPanel() {
               </View>
             ) : (
               <TouchableOpacity
-                style={[mp$.challengeBtn, data.has_crew ? {} : mp$.challengeBtnDisabled]}
-                onPress={() => data.has_crew ? handleChallenge(opp.id, opp.name) : null}
-                disabled={!data.has_crew || challenging === opp.id}
+                style={[mp$.challengeBtn, data?.has_crew ? {} : mp$.challengeBtnDisabled]}
+                onPress={() => data?.has_crew ? handleChallenge(opp.id, opp.name) : null}
+                disabled={!data?.has_crew || challenging === opp.id}
                 activeOpacity={0.8}
               >
                 {challenging === opp.id ? (

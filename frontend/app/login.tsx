@@ -124,7 +124,7 @@ export default function Login() {
 
           {/* Version */}
           <Animated.View entering={FadeInDown.delay(600)}>
-            <Text style={s$.gateVersion}>v2.0.1 — Build 15 · NEXUS</Text>
+            <Text style={s$.gateVersion}>v2.0.3 — Build 17 · NEXUS</Text>
           </Animated.View>
         </View>
       </View>
@@ -177,6 +177,8 @@ export default function Login() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
+                autoCorrect={false}
+                spellCheck={false}
               />
             </View>
           </View>
@@ -195,6 +197,8 @@ export default function Login() {
                 placeholderTextColor="rgba(255,255,255,0.15)"
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
+                autoCorrect={false}
+                spellCheck={false}
               />
               <TouchableOpacity testID="login-toggle-pwd" onPress={() => setShowPassword(!showPassword)} style={s$.eyeBtn}>
                 <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={18} color="rgba(255,255,255,0.35)" />
@@ -280,7 +284,7 @@ export default function Login() {
         {/* Version Label */}
         <View style={{ alignItems: 'center', marginTop: 16, paddingBottom: 12 }}>
           <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.7 }}>
-            v2.0.1 — Build 15 · NEXUS
+            v2.0.3 — Build 17 · NEXUS
           </Text>
         </View>
 
