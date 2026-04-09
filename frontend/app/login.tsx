@@ -216,7 +216,7 @@ export default function Login() {
         {/* Version Label */}
         <View style={{ alignItems: 'center', marginTop: 16, paddingBottom: 12 }}>
           <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.7 }}>
-            v1.0.6 — Build 13 · Bare
+            v2.0.0 — Build 14 · NEXUS
           </Text>
         </View>
 

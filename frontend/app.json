@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "ARENAKORE",
+    "name": "ARENA NEXUS",
     "slug": "arenakore",
-    "version": "1.0.6",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "arenakore",
+    "scheme": "arenanexus",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {
