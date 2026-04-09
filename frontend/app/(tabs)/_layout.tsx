@@ -126,16 +126,18 @@ export default function TabsLayout() {
   }, [token, isLoading]);
 
   return (
-    <Tabs tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false, lazy: true }} initialRouteName="nexus-trigger">
-      <Tabs.Screen name="kore" />
-      <Tabs.Screen name="arena" />
-      <Tabs.Screen name="gym-hub" options={{ href: null }} />
-      <Tabs.Screen name="nexus-trigger" />
-      <Tabs.Screen name="dna" />
-      <Tabs.Screen name="hall" />
-      <Tabs.Screen name="my-athletes" options={{ href: null }} />
-      <Tabs.Screen name="safe-test" options={{ href: null }} />
-    </Tabs>
+    <TabErrorBoundary name="TabsRoot">
+      <Tabs tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false, lazy: true }} initialRouteName="nexus-trigger">
+        <Tabs.Screen name="kore" />
+        <Tabs.Screen name="arena" />
+        <Tabs.Screen name="gym-hub" options={{ href: null }} />
+        <Tabs.Screen name="nexus-trigger" />
+        <Tabs.Screen name="dna" />
+        <Tabs.Screen name="hall" />
+        <Tabs.Screen name="my-athletes" options={{ href: null }} />
+        <Tabs.Screen name="safe-test" options={{ href: null }} />
+      </Tabs>
+    </TabErrorBoundary>
   );
 }
 
