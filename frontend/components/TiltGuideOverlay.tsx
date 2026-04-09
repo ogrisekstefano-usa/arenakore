@@ -149,8 +149,7 @@ function ScreenFlash({ active }: { active: boolean }) {
   if (!active) return null;
   return (
     <Animated.View
-      style={[StyleSheet.absoluteFillObject, { backgroundColor: '#FFFFFF', zIndex: 200 }, style]}
-      pointerEvents="none"
+      style={[StyleSheet.absoluteFillObject, { backgroundColor: '#FFFFFF', zIndex: 200, pointerEvents: 'none' } as any, style]}
     />
   );
 }

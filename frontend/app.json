@@ -15,6 +15,7 @@
         "aps-environment": "production"
       },
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Analizza la tua biomeccanica in tempo reale",
         "NSMicrophoneUsageDescription": "Attiva comandi vocali e sessioni Nexus",
         "NSMotionUsageDescription": "Traccia i movimenti per contare le ripetizioni",
@@ -58,6 +59,18 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "newArchEnabled": true,
+            "deploymentTarget": "15.1"
+          },
+          "android": {
+            "newArchEnabled": true
+          }
+        }
+      ],
       [
         "expo-camera",
         {

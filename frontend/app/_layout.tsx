@@ -6,6 +6,7 @@ import { Platform } from 'react-native';
 import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import { GlobalErrorBoundary } from '../components/GlobalErrorBoundary';
 import {
   useFonts,
   Montserrat_300Light,
@@ -173,21 +174,23 @@ export default function RootLayout() {
 
   // Render app even if fonts haven't loaded (falls back to system font)
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <AuthProvider>
-          <InjectWebFonts />
-          <DeepLinkHandler />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="login" />
-            <Stack.Screen name="register" />
-            <Stack.Screen name="onboarding" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="join/[code]" options={{ presentation: 'modal' }} />
-          </Stack>
-        </AuthProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <GlobalErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <AuthProvider>
+            <InjectWebFonts />
+            <DeepLinkHandler />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="login" />
+              <Stack.Screen name="register" />
+              <Stack.Screen name="onboarding" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="join/[code]" options={{ presentation: 'modal' }} />
+            </Stack>
+          </AuthProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </GlobalErrorBoundary>
   );
 }

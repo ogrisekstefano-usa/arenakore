@@ -1,0 +1,7 @@
+.expo/
+dist/
+web-build/
+.metro-cache/
+.metro-health-check*
+node_modules/.cache/
+*.log

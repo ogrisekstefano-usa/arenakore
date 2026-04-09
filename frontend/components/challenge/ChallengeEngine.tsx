@@ -519,8 +519,7 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
                 </View>
 
                 {/* Input Fields — locked until timer completed */}
-                <View style={[s.inputGroup, !manualTimerCompleted && { opacity: 0.3 }]}
-                  pointerEvents={manualTimerCompleted ? 'auto' : 'none'}
+                <View style={[s.inputGroup, !manualTimerCompleted && { opacity: 0.3 }, { pointerEvents: manualTimerCompleted ? 'auto' as const : 'none' as const }]}
                 >
                   <View style={s.inputRow}>
                     <View style={s.inputWrap}>

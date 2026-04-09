@@ -47,7 +47,7 @@ function ScanLine() {
   }));
 
   return (
-    <Animated.View style={[scan$.wrap, lineStyle]} pointerEvents="none">
+    <Animated.View style={[scan$.wrap, lineStyle, { pointerEvents: 'none' }]}>
       <View style={scan$.line} />
       <View style={scan$.glow} />
     </Animated.View>
@@ -164,8 +164,7 @@ export default function HeroIndex() {
           BG,
         ]}
         locations={[0, 0.28, 0.44, 0.62, 0.80, 1]}
-        style={StyleSheet.absoluteFill}
-        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { pointerEvents: 'none' } as any]}
       />
 
       {/* ── SCAN LINE ANIMATION (gold sweep) ── */}
