@@ -11546,6 +11546,16 @@ register_admin_routes(api_router, db, require_super_admin, get_current_user, has
 #   POST /leads/gym
 
 
+# ═══ TEMPORARY: Deploy Package Endpoint ═══
+@api_router.get("/deploy/package")
+async def serve_deploy_package():
+    import os as _deploy_os
+    path = "/tmp/arenakore-backend.tar.gz"
+    if _deploy_os.path.exists(path):
+        from fastapi.responses import FileResponse as _FR
+        return _FR(path, media_type="application/gzip", filename="backend.tar.gz")
+    return {"error": "Package not found"}
+
 # Re-register router after all endpoints are defined
 app.include_router(api_router)
 
