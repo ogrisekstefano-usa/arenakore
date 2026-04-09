@@ -15,7 +15,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://arena-scan-lab.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://arenakore-api.onrender.com"
       }
     },
     "development-simulator": {
@@ -31,7 +31,7 @@
         "resourceClass": "m-medium"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://arena-scan-lab.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://arenakore-api.onrender.com"
       }
     },
     "production": {
@@ -42,7 +42,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://arena-scan-lab.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://arenakore-api.onrender.com"
       }
     }
   },
