@@ -2,7 +2,7 @@
   "expo": {
     "name": "ARENAKORE",
     "slug": "arenakore",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "arenakore",
@@ -13,10 +13,10 @@
       "bundleIdentifier": "com.arenakore.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
+        "UIViewControllerBasedStatusBarAppearance": false,
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        },
-        "UIViewControllerBasedStatusBarAppearance": false
+        }
       }
     },
     "android": {
@@ -24,8 +24,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#050505"
-      },
-      "edgeToEdgeEnabled": true
+      }
     },
     "web": {
       "bundler": "metro",
@@ -34,19 +33,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-system-ui",
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "newArchEnabled": true,
-            "deploymentTarget": "15.1"
-          },
-          "android": {
-            "newArchEnabled": true
-          }
-        }
-      ],
       [
         "expo-splash-screen",
         {
@@ -55,9 +41,7 @@
           "resizeMode": "contain",
           "backgroundColor": "#050505"
         }
-      ],
-      "expo-font",
-      "expo-asset"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
@@ -67,7 +51,7 @@
         "projectId": "05174b01-c27e-4ddc-ad2b-53edf79149d0"
       },
       "router": {
-        "origin": "https://arenakore-api.onrender.com"
+        "origin": false
       }
     },
     "owner": "ogriusa"

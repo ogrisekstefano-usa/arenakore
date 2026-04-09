@@ -11,7 +11,6 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Constants from 'expo-constants';
 import Animated, {
   useSharedValue, withRepeat, withTiming, withSequence,
   useAnimatedStyle, FadeInDown, FadeIn, Easing
@@ -297,7 +296,7 @@ export default function HeroIndex() {
         <View style={s.footer}>
           <Text style={s.footerTxt}>ARENAKORE · THE CORE OF PERFORMANCE</Text>
           <Text style={s.footerTxt}>CHICAGO BETA · KORE #00001 STEFANO OGRISEK</Text>
-          <Text style={s.versionLabel}>v{Constants.expoConfig?.version || '?'} — Build 12 · Clean</Text>
+          <Text style={s.versionLabel}>v1.0.6 — Build 13 · Bare</Text>
         </View>
       </ScrollView>
     </View>
