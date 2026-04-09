@@ -4386,14 +4386,68 @@ async def update_gym(data: GymUpdate, current_user: dict = Depends(require_role(
 
 @api_router.get("/gym/staff")
 async def get_gym_staff(current_user: dict = Depends(require_gym_access)):
-    """List all coaches in the gym"""
+    """Staff Hub — full analytics per coach for GYM_OWNER"""
     gym = await get_user_gym(current_user)
     if not gym:
-        return {"staff": [], "coaches_count": 0}
-    staff = await db.users.find({"gym_id": gym["_id"], "role": {"$in": ["COACH", "GYM_OWNER"]}}).to_list(50)
+        return {"staff": [], "coaches_count": 0, "athletes_total": 0, "gym_name": ""}
+
+    gym_id = gym["_id"]
+
+    # All staff (coaches + owner)
+    staff_users = await db.users.find(
+        {"gym_id": gym_id, "role": {"$in": ["COACH", "GYM_OWNER"]}}
+    ).to_list(100)
+
+    # All athletes in this gym
+    all_athletes = await db.users.find(
+        {"gym_id": gym_id, "role": "ATHLETE"}
+    ).to_list(500)
+    athletes_total = len(all_athletes)
+
+    # ── Per-coach analytics ──
+    enriched_staff = []
+    for u in staff_users:
+        uid = str(u["_id"])
+        role = normalize_role(u)
+
+        # Count athletes assigned to this coach (via talent_drafts or direct assignment)
+        drafted = await db.talent_drafts.count_documents({"coach_id": uid, "status": "accepted"})
+        # If no drafts, for GYM_OWNER show total gym athletes
+        athlete_count = drafted if role == "COACH" else athletes_total
+
+        # Recent activity: last scan event or last login proxy
+        last_session = await db.nexus_sessions.find_one(
+            {"user_id": uid}, sort=[("started_at", -1)]
+        )
+        last_active = last_session["started_at"] if last_session else u.get("created_at")
+
+        # Performance records created by coach-assigned athletes (sessions coached)
+        sessions_coached = await db.performance_records.count_documents({"coach_id": uid}) if role == "COACH" else 0
+
+        enriched_staff.append({
+            "id": uid,
+            "username": u.get("username", ""),
+            "email": u.get("email", ""),
+            "first_name": u.get("first_name", ""),
+            "last_name": u.get("last_name", ""),
+            "role": role,
+            "level": u.get("level", 1),
+            "xp": u.get("xp", 0),
+            "avatar_color": u.get("avatar_color", "#00E5FF"),
+            "sport": u.get("sport", ""),
+            "athlete_count": athlete_count,
+            "sessions_coached": sessions_coached,
+            "last_active": last_active.isoformat() if last_active else None,
+            "joined_at": u.get("created_at").isoformat() if u.get("created_at") else None,
+            "is_nexus_certified": bool(u.get("dna") and u.get("baseline_scanned_at")),
+        })
+
     return {
-        "staff": [{"id": str(u["_id"]), "username": u.get("username"), "email": u.get("email"), "role": normalize_role(u), "level": u.get("level", 1), "xp": u.get("xp", 0)} for u in staff],
-        "coaches_count": sum(1 for u in staff if normalize_role(u) == "COACH"),
+        "staff": enriched_staff,
+        "coaches_count": sum(1 for s in enriched_staff if s["role"] == "COACH"),
+        "athletes_total": athletes_total,
+        "gym_name": gym.get("name", ""),
+        "gym_code": gym.get("gym_code", ""),
     }
 
 
