@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import Animated, {
   useSharedValue, withRepeat, withTiming, withSequence,
   useAnimatedStyle, FadeInDown, FadeIn, Easing
@@ -296,6 +297,7 @@ export default function HeroIndex() {
         <View style={s.footer}>
           <Text style={s.footerTxt}>ARENAKORE · THE CORE OF PERFORMANCE</Text>
           <Text style={s.footerTxt}>CHICAGO BETA · KORE #00001 STEFANO OGRISEK</Text>
+          <Text style={s.versionLabel}>v{Constants.expoConfig?.version || '?'} — Build 8 · Cloud Test</Text>
         </View>
       </ScrollView>
     </View>
@@ -445,5 +447,6 @@ const s = StyleSheet.create({
 
   // Footer
   footer: { alignItems: 'center', gap: 4, marginTop: 28, paddingBottom: 8 },
-  footerTxt: { color: '#AAAAAA', fontSize: 8, fontWeight: '400', letterSpacing: 2 }
+  footerTxt: { color: '#AAAAAA', fontSize: 8, fontWeight: '400', letterSpacing: 2 },
+  versionLabel: { color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, marginTop: 6, opacity: 0.8 }
 });

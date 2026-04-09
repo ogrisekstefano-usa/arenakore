@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useAuth } from '../contexts/AuthContext';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
@@ -208,6 +209,13 @@ export default function Login() {
             </Text>
           </TouchableOpacity>
         </Animated.View>
+
+        {/* Version Label */}
+        <View style={{ alignItems: 'center', marginTop: 16, paddingBottom: 12 }}>
+          <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.7 }}>
+            v{Constants.expoConfig?.version || '?'} — Build 8 · Cloud Test
+          </Text>
+        </View>
 
       </ScrollView>
     </KeyboardAvoidingView>
