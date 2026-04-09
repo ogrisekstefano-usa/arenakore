@@ -16,7 +16,16 @@ async function request(path: string, options: RequestInit = {}, token?: string |
 
   const url = `${BASE_URL}${path}`;
   try {
-    const response = await fetch(url, { ...options, headers });
+    // Timeout wrapper — prevents infinite hang on Render cold start
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Errore di rete' }));
@@ -25,11 +34,19 @@ async function request(path: string, options: RequestInit = {}, token?: string |
     return response.json();
   } catch (err: any) {
     console.error(`[ARENAKORE] Fetch error for ${url}:`, err.message);
+    if (err.name === 'AbortError') {
+      throw new Error('Server in avvio. Riprova tra 10 secondi.');
+    }
     if (err.message === 'Network request failed') {
       throw new Error('Connessione al server fallita. Riprova tra qualche secondo.');
     }
     throw err;
   }
+}
+
+// Pre-wake Render server (fire-and-forget, no crash risk)
+export function wakeServer() {
+  try { fetch(`${BASE_URL}/health`, { method: 'GET' }).catch(() => {}); } catch {}
 }
 
 // ── Generic API client for new endpoints ──

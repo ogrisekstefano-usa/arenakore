@@ -2,7 +2,7 @@
  * ARENAKORE — LOGIN v3.0 (THE CHALLENGE)
  * Premium brutalist login with Social Login, "TORNA NELL'ARENA" CTA, and "CREA IL TUO DESTINO" link.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, StatusBar,
@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useAuth } from '../contexts/AuthContext';
+import { wakeServer } from '../utils/api';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
@@ -28,6 +29,9 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Pre-wake Render server on screen mount (fire-and-forget)
+  useEffect(() => { wakeServer(); }, []);
 
   // Validation
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -213,7 +217,7 @@ export default function Login() {
         {/* Version Label */}
         <View style={{ alignItems: 'center', marginTop: 16, paddingBottom: 12 }}>
           <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.7 }}>
-            v{Constants.expoConfig?.version || '?'} — Build 8 · Cloud Test
+            v{Constants.expoConfig?.version || '?'} — Build 11 · Cloud Test
           </Text>
         </View>
 
