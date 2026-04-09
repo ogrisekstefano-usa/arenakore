@@ -28,6 +28,9 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  // ══ BUILD 15: Manual navigation gate — user taps to enter ══
+  const [loginSuccess, setLoginSuccess] = useState(false);
+  const [loggedUser, setLoggedUser] = useState<any>(null);
 
   // Pre-wake Render server on screen mount (fire-and-forget)
   useEffect(() => { wakeServer(); }, []);
@@ -47,15 +50,24 @@ export default function Login() {
       const pendingCode = await AsyncStorage.getItem(PENDING_EVENT_KEY);
       if (pendingCode) {
         router.replace(`/join/${pendingCode}`);
-      } else if (result.onboarding_completed) {
-        router.replace('/(tabs)/nexus-trigger');
       } else {
-        router.replace('/onboarding/choice');
+        // BUILD 15: Do NOT auto-redirect. Show manual gate.
+        setLoggedUser(result);
+        setLoginSuccess(true);
       }
     } catch (e: any) {
       setError(e.message || 'Credenziali non valide');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ══ BUILD 15: Manual "ENTRA NEL NEXUS" gate ══
+  const handleEnterNexus = () => {
+    if (loggedUser && !loggedUser.onboarding_completed) {
+      router.replace('/onboarding/choice');
+    } else {
+      router.replace('/(tabs)/nexus-trigger');
     }
   };
 
@@ -66,6 +78,58 @@ export default function Login() {
       [{ text: 'OK' }]
     );
   };
+
+  // ══════════════════════════════════════════════════
+  // BUILD 15: LOGIN SUCCESS — Manual "ENTRA NEL NEXUS" gate
+  // SpringBoard Sandbox disarm: NO auto-redirect, user presses button
+  // ══════════════════════════════════════════════════
+  if (loginSuccess && loggedUser) {
+    return (
+      <View style={s$.container}>
+        <StatusBar barStyle="light-content" />
+        <View style={s$.gateWrap}>
+          {/* Decorative corners */}
+          <View style={{ position: 'absolute', top: 40, left: 24, width: 20, height: 20, borderTopWidth: 1.5, borderLeftWidth: 1.5, borderColor: 'rgba(255,215,0,0.3)' }} />
+          <View style={{ position: 'absolute', top: 40, right: 24, width: 20, height: 20, borderTopWidth: 1.5, borderRightWidth: 1.5, borderColor: 'rgba(255,215,0,0.3)' }} />
+
+          {/* Status chip */}
+          <Animated.View entering={FadeInDown.delay(100)} style={s$.gateChip}>
+            <View style={s$.gateDot} />
+            <Text style={s$.gateChipText}>AUTENTICAZIONE COMPLETATA</Text>
+          </Animated.View>
+
+          {/* Username */}
+          <Animated.View entering={FadeInDown.delay(250)}>
+            <Text style={s$.gateUsername}>{(loggedUser.username || 'KORE').toUpperCase()}</Text>
+          </Animated.View>
+
+          {/* Role badge */}
+          <Animated.View entering={FadeInDown.delay(350)} style={s$.gateRoleBadge}>
+            <Ionicons name="shield-checkmark" size={14} color="#00E5FF" />
+            <Text style={s$.gateRoleText}>{loggedUser.role || 'ATHLETE'}</Text>
+          </Animated.View>
+
+          {/* MAIN CTA — ENTRA NEL NEXUS */}
+          <Animated.View entering={FadeInDown.delay(500)} style={{ width: '100%', paddingHorizontal: 32 }}>
+            <TouchableOpacity
+              testID="enter-nexus-btn"
+              style={s$.gateBtn}
+              onPress={handleEnterNexus}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="flash" size={22} color="#050505" />
+              <Text style={s$.gateBtnText}>ENTRA NEL NEXUS</Text>
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* Version */}
+          <Animated.View entering={FadeInDown.delay(600)}>
+            <Text style={s$.gateVersion}>v2.0.1 — Build 15 · NEXUS</Text>
+          </Animated.View>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -216,7 +280,7 @@ export default function Login() {
         {/* Version Label */}
         <View style={{ alignItems: 'center', marginTop: 16, paddingBottom: 12 }}>
           <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.7 }}>
-            v2.0.0 — Build 14 · NEXUS
+            v2.0.1 — Build 15 · NEXUS
           </Text>
         </View>
 
@@ -287,5 +351,35 @@ const s$ = StyleSheet.create({
   // Register
   registerBlock: { marginTop: 28, alignItems: 'center' },
   registerLink: { color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: '500', textAlign: 'center' },
-  registerLinkBold: { color: '#00E5FF', fontWeight: '900', letterSpacing: 0.5 }
+  registerLinkBold: { color: '#00E5FF', fontWeight: '900', letterSpacing: 0.5 },
+
+  // ══ BUILD 15: NEXUS GATE (post-login success screen) ══
+  gateWrap: {
+    flex: 1, backgroundColor: '#000000',
+    alignItems: 'center', justifyContent: 'center', gap: 24, padding: 32
+  },
+  gateChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: 'rgba(0,229,255,0.08)',
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.25)',
+    borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8
+  },
+  gateDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#32D74B' },
+  gateChipText: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  gateUsername: {
+    color: '#FFFFFF', fontSize: 36, fontWeight: '900', letterSpacing: -1, textAlign: 'center'
+  },
+  gateRoleBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: 'rgba(0,229,255,0.06)',
+    borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6
+  },
+  gateRoleText: { color: '#00E5FF', fontSize: 12, fontWeight: '800', letterSpacing: 2 },
+  gateBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+    backgroundColor: '#FFD700',
+    borderRadius: 14, paddingVertical: 20, width: '100%'
+  },
+  gateBtnText: { color: '#050505', fontSize: 18, fontWeight: '900', letterSpacing: 2 },
+  gateVersion: { color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.5, marginTop: 8 }
 });

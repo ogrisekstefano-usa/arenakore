@@ -27,15 +27,14 @@ import { api } from '../../utils/api';
 import { FluxIcon } from '../FluxIcon';
 import { EL, FONT_MONT, FONT_JAKARTA } from '../../utils/eliteTheme';
 
-// ═══ LAZY LOAD expo-camera to prevent Expo Go crash ═══
-let CameraViewLazy: any = null;
-let useCameraPermissionsLazy: any = null;
-try {
-  const mod = require('expo-camera');
-  CameraViewLazy = mod.CameraView;
-  useCameraPermissionsLazy = mod.useCameraPermissions;
-} catch (e) {
-  console.warn('[PostRaceValidation] expo-camera not available');
+// ═══ BUILD 15: DEFERRED LAZY LOAD — expo-camera NOT loaded at module level ═══
+function getCameraModulePRV() {
+  try {
+    return require('expo-camera');
+  } catch (e) {
+    console.warn('[PostRaceValidation] expo-camera not available');
+    return null;
+  }
 }
 
 let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
@@ -202,9 +201,31 @@ export function PostRaceValidation({
   const [isValidating, setIsValidating] = useState(false);
   const [participants, setParticipants] = useState<any[]>([]);
 
-  // Camera permissions
-  const [permission, requestPermission] = useCameraPermissionsLazy ? useCameraPermissionsLazy() : [null, async () => {}];
+  // Camera permissions — BUILD 15: Deferred initialization
+  const [CameraViewComp, setCameraViewComp] = useState<any>(null);
+  const [cameraPermGranted, setCameraPermGranted] = useState(false);
   const [scanned, setScanned] = useState(false);
+
+  // Deferred camera init — only load when entering 'scan' phase
+  useEffect(() => {
+    if (phase !== 'scan') return;
+    let mounted = true;
+    (async () => {
+      try {
+        const mod = getCameraModulePRV();
+        if (!mod || !mounted) return;
+        setCameraViewComp(() => mod.CameraView);
+        const result = await mod.Camera?.requestCameraPermissionsAsync?.()
+          || await mod.requestCameraPermissionsAsync?.();
+        if (mounted && result?.granted) {
+          setCameraPermGranted(true);
+        }
+      } catch (e) {
+        console.warn('[PostRaceValidation] Camera init failed:', e);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [phase]);
 
   // Polling for live status updates
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -503,7 +524,7 @@ export function PostRaceValidation({
   // RENDER: CAMERA SCANNER
   // ═══════════════════════════════════════════
   if (phase === 'scan') {
-    const hasPermission = permission?.granted;
+    const hasPermission = cameraPermGranted;
 
     return (
       <View style={s.container}>
@@ -515,9 +536,9 @@ export function PostRaceValidation({
 
             {/* Camera View */}
             <View style={s.cameraContainer}>
-              {hasPermission && CameraViewLazy ? (
+              {hasPermission && CameraViewComp ? (
                 <View style={s.camera}>
-                  <CameraViewLazy
+                  <CameraViewComp
                     style={StyleSheet.absoluteFillObject}
                     barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
                     onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
@@ -542,7 +563,13 @@ export function PostRaceValidation({
                 <View style={s.noCameraCard}>
                   <Ionicons name="camera-outline" size={48} color="#555" />
                   <Text style={s.noCameraText}>Camera non disponibile</Text>
-                  <TouchableOpacity style={[s.grantBtn, { backgroundColor: dominantColor }]} onPress={requestPermission}>
+                  <TouchableOpacity style={[s.grantBtn, { backgroundColor: dominantColor }]} onPress={() => {
+                    const mod = getCameraModulePRV();
+                    if (mod) {
+                      (mod.Camera?.requestCameraPermissionsAsync?.() || mod.requestCameraPermissionsAsync?.())
+                        ?.then((r: any) => { if (r?.granted) setCameraPermGranted(true); });
+                    }
+                  }}>
                     <Text style={s.grantBtnText}>CONCEDI PERMESSO</Text>
                   </TouchableOpacity>
                 </View>

@@ -2,7 +2,7 @@
   "expo": {
     "name": "ARENA NEXUS",
     "slug": "arenakore",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "arenanexus",
@@ -17,9 +17,7 @@
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         },
-        "NSCameraUsageDescription": "Scansione biomeccanica NEXUS",
-        "NSMicrophoneUsageDescription": "Comandi vocali durante la scansione",
-        "NSSpeechRecognitionUsageDescription": "Comandi vocali NEXUS"
+        "NSCameraUsageDescription": "Scansione biomeccanica NEXUS"
       }
     },
     "android": {

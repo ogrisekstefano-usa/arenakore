@@ -12,15 +12,15 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
 import { useAuth } from '../contexts/AuthContext';
 
-// ═══ LAZY LOAD expo-camera to prevent Expo Go crash ═══
-let CameraViewLazy: any = null;
-let useCameraPermissionsLazy: any = null;
-try {
-  const mod = require('expo-camera');
-  CameraViewLazy = mod.CameraView;
-  useCameraPermissionsLazy = mod.useCameraPermissions;
-} catch (e) {
-  console.warn('[QRScanner] expo-camera not available');
+// ═══ BUILD 15: DEFERRED LAZY LOAD — expo-camera NOT loaded at module level ═══
+// Moving require() inside component prevents SpringBoard sandbox trigger on import
+function getCameraModule() {
+  try {
+    return require('expo-camera');
+  } catch (e) {
+    console.warn('[QRScanner] expo-camera not available');
+    return null;
+  }
 }
 
 let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
@@ -33,15 +33,39 @@ interface QRScannerModalProps {
   onChallengeFound?: (challengeData: any) => void;
 }
 
-// Inner component that safely uses the camera hook
+// Inner component that safely uses the camera — BUILD 15: Deferred initialization
 function QRScannerInner({ visible, onClose, onUserFound, onChallengeFound }: QRScannerModalProps) {
   const { token } = useAuth();
-  const [permission, requestPermission] = useCameraPermissionsLazy ? useCameraPermissionsLazy() : [null, async () => {}];
+  // BUILD 15: Camera loaded on-demand, NOT at module import
+  const [CameraViewComp, setCameraViewComp] = useState<any>(null);
+  const [permissionGranted, setPermissionGranted] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [lookupLoading, setLookupLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [foundUser, setFoundUser] = useState<any>(null);
   const processedRef = useRef(false);
+
+  // Deferred camera init — only when modal becomes visible
+  useEffect(() => {
+    if (!visible) return;
+    let mounted = true;
+    (async () => {
+      try {
+        const mod = getCameraModule();
+        if (!mod || !mounted) return;
+        setCameraViewComp(() => mod.CameraView);
+        const result = await mod.Camera?.requestCameraPermissionsAsync?.()
+          || await mod.requestCameraPermissionsAsync?.();
+        if (mounted && result?.granted) {
+          setPermissionGranted(true);
+          setScanning(true);
+        }
+      } catch (e) {
+        console.warn('[QRScanner] Camera init failed:', e);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [visible]);
 
   const handleBarCodeScanned = useCallback(async (result: BarcodeScanningResult) => {
     if (processedRef.current || lookupLoading) return;
@@ -137,8 +161,8 @@ function QRScannerInner({ visible, onClose, onUserFound, onChallengeFound }: QRS
 
   if (!visible) return null;
 
-  // Permission not granted yet
-  if (!permission?.granted) {
+  // Permission not granted yet — BUILD 15: uses state-based check
+  if (!permissionGranted) {
     return (
       <Modal transparent visible={visible} animationType="fade" onRequestClose={handleClose}>
         <View style={qs$.overlay}>
@@ -148,7 +172,13 @@ function QRScannerInner({ visible, onClose, onUserFound, onChallengeFound }: QRS
             <Text style={qs$.permDesc}>
               Per scansionare il KORE ID di un altro atleta, è necessario l'accesso alla fotocamera.
             </Text>
-            <TouchableOpacity style={qs$.permBtn} onPress={requestPermission} activeOpacity={0.85}>
+            <TouchableOpacity style={qs$.permBtn} onPress={() => {
+              const mod = getCameraModule();
+              if (mod) {
+                (mod.Camera?.requestCameraPermissionsAsync?.() || mod.requestCameraPermissionsAsync?.())
+                  ?.then((r: any) => { if (r?.granted) { setPermissionGranted(true); setScanning(true); } });
+              }
+            }} activeOpacity={0.85}>
               <Text style={qs$.permBtnText}>AUTORIZZA CAMERA</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleClose} style={qs$.closeLink}>
@@ -224,13 +254,20 @@ function QRScannerInner({ visible, onClose, onUserFound, onChallengeFound }: QRS
               </View>
             ) : (
               <>
-                <CameraViewLazy
-                  style={qs$.camera}
-                  facing="back"
-                  barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-                  onBarcodeScanned={scanning ? handleBarCodeScanned : undefined}
-                  onCameraReady={handleOpen}
-                />
+                {CameraViewComp ? (
+                  <CameraViewComp
+                    style={qs$.camera}
+                    facing="back"
+                    barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+                    onBarcodeScanned={scanning ? handleBarCodeScanned : undefined}
+                    onCameraReady={handleOpen}
+                  />
+                ) : (
+                  <View style={[qs$.camera, { alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' }]}>
+                    <ActivityIndicator color="#00E5FF" size="large" />
+                    <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, marginTop: 8 }}>CAMERA LOADING...</Text>
+                  </View>
+                )}
                 {/* Scan overlay */}
                 <View style={qs$.scanOverlay}>
                   <View style={qs$.scanFrame}>
