@@ -22,29 +22,14 @@ import {
 } from '@expo-google-fonts/plus-jakarta-sans';
 import * as SplashScreen from 'expo-splash-screen';
 
-// ══════════════════════════════════════════════════════════════════════════════
-// GLOBAL CRASH PREVENTION — Must be FIRST before any other code
-// On iOS New Architecture + Hermes, unhandled promise rejections are FATAL.
-// This handler prevents native crashes from unhandled async errors.
-// ══════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+// MINIMAL CRASH PREVENTION — no require(), no dynamic imports
+// ══════════════════════════════════════════════════════════════
 if (Platform.OS !== 'web') {
-  // Suppress non-critical warnings that spam the log
-  LogBox.ignoreLogs(['Reanimated', 'expo-av', 'shadow', 'pointerEvents']);
-
-  // Global unhandled promise rejection handler
-  const _tracking = require('promise/setimmediate/rejection-tracking');
-  _tracking.disable();
-  _tracking.enable({
-    allRejections: true,
-    onUnhandled: (_id: number, error: any) => {
-      console.warn('[ARENAKORE] Unhandled Promise caught (prevented crash):', error?.message || error);
-    },
-    onHandled: () => {},
-  });
+  LogBox.ignoreLogs(['Reanimated', 'shadow', 'pointerEvents']);
 }
 
-// Safe SplashScreen call
-try { SplashScreen.preventAutoHideAsync(); } catch (e) { console.warn('[Splash]', e); }
+try { SplashScreen.preventAutoHideAsync(); } catch (e) { /* safe */ }
 
 // ── Inject Google Fonts for Web (Montserrat + Plus Jakarta Sans + Syne) ──
 function InjectWebFonts() {

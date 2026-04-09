@@ -1,15 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// ── Resolve backend URL with fallback for native builds ──
-const RENDER_URL = 'https://arenakore-api.onrender.com';
-const ENV_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-const RESOLVED_BACKEND = (ENV_URL && ENV_URL !== 'undefined' && ENV_URL.startsWith('http'))
-  ? ENV_URL
-  : RENDER_URL;
-const BASE_URL = RESOLVED_BACKEND + '/api';
+// ══════════════════════════════════════════════════════════════
+// HARDCODED BACKEND URL — bypass process.env per stabilità iOS
+// ══════════════════════════════════════════════════════════════
+const BASE_URL = 'https://arenakore-api.onrender.com/api';
 
-// Debug log for native builds
-console.log('[ARENAKORE API] Backend URL:', RESOLVED_BACKEND, '| ENV:', ENV_URL);
+console.log('[ARENAKORE API] Using hardcoded URL:', BASE_URL);
 
 async function request(path: string, options: RequestInit = {}, token?: string | null) {
   const headers: Record<string, string> = {
@@ -28,10 +24,9 @@ async function request(path: string, options: RequestInit = {}, token?: string |
     }
     return response.json();
   } catch (err: any) {
-    // Enhanced error for debugging network issues
+    console.error(`[ARENAKORE] Fetch error for ${url}:`, err.message);
     if (err.message === 'Network request failed') {
-      console.error(`[ARENAKORE] Network failed for ${url}`);
-      throw new Error(`Connessione al server fallita. Riprova tra qualche secondo.`);
+      throw new Error('Connessione al server fallita. Riprova tra qualche secondo.');
     }
     throw err;
   }
@@ -48,7 +43,7 @@ export const apiClient = async (path: string, options: RequestInit = {}) => {
 };
 
 // ── Raw fetch wrapper for admin-panel pages (returns Response object, NOT parsed JSON) ──
-const RAW_BASE = RESOLVED_BACKEND;
+const RAW_BASE = 'https://arenakore-api.onrender.com';
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const url = path.startsWith('/api') ? `${RAW_BASE}${path}` : `${RAW_BASE}/api${path}`;
   return fetch(url, options);

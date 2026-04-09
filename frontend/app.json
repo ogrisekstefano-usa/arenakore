@@ -2,7 +2,7 @@
   "expo": {
     "name": "ARENAKORE",
     "slug": "arenakore",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "arenakore",
@@ -11,34 +11,11 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.arenakore.app",
-      "entitlements": {
-        "aps-environment": "production"
-      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSAppTransportSecurity": {
-          "NSAllowsArbitraryLoads": true,
-          "NSExceptionDomains": {
-            "arenakore-api.onrender.com": {
-              "NSIncludesSubdomains": true,
-              "NSExceptionAllowsInsecureHTTPLoads": false,
-              "NSExceptionMinimumTLSVersion": "TLSv1.2"
-            }
-          }
-        },
-        "NSCameraUsageDescription": "Analizza la tua biomeccanica in tempo reale",
-        "NSMicrophoneUsageDescription": "Attiva comandi vocali e sessioni Nexus",
-        "NSMotionUsageDescription": "Traccia i movimenti per contare le ripetizioni",
-        "NSLocationWhenInUseUsageDescription": "Geolocalizza le sfide completate su KORE ATLAS",
-        "NSSpeechRecognitionUsageDescription": "Comandi vocali hands-free durante lo scan",
-        "NSPhotoLibraryUsageDescription": "Imposta la tua foto profilo KORE ID",
-        "NSHealthShareUsageDescription": "Sincronizza i dati fitness con il tuo KORE Score",
-        "NSHealthUpdateUsageDescription": "Registra i tuoi allenamenti nel profilo salute",
-        "NSFaceIDUsageDescription": "Accesso rapido e sicuro al tuo profilo KORE",
-        "UIBackgroundModes": [
-          "audio",
-          "remote-notification"
-        ]
+          "NSAllowsArbitraryLoads": true
+        }
       }
     },
     "android": {
@@ -47,20 +24,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#050505"
       },
-      "edgeToEdgeEnabled": true,
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.VIBRATE",
-        "android.permission.POST_NOTIFICATIONS",
-        "android.permission.HIGH_SAMPLING_RATE_SENSORS",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
-      ]
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "bundler": "metro",
@@ -82,21 +46,6 @@
         }
       ],
       [
-        "expo-camera",
-        {
-          "cameraPermission": "Analisi biomeccanica in tempo reale via NÈXUS"
-        }
-      ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/icon.png",
-          "color": "#00F2FF",
-          "sounds": [],
-          "mode": "production"
-        }
-      ],
-      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-image.png",
@@ -106,25 +55,6 @@
         }
       ],
       "expo-font",
-      "expo-audio",
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "Traccia le sfide su KORE ATLAS"
-        }
-      ],
-      [
-        "expo-sensors",
-        {
-          "motionPermission": "Traccia i movimenti per conteggio ripetizioni"
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "Imposta la tua foto profilo KORE ID"
-        }
-      ],
       "expo-asset"
     ],
     "experiments": {
