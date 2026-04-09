@@ -96,21 +96,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadToken = async () => {
     try {
-      const savedToken = await AsyncStorage.getItem(TOKEN_KEY);
-      const savedRole = await AsyncStorage.getItem(ROLE_KEY);
+      console.log('[AUTH] Loading saved token...');
+      const savedToken = await AsyncStorage.getItem(TOKEN_KEY).catch(() => null);
+      const savedRole = await AsyncStorage.getItem(ROLE_KEY).catch(() => null);
       if (savedToken) {
-        const userData = await api.me(savedToken);
-        setToken(savedToken);
-        setUser(userData);
-        // Restore saved active role, or derive from user data
-        if (savedRole && ['ADMIN', 'GYM_OWNER', 'COACH', 'ATHLETE'].includes(savedRole)) {
-          setActiveRoleState(savedRole as UserRole);
-        } else if (userData.is_admin) {
-          setActiveRoleState('ADMIN');
+        console.log('[AUTH] Found saved token, validating...');
+        try {
+          const userData = await api.me(savedToken);
+          console.log('[AUTH] Token valid, user:', userData?.username);
+          setToken(savedToken);
+          setUser(userData);
+          if (savedRole && ['ADMIN', 'GYM_OWNER', 'COACH', 'ATHLETE'].includes(savedRole)) {
+            setActiveRoleState(savedRole as UserRole);
+          } else if (userData.is_admin) {
+            setActiveRoleState('ADMIN');
+          }
+        } catch (apiErr) {
+          console.warn('[AUTH] Token validation failed, clearing:', apiErr);
+          await AsyncStorage.removeItem(TOKEN_KEY).catch(() => {});
         }
+      } else {
+        console.log('[AUTH] No saved token');
       }
-    } catch {
-      await AsyncStorage.removeItem(TOKEN_KEY);
+    } catch (err) {
+      console.warn('[AUTH] loadToken error:', err);
+      try { await AsyncStorage.removeItem(TOKEN_KEY); } catch {}
     } finally {
       setIsLoading(false);
     }

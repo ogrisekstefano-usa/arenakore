@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Stack, useRouter, usePathname } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Platform } from 'react-native';
+import { Platform, LogBox } from 'react-native';
 import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
@@ -22,7 +22,29 @@ import {
 } from '@expo-google-fonts/plus-jakarta-sans';
 import * as SplashScreen from 'expo-splash-screen';
 
-SplashScreen.preventAutoHideAsync();
+// ══════════════════════════════════════════════════════════════════════════════
+// GLOBAL CRASH PREVENTION — Must be FIRST before any other code
+// On iOS New Architecture + Hermes, unhandled promise rejections are FATAL.
+// This handler prevents native crashes from unhandled async errors.
+// ══════════════════════════════════════════════════════════════════════════════
+if (Platform.OS !== 'web') {
+  // Suppress non-critical warnings that spam the log
+  LogBox.ignoreLogs(['Reanimated', 'expo-av', 'shadow', 'pointerEvents']);
+
+  // Global unhandled promise rejection handler
+  const _tracking = require('promise/setimmediate/rejection-tracking');
+  _tracking.disable();
+  _tracking.enable({
+    allRejections: true,
+    onUnhandled: (_id: number, error: any) => {
+      console.warn('[ARENAKORE] Unhandled Promise caught (prevented crash):', error?.message || error);
+    },
+    onHandled: () => {},
+  });
+}
+
+// Safe SplashScreen call
+try { SplashScreen.preventAutoHideAsync(); } catch (e) { console.warn('[Splash]', e); }
 
 // ── Inject Google Fonts for Web (Montserrat + Plus Jakarta Sans + Syne) ──
 function InjectWebFonts() {

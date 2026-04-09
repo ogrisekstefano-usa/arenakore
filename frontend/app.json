@@ -16,6 +16,16 @@
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSExceptionDomains": {
+            "arenakore-api.onrender.com": {
+              "NSIncludesSubdomains": true,
+              "NSExceptionAllowsInsecureHTTPLoads": false,
+              "NSExceptionMinimumTLSVersion": "TLSv1.2"
+            }
+          }
+        },
         "NSCameraUsageDescription": "Analizza la tua biomeccanica in tempo reale",
         "NSMicrophoneUsageDescription": "Attiva comandi vocali e sessioni Nexus",
         "NSMotionUsageDescription": "Traccia i movimenti per contare le ripetizioni",
