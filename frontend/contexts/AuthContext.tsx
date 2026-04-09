@@ -84,15 +84,21 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children, deferAuth = false }: { children: React.ReactNode; deferAuth?: boolean }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeRole, setActiveRoleState] = useState<UserRole>('ATHLETE');
 
+  // BOOT SEQUENCE: Only load token AFTER scene is mounted (deferAuth = false)
   useEffect(() => {
+    if (deferAuth) {
+      console.log('[AUTH] Deferred — waiting for scene mount');
+      return;
+    }
+    console.log('[AUTH] Scene mounted — loading token now');
     loadToken();
-  }, []);
+  }, [deferAuth]);
 
   const loadToken = async () => {
     try {

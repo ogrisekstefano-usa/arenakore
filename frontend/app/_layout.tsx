@@ -1,8 +1,17 @@
-import React, { useEffect } from 'react';
+/**
+ * ARENAKORE — Root Layout (Build 10)
+ * UIScene-compliant boot sequence:
+ *  1. Splash stays visible
+ *  2. Fonts load (or timeout)
+ *  3. Scene mounts
+ *  4. Splash hides
+ *  5. ONLY THEN: Auth check + network calls
+ */
+import React, { useEffect, useState, useCallback } from 'react';
 import { Stack, useRouter, usePathname } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Platform, LogBox } from 'react-native';
+import { Platform, LogBox, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
@@ -23,15 +32,20 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 
 // ══════════════════════════════════════════════════════════════
-// MINIMAL CRASH PREVENTION — no require(), no dynamic imports
+// BOOT PHASE 1: Keep splash visible. NO network, NO async.
 // ══════════════════════════════════════════════════════════════
 if (Platform.OS !== 'web') {
-  LogBox.ignoreLogs(['Reanimated', 'shadow', 'pointerEvents']);
+  LogBox.ignoreLogs(['Reanimated', 'shadow', 'pointerEvents', 'VirtualizedLists']);
 }
 
-try { SplashScreen.preventAutoHideAsync(); } catch (e) { /* safe */ }
+try { SplashScreen.preventAutoHideAsync(); } catch {}
 
-// ── Inject Google Fonts for Web (Montserrat + Plus Jakarta Sans + Syne) ──
+// Tells Expo Router this is the initial route (prevents back-nav glitch)
+export const unstable_settings = {
+  initialRouteName: 'index',
+};
+
+// ── Inject Google Fonts for Web only ──
 function InjectWebFonts() {
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof document === 'undefined') return;
@@ -45,6 +59,7 @@ function InjectWebFonts() {
   return null;
 }
 
+// ── Deep Link Handler (only active AFTER scene is mounted) ──
 const PENDING_EVENT_KEY = '@arenakore_pending_event';
 
 function DeepLinkHandler() {
@@ -52,118 +67,52 @@ function DeepLinkHandler() {
   const { token } = useAuth();
 
   useEffect(() => {
-    // Handle initial URL (cold start)
     const handleInitialURL = async () => {
-      const url = await Linking.getInitialURL();
-      if (url) processDeepLink(url);
+      try {
+        const url = await Linking.getInitialURL();
+        if (url) processDeepLink(url, router);
+      } catch {}
     };
-
-    // Handle URL when app is already open
     const subscription = Linking.addEventListener('url', ({ url }) => {
-      processDeepLink(url);
+      processDeepLink(url, router);
     });
-
     handleInitialURL();
-
     return () => subscription.remove();
   }, []);
 
-  // After login, check for pending event code
   useEffect(() => {
     if (token) {
-      checkPendingEvent();
+      AsyncStorage.getItem(PENDING_EVENT_KEY)
+        .then(code => { if (code) router.push(`/join/${code}`); })
+        .catch(() => {});
     }
   }, [token]);
-
-  const checkPendingEvent = async () => {
-    try {
-      const pendingCode = await AsyncStorage.getItem(PENDING_EVENT_KEY);
-      if (pendingCode) {
-        // Navigate to join screen which will auto-enroll
-        router.push(`/join/${pendingCode}`);
-      }
-    } catch {}
-  };
-
-  const processDeepLink = (url: string) => {
-    try {
-      const parsed = Linking.parse(url);
-      const path = parsed.path || '';
-      const params = parsed.queryParams || {};
-
-      // Handle arenakore://join/{code} or https://arenakore.com/join/{code}
-      if (path.startsWith('join/')) {
-        const code = path.replace('join/', '');
-        if (code) {
-          router.push(`/join/${code}`);
-        }
-        return;
-      }
-
-      // Handle arenakore://challenge/{id} — open NÈXUS tab with specific challenge
-      if (path.startsWith('challenge/')) {
-        const challengeId = path.replace('challenge/', '');
-        if (challengeId) {
-          router.push({ pathname: '/(tabs)/nexus-trigger', params: { pvpChallengeId: challengeId } });
-        }
-        return;
-      }
-
-      // Handle arenakore://profile/{username} — open KORE tab with user profile
-      if (path.startsWith('profile/')) {
-        const username = path.replace('profile/', '');
-        if (username) {
-          router.push({ pathname: '/(tabs)/kore', params: { viewUsername: username } });
-        }
-        return;
-      }
-
-      // Handle arenakore://nexus — open NÈXUS tab (with optional template_id)
-      if (path === 'nexus' || path === 'nexus-trigger') {
-        const templateId = params.template_id as string;
-        if (templateId) {
-          router.push({ pathname: '/(tabs)/nexus-trigger', params: { template_id: templateId } });
-        } else {
-          router.push('/(tabs)/nexus-trigger');
-        }
-        return;
-      }
-
-      // Handle arenakore://kore — open KORE tab
-      if (path === 'kore') {
-        router.push('/(tabs)/kore');
-        return;
-      }
-
-      // Handle arenakore://rank — open RANK tab
-      if (path === 'rank' || path === 'hall') {
-        router.push('/(tabs)/hall');
-        return;
-      }
-
-      // Handle generic query params on tabs
-      if (params.challenge_id) {
-        router.push({ pathname: '/(tabs)/nexus-trigger', params: { pvpChallengeId: params.challenge_id as string } });
-        return;
-      }
-
-      if (params.template_id) {
-        router.push({ pathname: '/(tabs)/nexus-trigger', params: { template_id: params.template_id as string } });
-        return;
-      }
-
-      if (params.user_id) {
-        router.push({ pathname: '/(tabs)/kore', params: { viewUserId: params.user_id as string } });
-        return;
-      }
-    } catch {}
-  };
 
   return null;
 }
 
+function processDeepLink(url: string, router: any) {
+  try {
+    const parsed = Linking.parse(url);
+    const path = parsed.path || '';
+    const params = parsed.queryParams || {};
+    if (path.startsWith('join/')) { router.push(`/join/${path.replace('join/', '')}`); return; }
+    if (path.startsWith('challenge/')) { router.push({ pathname: '/(tabs)/nexus-trigger', params: { pvpChallengeId: path.replace('challenge/', '') } }); return; }
+    if (path.startsWith('profile/')) { router.push({ pathname: '/(tabs)/kore', params: { viewUsername: path.replace('profile/', '') } }); return; }
+    if (path === 'nexus' || path === 'nexus-trigger') { router.push('/(tabs)/nexus-trigger'); return; }
+    if (path === 'kore') { router.push('/(tabs)/kore'); return; }
+    if (path === 'rank' || path === 'hall') { router.push('/(tabs)/hall'); return; }
+    if (params.challenge_id) { router.push({ pathname: '/(tabs)/nexus-trigger', params: { pvpChallengeId: params.challenge_id as string } }); return; }
+  } catch {}
+}
+
+// ══════════════════════════════════════════════════════════════
+// BOOT PHASE 2: RootLayout — fonts, then mount, then splash hide
+// ══════════════════════════════════════════════════════════════
 export default function RootLayout() {
-  // Load Montserrat as the SOLE font system (300/400/500/700/800)
+  const [sceneMounted, setSceneMounted] = useState(false);
+
+  // Load fonts
   const [fontsLoaded] = useFonts({
     Montserrat_300Light,
     Montserrat_400Regular,
@@ -175,28 +124,45 @@ export default function RootLayout() {
     PlusJakartaSans_800ExtraBold,
   });
 
-  useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
+  // BOOT PHASE 3: Scene mounted → hide splash → enable auth
+  const onLayoutReady = useCallback(async () => {
+    if (fontsLoaded || Platform.OS !== 'web') {
+      try { await SplashScreen.hideAsync(); } catch {}
+      // Small delay to let the native scene fully settle
+      setTimeout(() => setSceneMounted(true), 100);
+    }
   }, [fontsLoaded]);
 
-  // Render app even if fonts haven't loaded (falls back to system font)
+  // If fonts haven't loaded after 3s, proceed anyway (system font fallback)
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!fontsLoaded) {
+        SplashScreen.hideAsync().catch(() => {});
+        setSceneMounted(true);
+      }
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, [fontsLoaded]);
+
   return (
     <GlobalErrorBoundary>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaProvider>
-          <AuthProvider>
-            <InjectWebFonts />
-            <DeepLinkHandler />
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="login" />
-              <Stack.Screen name="register" />
-              <Stack.Screen name="onboarding" />
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="join/[code]" options={{ presentation: 'modal' }} />
-            </Stack>
-          </AuthProvider>
-        </SafeAreaProvider>
+        <View style={{ flex: 1 }} onLayout={onLayoutReady}>
+          <SafeAreaProvider>
+            <AuthProvider deferAuth={!sceneMounted}>
+              {Platform.OS === 'web' && <InjectWebFonts />}
+              {sceneMounted && <DeepLinkHandler />}
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="login" />
+                <Stack.Screen name="register" />
+                <Stack.Screen name="onboarding" />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="join/[code]" options={{ presentation: 'modal' }} />
+              </Stack>
+            </AuthProvider>
+          </SafeAreaProvider>
+        </View>
       </GestureHandlerRootView>
     </GlobalErrorBoundary>
   );

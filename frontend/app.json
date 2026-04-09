@@ -2,19 +2,23 @@
   "expo": {
     "name": "ARENAKORE",
     "slug": "arenakore",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "arenakore",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet": true,
       "bundleIdentifier": "com.arenakore.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
+        },
+        "UIViewControllerBasedStatusBarAppearance": true,
+        "UIApplicationSceneManifest": {
+          "UIApplicationSupportsMultipleScenes": false
         }
       }
     },
@@ -33,6 +37,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-system-ui",
       [
         "expo-build-properties",
         {
@@ -64,7 +69,9 @@
       "eas": {
         "projectId": "05174b01-c27e-4ddc-ad2b-53edf79149d0"
       },
-      "router": {}
+      "router": {
+        "origin": "https://arenakore-api.onrender.com"
+      }
     },
     "owner": "ogriusa"
   }
