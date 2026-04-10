@@ -367,7 +367,7 @@ export default function KoreTab() {
         <View style={s.footer}>
           <View style={s.footerLine} />
           <Text style={s.footerText}>KORE PASSPORT · IRONCLAD NETWORK</Text>
-          <Text style={s.versionLabel}>v2.1.0 — Build 24 · NEXUS</Text>
+          <Text style={s.versionLabel}>v2.1.0 — Build 26 · NEXUS</Text>
         </View>
       </ScrollView>
 

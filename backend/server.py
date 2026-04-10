@@ -2569,10 +2569,18 @@ async def get_live_crew_battles(current_user: dict = Depends(get_current_user)):
 @api_router.get("/battles/crew/matchmake")
 async def matchmake_crew_battle(current_user: dict = Depends(get_current_user)):
     """AI Matchmaking: find crews with similar KORE Battle Score (±30% window)"""
-    my_crew = await db.crews_v2.find_one({"members": current_user["_id"]})
+    try:
+        my_crew = await db.crews_v2.find_one({"members": current_user["_id"]})
+    except Exception as e:
+        logger.warning(f"[Matchmake] DB error finding crew: {e}")
+        return {"has_crew": False, "my_crew_name": None, "my_kore_score": 0, "suggestions": []}
 
     if not my_crew:
-        top_crews = await db.crews_v2.find().sort("xp_total", -1).limit(3).to_list(3)
+        try:
+            top_crews = await db.crews_v2.find().sort("xp_total", -1).limit(3).to_list(3)
+        except Exception as e:
+            logger.warning(f"[Matchmake] DB error listing crews: {e}")
+            top_crews = []
         return {
             "has_crew": False,
             "my_crew_name": None,
@@ -2587,13 +2595,17 @@ async def matchmake_crew_battle(current_user: dict = Depends(get_current_user)):
         }
 
     # My crew score
-    my_members = []
-    for mid in my_crew.get("members", []):
-        u = await db.users.find_one({"_id": mid})
-        if u:
-            my_members.append({"xp": u.get("xp", 0), "dna": u.get("dna")})
-    my_xp = sum(m.get("xp", 0) for m in my_members)
-    my_score = calculate_kore_battle_score(my_members, my_xp)
+    try:
+        my_members = []
+        for mid in my_crew.get("members", []):
+            u = await db.users.find_one({"_id": mid})
+            if u:
+                my_members.append({"xp": u.get("xp", 0), "dna": u.get("dna")})
+        my_xp = sum(m.get("xp", 0) for m in my_members)
+        my_score = calculate_kore_battle_score(my_members, my_xp)
+    except Exception as e:
+        logger.warning(f"[Matchmake] Error calculating crew score: {e}")
+        my_score = 50.0
 
     # Active battles to mark already-challenged crews
     active = await db.crew_battles.find({
