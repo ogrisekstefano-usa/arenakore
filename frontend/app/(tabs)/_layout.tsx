@@ -1,39 +1,97 @@
 /**
- * TABS LAYOUT — Build 27 · THE BIO-CORE BUILD
+ * TABS LAYOUT — Build 28 · NEXUS CHROMATIC ENGINE
  * Tab order matches original Expo Go design:
  * [ARENA🏟️] [KORE🛡️] [⚡NEXUS GOLD⚡] [DNA📊] [RANK🏆]
+ *
+ * NEXUS Icon Logic:
+ *   - Resting (not focused, no scan): GOLD (#FFD700)
+ *   - Focused (tab selected): GOLD circle with black icon
+ *   - Scanning active: CYAN NEON (#00E5FF) pulsing ring
  */
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Tabs } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
 import { Keyboard, View, StyleSheet, TouchableOpacity, Text, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, {
+  useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming, Easing
+} from 'react-native-reanimated';
 
 const GOLD = '#FFD700';
 const CYAN = '#00E5FF';
 
-// ═══ NEXUS CENTER BUTTON (Gold Circle + Blue Ring) ═══
+// ═══ NEXUS CENTER BUTTON — Chromatic State Engine ═══
+// Gold at rest · Gold focused · Cyan neon when scanning
 function NexusCenterButton({ children, onPress, accessibilityState }: any) {
   const focused = accessibilityState?.selected;
+
+  // Scanning state — will be true when the biomech engine is active
+  // In future, this can listen to a global ScanningContext
+  const [isScanning, setIsScanning] = useState(false);
+
+  // Animated pulse for scanning state
+  const pulseScale = useSharedValue(1);
+  const pulseOpacity = useSharedValue(0.6);
+
+  useEffect(() => {
+    if (isScanning) {
+      // Pulsing ring animation when scanning
+      pulseScale.value = withRepeat(
+        withSequence(
+          withTiming(1.18, { duration: 800, easing: Easing.out(Easing.ease) }),
+          withTiming(1.0, { duration: 800, easing: Easing.in(Easing.ease) })
+        ),
+        -1, true
+      );
+      pulseOpacity.value = withRepeat(
+        withSequence(
+          withTiming(1, { duration: 800 }),
+          withTiming(0.4, { duration: 800 })
+        ),
+        -1, true
+      );
+    } else {
+      pulseScale.value = withTiming(1, { duration: 300 });
+      pulseOpacity.value = withTiming(0.6, { duration: 300 });
+    }
+  }, [isScanning]);
+
+  const pulseRingStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulseScale.value }],
+    opacity: pulseOpacity.value,
+  }));
+
+  // Color logic:
+  // - Scanning → CYAN neon everywhere
+  // - Focused → GOLD circle with black icon
+  // - Resting (not focused) → GOLD outline + GOLD icon (NOT dim/grey)
+  const ringColor = isScanning ? CYAN : focused ? CYAN : GOLD + '50';
+  const circleColor = isScanning ? CYAN : focused ? GOLD : 'rgba(255,215,0,0.10)';
+  const iconColor = isScanning ? '#000000' : focused ? '#000000' : GOLD;
+  const labelColor = isScanning ? CYAN : GOLD;
+
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.85}
       style={nb.container}
     >
-      <View style={[nb.outerRing, focused && nb.outerRingActive]}>
-        <View style={[nb.circle, focused ? nb.circleFocused : nb.circleInactive]}>
+      {/* Animated pulse ring (visible when scanning) */}
+      {isScanning && (
+        <Animated.View style={[nb.pulseRing, pulseRingStyle]} />
+      )}
+      <View style={[nb.outerRing, { borderColor: ringColor }]}>
+        <View style={[nb.circle, { backgroundColor: circleColor }]}>
           <Ionicons
             name="flash"
             size={28}
-            color={focused ? '#000000' : 'rgba(255,255,255,0.6)'}
+            color={iconColor}
           />
         </View>
       </View>
-      <Text style={[nb.label, focused ? nb.labelFocused : nb.labelInactive]}>
-        NEXUS
+      <Text style={[nb.label, { color: labelColor }]}>
+        {isScanning ? 'LIVE' : 'NÈXUS'}
       </Text>
     </TouchableOpacity>
   );
@@ -46,17 +104,22 @@ const nb = StyleSheet.create({
     top: -18,
     width: 72,
   },
+  pulseRing: {
+    position: 'absolute',
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    borderWidth: 2,
+    borderColor: CYAN,
+    top: 0,
+  },
   outerRing: {
     width: 62,
     height: 62,
     borderRadius: 31,
     borderWidth: 2.5,
-    borderColor: 'rgba(255,255,255,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  outerRingActive: {
-    borderColor: CYAN,
   },
   circle: {
     width: 52,
@@ -65,23 +128,11 @@ const nb = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  circleFocused: {
-    backgroundColor: GOLD,
-  },
-  circleInactive: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-  },
   label: {
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 2,
     marginTop: 4,
-  },
-  labelFocused: {
-    color: GOLD,
-  },
-  labelInactive: {
-    color: 'rgba(255,255,255,0.25)',
   },
 });
 

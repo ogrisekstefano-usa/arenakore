@@ -253,24 +253,28 @@ export default function Login() {
           <View style={s$.dividerLine} />
         </Animated.View>
 
-        {/* Social Login Buttons */}
-        <Animated.View entering={FadeInDown.delay(320).duration(400)} style={s$.socialRow}>
+        {/* ═══ SOCIAL LOGIN — Ready for Client IDs ═══ */}
+        <Animated.View entering={FadeInDown.delay(320).duration(400)} style={s$.socialCol}>
+          {/* APPLE SIGN IN */}
           <TouchableOpacity
-            style={s$.socialBtn}
+            testID="login-social-apple"
+            style={s$.appleSocialBtn}
             onPress={() => handleSocialLogin('Apple')}
             activeOpacity={0.85}
           >
             <Ionicons name="logo-apple" size={20} color="#FFF" />
-            <Text style={s$.socialBtnText}>APPLE</Text>
+            <Text style={s$.appleBtnText}>CONTINUA CON APPLE</Text>
           </TouchableOpacity>
 
+          {/* GOOGLE SIGN IN */}
           <TouchableOpacity
-            style={s$.socialBtn}
+            testID="login-social-google"
+            style={s$.googleSocialBtn}
             onPress={() => handleSocialLogin('Google')}
             activeOpacity={0.85}
           >
             <Ionicons name="logo-google" size={18} color="#FFF" />
-            <Text style={s$.socialBtnText}>GOOGLE</Text>
+            <Text style={s$.googleBtnText}>CONTINUA CON GOOGLE</Text>
           </TouchableOpacity>
         </Animated.View>
 
@@ -287,7 +291,7 @@ export default function Login() {
         {/* Version Label */}
         <View style={{ alignItems: 'center', marginTop: 16, paddingBottom: 12 }}>
           <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.7 }}>
-            v2.1.0 — Build 27 · NEXUS
+            v2.2.0 — Build 28 · CHROMATIC
           </Text>
         </View>
 
@@ -346,14 +350,20 @@ const s$ = StyleSheet.create({
   dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.06)' },
   dividerText: { color: 'rgba(255,255,255,0.15)', fontSize: 11, fontWeight: '800', letterSpacing: 3 },
 
-  // Social
-  socialRow: { flexDirection: 'row', gap: 12 },
-  socialBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#0C0C0C', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 12, paddingVertical: 16
+  // Social — Full-width stacked (Apple/Google ready for Client IDs)
+  socialCol: { gap: 12 },
+  appleSocialBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    backgroundColor: '#000000', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 14, paddingVertical: 16,
   },
-  socialBtnText: { color: '#FFF', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
+  appleBtnText: { color: '#FFF', fontSize: 15, fontWeight: '800', letterSpacing: 1 },
+  googleSocialBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    backgroundColor: '#0C0C0C', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 14, paddingVertical: 16,
+  },
+  googleBtnText: { color: '#FFF', fontSize: 15, fontWeight: '800', letterSpacing: 1 },
 
   // Register
   registerBlock: { marginTop: 28, alignItems: 'center' },

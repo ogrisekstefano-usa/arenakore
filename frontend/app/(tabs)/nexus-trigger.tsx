@@ -393,7 +393,7 @@ function NexusDashboard() {
 
         {/* FOOTER */}
         <View style={s.buildInfo}>
-          <Text style={s.buildText}>NEXUS COMMAND CENTER · v2.1.0 · Build 27</Text>
+          <Text style={s.buildText}>NEXUS COMMAND CENTER · v2.2.0 · Build 28</Text>
           <Text style={s.buildText}>IRONCLAD Network · {Platform.OS.toUpperCase()}</Text>
         </View>
       </ScrollView>
