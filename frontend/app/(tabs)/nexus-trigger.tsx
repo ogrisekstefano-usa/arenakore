@@ -1,27 +1,30 @@
 /**
- * NEXUS COMMAND — Build 22 · STABILITY OVERDRIVE
- * Full visual Dashboard with IRONCLAD background data loading.
- * 
- * RULES:
- * - ZERO native modules (no camera, haptics, sensors)
- * - ZERO Reanimated withRepeat/infinite loops
- * - ZERO heavy sub-component imports
- * - Data loads in background — UI never blocks
- * - Every section has a loading state + error fallback
+ * NEXUS COMMAND CENTER — Build 27 · THE BIO-CORE BUILD
+ * ═══════════════════════════════════════════════════════
+ * 4-Quadrant Grid matching original ExpoGo design:
+ * [NEXUS SCAN]  [THE FORGE]
+ * [HALL OF KORE] [MY DNA]
+ * + KORE Score banner + HealthKit BPM widget + IRONCLAD
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, TouchableOpacity,
-  ScrollView, ActivityIndicator, RefreshControl, Dimensions, Platform, Keyboard
+  ScrollView, RefreshControl, Dimensions, Platform, Keyboard,
+  ImageBackground
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useRouter } from 'expo-router';
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 
 const { width: SW } = Dimensions.get('window');
+const GOLD = '#FFD700';
+const CYAN = '#00E5FF';
+const CARD_W = (SW - 52) / 2;
+const CARD_H = CARD_W * 0.75;
 
 // ═══ ERROR BOUNDARY ═══
 class DashboardErrorBoundary extends React.Component<
@@ -43,7 +46,7 @@ class DashboardErrorBoundary extends React.Component<
             {this.state.errorMsg.slice(0, 150)}
           </Text>
           <TouchableOpacity
-            style={{ marginTop: 20, backgroundColor: '#00E5FF', paddingHorizontal: 28, paddingVertical: 12, borderRadius: 10 }}
+            style={{ marginTop: 20, backgroundColor: CYAN, paddingHorizontal: 28, paddingVertical: 12, borderRadius: 10 }}
             onPress={() => this.setState({ hasError: false, errorMsg: '' })}
           >
             <Text style={{ color: '#050505', fontSize: 13, fontWeight: '900' }}>RIPROVA</Text>
@@ -55,252 +58,320 @@ class DashboardErrorBoundary extends React.Component<
   }
 }
 
-// ═══ SECTION LOADER — reusable loading/error state ═══
-function SectionLoader({ loading, error, color = '#00E5FF' }: { loading: boolean; error: string | null; color?: string }) {
-  if (loading) return (
-    <View style={s.sectionLoading}>
-      <ActivityIndicator size="small" color={color} />
-      <Text style={[s.sectionLoadingText, { color }]}>Caricamento...</Text>
-    </View>
+// ═══ QUADRANT CARD ═══
+function QuadrantCard({ title, subtitle, icon, iconColor, image, delay, onPress }: {
+  title: string; subtitle: string; icon: string; iconColor: string;
+  image: string; delay: number; onPress: () => void;
+}) {
+  return (
+    <Animated.View entering={FadeInDown.delay(delay).duration(400)}>
+      <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={q$.card}>
+        <ImageBackground source={{ uri: image }} style={q$.bg} imageStyle={q$.bgImage}>
+          <LinearGradient
+            colors={['rgba(0,0,0,0.2)', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.95)']}
+            locations={[0, 0.5, 1]}
+            style={q$.grad}
+          >
+            {/* Corner brackets */}
+            <View style={[q$.bracket, q$.tl]} />
+            <View style={[q$.bracket, q$.tr]} />
+            <View style={[q$.bracket, q$.bl]} />
+            <View style={[q$.bracket, q$.br]} />
+
+            <View style={q$.content}>
+              <View style={[q$.iconWrap, { backgroundColor: iconColor + '15' }]}>
+                <Ionicons name={icon as any} size={18} color={iconColor} />
+              </View>
+              <Text style={[q$.title, { color: GOLD }]}>{title}</Text>
+              <Text style={q$.subtitle}>{subtitle}</Text>
+            </View>
+          </LinearGradient>
+        </ImageBackground>
+      </TouchableOpacity>
+    </Animated.View>
   );
-  if (error) return (
-    <View style={s.sectionError}>
-      <Ionicons name="cloud-offline-outline" size={14} color="rgba(255,255,255,0.2)" />
-      <Text style={s.sectionErrorText}>{error}</Text>
-    </View>
-  );
-  return null;
 }
+const q$ = StyleSheet.create({
+  card: { width: CARD_W, height: CARD_H, borderRadius: 18, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
+  bg: { flex: 1 },
+  bgImage: { borderRadius: 18, opacity: 0.5 },
+  grad: { flex: 1, justifyContent: 'flex-end', padding: 14 },
+  bracket: { position: 'absolute', width: 14, height: 14, borderColor: 'rgba(0,229,255,0.3)' },
+  tl: { top: 10, left: 10, borderTopWidth: 1.5, borderLeftWidth: 1.5 },
+  tr: { top: 10, right: 10, borderTopWidth: 1.5, borderRightWidth: 1.5 },
+  bl: { bottom: 10, left: 10, borderBottomWidth: 1.5, borderLeftWidth: 1.5 },
+  br: { bottom: 10, right: 10, borderBottomWidth: 1.5, borderRightWidth: 1.5 },
+  content: { gap: 4 },
+  iconWrap: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  title: { fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  subtitle: { color: CYAN, fontSize: 10, fontWeight: '800', letterSpacing: 2 },
+});
+
+// ═══ HEARTBEAT WIDGET (HealthKit PoC) ═══
+function HeartbeatWidget() {
+  const [bpm, setBpm] = useState<number | null>(null);
+  const [connected, setConnected] = useState(false);
+
+  useEffect(() => {
+    // HealthKit integration — on real device this reads from Apple Watch
+    // For now, show placeholder. In EAS build with react-native-health, this will be live.
+    if (Platform.OS === 'ios') {
+      try {
+        // Attempt HealthKit init — will work only in EAS build with native module
+        const AppleHealthKit = require('react-native-health').default;
+        if (AppleHealthKit) {
+          const permissions = {
+            permissions: {
+              read: [AppleHealthKit.Constants.Permissions.HeartRate],
+              write: [],
+            },
+          };
+          AppleHealthKit.initHealthKit(permissions, (err: any) => {
+            if (err) {
+              console.log('[HealthKit] Not available:', err);
+              return;
+            }
+            setConnected(true);
+            // Poll heart rate every 5 seconds
+            const poll = () => {
+              const options = {
+                unit: 'bpm',
+                startDate: new Date(Date.now() - 3600000).toISOString(),
+                endDate: new Date().toISOString(),
+                limit: 1,
+                ascending: false,
+              };
+              AppleHealthKit.getHeartRateSamples(options, (e: any, results: any[]) => {
+                if (!e && results && results.length > 0) {
+                  setBpm(Math.round(results[0].value));
+                }
+              });
+            };
+            poll();
+            const iv = setInterval(poll, 5000);
+            return () => clearInterval(iv);
+          });
+        }
+      } catch (e) {
+        // Module not available (web preview or dev client without native module)
+        console.log('[HealthKit] Module not available in this environment');
+      }
+    }
+  }, []);
+
+  return (
+    <View style={hb$.container}>
+      <View style={hb$.left}>
+        <View style={[hb$.heartDot, connected && bpm ? hb$.heartDotActive : {}]} />
+        <Ionicons name="heart" size={16} color={connected && bpm ? '#FF3B30' : 'rgba(255,255,255,0.15)'} />
+        <Text style={hb$.label}>
+          {connected && bpm ? 'APPLE WATCH' : 'DISPOSITIVO NON CONNESSO'}
+        </Text>
+      </View>
+      <View style={hb$.right}>
+        {connected && bpm ? (
+          <>
+            <Text style={hb$.bpmValue}>{bpm}</Text>
+            <Text style={hb$.bpmUnit}>BPM</Text>
+          </>
+        ) : (
+          <View style={hb$.watchIcon}>
+            <Ionicons name="watch-outline" size={18} color="rgba(255,255,255,0.12)" />
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+const hb$ = StyleSheet.create({
+  container: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: 'rgba(255,59,48,0.04)', borderRadius: 14,
+    borderWidth: 1, borderColor: 'rgba(255,59,48,0.08)',
+    paddingHorizontal: 16, paddingVertical: 12, marginBottom: 16,
+  },
+  left: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  heartDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.1)' },
+  heartDotActive: { backgroundColor: '#FF3B30' },
+  label: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '800', letterSpacing: 1.5 },
+  right: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
+  bpmValue: { color: '#FF3B30', fontSize: 24, fontWeight: '900' },
+  bpmUnit: { color: 'rgba(255,59,48,0.5)', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  watchIcon: { opacity: 0.5 },
+});
+
+// ═══ CARD IMAGES ═══
+const QUAD_IMAGES = {
+  nexusScan: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?crop=entropy&cs=srgb&fm=jpg&q=75&w=600',
+  forge: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?crop=entropy&cs=srgb&fm=jpg&q=75&w=600',
+  hall: 'https://images.unsplash.com/photo-1569517282132-25d22f4573e6?crop=entropy&cs=srgb&fm=jpg&q=75&w=600',
+  dna: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?crop=entropy&cs=srgb&fm=jpg&q=75&w=600',
+};
 
 // ═══ MAIN DASHBOARD ═══
 function NexusDashboard() {
   const insets = useSafeAreaInsets();
   const { user, token } = useAuth();
+  const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
-
-  // Progressive data states — each independent
-  const [profile, setProfile] = useState<any>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
-  const [profileError, setProfileError] = useState<string | null>(null);
-
   const [koreScore, setKoreScore] = useState<number | null>(null);
-  const [koreLoading, setKoreLoading] = useState(true);
-  const [koreError, setKoreError] = useState<string | null>(null);
+  const [eligibility, setEligibility] = useState<any>(null);
 
-  const [scans, setScans] = useState<any[]>([]);
-  const [scansLoading, setScansLoading] = useState(true);
-  const [scansError, setScansError] = useState<string | null>(null);
-
-  // ── LOADERS (each wrapped in try/catch, never throws) ──
-  const loadProfile = useCallback(async () => {
+  const loadData = useCallback(async () => {
+    if (!token) return;
     try {
-      setProfileLoading(true); setProfileError(null);
-      const d = await api.get('/api/users/me', token);
-      if (d && typeof d === 'object' && !d._raw && !d._parseError) setProfile(d);
-      else setProfileError('Dati profilo non disponibili');
-    } catch (e: any) { setProfileError(e?.message || 'Errore'); }
-    finally { setProfileLoading(false); }
-  }, [token]);
-
-  const loadKoreScore = useCallback(async () => {
-    try {
-      setKoreLoading(true); setKoreError(null);
       const uid = user?._id || user?.id;
-      if (!uid) { setKoreScore(0); return; }
-      const d = await api.get(`/api/coach/kore-score/${uid}/breakdown`, token);
-      if (d && typeof d === 'object' && !d._raw) setKoreScore(d?.total || d?.kore_score || 0);
-      else setKoreScore(0);
+      if (uid) {
+        const d = await api.get(`/api/coach/kore-score/${uid}/breakdown`, token);
+        if (d && typeof d === 'object' && !d._raw) setKoreScore(d?.total || d?.kore_score || 0);
+      }
     } catch { setKoreScore(0); }
-    finally { setKoreLoading(false); }
+    try {
+      const e = await api.getRescanEligibility(token);
+      if (e && !e._error) setEligibility(e);
+    } catch { /* silenced */ }
   }, [token, user]);
 
-  const loadScans = useCallback(async () => {
-    try {
-      setScansLoading(true); setScansError(null);
-      const d = await api.get('/api/scans?limit=3', token);
-      setScans(Array.isArray(d) ? d.slice(0, 3) : []);
-    } catch (e: any) { setScansError(e?.message || 'Errore'); setScans([]); }
-    finally { setScansLoading(false); }
-  }, [token]);
-
-  // Progressive loader — background, never blocks UI
-  useEffect(() => {
-    let c = false;
-    const go = async () => {
-      if (c) return;
-      await loadProfile();
-      if (c) return;
-      await new Promise(r => setTimeout(r, 200));
-      await loadKoreScore();
-      if (c) return;
-      await new Promise(r => setTimeout(r, 200));
-      await loadScans();
-    };
-    go();
-    return () => { c = true; };
-  }, []);
+  useEffect(() => { loadData(); }, [loadData]);
 
   const onRefresh = async () => {
-    Keyboard.dismiss();
     setRefreshing(true);
-    await loadProfile();
-    await loadKoreScore();
-    await loadScans();
+    await loadData();
     setRefreshing(false);
   };
 
-  const username = (profile?.username || user?.username || 'KORE').toUpperCase();
-  const role = profile?.role || user?.role || 'ATHLETE';
-  const sport = (profile?.sport || user?.sport || 'ATHLETICS').toUpperCase();
-  const akCredits = profile?.ak_credits ?? user?.ak_credits ?? 0;
+  const username = (user?.username || 'KORE').toUpperCase();
+  const role = user?.role || 'ATHLETE';
+  const isFounder = user?.is_founder || user?.is_admin || user?.founder_number;
+  const akCredits = user?.ak_credits ?? 0;
+
+  // Countdown for next validation scan
+  const nextScanText = eligibility?.can_scan
+    ? 'SCAN DISPONIBILE'
+    : eligibility?.message || 'BIOMECH STANDBY';
 
   return (
     <View style={s.container}>
       <StatusBar barStyle="light-content" />
       <ScrollView
         style={s.scroll}
-        contentContainerStyle={[s.scrollContent, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={[s.scrollContent, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 100 }]}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00E5FF" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={GOLD} />}
       >
         {/* ══ HEADER ══ */}
-        <Animated.View entering={FadeInDown.duration(400)} style={s.header}>
-          <View style={s.headerLeft}>
-            <Text style={s.greeting}>NEXUS COMMAND</Text>
-            <Text style={s.username}>{username}</Text>
-            <View style={s.roleBadge}>
-              <Ionicons name="shield-checkmark" size={11} color="#00E5FF" />
-              <Text style={s.roleText}>{role}</Text>
-            </View>
+        <Animated.View entering={FadeIn.duration(500)} style={s.header}>
+          <View style={s.headerBrand}>
+            <Text style={s.brandLabel}>ARENAKORE</Text>
+            <Text style={s.brandTitle}>NEXUS</Text>
+            <Text style={s.brandSub}>COMMAND CENTER</Text>
           </View>
           <View style={s.headerRight}>
+            {isFounder && (
+              <View style={s.founderBadge}>
+                <Ionicons name="star" size={10} color={GOLD} />
+                <Text style={s.founderText}>FOUNDER</Text>
+              </View>
+            )}
             <View style={s.akBadge}>
-              <Text style={s.akEmoji}>💧</Text>
+              <Text style={s.akEmoji}>⚡</Text>
               <Text style={s.akValue}>{akCredits}</Text>
             </View>
-            <View style={s.sportPill}>
-              <Ionicons name="medal" size={12} color="#FFD700" />
-              <Text style={s.sportText}>{sport}</Text>
+          </View>
+        </Animated.View>
+
+        {/* User identity */}
+        <Animated.View entering={FadeInDown.delay(50).duration(400)} style={s.identityRow}>
+          <View style={[s.avatar, { backgroundColor: user?.avatar_color || GOLD }]}>
+            <Text style={s.avatarLetter}>{username[0]}</Text>
+          </View>
+          <View style={s.identityInfo}>
+            <Text style={s.username}>{username}</Text>
+            <View style={s.rolePill}>
+              <Ionicons name="shield-checkmark" size={10} color={CYAN} />
+              <Text style={s.roleText}>{role.toUpperCase()}</Text>
             </View>
           </View>
         </Animated.View>
 
-        {/* ══ KORE SCORE ══ */}
-        <Animated.View entering={FadeInDown.delay(100).duration(400)}>
-          <View style={s.koreCard}>
-            <View style={s.koreHeader}>
-              <Ionicons name="flash" size={18} color="#FFD700" />
-              <Text style={s.koreTitle}>KORE SCORE</Text>
-              <View style={{ flex: 1 }} />
-              <View style={[s.statusDot, { backgroundColor: profileLoading ? '#FFD700' : '#32D74B' }]} />
-              <Text style={[s.statusLabel, { color: profileLoading ? '#FFD700' : '#32D74B' }]}>
-                {profileLoading ? 'SYNC' : 'LIVE'}
-              </Text>
-            </View>
-            {koreLoading ? (
-              <SectionLoader loading={true} error={null} color="#FFD700" />
-            ) : koreError ? (
-              <SectionLoader loading={false} error={koreError} />
-            ) : (
-              <>
-                <View style={s.koreScoreRow}>
-                  <Text style={s.koreScoreValue}>{koreScore ?? 0}</Text>
-                  <Text style={s.koreScoreMax}>/ 100</Text>
-                </View>
-                <View style={s.koreBar}>
-                  <LinearGradient
-                    colors={['#00E5FF', '#FFD700']}
-                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                    style={[s.koreBarFill, { width: `${Math.min(koreScore || 0, 100)}%` as any }]}
-                  />
-                </View>
-              </>
-            )}
+        {/* BIOMECH STATUS */}
+        <Animated.View entering={FadeInDown.delay(100).duration(400)} style={s.statusBanner}>
+          <View style={s.statusLeft}>
+            <View style={[s.statusDot, eligibility?.can_scan ? s.statusDotActive : s.statusDotStandby]} />
+            <Text style={s.statusText}>
+              {eligibility?.can_scan ? 'FULL BIOMECH ACTIVE' : 'BIOMECH STANDBY'}
+            </Text>
+          </View>
+          <Text style={s.statusCountdown}>{nextScanText}</Text>
+        </Animated.View>
+
+        {/* KORE SCORE MINI */}
+        <Animated.View entering={FadeInDown.delay(150).duration(400)} style={s.koreMini}>
+          <View style={s.koreMiniLeft}>
+            <Ionicons name="flash" size={14} color={GOLD} />
+            <Text style={s.koreMiniLabel}>KORE SCORE</Text>
+          </View>
+          <View style={s.koreMiniRight}>
+            <Text style={s.koreMiniValue}>{koreScore ?? '—'}</Text>
+            <Text style={s.koreMiniMax}>/100</Text>
+          </View>
+          <View style={s.koreMiniBar}>
+            <LinearGradient
+              colors={[CYAN, GOLD]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              style={[s.koreMiniBarFill, { width: `${Math.min(koreScore || 0, 100)}%` as any }]}
+            />
           </View>
         </Animated.View>
 
-        {/* ══ QUICK ACTIONS ══ */}
+        {/* HEARTBEAT WIDGET */}
         <Animated.View entering={FadeInDown.delay(200).duration(400)}>
-          <Text style={s.sectionTitle}>AZIONI RAPIDE</Text>
-          <View style={s.actionsGrid}>
-            {[
-              { icon: 'body', label: 'SCAN', sub: 'Biomeccanica', bg: 'rgba(0,229,255,0.08)', color: '#00E5FF' },
-              { icon: 'fitness', label: 'TRAINING', sub: 'Allenamento', bg: 'rgba(255,215,0,0.08)', color: '#FFD700' },
-              { icon: 'flame', label: 'DUEL', sub: 'Sfida 1v1', bg: 'rgba(255,69,58,0.08)', color: '#FF453A' },
-              { icon: 'qr-code', label: 'QR', sub: 'Scansiona', bg: 'rgba(50,215,75,0.08)', color: '#32D74B' },
-            ].map((a, i) => (
-              <TouchableOpacity key={i} style={s.actionCard} activeOpacity={0.8}>
-                <View style={[s.actionIcon, { backgroundColor: a.bg }]}>
-                  <Ionicons name={a.icon as any} size={24} color={a.color} />
-                </View>
-                <Text style={s.actionLabel}>{a.label}</Text>
-                <Text style={s.actionSub}>{a.sub}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <HeartbeatWidget />
         </Animated.View>
 
-        {/* ══ RECENT SCANS ══ */}
-        <Animated.View entering={FadeInDown.delay(300).duration(400)}>
-          <Text style={s.sectionTitle}>SCANSIONI RECENTI</Text>
-          {scansLoading ? (
-            <SectionLoader loading={true} error={null} />
-          ) : scansError ? (
-            <SectionLoader loading={false} error={scansError} />
-          ) : scans.length === 0 ? (
-            <View style={s.emptyCard}>
-              <Ionicons name="scan-outline" size={28} color="rgba(255,255,255,0.12)" />
-              <Text style={s.emptyText}>Nessuna scansione recente</Text>
-            </View>
-          ) : (
-            scans.map((scan, i) => (
-              <View key={scan._id || i} style={s.scanCard}>
-                <View style={s.scanIconWrap}>
-                  <Ionicons name="body" size={18} color="#00E5FF" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.scanExercise}>{(scan.exercise || 'SCAN').toUpperCase()}</Text>
-                  <Text style={s.scanDate}>
-                    {scan.created_at ? new Date(scan.created_at).toLocaleDateString('it-IT') : '—'}
-                  </Text>
-                </View>
-                <View style={s.scanRepsWrap}>
-                  <Text style={s.scanRepsVal}>{scan.reps ?? '—'}</Text>
-                  <Text style={s.scanRepsLabel}>REPS</Text>
-                </View>
-              </View>
-            ))
-          )}
-        </Animated.View>
+        {/* ══ 4 QUADRANT GRID ══ */}
+        <View style={s.quadGrid}>
+          <QuadrantCard
+            title="NEXUS SCAN"
+            subtitle="BIO-SKELETON TRACKING"
+            icon="scan"
+            iconColor={CYAN}
+            image={QUAD_IMAGES.nexusScan}
+            delay={250}
+            onPress={() => { /* Will trigger scanning flow */ }}
+          />
+          <QuadrantCard
+            title="THE FORGE"
+            subtitle="CREA · SELEZIONA · SFIDA"
+            icon="hammer"
+            iconColor={GOLD}
+            image={QUAD_IMAGES.forge}
+            delay={300}
+            onPress={() => router.push('/(tabs)/arena')}
+          />
+          <QuadrantCard
+            title="HALL OF KORE"
+            subtitle="LEADERBOARD GLOBALE"
+            icon="trophy"
+            iconColor={GOLD}
+            image={QUAD_IMAGES.hall}
+            delay={350}
+            onPress={() => router.push('/(tabs)/hall')}
+          />
+          <QuadrantCard
+            title="MY DNA"
+            subtitle="STATS RADAR BIOMETRICO"
+            icon="analytics"
+            iconColor={CYAN}
+            image={QUAD_IMAGES.dna}
+            delay={400}
+            onPress={() => router.push('/(tabs)/dna')}
+          />
+        </View>
 
-        {/* ══ PROFILE CARD ══ */}
-        <Animated.View entering={FadeInDown.delay(400).duration(400)}>
-          <Text style={s.sectionTitle}>PROFILO</Text>
-          {profileLoading ? (
-            <SectionLoader loading={true} error={null} />
-          ) : profileError ? (
-            <SectionLoader loading={false} error={profileError} />
-          ) : (
-            <View style={s.profileCard}>
-              {[
-                { label: 'USERNAME', value: profile?.username },
-                { label: 'EMAIL', value: profile?.email },
-                { label: 'SPORT', value: profile?.sport?.toUpperCase() },
-                { label: 'KORE ID', value: profile?.kore_id },
-                { label: 'AK DROPS', value: `💧 ${profile?.ak_credits ?? 0}` },
-              ].map((row, i) => (
-                <View key={i} style={s.profileRow}>
-                  <Text style={s.profileLabel}>{row.label}</Text>
-                  <Text style={s.profileValue}>{row.value || '—'}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </Animated.View>
-
-        {/* ══ BUILD INFO ══ */}
+        {/* FOOTER */}
         <View style={s.buildInfo}>
-          <Text style={s.buildText}>ARENA NEXUS · v2.1.0 · Build 22 · STABILITY OVERDRIVE</Text>
+          <Text style={s.buildText}>NEXUS COMMAND CENTER · v2.1.0 · Build 27</Text>
           <Text style={s.buildText}>IRONCLAD Network · {Platform.OS.toUpperCase()}</Text>
         </View>
       </ScrollView>
@@ -321,109 +392,78 @@ export default function NexusTriggerSafe() {
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000000' },
   scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 16 },
+  scrollContent: { paddingHorizontal: 20 },
 
   // Header
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
-  headerLeft: { flex: 1 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
+  headerBrand: {},
+  brandLabel: { color: 'rgba(255,255,255,0.20)', fontSize: 11, fontWeight: '900', letterSpacing: 5 },
+  brandTitle: { color: '#FFFFFF', fontSize: 32, fontWeight: '900', letterSpacing: -1, marginTop: -2 },
+  brandSub: { color: 'rgba(255,255,255,0.12)', fontSize: 10, fontWeight: '900', letterSpacing: 4 },
   headerRight: { alignItems: 'flex-end', gap: 8 },
-  greeting: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '900', letterSpacing: 3 },
-  username: { color: '#FFFFFF', fontSize: 26, fontWeight: '900', letterSpacing: -1, marginTop: 2 },
-  roleBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6,
-    backgroundColor: 'rgba(0,229,255,0.06)', borderRadius: 6,
-    paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start'
+  founderBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: 'rgba(255,215,0,0.08)', borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 4,
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)',
   },
-  roleText: { color: '#00E5FF', fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  founderText: { color: GOLD, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
   akBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: 'rgba(255,215,0,0.06)', borderWidth: 1, borderColor: 'rgba(255,215,0,0.15)',
-    borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6
+    backgroundColor: 'rgba(0,229,255,0.06)', borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)',
+    borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6,
   },
   akEmoji: { fontSize: 14 },
-  akValue: { color: '#FFD700', fontSize: 16, fontWeight: '900' },
-  sportPill: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: 'rgba(255,215,0,0.04)', borderRadius: 8,
-    paddingHorizontal: 10, paddingVertical: 4
+  akValue: { color: CYAN, fontSize: 16, fontWeight: '900' },
+
+  // Identity
+  identityRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
+  avatar: {
+    width: 44, height: 44, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center',
   },
-  sportText: { color: 'rgba(255,215,0,0.6)', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-
-  // KORE Score
-  koreCard: {
-    backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16,
-    borderWidth: 1, borderColor: 'rgba(255,215,0,0.1)',
-    padding: 18, marginBottom: 20
+  avatarLetter: { color: '#000', fontSize: 22, fontWeight: '900' },
+  identityInfo: { flex: 1, gap: 4 },
+  username: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', letterSpacing: -0.5 },
+  rolePill: {
+    flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start',
+    backgroundColor: 'rgba(0,229,255,0.06)', borderRadius: 6,
+    paddingHorizontal: 8, paddingVertical: 2,
   },
-  koreHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
-  koreTitle: { color: '#FFD700', fontSize: 12, fontWeight: '900', letterSpacing: 2 },
-  statusDot: { width: 6, height: 6, borderRadius: 3 },
-  statusLabel: { fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-  koreScoreRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4, marginBottom: 10 },
-  koreScoreValue: { color: '#FFFFFF', fontSize: 44, fontWeight: '900', letterSpacing: -2 },
-  koreScoreMax: { color: 'rgba(255,255,255,0.25)', fontSize: 16, fontWeight: '700' },
-  koreBar: { height: 5, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' },
-  koreBarFill: { height: '100%', borderRadius: 3 },
+  roleText: { color: CYAN, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
 
-  // Section titles
-  sectionTitle: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 10, marginTop: 4 },
-
-  // Section states
-  sectionLoading: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 16 },
-  sectionLoadingText: { fontSize: 11, fontWeight: '600' },
-  sectionError: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 10, padding: 14, marginBottom: 8
-  },
-  sectionErrorText: { color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: '600', flex: 1 },
-
-  // Actions
-  actionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
-  actionCard: {
-    width: (SW - 42) / 2, backgroundColor: 'rgba(255,255,255,0.02)',
-    borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)', padding: 14
-  },
-  actionIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  actionLabel: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  actionSub: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '600', marginTop: 2 },
-
-  // Empty
-  emptyCard: {
+  // Status Banner
+  statusBanner: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 12,
-    padding: 24, alignItems: 'center', marginBottom: 8
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)',
+    paddingHorizontal: 14, paddingVertical: 10, marginBottom: 12,
   },
-  emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '700', marginTop: 8 },
+  statusLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  statusDot: { width: 8, height: 8, borderRadius: 4 },
+  statusDotActive: { backgroundColor: '#32D74B' },
+  statusDotStandby: { backgroundColor: 'rgba(255,255,255,0.15)' },
+  statusText: { color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  statusCountdown: { color: CYAN, fontSize: 10, fontWeight: '800', letterSpacing: 1 },
 
-  // Scan cards
-  scanCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(0,229,255,0.03)', borderRadius: 12,
-    borderWidth: 1, borderColor: 'rgba(0,229,255,0.06)', padding: 14, marginBottom: 8
+  // KORE Score Mini
+  koreMini: {
+    backgroundColor: 'rgba(255,215,0,0.03)', borderRadius: 14,
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.1)',
+    padding: 14, marginBottom: 12, gap: 8,
   },
-  scanIconWrap: {
-    width: 36, height: 36, borderRadius: 10,
-    backgroundColor: 'rgba(0,229,255,0.08)', alignItems: 'center', justifyContent: 'center'
-  },
-  scanExercise: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  scanDate: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '600', marginTop: 2 },
-  scanRepsWrap: { alignItems: 'center' },
-  scanRepsVal: { color: '#00E5FF', fontSize: 20, fontWeight: '900' },
-  scanRepsLabel: { color: 'rgba(0,229,255,0.4)', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
+  koreMiniLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  koreMiniLabel: { color: GOLD, fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  koreMiniRight: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
+  koreMiniValue: { color: '#FFFFFF', fontSize: 36, fontWeight: '900', letterSpacing: -1 },
+  koreMiniMax: { color: 'rgba(255,255,255,0.2)', fontSize: 14, fontWeight: '700' },
+  koreMiniBar: { height: 4, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 2, overflow: 'hidden' },
+  koreMiniBarFill: { height: '100%', borderRadius: 2 },
 
-  // Profile
-  profileCard: {
-    backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 14,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)', overflow: 'hidden', marginBottom: 8
-  },
-  profileRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)'
-  },
-  profileLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-  profileValue: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  // Quadrant Grid
+  quadGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },
 
   // Build
-  buildInfo: { alignItems: 'center', marginTop: 28, gap: 3 },
+  buildInfo: { alignItems: 'center', marginTop: 16, gap: 3, paddingBottom: 20 },
   buildText: { color: 'rgba(255,255,255,0.06)', fontSize: 9, fontWeight: '700', letterSpacing: 1 },
 });

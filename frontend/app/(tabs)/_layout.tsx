@@ -1,7 +1,7 @@
 /**
- * TABS LAYOUT — Build 26 · THE CORE STRUCTURE
- * 5 Tab: [KORE] [ARENA] [NÈXUS] [DNA] [HALL]
- * NÈXUS al centro, rialzato con design premium.
+ * TABS LAYOUT — Build 27 · THE BIO-CORE BUILD
+ * Tab order matches original Expo Go design:
+ * [ARENA🏟️] [KORE🛡️] [⚡NEXUS GOLD⚡] [DNA📊] [RANK🏆]
  */
 import React from 'react';
 import { Tabs } from 'expo-router';
@@ -11,7 +11,10 @@ import { useEffect } from 'react';
 import { Keyboard, View, StyleSheet, TouchableOpacity, Text, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-// ═══ NEXUS CENTER BUTTON (Elevated) ═══
+const GOLD = '#FFD700';
+const CYAN = '#00E5FF';
+
+// ═══ NEXUS CENTER BUTTON (Gold Circle + Blue Ring) ═══
 function NexusCenterButton({ children, onPress, accessibilityState }: any) {
   const focused = accessibilityState?.selected;
   return (
@@ -20,21 +23,17 @@ function NexusCenterButton({ children, onPress, accessibilityState }: any) {
       activeOpacity={0.85}
       style={nb.container}
     >
-      <View style={[
-        nb.circle,
-        focused ? nb.circleFocused : nb.circleInactive,
-      ]}>
-        <Ionicons
-          name="flash"
-          size={26}
-          color={focused ? '#000000' : 'rgba(255,255,255,0.5)'}
-        />
+      <View style={[nb.outerRing, focused && nb.outerRingActive]}>
+        <View style={[nb.circle, focused ? nb.circleFocused : nb.circleInactive]}>
+          <Ionicons
+            name="flash"
+            size={28}
+            color={focused ? '#000000' : 'rgba(255,255,255,0.6)'}
+          />
+        </View>
       </View>
-      <Text style={[
-        nb.label,
-        focused ? nb.labelFocused : nb.labelInactive,
-      ]}>
-        NÈXUS
+      <Text style={[nb.label, focused ? nb.labelFocused : nb.labelInactive]}>
+        NEXUS
       </Text>
     </TouchableOpacity>
   );
@@ -44,8 +43,20 @@ const nb = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    top: -14,
-    width: 64,
+    top: -18,
+    width: 72,
+  },
+  outerRing: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    borderWidth: 2.5,
+    borderColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  outerRingActive: {
+    borderColor: CYAN,
   },
   circle: {
     width: 52,
@@ -53,24 +64,21 @@ const nb = StyleSheet.create({
     borderRadius: 26,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
   },
   circleFocused: {
-    backgroundColor: '#00E5FF',
-    borderColor: '#00E5FF',
+    backgroundColor: GOLD,
   },
   circleInactive: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   label: {
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: '900',
     letterSpacing: 2,
     marginTop: 4,
   },
   labelFocused: {
-    color: '#00E5FF',
+    color: GOLD,
   },
   labelInactive: {
     color: 'rgba(255,255,255,0.25)',
@@ -95,11 +103,11 @@ export default function TabsLayout() {
           backgroundColor: '#000000',
           borderTopColor: 'rgba(255,255,255,0.06)',
           borderTopWidth: 1,
-          height: Platform.OS === 'ios' ? 88 : 70,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 10,
+          height: Platform.OS === 'ios' ? 92 : 72,
+          paddingBottom: Platform.OS === 'ios' ? 30 : 10,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: '#00E5FF',
+        tabBarActiveTintColor: GOLD,
         tabBarInactiveTintColor: 'rgba(255,255,255,0.25)',
         tabBarLabelStyle: {
           fontSize: 9,
@@ -113,23 +121,23 @@ export default function TabsLayout() {
       initialRouteName="nexus-trigger"
     >
       <Tabs.Screen
-        name="kore"
-        options={{
-          title: 'KORE',
-          tabBarIcon: ({ color, size }) => <Ionicons name="id-card" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="arena"
         options={{
           title: 'ARENA',
-          tabBarIcon: ({ color, size }) => <Ionicons name="flame" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="business" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="kore"
+        options={{
+          title: 'KORE',
+          tabBarIcon: ({ color, size }) => <Ionicons name="shield" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="nexus-trigger"
         options={{
-          title: 'NÈXUS',
+          title: 'NEXUS',
           tabBarLabel: () => null,
           tabBarIcon: () => null,
           tabBarButton: (props) => <NexusCenterButton {...props} />,
@@ -139,13 +147,13 @@ export default function TabsLayout() {
         name="dna"
         options={{
           title: 'DNA',
-          tabBarIcon: ({ color, size }) => <Ionicons name="analytics" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="pulse" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="hall"
         options={{
-          title: 'HALL',
+          title: 'RANK',
           tabBarIcon: ({ color, size }) => <Ionicons name="trophy" size={size} color={color} />,
         }}
       />

@@ -1,5 +1,5 @@
 /**
- * KORE TAB — Build 24 · ATHLETE PASSPORT
+ * KORE TAB — Build 27 · KORE ID
  * ═══════════════════════════════════════════
  * Full-featured Social Identity Hub with:
  * - Hero Header (Avatar + Username + Mood)
@@ -232,7 +232,7 @@ export default function KoreTab() {
           <View style={s.heroTop}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Ionicons name="id-card" size={16} color={GOLD} />
-              <Text style={s.heroLabel}>KORE PASSPORT</Text>
+              <Text style={s.heroLabel}>KORE ID</Text>
             </View>
             <TouchableOpacity
               onPress={() => setShowKoreID(true)}
@@ -366,8 +366,8 @@ export default function KoreTab() {
         {/* ══════ FOOTER ══════ */}
         <View style={s.footer}>
           <View style={s.footerLine} />
-          <Text style={s.footerText}>KORE PASSPORT · IRONCLAD NETWORK</Text>
-          <Text style={s.versionLabel}>v2.1.0 — Build 26 · NEXUS</Text>
+          <Text style={s.footerText}>KORE ID · IRONCLAD NETWORK</Text>
+          <Text style={s.versionLabel}>v2.1.0 — Build 27 · NEXUS</Text>
         </View>
       </ScrollView>
 
