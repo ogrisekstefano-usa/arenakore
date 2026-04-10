@@ -43,7 +43,7 @@ async function request(path: string, options: RequestInit = {}, token?: string |
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 22; IRONCLAD)',
+    'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 23; IRONCLAD)',
     'Connection': 'keep-alive',
     ...(options.headers as Record<string, string> || {}),
   };
@@ -140,7 +140,7 @@ export const api = {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 22; IRONCLAD)',
+      'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 23; IRONCLAD)',
       'Connection': 'keep-alive',
     };
     const url = `${BASE_URL}/auth/login`;
