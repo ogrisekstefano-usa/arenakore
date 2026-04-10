@@ -139,7 +139,20 @@ export function AuthProvider({ children, deferAuth = false }: { children: React.
 
   const login = async (email: string, password: string): Promise<User> => {
     const result = await api.login({ email, password });
+    // BUILD 19: Token validation — log and verify before saving
+    if (!result?.token || typeof result.token !== 'string') {
+      console.error('[AUTH] Login response missing valid token:', JSON.stringify(result).slice(0, 200));
+      throw new Error('Il server non ha restituito un token valido. Riprova.');
+    }
+    console.log('[AUTH] Token received, length:', result.token.length, 'starts with:', result.token.slice(0, 10) + '...');
     await AsyncStorage.setItem(TOKEN_KEY, result.token);
+    // Verify token was actually saved
+    const savedToken = await AsyncStorage.getItem(TOKEN_KEY);
+    if (savedToken !== result.token) {
+      console.error('[AUTH] Token save verification FAILED!');
+    } else {
+      console.log('[AUTH] Token verified in AsyncStorage ✅');
+    }
     setToken(result.token);
     setUser(result.user);
     // Auto-detect role on login

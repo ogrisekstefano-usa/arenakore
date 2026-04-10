@@ -211,11 +211,20 @@ export default function KoreTab() {
 
   const fetchMyChallenges = useCallback(async () => {
     try {
-      // BUILD 18: Use api utility instead of raw fetch (ensures timeout, headers, keep-alive)
+      // BUILD 19: Use api utility + Array.isArray blindatura
       const data = await api.getActiveChallenges(token!);
-      setMyChallenges(data?.challenges || data || []);
+      // Blindatura: se il server ritorna un errore o un oggetto, non crashare
+      if (Array.isArray(data)) {
+        setMyChallenges(data);
+      } else if (data && Array.isArray(data?.challenges)) {
+        setMyChallenges(data.challenges);
+      } else {
+        console.warn('[KORE] fetchMyChallenges: unexpected data type', typeof data);
+        setMyChallenges([]);
+      }
     } catch (e: any) {
       console.error('[KORE] fetchMyChallenges failed:', e?.message);
+      setMyChallenges([]);
     }
   }, [token]);
 

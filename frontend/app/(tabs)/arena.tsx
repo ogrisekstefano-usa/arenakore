@@ -490,15 +490,25 @@ function MatchmakingPanel() {
   const [data, setData] = useState<any>(null);
   const [challenging, setChallengingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const isUnlocked = user?.unlocked_tools?.includes('ai_matchmaker');
 
   useEffect(() => {
     if (!token) { setLoading(false); return; }
-    setFetchError(false);
+    setFetchError(null);
     api.getCrewMatchmake(token)
-      .then(d => { if (d) setData(d); else setFetchError(true); })
-      .catch(() => setFetchError(true))
+      .then(d => {
+        // BUILD 19: Blindatura totale — verifica che i dati siano un oggetto valido
+        if (d && typeof d === 'object' && !d.detail && !d.error) {
+          setData(d);
+        } else {
+          setFetchError(d?.detail || 'Dati non validi dal server');
+        }
+      })
+      .catch((e: any) => {
+        console.error('[MatchmakingPanel] Fetch error:', e?.message);
+        setFetchError(e?.message || 'Server momentaneamente occupato');
+      })
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -509,10 +519,9 @@ function MatchmakingPanel() {
       await api.challengeCrew(crewId, token, 24);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       Alert.alert('SFIDA LANCIATA', `${crewName} è stata sfidato! La battle dura 24h. Fai un NEXUS Scan per contribuire.`);
-      // Refresh
       try {
         const newData = await api.getCrewMatchmake(token);
-        if (newData) setData(newData);
+        if (newData && typeof newData === 'object' && !newData.detail) setData(newData);
       } catch {}
     } catch (e: any) {
       Alert.alert('SFIDA FALLITA', e?.message || 'Errore nell\'avviare la battle');
@@ -523,8 +532,8 @@ function MatchmakingPanel() {
 
   if (loading) return null;
 
-  // ── BUILD 17: Network error fallback ──
-  if (fetchError || !data) {
+  // ── BUILD 19: HTTP 500 / Network error / Invalid data → safe fallback ──
+  if (fetchError || !data || typeof data !== 'object') {
     return (
       <View style={mp$.section}>
         <View style={mp$.header}>
@@ -535,13 +544,17 @@ function MatchmakingPanel() {
         </View>
         <View style={mp$.noCrew}>
           <Ionicons name="cloud-offline-outline" size={16} color="rgba(255,215,0,0.5)" />
-          <Text style={mp$.noCrewText}>Dati non disponibili. Tira giù per aggiornare.</Text>
+          <Text style={mp$.noCrewText}>
+            {fetchError || 'Server momentaneamente occupato, riprova tra poco.'}
+          </Text>
         </View>
       </View>
     );
   }
 
-  if (!data?.suggestions?.length && isUnlocked) return null;
+  // Extra safety: if suggestions is not an array, don't render
+  const suggestions = Array.isArray(data?.suggestions) ? data.suggestions : [];
+  if (!suggestions.length && isUnlocked) return null;
 
   return (
     <Animated.View entering={FadeInDown.delay(200).duration(400)} style={[mp$.section, { position: 'relative' as any }]}>
@@ -575,7 +588,7 @@ function MatchmakingPanel() {
       )}
 
       {/* Suggested opponents */}
-      {(data?.suggestions || []).map((opp: any, idx: number) => {
+      {suggestions.map((opp: any, idx: number) => {
         const diff = opp.score_diff;
         const matchLabel = diff <= 2 ? 'MATCH PERFETTO' : diff <= 8 ? 'MATCH BUONO' : 'MATCH ACCETTABILE';
         const matchColor = diff <= 2 ? '#00E5FF' : diff <= 8 ? '#FFD700' : '#FF9500';

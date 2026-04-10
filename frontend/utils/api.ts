@@ -96,8 +96,44 @@ export const api = {
     gender?: string; preferred_sport?: string;
   }) => request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
 
-  login: (data: { email: string; password: string }) =>
-    request('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
+  // BUILD 19: Login con timeout 60s per cold-start di Render
+  login: async (data: { email: string; password: string }) => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 19; Expo)',
+      'Connection': 'keep-alive',
+    };
+    const url = `${BASE_URL}/auth/login`;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s!
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(data),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Errore di rete' }));
+        throw new Error(error.detail || `Errore ${response.status}`);
+      }
+      const result = await response.json();
+      console.log('[ARENAKORE] Login OK — token received:', !!result?.token);
+      return result;
+    } catch (err: any) {
+      console.error('[ARENAKORE LOGIN ERROR]', {
+        url,
+        errorName: err?.name,
+        errorMessage: err?.message,
+      });
+      if (err.name === 'AbortError') {
+        throw new Error('Timeout 60s — il server è in letargo. Riprova tra 30 secondi.');
+      }
+      throw err;
+    }
+  },
 
   me: (token: string) => request('/auth/me', {}, token),
 
