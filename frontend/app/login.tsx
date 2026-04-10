@@ -124,7 +124,7 @@ export default function Login() {
 
           {/* Version */}
           <Animated.View entering={FadeInDown.delay(600)}>
-            <Text style={s$.gateVersion}>v2.1.0 — Build 20 · NEXUS</Text>
+            <Text style={s$.gateVersion}>v2.1.0 — Build 21 · NEXUS</Text>
           </Animated.View>
         </View>
       </View>
@@ -284,7 +284,7 @@ export default function Login() {
         {/* Version Label */}
         <View style={{ alignItems: 'center', marginTop: 16, paddingBottom: 12 }}>
           <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.7 }}>
-            v2.1.0 — Build 20 · NEXUS
+            v2.1.0 — Build 21 · NEXUS
           </Text>
         </View>
 
