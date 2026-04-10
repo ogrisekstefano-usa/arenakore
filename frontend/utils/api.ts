@@ -1,88 +1,124 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ══════════════════════════════════════════════════════════════
-// HARDCODED BACKEND URL — bypass process.env per stabilità iOS
+// BUILD 22 — "STABILITY OVERDRIVE" · IRONCLAD Network Layer
 // ══════════════════════════════════════════════════════════════
 const BASE_URL = 'https://arenakore-api.onrender.com/api';
-// BUILD 18: Export raw base for components that need direct URL construction
 export const BACKEND_BASE = 'https://arenakore-api.onrender.com';
 export const API_BASE = BASE_URL;
 
-console.log('[ARENAKORE API] Using hardcoded URL:', BASE_URL);
+console.log('[ARENAKORE API] IRONCLAD v22 · URL:', BASE_URL);
 
+// ═══ SAFE JSON PARSER — checks content-type before parsing ═══
+async function safeParseJSON(response: Response, url: string): Promise<any> {
+  const ct = response.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    // Non-JSON response — read as text for logging, return safe object
+    const text = await response.text().catch(() => '');
+    console.warn(`[ARENAKORE] Non-JSON response from ${url}: "${text.slice(0, 100)}"`);
+    return { _raw: true, text: text.slice(0, 200) };
+  }
+  try {
+    return await response.json();
+  } catch (e) {
+    console.warn(`[ARENAKORE] JSON parse failed for ${url}:`, e);
+    return { _parseError: true };
+  }
+}
+
+// ═══ SINGLE FETCH ATTEMPT with timeout ═══
+async function singleFetch(url: string, options: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const tid = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    return res;
+  } finally {
+    clearTimeout(tid);
+  }
+}
+
+// ═══ IRONCLAD REQUEST — 20s timeout, 2 auto-retries at 1.5s intervals ═══
 async function request(path: string, options: RequestInit = {}, token?: string | null) {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 19; Expo)',
+    'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 22; IRONCLAD)',
     'Connection': 'keep-alive',
     ...(options.headers as Record<string, string> || {}),
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const url = `${BASE_URL}${path}`;
-  try {
-    // BUILD 18: Timeout 30s — Render cold-start + heavy queries
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+  const MAX_ATTEMPTS = 3;
+  const TIMEOUT_MS = 20000;
+  const RETRY_DELAY = 1500;
+  let lastError: any = null;
 
-    const response = await fetch(url, {
-      ...options,
-      headers,
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const response = await singleFetch(url, { ...options, headers }, TIMEOUT_MS);
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Errore di rete' }));
-      const errMsg = error.detail || `Errore ${response.status}`;
-      console.error(`[ARENAKORE] HTTP ${response.status} on ${path}: ${errMsg}`);
-      throw new Error(errMsg);
+      if (!response.ok) {
+        const errBody = await safeParseJSON(response, url);
+        const errMsg = errBody?.detail || errBody?.message || `HTTP ${response.status}`;
+        console.error(`[ARENAKORE] HTTP ${response.status} on ${path} (attempt ${attempt}): ${errMsg}`);
+        // Don't retry on auth errors (401/403) — they won't self-heal
+        if (response.status === 401 || response.status === 403) {
+          throw new Error(errMsg);
+        }
+        lastError = new Error(errMsg);
+        if (attempt < MAX_ATTEMPTS) {
+          await new Promise(r => setTimeout(r, RETRY_DELAY));
+          continue;
+        }
+        throw lastError;
+      }
+
+      return await safeParseJSON(response, url);
+    } catch (err: any) {
+      lastError = err;
+      console.error(`[ARENAKORE FETCH ERROR] attempt ${attempt}/${MAX_ATTEMPTS}`, {
+        url,
+        method: options.method || 'GET',
+        error: err?.name + ': ' + err?.message,
+      });
+
+      if (err.name === 'AbortError') {
+        lastError = new Error(`Timeout ${TIMEOUT_MS / 1000}s su ${path}. Tentativo ${attempt}/${MAX_ATTEMPTS}.`);
+      }
+
+      // Retry unless it's the last attempt
+      if (attempt < MAX_ATTEMPTS) {
+        await new Promise(r => setTimeout(r, RETRY_DELAY));
+        continue;
+      }
     }
-    return response.json();
-  } catch (err: any) {
-    // BUILD 18: Extended logging — prints full error chain for iPhone Console
-    console.error(`[ARENAKORE FETCH ERROR]`, {
-      url,
-      method: options.method || 'GET',
-      errorName: err?.name,
-      errorMessage: err?.message,
-      errorStack: err?.stack?.slice(0, 500),
-    });
-    if (err.name === 'AbortError') {
-      throw new Error('Timeout 30s — il server non risponde. Riprova.');
-    }
-    if (err.message === 'Network request failed') {
-      throw new Error('Connessione al server fallita. Verifica la rete.');
-    }
-    throw err;
   }
+
+  // All attempts failed
+  throw lastError || new Error('Connessione al server fallita dopo 3 tentativi.');
 }
 
-// Pre-wake Render server (fire-and-forget, no crash risk)
+// Pre-wake Render server (fire-and-forget)
 export function wakeServer() {
   try {
     fetch(`${BASE_URL}/health`, {
       method: 'GET',
-      headers: {
-        'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 19; Expo)',
-        'Connection': 'keep-alive',
-      }
+      headers: { 'User-Agent': 'ArenaKore/2.1.0 (Build22)', 'Connection': 'keep-alive' }
     }).catch(() => {});
   } catch {}
 }
 
-// ── Generic API client for new endpoints ──
+// ── Generic API client ──
 export const apiClient = async (path: string, options: RequestInit = {}) => {
   let token: string | null = null;
-  try {
-    token = await AsyncStorage.getItem('auth_token');
-  } catch {}
+  try { token = await AsyncStorage.getItem('auth_token'); } catch {}
   const cleanPath = path.startsWith('/api') ? path.replace('/api', '') : path;
   return request(cleanPath, options, token);
 };
 
-// ── Raw fetch wrapper for admin-panel pages (returns Response object, NOT parsed JSON) ──
+// ── Raw fetch wrapper ──
 const RAW_BASE = 'https://arenakore-api.onrender.com';
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const url = path.startsWith('/api') ? `${RAW_BASE}${path}` : `${RAW_BASE}/api${path}`;
@@ -96,43 +132,46 @@ export const api = {
     gender?: string; preferred_sport?: string;
   }) => request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
 
-  // BUILD 19: Login con timeout 60s per cold-start di Render
+  // BUILD 22: Login con 3 tentativi automatici, 20s per tentativo, content-type check
   login: async (data: { email: string; password: string }) => {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 19; Expo)',
+      'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 22; IRONCLAD)',
       'Connection': 'keep-alive',
     };
     const url = `${BASE_URL}/auth/login`;
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s!
-      const response = await fetch(url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(data),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ detail: 'Errore di rete' }));
-        throw new Error(error.detail || `Errore ${response.status}`);
+    const MAX_ATTEMPTS = 3;
+    let lastError: any = null;
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        console.log(`[ARENAKORE LOGIN] Tentativo ${attempt}/${MAX_ATTEMPTS}...`);
+        const response = await singleFetch(url, {
+          method: 'POST', headers, body: JSON.stringify(data),
+        }, 20000);
+
+        if (!response.ok) {
+          const errBody = await safeParseJSON(response, url);
+          throw new Error(errBody?.detail || `HTTP ${response.status}`);
+        }
+
+        const result = await safeParseJSON(response, url);
+        if (result?._raw || result?._parseError) {
+          throw new Error('Risposta server non valida');
+        }
+        console.log('[ARENAKORE] Login OK — token:', !!result?.token);
+        return result;
+      } catch (err: any) {
+        lastError = err;
+        console.error(`[ARENAKORE LOGIN ERROR] attempt ${attempt}:`, err?.message);
+        if (attempt < MAX_ATTEMPTS) {
+          await new Promise(r => setTimeout(r, 1500));
+          continue;
+        }
       }
-      const result = await response.json();
-      console.log('[ARENAKORE] Login OK — token received:', !!result?.token);
-      return result;
-    } catch (err: any) {
-      console.error('[ARENAKORE LOGIN ERROR]', {
-        url,
-        errorName: err?.name,
-        errorMessage: err?.message,
-      });
-      if (err.name === 'AbortError') {
-        throw new Error('Timeout 60s — il server è in letargo. Riprova tra 30 secondi.');
-      }
-      throw err;
     }
+    throw lastError || new Error('Login fallito dopo 3 tentativi.');
   },
 
   me: (token: string) => request('/auth/me', {}, token),

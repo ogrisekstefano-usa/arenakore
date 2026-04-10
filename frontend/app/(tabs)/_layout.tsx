@@ -7,6 +7,7 @@ import { Tabs } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
+import { Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function TabsLayout() {
@@ -37,6 +38,10 @@ export default function TabsLayout() {
           fontWeight: '900',
           letterSpacing: 1.5,
         },
+      }}
+      screenListeners={{
+        // BUILD 22: Dismiss keyboard on every tab switch to prevent iOS Snapshotting warnings
+        tabPress: () => Keyboard.dismiss(),
       }}
       initialRouteName="nexus-trigger"
     >

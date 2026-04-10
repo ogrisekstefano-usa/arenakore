@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, StatusBar,
-  Dimensions, Alert
+  Dimensions, Alert, Keyboard
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -43,6 +43,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!email || !password) { setError('Inserisci email e password'); return; }
+    Keyboard.dismiss(); // BUILD 22: Dismiss keyboard before network call
     setLoading(true);
     setError('');
     try {
@@ -124,7 +125,7 @@ export default function Login() {
 
           {/* Version */}
           <Animated.View entering={FadeInDown.delay(600)}>
-            <Text style={s$.gateVersion}>v2.1.0 — Build 21 · NEXUS</Text>
+            <Text style={s$.gateVersion}>v2.1.0 — Build 22 · NEXUS</Text>
           </Animated.View>
         </View>
       </View>
@@ -179,6 +180,7 @@ export default function Login() {
                 autoComplete="email"
                 autoCorrect={false}
                 spellCheck={false}
+                textContentType="username"
               />
             </View>
           </View>
@@ -199,6 +201,7 @@ export default function Login() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 spellCheck={false}
+                textContentType="password"
               />
               <TouchableOpacity testID="login-toggle-pwd" onPress={() => setShowPassword(!showPassword)} style={s$.eyeBtn}>
                 <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={18} color="rgba(255,255,255,0.35)" />
@@ -284,7 +287,7 @@ export default function Login() {
         {/* Version Label */}
         <View style={{ alignItems: 'center', marginTop: 16, paddingBottom: 12 }}>
           <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.7 }}>
-            v2.1.0 — Build 21 · NEXUS
+            v2.1.0 — Build 22 · NEXUS
           </Text>
         </View>
 
