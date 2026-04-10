@@ -18,6 +18,7 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Line, Circle, Rect, Defs, LinearGradient as SvgGrad, Stop, G } from 'react-native-svg';
 import { useAuth } from '../contexts/AuthContext';
+import { wakeServer } from '../utils/api';
 
 // ── Assets
 const VIDEO_URL   = 'https://videos.pexels.com/video-files/4669895/4669895-hd_1280_720_25fps.mp4';
@@ -93,13 +94,20 @@ export default function HeroIndex() {
   const { height: SH, width: SW } = useWindowDimensions();
   const [videoError, setVideoError] = useState(false);
 
-  // Auth redirect — BUILD 15: Manual button gate replaces auto-redirect
-  // This prevents automatic Dashboard module loading that triggers SpringBoard sandbox
+  // Auth redirect — BUILD 22: Manual button gate replaces auto-redirect
   const [showGate, setShowGate] = useState(false);
   
+  // BUILD 22: Pre-wake Render IMMEDIATELY on app open — before user even sees login
+  useEffect(() => {
+    console.log('[ARENAKORE] Pre-waking Render server on app boot...');
+    wakeServer();
+    // Double-wake after 2s to ensure server is fully warm
+    const tid = setTimeout(() => wakeServer(), 2000);
+    return () => clearTimeout(tid);
+  }, []);
+
   useEffect(() => {
     if (!isLoading && token && user) {
-      // Instead of auto-redirect, show manual "ENTRA" gate
       setShowGate(true);
     }
   }, [isLoading, token, user]);
@@ -207,7 +215,7 @@ export default function HeroIndex() {
             </TouchableOpacity>
           </Animated.View>
 
-          <Text style={s.versionLabel}>v2.1.0 — Build 22 · NEXUS</Text>
+          <Text style={s.versionLabel}>v2.1.0 — Build 23 · NEXUS</Text>
         </View>
       </View>
     );
@@ -368,7 +376,7 @@ export default function HeroIndex() {
         <View style={s.footer}>
           <Text style={s.footerTxt}>ARENAKORE · THE CORE OF PERFORMANCE</Text>
           <Text style={s.footerTxt}>CHICAGO BETA · KORE #00001 STEFANO OGRISEK</Text>
-          <Text style={s.versionLabel}>v2.1.0 — Build 22 · NEXUS</Text>
+          <Text style={s.versionLabel}>v2.1.0 — Build 23 · NEXUS</Text>
         </View>
       </ScrollView>
     </View>

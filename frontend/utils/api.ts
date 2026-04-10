@@ -100,14 +100,17 @@ async function request(path: string, options: RequestInit = {}, token?: string |
   throw lastError || new Error('Connessione al server fallita dopo 3 tentativi.');
 }
 
-// Pre-wake Render server (fire-and-forget)
+// Pre-wake Render server — AGGRESSIVE multi-ping to wake from cold start
 export function wakeServer() {
-  try {
-    fetch(`${BASE_URL}/health`, {
-      method: 'GET',
-      headers: { 'User-Agent': 'ArenaKore/2.1.0 (Build22)', 'Connection': 'keep-alive' }
-    }).catch(() => {});
-  } catch {}
+  const url = `${BASE_URL.replace('/api', '')}/api/health`;
+  // Fire 3 rapid pings — first one wakes the process, second/third ensure it's fully ready
+  try { fetch(url, { method: 'GET', headers: { 'User-Agent': 'ArenaKore-Wake/22' } }).catch(() => {}); } catch {}
+  setTimeout(() => {
+    try { fetch(url, { method: 'GET', headers: { 'User-Agent': 'ArenaKore-Wake/22' } }).catch(() => {}); } catch {}
+  }, 500);
+  setTimeout(() => {
+    try { fetch(url, { method: 'GET', headers: { 'User-Agent': 'ArenaKore-Wake/22' } }).catch(() => {}); } catch {}
+  }, 1500);
 }
 
 // ── Generic API client ──
