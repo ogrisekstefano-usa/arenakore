@@ -19,7 +19,7 @@ async function safeFetch(url: string, token: string): Promise<any> {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'User-Agent': 'ArenaKore/2.1.0 (Build23)',
+        'User-Agent': 'ArenaKore/2.1.0 (Build24)',
       },
       signal: controller.signal,
     });
@@ -62,7 +62,7 @@ export default function ArenaTab() {
       <StatusBar barStyle="light-content" />
       <ScrollView style={s.scroll} contentContainerStyle={s.content}>
         <Text style={s.title}>ARENA</Text>
-        <Text style={s.sub}>Build 23 · Pre-Wake · IRONCLAD</Text>
+        <Text style={s.sub}>Build 24 · KORE Passport · IRONCLAD</Text>
         <View style={s.divider} />
 
         <Text style={s.label}>UTENTE</Text>

@@ -215,7 +215,7 @@ export default function HeroIndex() {
             </TouchableOpacity>
           </Animated.View>
 
-          <Text style={s.versionLabel}>v2.1.0 — Build 23 · NEXUS</Text>
+          <Text style={s.versionLabel}>v2.1.0 — Build 24 · NEXUS</Text>
         </View>
       </View>
     );
@@ -376,7 +376,7 @@ export default function HeroIndex() {
         <View style={s.footer}>
           <Text style={s.footerTxt}>ARENAKORE · THE CORE OF PERFORMANCE</Text>
           <Text style={s.footerTxt}>CHICAGO BETA · KORE #00001 STEFANO OGRISEK</Text>
-          <Text style={s.versionLabel}>v2.1.0 — Build 23 · NEXUS</Text>
+          <Text style={s.versionLabel}>v2.1.0 — Build 24 · NEXUS</Text>
         </View>
       </ScrollView>
     </View>

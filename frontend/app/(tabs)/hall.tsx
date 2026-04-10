@@ -14,7 +14,7 @@ export default function HallTab() {
       <StatusBar barStyle="light-content" />
       <View style={s.content}>
         <Text style={s.title}>HALL OF FAME</Text>
-        <Text style={s.sub}>Build 21 · Step-by-Step · Hello World</Text>
+        <Text style={s.sub}>Build 24 · Step-by-Step</Text>
         <View style={s.divider} />
         <Text style={s.label}>UTENTE</Text>
         <Text style={s.value}>{user?.username || '—'}</Text>
