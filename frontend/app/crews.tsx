@@ -14,17 +14,17 @@ import Animated, {
   FadeInDown, SlideOutLeft,
   Layout, Easing
 } from 'react-native-reanimated';
-import { useAuth } from '../../contexts/AuthContext';
-import { api } from '../../utils/api';
-import { Header } from '../../components/Header';
-import { TAB_BACKGROUNDS } from '../../utils/images';
-import { GymHub } from '../../components/GymHub';
-import { CoachStudio } from '../../components/crew/CoachStudio';
-import { CreateCrewModal } from '../../components/crew/CreateCrewModal';
-import { CrewHubDetail } from '../../components/crew/CrewHubDetail';
-import { CATEGORIES_MAP } from '../../components/crew/CreateCrewModal';
-import { ChallengeInviteModal } from '../../components/crew/ChallengeInviteModal';
-import { playAcceptPing, playDecline } from '../../utils/sounds';
+import { useAuth } from '../contexts/AuthContext';
+import { api } from '../utils/api';
+import { Header } from '../components/Header';
+import { TAB_BACKGROUNDS } from '../utils/images';
+import { GymHub } from '../components/GymHub';
+import { CoachStudio } from '../components/crew/CoachStudio';
+import { CreateCrewModal } from '../components/crew/CreateCrewModal';
+import { CrewHubDetail } from '../components/crew/CrewHubDetail';
+import { CATEGORIES_MAP } from '../components/crew/CreateCrewModal';
+import { ChallengeInviteModal } from '../components/crew/ChallengeInviteModal';
+import { playAcceptPing, playDecline } from '../utils/sounds';
 
 // WoW dramatic athlete group photos for immersive crew cards
 const CREW_PHOTOS = [
