@@ -369,6 +369,28 @@ function NexusDashboard() {
           />
         </View>
 
+        {/* ══ COACH-ONLY: Template & Challenge Creation ══ */}
+        {(role === 'COACH' || role === 'coach' || role === 'GYM_OWNER' || role === 'SUPER_ADMIN' || role === 'admin') && (
+          <Animated.View entering={FadeInDown.delay(450).duration(400)} style={s.coachSection}>
+            <View style={s.coachHeader}>
+              <Ionicons name="shield-checkmark" size={12} color={GOLD} />
+              <Text style={s.coachTitle}>COACH TOOLS</Text>
+            </View>
+            <View style={s.coachGrid}>
+              <TouchableOpacity style={s.coachBtn} activeOpacity={0.85} onPress={() => router.push('/(tabs)/arena')}>
+                <Ionicons name="document-text" size={18} color={GOLD} />
+                <Text style={s.coachBtnTitle}>GESTIONE TEMPLATE</Text>
+                <Text style={s.coachBtnSub}>Crea e gestisci workout</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={s.coachBtn} activeOpacity={0.85} onPress={() => router.push('/(tabs)/arena')}>
+                <Ionicons name="flash" size={18} color={CYAN} />
+                <Text style={s.coachBtnTitle}>CREA SFIDA</Text>
+                <Text style={s.coachBtnSub}>Lancia una nuova challenge</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        )}
+
         {/* FOOTER */}
         <View style={s.buildInfo}>
           <Text style={s.buildText}>NEXUS COMMAND CENTER · v2.1.0 · Build 27</Text>
@@ -462,6 +484,19 @@ const s = StyleSheet.create({
 
   // Quadrant Grid
   quadGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },
+
+  // Coach Tools (role-based)
+  coachSection: { marginBottom: 20, gap: 10 },
+  coachHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  coachTitle: { color: GOLD, fontSize: 12, fontWeight: '900', letterSpacing: 3 },
+  coachGrid: { flexDirection: 'row', gap: 10 },
+  coachBtn: {
+    flex: 1, backgroundColor: 'rgba(255,215,0,0.04)', borderRadius: 16,
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)',
+    padding: 16, alignItems: 'center', gap: 8,
+  },
+  coachBtnTitle: { color: '#FFFFFF', fontSize: 12, fontWeight: '900', letterSpacing: 1, textAlign: 'center' },
+  coachBtnSub: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '600', textAlign: 'center' },
 
   // Build
   buildInfo: { alignItems: 'center', marginTop: 16, gap: 3, paddingBottom: 20 },

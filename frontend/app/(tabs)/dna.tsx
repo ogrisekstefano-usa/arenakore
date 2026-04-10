@@ -13,7 +13,7 @@ import { NotificationDrawer } from '../../components/notifications/NotificationD
 import { TalentCard } from '../../components/TalentCard';
 import { useFocusEffect } from 'expo-router';
 import Animated, {
-  useSharedValue, withTiming, withSpring, withSequence,
+  useSharedValue, withTiming, withSpring, withSequence, withRepeat,
   useAnimatedStyle, Easing
 } from 'react-native-reanimated';
 import { api } from '../../utils/api';
@@ -84,6 +84,70 @@ const gStyles = StyleSheet.create({
   },
   stripes: { ...StyleSheet.absoluteFillObject, zIndex: 50 },
   stripe: { position: 'absolute', left: 0, right: 0, backgroundColor: '#00E5FF22' }
+});
+
+// ═══ PERSISTENT BIO-SCANLINES (Continuous monitor effect) ═══
+function BioScanlines() {
+  const scanY = useSharedValue(0);
+  const flicker = useSharedValue(0.15);
+
+  useEffect(() => {
+    // Continuous scan line moving top to bottom
+    scanY.value = withRepeat(
+      withTiming(1, { duration: 4000, easing: Easing.linear }),
+      -1, false
+    );
+    // Subtle flicker of the horizontal lines
+    flicker.value = withRepeat(
+      withSequence(
+        withTiming(0.25, { duration: 800 }),
+        withTiming(0.08, { duration: 600 }),
+        withTiming(0.18, { duration: 400 }),
+        withTiming(0.05, { duration: 700 }),
+      ),
+      -1, false
+    );
+  }, []);
+
+  const screenH = Dimensions.get('window').height;
+  const scanStyle = useAnimatedStyle(() => ({
+    top: scanY.value * screenH,
+    opacity: 0.4 - scanY.value * 0.3,
+  }));
+  const linesStyle = useAnimatedStyle(() => ({
+    opacity: flicker.value,
+  }));
+
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {/* Moving scan line */}
+      <Animated.View style={[bioScan.scanLine, scanStyle]} />
+      {/* Persistent horizontal scanlines */}
+      <Animated.View style={[StyleSheet.absoluteFill, linesStyle]}>
+        {Array.from({ length: 40 }).map((_, i) => (
+          <View
+            key={i}
+            style={[bioScan.line, {
+              top: i * (screenH / 40),
+              height: i % 3 === 0 ? 1.5 : 0.5,
+              opacity: i % 5 === 0 ? 0.6 : 0.2,
+            }]}
+          />
+        ))}
+      </Animated.View>
+    </View>
+  );
+}
+
+const bioScan = StyleSheet.create({
+  scanLine: {
+    position: 'absolute', left: 0, right: 0, height: 1.5,
+    backgroundColor: '#00E5FF', zIndex: 2,
+  },
+  line: {
+    position: 'absolute', left: 0, right: 0,
+    backgroundColor: 'rgba(0,229,255,0.15)',
+  },
 });
 
 function getRoleColor(role?: string) {
@@ -212,6 +276,7 @@ export default function DNATab() {
       <StatusBar barStyle="light-content" />
       <Header title="DNA" />
       <GlitchOverlay active={showGlitch} />
+      <BioScanlines />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* HERO SECTION */}
