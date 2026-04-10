@@ -338,7 +338,7 @@ function SafeDashboard() {
 
         {/* ══ BUILD INFO ══ */}
         <View style={s.buildInfo}>
-          <Text style={s.buildText}>ARENA NEXUS · v2.1.0 · Build 18 · Safe Dashboard</Text>
+          <Text style={s.buildText}>ARENA NEXUS · v2.1.0 · Build 19 · Safe Dashboard</Text>
           <Text style={s.buildText}>Lightweight Mode · {Platform.OS.toUpperCase()}</Text>
         </View>
       </ScrollView>

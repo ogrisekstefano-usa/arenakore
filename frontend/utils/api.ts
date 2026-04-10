@@ -14,7 +14,7 @@ async function request(path: string, options: RequestInit = {}, token?: string |
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 18; Expo)',
+    'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 19; Expo)',
     'Connection': 'keep-alive',
     ...(options.headers as Record<string, string> || {}),
   };
@@ -65,7 +65,7 @@ export function wakeServer() {
     fetch(`${BASE_URL}/health`, {
       method: 'GET',
       headers: {
-        'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 18; Expo)',
+        'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 19; Expo)',
         'Connection': 'keep-alive',
       }
     }).catch(() => {});
