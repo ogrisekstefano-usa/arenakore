@@ -466,5 +466,5 @@ const s = StyleSheet.create({
   footer: { alignItems: 'center', gap: 6, marginTop: 32, paddingBottom: 20 },
   footerLine: { width: 40, height: 1, backgroundColor: 'rgba(255,255,255,0.06)' },
   footerText: { color: 'rgba(255,255,255,0.08)', fontSize: 9, fontWeight: '800', letterSpacing: 3 },
-  versionLabel: { color: CYAN, fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.6 },
+  versionLabel: { color: CYAN, fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.6, marginTop: 8 },
 });

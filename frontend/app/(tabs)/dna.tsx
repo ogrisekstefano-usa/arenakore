@@ -14,7 +14,7 @@ export default function DnaTab() {
       <StatusBar barStyle="light-content" />
       <View style={s.content}>
         <Text style={s.title}>DNA</Text>
-        <Text style={s.sub}>Build 24 · Step-by-Step</Text>
+        <Text style={s.sub}>Build 25 · Step-by-Step</Text>
         <View style={s.divider} />
         <Text style={s.label}>UTENTE</Text>
         <Text style={s.value}>{user?.username || '—'}</Text>
