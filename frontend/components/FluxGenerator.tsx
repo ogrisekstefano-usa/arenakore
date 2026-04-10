@@ -73,7 +73,7 @@ export function FluxGenerator({ visible, onClose, onPurchased }: FluxGeneratorPr
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
 
     try {
-      const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+      const backendUrl = 'https://arenakore-api.onrender.com';
       const res = await fetch(`${backendUrl}/api/flux/purchase`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },

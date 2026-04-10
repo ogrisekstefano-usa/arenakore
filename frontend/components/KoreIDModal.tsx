@@ -88,7 +88,7 @@ export function KoreIDModal({ visible, onClose }: KoreIDModalProps) {
   useEffect(() => {
     if (visible && token) {
       setLoadingRank(true);
-      fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/rankings/city?city=GLOBAL`, {
+      fetch(`${'https://arenakore-api.onrender.com'}/api/rankings/city?city=GLOBAL`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(r => r.json())

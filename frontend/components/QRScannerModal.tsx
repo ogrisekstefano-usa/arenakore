@@ -84,7 +84,7 @@ function QRScannerInner({ visible, onClose, onUserFound, onChallengeFound }: QRS
       }
       setLookupLoading(true);
       try {
-        const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+        const backendUrl = 'https://arenakore-api.onrender.com';
         const res = await fetch(`${backendUrl}/api/ugc/${challengeId}/public`);
         if (res.ok) {
           const data = await res.json();
@@ -119,7 +119,7 @@ function QRScannerInner({ visible, onClose, onUserFound, onChallengeFound }: QRS
 
     setLookupLoading(true);
     try {
-      const res = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/lookup/${userId}`, {
+      const res = await fetch(`${'https://arenakore-api.onrender.com'}/api/user/lookup/${userId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {

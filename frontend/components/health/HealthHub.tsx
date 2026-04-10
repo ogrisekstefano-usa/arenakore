@@ -218,7 +218,7 @@ export default function HealthHub() {
                       onPress={async () => {
                         setSyncing(conn.source);
                         try {
-                          await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/health/force-sync`, {
+                          await fetch(`${'https://arenakore-api.onrender.com'}/api/health/force-sync`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                             body: JSON.stringify({ source: conn.source })

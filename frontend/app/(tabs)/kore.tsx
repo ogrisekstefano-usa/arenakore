@@ -211,15 +211,12 @@ export default function KoreTab() {
 
   const fetchMyChallenges = useCallback(async () => {
     try {
-      const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
-      const res = await fetch(`${backendUrl}/api/ugc/mine`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setMyChallenges(data.challenges || []);
-      }
-    } catch {}
+      // BUILD 18: Use api utility instead of raw fetch (ensures timeout, headers, keep-alive)
+      const data = await api.getActiveChallenges(token!);
+      setMyChallenges(data?.challenges || data || []);
+    } catch (e: any) {
+      console.error('[KORE] fetchMyChallenges failed:', e?.message);
+    }
   }, [token]);
 
   const fetchWarLog = useCallback(async () => {

@@ -26,7 +26,7 @@ export function PanopticonBridge() {
     try {
       const result = await api.generateWebToken(token);
       const otp = result.token;
-      const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://arena-scan-lab.preview.emergentagent.com';
+      const baseUrl = 'https://arenakore-api.onrender.com' || 'https://arena-scan-lab.preview.emergentagent.com';
       const url = `${baseUrl}/coach-studio?otp=${otp}`;
 
       if (Platform.OS === 'web') {

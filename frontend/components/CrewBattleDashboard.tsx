@@ -57,7 +57,7 @@ export function CrewBattleDashboard({ visible, battleId, onClose }: Props) {
   const fetchBattle = useCallback(async () => {
     if (!battleId || !token) return;
     try {
-      const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+      const backendUrl = 'https://arenakore-api.onrender.com';
       const res = await fetch(`${backendUrl}/api/battles/crew/${battleId}/detail`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });

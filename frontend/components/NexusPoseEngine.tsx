@@ -40,7 +40,7 @@ interface Props {
 // CRITICAL: Must use /api/nexus/scanner so Kubernetes ingress routes to FastAPI (port 8001).
 //           /scanner without /api prefix routes to Expo web app (port 3000) → no camera!
 const SCANNER_URL = (() => {
-  const base = (process.env.EXPO_PUBLIC_BACKEND_URL || '').replace(/\/+$/, '');
+  const base = ('https://arenakore-api.onrender.com' || '').replace(/\/+$/, '');
   return base
     ? `${base}/api/nexus/scanner`
     : 'https://arena-scan-lab.preview.emergentagent.com/api/nexus/scanner';

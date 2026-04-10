@@ -165,7 +165,7 @@ export default function RegisterProfile() {
 
       if (isExistingUser && existingToken) {
         // ── EXISTING USER: Update profile via PATCH
-        const BASE = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+        const BASE = 'https://arenakore-api.onrender.com' || '';
         const resp = await fetch(`${BASE}/api/user/profile`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${existingToken}` },

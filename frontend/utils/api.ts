@@ -4,21 +4,27 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // HARDCODED BACKEND URL — bypass process.env per stabilità iOS
 // ══════════════════════════════════════════════════════════════
 const BASE_URL = 'https://arenakore-api.onrender.com/api';
+// BUILD 18: Export raw base for components that need direct URL construction
+export const BACKEND_BASE = 'https://arenakore-api.onrender.com';
+export const API_BASE = BASE_URL;
 
 console.log('[ARENAKORE API] Using hardcoded URL:', BASE_URL);
 
 async function request(path: string, options: RequestInit = {}, token?: string | null) {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 18; Expo)',
+    'Connection': 'keep-alive',
     ...(options.headers as Record<string, string> || {}),
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const url = `${BASE_URL}${path}`;
   try {
-    // Timeout wrapper — prevents infinite hang on Render cold start
+    // BUILD 18: Timeout 30s — Render cold-start + heavy queries
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     const response = await fetch(url, {
       ...options,
@@ -29,16 +35,25 @@ async function request(path: string, options: RequestInit = {}, token?: string |
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Errore di rete' }));
-      throw new Error(error.detail || `Errore ${response.status}`);
+      const errMsg = error.detail || `Errore ${response.status}`;
+      console.error(`[ARENAKORE] HTTP ${response.status} on ${path}: ${errMsg}`);
+      throw new Error(errMsg);
     }
     return response.json();
   } catch (err: any) {
-    console.error(`[ARENAKORE] Fetch error for ${url}:`, err.message);
+    // BUILD 18: Extended logging — prints full error chain for iPhone Console
+    console.error(`[ARENAKORE FETCH ERROR]`, {
+      url,
+      method: options.method || 'GET',
+      errorName: err?.name,
+      errorMessage: err?.message,
+      errorStack: err?.stack?.slice(0, 500),
+    });
     if (err.name === 'AbortError') {
-      throw new Error('Server in avvio. Riprova tra 10 secondi.');
+      throw new Error('Timeout 30s — il server non risponde. Riprova.');
     }
     if (err.message === 'Network request failed') {
-      throw new Error('Connessione al server fallita. Riprova tra qualche secondo.');
+      throw new Error('Connessione al server fallita. Verifica la rete.');
     }
     throw err;
   }
@@ -46,7 +61,15 @@ async function request(path: string, options: RequestInit = {}, token?: string |
 
 // Pre-wake Render server (fire-and-forget, no crash risk)
 export function wakeServer() {
-  try { fetch(`${BASE_URL}/health`, { method: 'GET' }).catch(() => {}); } catch {}
+  try {
+    fetch(`${BASE_URL}/health`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'ArenaKore/2.1.0 (iOS; Build 18; Expo)',
+        'Connection': 'keep-alive',
+      }
+    }).catch(() => {});
+  } catch {}
 }
 
 // ── Generic API client for new endpoints ──
