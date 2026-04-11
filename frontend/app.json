@@ -23,10 +23,6 @@
         "NSHealthShareUsageDescription": "Frequenza cardiaca per K-Rating bio-verified",
         "NSHealthUpdateUsageDescription": "Salvataggio dati allenamento su Apple Health",
         "NSMotionUsageDescription": "Tracking movimenti durante K-Scan"
-      },
-      "entitlements": {
-        "com.apple.developer.healthkit": true,
-        "com.apple.developer.healthkit.access": ["health-records"]
       }
     },
     "android": {
