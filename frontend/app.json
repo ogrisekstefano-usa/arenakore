@@ -20,6 +20,7 @@
         },
         "NSCameraUsageDescription": "Bio-scan per analisi postura e mobilità",
         "NSMicrophoneUsageDescription": "Comandi vocali durante K-Scan",
+        "NSPhotoLibraryUsageDescription": "Carica video prova per validazione sfide",
         "NSHealthShareUsageDescription": "Frequenza cardiaca per K-Rating bio-verified",
         "NSHealthUpdateUsageDescription": "Salvataggio dati allenamento su Apple Health",
         "NSMotionUsageDescription": "Tracking movimenti durante K-Scan",

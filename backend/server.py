@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, WebSocket, WebSocketDisconnect, Body, Request, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, WebSocket, WebSocketDisconnect, Body, Request, Query, UploadFile, File, Form
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import JSONResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -50,6 +50,12 @@ import os as _os
 _static_dir = _os.path.join(_os.path.dirname(__file__), "static")
 _os.makedirs(_static_dir, exist_ok=True)
 app.mount("/api/static", StaticFiles(directory=_static_dir), name="static")
+
+# ── Video Proof uploads directory
+_uploads_dir = _os.path.join(_os.path.dirname(__file__), "uploads", "videos")
+_os.makedirs(_uploads_dir, exist_ok=True)
+app.mount("/api/uploads", StaticFiles(directory=_os.path.join(_os.path.dirname(__file__), "uploads")), name="uploads")
+
 api_router = APIRouter(prefix="/api")
 
 
@@ -1621,6 +1627,132 @@ async def get_challenge_history(current_user: dict = Depends(get_current_user)):
             "completed_at": r.get("completed_at", "").isoformat() if r.get("completed_at") else None,
         }
         for r in results
+    ]
+
+
+# =====================================================================
+# VIDEO PROOF UPLOAD — Async Video Proof for Challenge Validation
+# =====================================================================
+import uuid as _uuid
+import shutil as _shutil
+
+@api_router.post("/challenge/upload-video")
+async def upload_video_proof(
+    challenge_id: str = Form(...),
+    video: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Upload a video proof for a completed challenge.
+    Updates the challenge with VIDEO_TIME_CHECK proof type and PROOF_PENDING status.
+    Max file size: 50MB. Accepted: mp4, mov, webm.
+    """
+    user_id = current_user["_id"]
+
+    # Validate challenge ownership
+    challenge = await db.challenges_engine.find_one({"_id": ObjectId(challenge_id), "user_id": user_id})
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Challenge non trovata o non autorizzato")
+
+    # Validate file type
+    allowed_types = {"video/mp4", "video/quicktime", "video/webm", "video/mpeg"}
+    content_type = video.content_type or ""
+    if content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail=f"Formato non supportato: {content_type}. Usa MP4, MOV o WebM.")
+
+    # Read and validate file size (50MB max)
+    contents = await video.read()
+    max_size = 50 * 1024 * 1024  # 50MB
+    if len(contents) > max_size:
+        raise HTTPException(status_code=413, detail="Video troppo grande. Max 50MB.")
+
+    # Generate unique filename
+    ext = video.filename.split(".")[-1] if video.filename and "." in video.filename else "mp4"
+    filename = f"{str(user_id)}_{challenge_id}_{_uuid.uuid4().hex[:8]}.{ext}"
+    filepath = _os.path.join(_uploads_dir, filename)
+
+    # Save to disk
+    with open(filepath, "wb") as f:
+        f.write(contents)
+
+    video_url = f"/api/uploads/videos/{filename}"
+    file_size_mb = round(len(contents) / (1024 * 1024), 2)
+
+    # Update challenge in DB
+    await db.challenges_engine.update_one(
+        {"_id": ObjectId(challenge_id)},
+        {"$set": {
+            "has_video_proof": True,
+            "proof_type": "VIDEO_TIME_CHECK",
+            "video_url": video_url,
+            "video_filename": filename,
+            "video_size_mb": file_size_mb,
+            "video_uploaded_at": datetime.now(timezone.utc),
+            "quality_score": 0.75,  # PROOF_PENDING multiplier
+        }}
+    )
+
+    # Also update challenge_results if exists
+    await db.challenge_results.update_many(
+        {"challenge_id": str(challenge_id), "user_id": user_id},
+        {"$set": {
+            "has_video_proof": True,
+            "proof_type": "VIDEO_TIME_CHECK",
+            "video_url": video_url,
+        }}
+    )
+
+    logging.info(f"[VideoProof] User {user_id} uploaded {file_size_mb}MB video for challenge {challenge_id}")
+
+    return {
+        "success": True,
+        "video_url": video_url,
+        "file_size_mb": file_size_mb,
+        "proof_type": "VIDEO_TIME_CHECK",
+        "status": "PROOF_PENDING",
+        "message": "Video caricato! In revisione per validazione."
+    }
+
+
+@api_router.get("/challenge/{challenge_id}/video")
+async def get_challenge_video(challenge_id: str, current_user: dict = Depends(get_current_user)):
+    """Get video proof info for a specific challenge."""
+    challenge = await db.challenges_engine.find_one({"_id": ObjectId(challenge_id)})
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Challenge non trovata")
+
+    return {
+        "has_video": challenge.get("has_video_proof", False),
+        "video_url": challenge.get("video_url"),
+        "proof_type": challenge.get("proof_type", "NONE"),
+        "video_size_mb": challenge.get("video_size_mb"),
+        "uploaded_at": challenge.get("video_uploaded_at", "").isoformat() if challenge.get("video_uploaded_at") else None,
+    }
+
+
+@api_router.get("/challenges/pending-proof")
+async def get_challenges_pending_proof(current_user: dict = Depends(get_current_user)):
+    """Get all challenges that require video proof from the current user."""
+    user_id = current_user["_id"]
+    challenges = await db.challenges_engine.find({
+        "user_id": user_id,
+        "$or": [
+            {"quality_score": {"$lte": 0.5}},
+            {"proof_type": {"$in": ["NONE", "MANUAL_ENTRY"]}},
+        ],
+        "has_video_proof": {"$ne": True},
+    }).sort("completed_at", -1).to_list(20)
+
+    return [
+        {
+            "id": str(c["_id"]),
+            "exercise": c.get("exercise", "Sfida"),
+            "reps": c.get("reps"),
+            "completed_at": c.get("completed_at", "").isoformat() if c.get("completed_at") else None,
+            "proof_type": c.get("proof_type", "NONE"),
+            "quality_score": c.get("quality_score", 0.5),
+        }
+        for c in challenges
     ]
 
 

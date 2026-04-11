@@ -21,6 +21,7 @@ import { api } from '../../utils/api';
 import { FluxIcon } from '../FluxIcon';
 import { EL, FONT_MONT, FONT_JAKARTA } from '../../utils/eliteTheme';
 import { DataOriginLine } from './DataOriginBadge';
+import { VideoProofUploader } from '../VideoProofUploader';
 
 let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 
@@ -833,7 +834,7 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
 
   // PHASE 4: THE VERDICT
   if (phase === 'verdict' && verdict) {
-    return <VerdictScreen verdict={verdict} dominantColor={dominantColor} onClose={onComplete} />;
+    return <VerdictScreen verdict={verdict} dominantColor={dominantColor} onClose={onComplete} challengeId={challengeId} token={token} />;
   }
 
   return null;
@@ -965,7 +966,7 @@ function IntegrityGlowBadge() {
 // THE VERDICT — Post-Challenge Summary Screen (v2.0 with Trust Engine)
 // ═══════════════════════════════════════════════════════════════════
 
-function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; dominantColor: string; onClose: () => void }) {
+function VerdictScreen({ verdict, dominantColor, onClose, challengeId, token }: { verdict: any; dominantColor: string; onClose: () => void; challengeId: string | null; token: string | null }) {
   const heroScale = useSharedValue(0.3);
   const heroOpacity = useSharedValue(0);
   const radarPulse = useSharedValue(1);
@@ -1151,6 +1152,21 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
               </View>
             )}
           </Animated.View>
+
+          {/* ═══ VIDEO PROOF UPLOADER — Shows when proof can boost FLUX ═══ */}
+          {challengeId && token && (verificationStatus === 'UNVERIFIED' || verificationStatus === 'PROOF_PENDING' || !verdict.ranked_eligible) && !verdict.has_video_proof && (
+            <Animated.View entering={FadeInDown.delay(700).duration(500)} style={{ paddingHorizontal: 0 }}>
+              <VideoProofUploader
+                challengeId={challengeId}
+                token={token}
+                exerciseName={verdict.exercise || hero.label}
+                onUploadComplete={(url) => {
+                  // Could refresh verdict data here
+                  console.log('[VideoProof] Upload complete:', url);
+                }}
+              />
+            </Animated.View>
+          )}
 
           {/* ═══ DNA Radar Increment Preview ═══ */}
           <Animated.View entering={FadeInDown.delay(600).duration(500)} style={[v.dnaCard, { borderColor: dominantColor + '33' }]}>
