@@ -157,6 +157,18 @@ export default function TabsLayout() {
           height: Platform.OS === 'ios' ? 92 : 72,
           paddingBottom: Platform.OS === 'ios' ? 30 : 10,
           paddingTop: 8,
+          // ═══ GEOMETRY FIX: Zero asymmetric spacing ═══
+          paddingHorizontal: 0,
+          marginHorizontal: 0,
+        },
+        // ═══ GEOMETRY FIX: Each tab = exactly 20% ═══
+        tabBarItemStyle: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingHorizontal: 0,
+          marginHorizontal: 0,
+          minWidth: 0,
         },
         tabBarActiveTintColor: GOLD,
         tabBarInactiveTintColor: 'rgba(255,255,255,0.25)',
@@ -181,7 +193,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="kore"
         options={{
-          title: 'KORE',
+          title: 'KORE ID',
           tabBarIcon: ({ color, size }) => <Ionicons name="shield" size={size} color={color} />,
         }}
       />

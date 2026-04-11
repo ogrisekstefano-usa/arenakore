@@ -162,6 +162,30 @@ try:
     async def gb(cu:dict=Depends(gcu)): return []
     @api.get("/battles/crew/live")
     async def gcl(cu:dict=Depends(gcu)): return []
+    @api.get("/battles/crew/matchmake")
+    async def gcm(cu:dict=Depends(gcu)):
+        try:
+            crews = await db.crews_v2.find({"status":"active"}).to_list(50)
+            if not crews: return []
+            return [{"crew_id":str(c["_id"]),"name":c.get("name",""),"members":len(c.get("members",[]))} for c in crews]
+        except Exception:
+            return []
+    @api.post("/battles/crew/matchmake")
+    async def pcm(d:dict,cu:dict=Depends(gcu)):
+        try:
+            return {"match":None,"message":"Nessuna crew disponibile per il matchmaking"}
+        except Exception:
+            return {"match":None,"message":"Errore nel matchmaking"}
+    @api.get("/battles/active")
+    async def gba(cu:dict=Depends(gcu)): return []
+    @api.get("/battles/history")
+    async def gbh(cu:dict=Depends(gcu)):
+        try:
+            bs = await db.battles.find({"$or":[{"challenger_id":str(cu["_id"])},{"opponent_id":str(cu["_id"])}]}).sort("created_at",-1).limit(20).to_list(20)
+            for b in bs: b["_id"]=str(b["_id"])
+            return bs
+        except Exception:
+            return []
     @api.get("/disciplines")
     async def gd(cu:dict=Depends(gcu)): return [{"id":"push_ups","name":"Push Ups","unit":"reps"},{"id":"squats","name":"Squats","unit":"reps"}]
     @api.get("/crews")
@@ -509,7 +533,7 @@ try:
     async def catchall(path:str,request:Request): return JSONResponse(200,{"status":"stub","path":path})
 
     @app.get("/")
-    async def root(): return {"status":"ARENAKORE","v":"render-v3-staffhub"}
+    async def root(): return {"status":"ARENAKORE","v":"render-v4-matchfix"}
 
     app.include_router(api)
     import uvicorn
