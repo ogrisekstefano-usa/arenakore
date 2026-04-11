@@ -1,10 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
 // ══════════════════════════════════════════════════════════════
-// BUILD 22 — "STABILITY OVERDRIVE" · IRONCLAD Network Layer
+// BUILD 35 — "STABILITY OVERDRIVE" · IRONCLAD Network Layer
 // ══════════════════════════════════════════════════════════════
-const BASE_URL = 'https://arenakore-api.onrender.com/api';
-export const BACKEND_BASE = 'https://arenakore-api.onrender.com';
+const _envUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL
+  || process.env.EXPO_PUBLIC_BACKEND_URL
+  || '';
+const BASE_URL = _envUrl ? `${_envUrl}/api` : 'https://arenakore-api.onrender.com/api';
+export const BACKEND_BASE = _envUrl || 'https://arenakore-api.onrender.com';
 export const API_BASE = BASE_URL;
 
 console.log('[ARENAKORE API] IRONCLAD v22 · URL:', BASE_URL);
@@ -280,6 +284,10 @@ export const api = {
   sanityCheck: (data: { exercise_type: string; reps?: number; seconds?: number; kg?: number }, token: string) =>
     request('/challenge/sanity-check', { method: 'POST', body: JSON.stringify(data) }, token),
   getValidationBreakdown: (token: string) => request('/validation/breakdown', {}, token),
+
+  // ═══ VIDEO PROOF ═══
+  getChallengesPendingProof: (token: string) => request('/challenges/pending-proof', {}, token),
+  getChallengeVideo: (id: string, token: string) => request(`/challenge/${id}/video`, {}, token),
 
   // ═══ HEALTH AGGREGATOR ═══
   getHealthConnections: (token: string) => request('/health/connections', {}, token),

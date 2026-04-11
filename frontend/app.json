@@ -24,7 +24,10 @@
         "NSHealthShareUsageDescription": "Frequenza cardiaca per K-Rating bio-verified",
         "NSHealthUpdateUsageDescription": "Salvataggio dati allenamento su Apple Health",
         "NSMotionUsageDescription": "Tracking movimenti durante K-Scan",
-        "UIBackgroundModes": ["processing", "fetch"]
+        "UIBackgroundModes": [
+          "processing",
+          "fetch"
+        ]
       }
     },
     "android": {
@@ -64,7 +67,12 @@
         }
       ],
       "expo-font",
-      "expo-asset"
+      "expo-asset",
+      "expo-audio",
+      "expo-build-properties",
+      "expo-image",
+      "expo-sharing",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

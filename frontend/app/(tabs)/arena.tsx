@@ -477,6 +477,84 @@ const lbd$ = StyleSheet.create({
   ctaSub: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '600' },
 });
 
+// ========== PENDING VIDEO PROOFS SECTION ==========
+function PendingProofsSection() {
+  const { token } = useAuth();
+  const router = useRouter();
+  const [proofs, setProofs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) return;
+    (async () => {
+      try {
+        const data = await api.getChallengesPendingProof(token);
+        if (Array.isArray(data)) setProofs(data);
+      } catch (e) {
+        // Silent fail
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [token]);
+
+  if (loading || proofs.length === 0) return null;
+
+  return (
+    <Animated.View entering={FadeInDown.delay(100).duration(400)} style={pp$.section}>
+      <View style={pp$.header}>
+        <View style={pp$.headerLeft}>
+          <Ionicons name="videocam" size={14} color="#FFD700" />
+          <Text style={pp$.title}>PENDING PROOF</Text>
+        </View>
+        <View style={pp$.countBadge}>
+          <Text style={pp$.countText}>{proofs.length}</Text>
+        </View>
+      </View>
+      <Text style={pp$.subtitle}>Carica un video per sbloccare il 100% dei K-Flux e validare il risultato.</Text>
+      {proofs.slice(0, 3).map((p, idx) => (
+        <TouchableOpacity
+          key={p.id}
+          style={pp$.card}
+          activeOpacity={0.85}
+          onPress={() => router.push({ pathname: '/video-proof', params: { challengeId: p.id, exercise: p.exercise } })}
+        >
+          <View style={pp$.cardLeft}>
+            <View style={pp$.iconWrap}>
+              <Ionicons name="alert-circle" size={18} color="#FFD700" />
+            </View>
+            <View style={pp$.cardInfo}>
+              <Text style={pp$.exerciseName}>{p.exercise}</Text>
+              <Text style={pp$.cardMeta}>{p.reps ? `${p.reps} reps` : ''} · Quality: {Math.round((p.quality_score || 0) * 100)}%</Text>
+            </View>
+          </View>
+          <View style={pp$.uploadBtn}>
+            <Ionicons name="cloud-upload" size={14} color="#000" />
+            <Text style={pp$.uploadText}>PROVA</Text>
+          </View>
+        </TouchableOpacity>
+      ))}
+    </Animated.View>
+  );
+}
+const pp$ = StyleSheet.create({
+  section: { marginHorizontal: 24, marginBottom: 12, gap: 8 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  title: { color: '#FFD700', fontSize: 13, fontWeight: '900', letterSpacing: 2 },
+  countBadge: { backgroundColor: 'rgba(255,215,0,0.15)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,215,0,0.3)' },
+  countText: { color: '#FFD700', fontSize: 13, fontWeight: '900' },
+  subtitle: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '500', lineHeight: 15 },
+  card: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,215,0,0.04)', borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)', borderRadius: 14, padding: 12 },
+  cardLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  iconWrap: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,215,0,0.08)', alignItems: 'center', justifyContent: 'center' },
+  cardInfo: { flex: 1, gap: 2 },
+  exerciseName: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 0.5 },
+  cardMeta: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '600' },
+  uploadBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FFD700', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
+  uploadText: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+});
+
 // MatchmakingPanel REMOVED — Build 34 Cleanup
 
 // ══════════════════════════════════════════════════════════
@@ -519,6 +597,7 @@ export default function ArenaTab() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#FF453A" />}
       >
         <LiveBattleDashboard key={refreshing ? 'r' : 's'} />
+        <PendingProofsSection />
         <HeroBanner />
         <KoreOfTheDay />
         <View style={s.dividerSection}>
@@ -531,7 +610,7 @@ export default function ArenaTab() {
         {/* Footer */}
         <View style={s.footer}>
           <Text style={s.footerText}>ARENA · SFIDA · COMPETE</Text>
-          <Text style={s.versionLabel}>v3.4.0 — Build 34 · ARENA</Text>
+          <Text style={s.versionLabel}>v3.5.0 — Build 35 · ARENA + VIDEO PROOF</Text>
         </View>
       </ScrollView>
     </ImageBackground>

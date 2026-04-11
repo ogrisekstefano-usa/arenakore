@@ -2382,6 +2382,69 @@ async def seed_data():
         await db.users.insert_many(chicago_athletes)
         logger.info("[CityRanking] Seeded 6 Chicago athletes")
 
+    # ═══ MOCK VIDEO PROOF CHALLENGES — Seed pending proofs for first-launch experience ═══
+    admin_user = await db.users.find_one({"email": "ogrisek.stefano@gmail.com"})
+    if admin_user:
+        existing_mock = await db.challenges_engine.count_documents({"user_id": admin_user["_id"], "is_mock_proof": True})
+        if existing_mock == 0:
+            from datetime import timedelta
+            now = datetime.now(timezone.utc)
+            mock_challenges = [
+                {
+                    "user_id": admin_user["_id"],
+                    "exercise": "SQUAT JUMP",
+                    "tags": ["POWER", "LEGS"],
+                    "sport": "FITNESS",
+                    "reps": 32,
+                    "target_reps": 25,
+                    "duration_seconds": 58,
+                    "has_video_proof": False,
+                    "proof_type": "NONE",
+                    "quality_score": 0.45,
+                    "xp_earned": 85,
+                    "status": "completed",
+                    "is_mock_proof": True,
+                    "completed_at": now - timedelta(hours=2),
+                    "created_at": now - timedelta(hours=3),
+                },
+                {
+                    "user_id": admin_user["_id"],
+                    "exercise": "SPRINT 40M",
+                    "tags": ["SPEED", "EXPLOSIVE"],
+                    "sport": "ATLETICA",
+                    "reps": 6,
+                    "target_reps": 5,
+                    "duration_seconds": 42,
+                    "has_video_proof": False,
+                    "proof_type": "MANUAL_ENTRY",
+                    "quality_score": 0.35,
+                    "xp_earned": 120,
+                    "status": "completed",
+                    "is_mock_proof": True,
+                    "completed_at": now - timedelta(hours=5),
+                    "created_at": now - timedelta(hours=6),
+                },
+                {
+                    "user_id": admin_user["_id"],
+                    "exercise": "TIRO DA 3",
+                    "tags": ["PRECISION", "BASKET"],
+                    "sport": "BASKET",
+                    "reps": 18,
+                    "target_reps": 15,
+                    "duration_seconds": 120,
+                    "has_video_proof": False,
+                    "proof_type": "NONE",
+                    "quality_score": 0.40,
+                    "xp_earned": 95,
+                    "status": "completed",
+                    "is_mock_proof": True,
+                    "completed_at": now - timedelta(minutes=45),
+                    "created_at": now - timedelta(hours=1),
+                },
+            ]
+            await db.challenges_engine.insert_many(mock_challenges)
+            logger.info("[MockProof] Seeded 3 mock challenges with pending video proof")
+
 
 # ====================================
 # CREW MANAGEMENT ENDPOINTS
