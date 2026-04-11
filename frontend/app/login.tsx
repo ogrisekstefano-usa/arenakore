@@ -159,14 +159,14 @@ export default function Login() {
     setGoogleLoading(true);
     setError('');
     try {
-      // Step 1: Get Google Client ID from backend
-      const resp = await fetch(`${API_BASE}/api/auth/google/client-id`);
+      // Step 1: Get Google auth URL from backend (includes redirect_uri)
+      const resp = await fetch(`${API_BASE}/api/auth/google/init`);
       const data = await resp.json();
       
-      if (!data.client_id || !data.configured) {
+      if (!data.url || !data.client_id) {
         Alert.alert(
           'Google Login',
-          'Google Sign-In sarà attivo appena il Client ID verrà configurato. Contatta l\'admin.',
+          'Google Sign-In non è ancora configurato.',
           [{ text: 'OK' }]
         );
         setGoogleLoading(false);
@@ -174,22 +174,10 @@ export default function Login() {
       }
 
       if (Platform.OS === 'web') {
-        // Use Google Identity Services redirect flow
-        const params = new URLSearchParams({
-          client_id: data.client_id,
-          redirect_uri: `${API_BASE}/auth/google/callback`,
-          response_type: 'code',
-          scope: 'openid email profile',
-          access_type: 'offline',
-          prompt: 'select_account',
-          state: 'web'
-        });
-        const url = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-        
         const width = 500, height = 600;
         const left = (window.innerWidth - width) / 2 + window.screenX;
         const top = (window.innerHeight - height) / 2 + window.screenY;
-        const popup = window.open(url, 'google-signin', `width=${width},height=${height},left=${left},top=${top}`);
+        const popup = window.open(data.url, 'google-signin', `width=${width},height=${height},left=${left},top=${top}`);
         
         const handleMessage = async (event: MessageEvent) => {
           if (event.data?.type === 'GOOGLE_AUTH_SUCCESS') {
@@ -211,8 +199,7 @@ export default function Login() {
         }, 1000);
         setTimeout(() => { clearInterval(pollTimer); window.removeEventListener('message', handleMessage); setGoogleLoading(false); }, 300000);
       } else {
-        // Native: use Linking
-        await Linking.openURL(`https://accounts.google.com/o/oauth2/v2/auth?client_id=${data.client_id}&redirect_uri=${API_BASE}/auth/google/callback&response_type=code&scope=openid+email+profile`);
+        await Linking.openURL(data.url);
         setGoogleLoading(false);
       }
     } catch (e: any) {
@@ -446,7 +433,7 @@ export default function Login() {
         {/* Version Label */}
         <View style={{ alignItems: 'center', marginTop: 16, paddingBottom: 12 }}>
           <Text style={{ color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.7 }}>
-            v2.2.0 — Build 28 · CHROMATIC
+            v2.3.0 — Build 29 · DUAL AUTH
           </Text>
         </View>
 

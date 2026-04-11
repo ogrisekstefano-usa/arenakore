@@ -590,6 +590,8 @@ try:
                 # Link apple_id if not yet linked
                 if not user.get("apple_id"):
                     await db.users.update_one({"_id": user["_id"]}, {"$set": {"apple_id": apple_sub}})
+                # BIVIO RAPIDO: social login skips bio-scan
+                await db.users.update_one({"_id": user["_id"]}, {"$set": {"onboarding_completed": True, "auth_provider": "apple"}})
                 token = ct(str(user["_id"]))
                 return {"token": token, "user": u2r(user), "new_user": False}
             else:
@@ -610,13 +612,13 @@ try:
                     "password_hash": hp(f"apple_{apple_sub}_{_time.time()}"),
                     "apple_id": apple_sub,
                     "auth_provider": "apple",
-                    "role": None,
+                    "role": "ATHLETE",
                     "sport": "ATHLETICS",
                     "preferred_sport": "ATHLETICS",
                     "training_level": "LEGACY",
                     "xp": 0, "level": 1, "ak_credits": 0,
                     "unlocked_tools": [],
-                    "onboarding_completed": False,
+                    "onboarding_completed": True,
                     "avatar_color": random.choice(["#00E5FF", "#FFD700", "#FF3B30", "#34C759"]),
                     "dna": None,
                     "first_name": first_name,
@@ -701,6 +703,8 @@ try:
             if user:
                 if not user.get("apple_id"):
                     await db.users.update_one({"_id": user["_id"]}, {"$set": {"apple_id": apple_sub}})
+                # BIVIO RAPIDO: social users skip bio-scan
+                await db.users.update_one({"_id": user["_id"]}, {"$set": {"onboarding_completed": True, "auth_provider": "apple"}})
                 token = ct(str(user["_id"]))
                 ur = u2r(user)
             else:
@@ -716,9 +720,9 @@ try:
                     "email": (apple_email or f"apple_{apple_sub[:12]}@arenakore.app").strip().lower(),
                     "password_hash": hp(f"apple_{apple_sub}_{_time.time()}"),
                     "apple_id": apple_sub, "auth_provider": "apple",
-                    "role": None, "sport": "ATHLETICS", "preferred_sport": "ATHLETICS",
+                    "role": "ATHLETE", "sport": "ATHLETICS", "preferred_sport": "ATHLETICS",
                     "training_level": "LEGACY", "xp": 0, "level": 1, "ak_credits": 0,
-                    "unlocked_tools": [], "onboarding_completed": False,
+                    "unlocked_tools": [], "onboarding_completed": True,
                     "avatar_color": random.choice(["#00E5FF", "#FFD700", "#FF3B30", "#34C759"]),
                     "dna": None, "first_name": first_name, "last_name": last_name,
                     "is_founder": tc < 100, "founder_number": (tc + 1) if tc < 100 else None,
@@ -820,16 +824,137 @@ try{{
         """Returns Google Client ID for frontend initialization"""
         return {"client_id": GOOGLE_CLIENT_ID, "configured": bool(GOOGLE_CLIENT_ID)}
 
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+    GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI', 'https://arenakore-api.onrender.com/auth/google/callback')
+
+    @api.get("/auth/google/init")
+    async def google_auth_init():
+        """Generate Google OAuth URL for web flow"""
+        try:
+            from urllib.parse import urlencode
+            params = {
+                "client_id": GOOGLE_CLIENT_ID,
+                "redirect_uri": GOOGLE_REDIRECT_URI,
+                "response_type": "code",
+                "scope": "openid email profile",
+                "access_type": "offline",
+                "prompt": "select_account",
+                "state": "web"
+            }
+            url = f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
+            return {"url": url, "client_id": GOOGLE_CLIENT_ID}
+        except Exception as e:
+            raise HTTPException(500, f"Google init error: {str(e)}")
+
+    # Google Web Callback — receives authorization code from Google redirect
+    @app.get("/auth/google/callback")
+    async def google_callback(code: str = "", state: str = "web", error: str = ""):
+        """Handles Google's redirect with authorization code"""
+        try:
+            if error:
+                return HTMLResponse(content=f"<html><body style='background:#000;color:#FF3B30;padding:40px'><h1>Google Login Annullato</h1><p>{error}</p><script>setTimeout(function(){{window.close()}},2000)</script></body></html>")
+            if not code:
+                return HTMLResponse(content="<html><body><h1>Codice mancante</h1></body></html>", status_code=400)
+
+            # Exchange code for tokens
+            async with httpx.AsyncClient() as hc:
+                resp = await hc.post("https://oauth2.googleapis.com/token", data={
+                    "client_id": GOOGLE_CLIENT_ID,
+                    "client_secret": GOOGLE_CLIENT_SECRET,
+                    "code": code,
+                    "grant_type": "authorization_code",
+                    "redirect_uri": GOOGLE_REDIRECT_URI
+                })
+                if resp.status_code != 200:
+                    log.error(f"Google token exchange failed: {resp.status_code} {resp.text}")
+                    return HTMLResponse(content=f"<html><body style='background:#000;color:#FF3B30;padding:40px'><h1>Errore Token Google</h1><pre>{resp.text[:200]}</pre></body></html>", status_code=400)
+                tokens = resp.json()
+
+            id_token_str = tokens.get("id_token")
+            if not id_token_str:
+                return HTMLResponse(content="<html><body><h1>ID Token mancante</h1></body></html>", status_code=400)
+
+            claims = pyjwt.decode(id_token_str, options={"verify_signature": False})
+            google_sub = claims.get("sub")
+            google_email = claims.get("email")
+            first_name = claims.get("given_name", "")
+            last_name = claims.get("family_name", "")
+            picture = claims.get("picture", "")
+
+            if not google_sub:
+                return HTMLResponse(content="<html><body><h1>Token non valido</h1></body></html>", status_code=400)
+
+            # Find or create user
+            user = await db.users.find_one({"google_id": google_sub})
+            if not user and google_email:
+                user = await db.users.find_one({"email": google_email.strip().lower()})
+            if user:
+                if not user.get("google_id"):
+                    await db.users.update_one({"_id": user["_id"]}, {"$set": {"google_id": google_sub}})
+                if picture and not user.get("profile_picture"):
+                    await db.users.update_one({"_id": user["_id"]}, {"$set": {"profile_picture": picture}})
+                # BIVIO RAPIDO: social users skip bio-scan
+                await db.users.update_one({"_id": user["_id"]}, {"$set": {"onboarding_completed": True, "auth_provider": "google"}})
+                token = ct(str(user["_id"]))
+                ur = u2r(user)
+            else:
+                username = (first_name or (google_email.split("@")[0] if google_email else f"KORE_{google_sub[:8]}")).upper().replace(" ", "_")
+                base_username = username
+                counter = 1
+                while await db.users.find_one({"username": username}):
+                    username = f"{base_username}_{counter}"
+                    counter += 1
+                tc = await db.users.count_documents({})
+                new_user = {
+                    "username": username,
+                    "email": (google_email or f"google_{google_sub[:12]}@arenakore.app").strip().lower(),
+                    "password_hash": hp(f"google_{google_sub}_{_time.time()}"),
+                    "google_id": google_sub, "auth_provider": "google",
+                    "role": "ATHLETE", "sport": "ATHLETICS", "preferred_sport": "ATHLETICS",
+                    "training_level": "LEGACY", "xp": 0, "level": 1, "ak_credits": 0,
+                    "unlocked_tools": [], "onboarding_completed": True,
+                    "avatar_color": random.choice(["#00E5FF", "#FFD700", "#FF3B30", "#34C759"]),
+                    "dna": None, "first_name": first_name, "last_name": last_name,
+                    "profile_picture": picture,
+                    "is_founder": tc < 100, "founder_number": (tc + 1) if tc < 100 else None,
+                    "created_at": datetime.now(timezone.utc)
+                }
+                r = await db.users.insert_one(new_user)
+                new_user["_id"] = r.inserted_id
+                token = ct(str(r.inserted_id))
+                ur = u2r(new_user)
+
+            html = f"""<!DOCTYPE html>
+<html><head><title>ARENAKORE — Google Login</title>
+<style>body{{background:#000;color:#00E5FF;font-family:Montserrat,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}}
+.box{{text-align:center;padding:40px}}.loader{{width:40px;height:40px;border:3px solid #4285F4;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}}
+@keyframes spin{{to{{transform:rotate(360deg)}}}}</style></head>
+<body><div class="box"><div class="loader"></div><h2>AUTENTICAZIONE GOOGLE COMPLETATA</h2><p>Ritorno ad ARENAKORE...</p></div>
+<script>
+try{{
+  var data = {{token:"{token}",user:{json.dumps(ur)}}};
+  if(window.opener){{window.opener.postMessage({{type:'GOOGLE_AUTH_SUCCESS',data:data}},'*');setTimeout(function(){{window.close()}},1500)}}
+  else if(window.ReactNativeWebView){{window.ReactNativeWebView.postMessage(JSON.stringify({{type:'GOOGLE_AUTH_SUCCESS',data:data}}))}}
+  else{{localStorage.setItem('arenakore_google_auth',JSON.stringify(data));window.location.href='/'}}
+}}catch(e){{document.body.innerHTML='<h2>Errore: '+e.message+'</h2>'}}
+</script></body></html>"""
+            return HTMLResponse(content=html)
+        except Exception as e:
+            log.error(f"Google callback error: {e}")
+            import traceback as tb3
+            log.error(tb3.format_exc())
+            return HTMLResponse(content=f"<html><body style='background:#000;color:#FF3B30;padding:40px'><h1>Errore Google Login</h1><pre>{str(e)}</pre></body></html>", status_code=500)
+
     # Catch-all
     @api.api_route("/{path:path}", methods=["GET","POST","PUT","DELETE","PATCH"])
     async def catchall(path:str,request:Request): return JSONResponse(200,{"status":"stub","path":path})
 
     @app.get("/")
-    async def root(): return {"status":"ARENAKORE","v":"render-v6-dual-auth"}
+    async def root(): return {"status":"ARENAKORE","v":"render-v7-build29"}
 
     app.include_router(api)
     import uvicorn
-    print(f'=== ARENAKORE v6 (Dual Auth) starting on :{port} ===', flush=True)
+    print(f'=== ARENAKORE v7 (Build 29 · Dual Auth + Bivio Rapido) starting on :{port} ===', flush=True)
     uvicorn.run(app, host="0.0.0.0", port=port)
 except Exception as e:
     print(f"=== FATAL: {e} ===", flush=True)
