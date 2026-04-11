@@ -2,11 +2,11 @@
  * ARENAKORE — LOGIN v3.0 (THE CHALLENGE)
  * Premium brutalist login with Social Login, "TORNA NELL'ARENA" CTA, and "CREA IL TUO DESTINO" link.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, StatusBar,
-  Dimensions, Alert, Keyboard
+  Dimensions, Alert, Keyboard, Linking
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +18,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 
 let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 const PENDING_EVENT_KEY = '@arenakore_pending_event';
+const API_BASE = 'https://arenakore-api.onrender.com';
 
 export default function Login() {
   const router = useRouter();
@@ -72,7 +73,78 @@ export default function Login() {
     }
   };
 
+  // ═══ APPLE SIGN-IN — Web OAuth2 Flow ═══
+  const [appleLoading, setAppleLoading] = useState(false);
+
+  const handleAppleLogin = useCallback(async () => {
+    setAppleLoading(true);
+    setError('');
+    try {
+      // Step 1: Get Apple auth URL from backend
+      const resp = await fetch(`${API_BASE}/api/auth/apple/init?redirect_app=web`);
+      const data = await resp.json();
+      if (!data.url) throw new Error('URL Apple non disponibile');
+
+      // Step 2: Open Apple auth in popup/new window (web) or Linking (native)
+      if (Platform.OS === 'web') {
+        // Open popup window for Apple Sign-In
+        const width = 600, height = 700;
+        const left = (window.innerWidth - width) / 2 + window.screenX;
+        const top = (window.innerHeight - height) / 2 + window.screenY;
+        const popup = window.open(
+          data.url,
+          'apple-signin',
+          `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no`
+        );
+
+        // Listen for postMessage from the callback page
+        const handleMessage = async (event: MessageEvent) => {
+          if (event.data?.type === 'APPLE_AUTH_SUCCESS') {
+            window.removeEventListener('message', handleMessage);
+            const { token, user } = event.data.data;
+            if (token && user) {
+              // Store token and user in auth context
+              await AsyncStorage.setItem('auth_token', token);
+              await AsyncStorage.setItem('user_data', JSON.stringify(user));
+              setLoggedUser(user);
+              setLoginSuccess(true);
+            }
+            setAppleLoading(false);
+          }
+        };
+        window.addEventListener('message', handleMessage);
+
+        // Timeout fallback: check popup closed
+        const pollTimer = setInterval(() => {
+          if (popup?.closed) {
+            clearInterval(pollTimer);
+            window.removeEventListener('message', handleMessage);
+            setAppleLoading(false);
+          }
+        }, 1000);
+
+        // Cleanup after 5 minutes max
+        setTimeout(() => {
+          clearInterval(pollTimer);
+          window.removeEventListener('message', handleMessage);
+          setAppleLoading(false);
+        }, 300000);
+      } else {
+        // Native: use Linking to open Apple auth URL
+        await Linking.openURL(data.url);
+        setAppleLoading(false);
+      }
+    } catch (e: any) {
+      setError(e.message || 'Errore Apple Login');
+      setAppleLoading(false);
+    }
+  }, []);
+
   const handleSocialLogin = (provider: string) => {
+    if (provider === 'Apple') {
+      handleAppleLogin();
+      return;
+    }
     Alert.alert(
       `${provider} Login`,
       `Il login con ${provider} sarà disponibile nella prossima versione.`,
@@ -125,7 +197,7 @@ export default function Login() {
 
           {/* Version */}
           <Animated.View entering={FadeInDown.delay(600)}>
-            <Text style={s$.gateVersion}>v2.1.0 — Build 27 · NEXUS</Text>
+            <Text style={s$.gateVersion}>v2.2.0 — Build 28 · CHROMATIC</Text>
           </Animated.View>
         </View>
       </View>
@@ -261,9 +333,16 @@ export default function Login() {
             style={s$.appleSocialBtn}
             onPress={() => handleSocialLogin('Apple')}
             activeOpacity={0.85}
+            disabled={appleLoading}
           >
-            <Ionicons name="logo-apple" size={20} color="#FFF" />
-            <Text style={s$.appleBtnText}>CONTINUA CON APPLE</Text>
+            {appleLoading ? (
+              <ActivityIndicator color="#FFF" size="small" />
+            ) : (
+              <Ionicons name="logo-apple" size={20} color="#FFF" />
+            )}
+            <Text style={s$.appleBtnText}>
+              {appleLoading ? 'CONNESSIONE...' : 'CONTINUA CON APPLE'}
+            </Text>
           </TouchableOpacity>
 
           {/* GOOGLE SIGN IN */}

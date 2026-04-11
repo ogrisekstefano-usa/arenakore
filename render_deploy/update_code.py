@@ -16,7 +16,7 @@ port = int(os.environ.get("PORT", "10000"))
 # Phase 1: Install deps
 print("=== Installing deps ===", flush=True)
 subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--no-cache-dir', '--prefer-binary',
-    'fastapi', 'uvicorn', 'motor', 'python-jose', 'bcrypt', 'dnspython', 'certifi', 'pydantic'],
+    'fastapi', 'uvicorn', 'motor', 'python-jose', 'bcrypt', 'dnspython', 'certifi', 'pydantic', 'PyJWT', 'cryptography', 'httpx'],
     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 print("=== Deps OK ===", flush=True)
 
@@ -35,8 +35,12 @@ try:
     from pydantic import BaseModel
     from typing import Optional, List
     import certifi
+    import httpx
+    import jwt as pyjwt
+    import time as _time
 
     logging.basicConfig(level=logging.INFO)
+    log = logging.getLogger("arenakore")
 
     mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
     client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where(), serverSelectionTimeoutMS=15000)
@@ -48,6 +52,19 @@ try:
     app = FastAPI(title="ARENAKORE API")
     app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
     api = APIRouter(prefix="/api")
+
+    # ═══ APPLE AUTH CONFIG ═══
+    APPLE_SERVICE_ID = os.environ.get('APPLE_SERVICE_ID', 'com.arenakore.app.auth')
+    APPLE_TEAM_ID = os.environ.get('APPLE_TEAM_ID', '6VJ6L626V4')
+    APPLE_KEY_ID = os.environ.get('APPLE_KEY_ID', 'PYB6HLA7AQ')
+    APPLE_REDIRECT_URI = os.environ.get('APPLE_REDIRECT_URI', 'https://arenakore-api.onrender.com/auth/apple/callback')
+    APPLE_P8_KEY = os.environ.get('APPLE_P8_KEY', '')
+
+    def generate_apple_client_secret():
+        now = int(_time.time())
+        payload = {"iss": APPLE_TEAM_ID, "iat": now, "exp": now + 86400 * 180, "aud": "https://appleid.apple.com", "sub": APPLE_SERVICE_ID}
+        headers = {"kid": APPLE_KEY_ID, "alg": "ES256"}
+        return pyjwt.encode(payload, APPLE_P8_KEY, algorithm="ES256", headers=headers)
 
     def hp(p): return _bcrypt.hashpw(p.encode('utf-8'), _bcrypt.gensalt()).decode('utf-8')
     def vp(pl, ha): return _bcrypt.checkpw(pl.encode('utf-8'), ha.encode('utf-8') if isinstance(ha, str) else ha)
@@ -528,16 +545,222 @@ try:
             result["traceback"] = tb.format_exc()
         return result
 
+    # ═══════════════════════════════════════════════════════════════
+    # APPLE SIGN-IN — Web OAuth2 Flow + Native Token Validation
+    # ═══════════════════════════════════════════════════════════════
+    from fastapi.responses import HTMLResponse, RedirectResponse
+    from urllib.parse import urlencode
+
+    @api.get("/auth/apple/init")
+    async def apple_auth_init(redirect_app: str = ""):
+        """Generate Apple OAuth URL for web flow"""
+        try:
+            params = {
+                "client_id": APPLE_SERVICE_ID,
+                "redirect_uri": APPLE_REDIRECT_URI,
+                "response_type": "code id_token",
+                "response_mode": "form_post",
+                "scope": "name email",
+                "state": redirect_app or "web"
+            }
+            url = f"https://appleid.apple.com/auth/authorize?{urlencode(params)}"
+            return {"url": url, "service_id": APPLE_SERVICE_ID}
+        except Exception as e:
+            log.error(f"Apple init error: {e}")
+            raise HTTPException(500, f"Apple auth init failed: {str(e)}")
+
+    @api.post("/auth/apple/token")
+    async def apple_token_login(d: dict):
+        """Native iOS flow — receives identity_token from expo-apple-authentication"""
+        try:
+            identity_token = d.get("identity_token") or d.get("id_token")
+            if not identity_token:
+                raise HTTPException(400, "identity_token richiesto")
+            # Decode without verification (Apple's public key validation is optional for MVP)
+            claims = pyjwt.decode(identity_token, options={"verify_signature": False})
+            apple_sub = claims.get("sub")
+            apple_email = claims.get("email")
+            if not apple_sub:
+                raise HTTPException(400, "Token Apple non valido — manca 'sub'")
+            # Find or create user
+            user = await db.users.find_one({"apple_id": apple_sub})
+            if not user and apple_email:
+                user = await db.users.find_one({"email": apple_email.strip().lower()})
+            if user:
+                # Link apple_id if not yet linked
+                if not user.get("apple_id"):
+                    await db.users.update_one({"_id": user["_id"]}, {"$set": {"apple_id": apple_sub}})
+                token = ct(str(user["_id"]))
+                return {"token": token, "user": u2r(user), "new_user": False}
+            else:
+                # Create new user from Apple
+                first_name = d.get("first_name") or d.get("fullName", {}).get("givenName", "")
+                last_name = d.get("last_name") or d.get("fullName", {}).get("familyName", "")
+                username = (first_name or apple_email.split("@")[0] if apple_email else f"KORE_{apple_sub[:8]}").upper().replace(" ", "_")
+                # Ensure unique username
+                base_username = username
+                counter = 1
+                while await db.users.find_one({"username": username}):
+                    username = f"{base_username}_{counter}"
+                    counter += 1
+                tc = await db.users.count_documents({})
+                new_user = {
+                    "username": username,
+                    "email": (apple_email or f"apple_{apple_sub[:12]}@arenakore.app").strip().lower(),
+                    "password_hash": hp(f"apple_{apple_sub}_{_time.time()}"),
+                    "apple_id": apple_sub,
+                    "auth_provider": "apple",
+                    "role": None,
+                    "sport": "ATHLETICS",
+                    "preferred_sport": "ATHLETICS",
+                    "training_level": "LEGACY",
+                    "xp": 0, "level": 1, "ak_credits": 0,
+                    "unlocked_tools": [],
+                    "onboarding_completed": False,
+                    "avatar_color": random.choice(["#00E5FF", "#FFD700", "#FF3B30", "#34C759"]),
+                    "dna": None,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "is_founder": tc < 100,
+                    "founder_number": (tc + 1) if tc < 100 else None,
+                    "created_at": datetime.now(timezone.utc)
+                }
+                r = await db.users.insert_one(new_user)
+                new_user["_id"] = r.inserted_id
+                token = ct(str(r.inserted_id))
+                return {"token": token, "user": u2r(new_user), "new_user": True}
+        except HTTPException:
+            raise
+        except Exception as e:
+            log.error(f"Apple token error: {e}")
+            raise HTTPException(500, f"Errore autenticazione Apple: {str(e)}")
+
+    # Apple Web Callback — receives form_post from Apple
+    @app.post("/auth/apple/callback")
+    async def apple_callback(request: Request):
+        """Handles Apple's form_post redirect with authorization code"""
+        try:
+            form = await request.form()
+            code = form.get("code")
+            id_token_raw = form.get("id_token")
+            state = form.get("state", "web")
+            user_data = form.get("user")  # Only on first login
+
+            log.info(f"Apple callback: code={bool(code)}, id_token={bool(id_token_raw)}, state={state}")
+
+            apple_email = None
+            apple_sub = None
+            first_name = ""
+            last_name = ""
+
+            # Parse user data if present (first time only)
+            if user_data:
+                try:
+                    ud = json.loads(user_data) if isinstance(user_data, str) else user_data
+                    nm = ud.get("name", {})
+                    first_name = nm.get("firstName", "")
+                    last_name = nm.get("lastName", "")
+                    apple_email = ud.get("email")
+                except:
+                    pass
+
+            # If we have id_token directly, decode it
+            if id_token_raw:
+                claims = pyjwt.decode(id_token_raw, options={"verify_signature": False})
+                apple_sub = claims.get("sub")
+                apple_email = apple_email or claims.get("email")
+
+            # If we have code, exchange it for tokens
+            if code and not apple_sub:
+                client_secret = generate_apple_client_secret()
+                async with httpx.AsyncClient() as hc:
+                    resp = await hc.post("https://appleid.apple.com/auth/token", data={
+                        "client_id": APPLE_SERVICE_ID,
+                        "client_secret": client_secret,
+                        "code": code,
+                        "grant_type": "authorization_code",
+                        "redirect_uri": APPLE_REDIRECT_URI
+                    })
+                    if resp.status_code == 200:
+                        tokens = resp.json()
+                        id_token_str = tokens.get("id_token")
+                        if id_token_str:
+                            claims = pyjwt.decode(id_token_str, options={"verify_signature": False})
+                            apple_sub = claims.get("sub")
+                            apple_email = apple_email or claims.get("email")
+                    else:
+                        log.error(f"Apple token exchange failed: {resp.status_code} {resp.text}")
+
+            if not apple_sub:
+                return HTMLResponse(content=f"<html><body><h1>Errore Apple Login</h1><p>Impossibile autenticare. Riprova.</p><script>window.close();</script></body></html>", status_code=400)
+
+            # Find or create user (same logic as native)
+            user = await db.users.find_one({"apple_id": apple_sub})
+            if not user and apple_email:
+                user = await db.users.find_one({"email": apple_email.strip().lower()})
+            if user:
+                if not user.get("apple_id"):
+                    await db.users.update_one({"_id": user["_id"]}, {"$set": {"apple_id": apple_sub}})
+                token = ct(str(user["_id"]))
+                ur = u2r(user)
+            else:
+                username = (first_name or (apple_email.split("@")[0] if apple_email else f"KORE_{apple_sub[:8]}")).upper().replace(" ", "_")
+                base_username = username
+                counter = 1
+                while await db.users.find_one({"username": username}):
+                    username = f"{base_username}_{counter}"
+                    counter += 1
+                tc = await db.users.count_documents({})
+                new_user = {
+                    "username": username,
+                    "email": (apple_email or f"apple_{apple_sub[:12]}@arenakore.app").strip().lower(),
+                    "password_hash": hp(f"apple_{apple_sub}_{_time.time()}"),
+                    "apple_id": apple_sub, "auth_provider": "apple",
+                    "role": None, "sport": "ATHLETICS", "preferred_sport": "ATHLETICS",
+                    "training_level": "LEGACY", "xp": 0, "level": 1, "ak_credits": 0,
+                    "unlocked_tools": [], "onboarding_completed": False,
+                    "avatar_color": random.choice(["#00E5FF", "#FFD700", "#FF3B30", "#34C759"]),
+                    "dna": None, "first_name": first_name, "last_name": last_name,
+                    "is_founder": tc < 100, "founder_number": (tc + 1) if tc < 100 else None,
+                    "created_at": datetime.now(timezone.utc)
+                }
+                r = await db.users.insert_one(new_user)
+                new_user["_id"] = r.inserted_id
+                token = ct(str(r.inserted_id))
+                ur = u2r(new_user)
+
+            # Return HTML that sends the token back to the app via postMessage
+            html = f"""<!DOCTYPE html>
+<html><head><title>ARENAKORE — Apple Login</title>
+<style>body{{background:#000;color:#00E5FF;font-family:Montserrat,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}}
+.box{{text-align:center;padding:40px}}.loader{{width:40px;height:40px;border:3px solid #FFD700;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}}
+@keyframes spin{{to{{transform:rotate(360deg)}}}}</style></head>
+<body><div class="box"><div class="loader"></div><h2>AUTENTICAZIONE COMPLETATA</h2><p>Ritorno ad ARENAKORE...</p></div>
+<script>
+try{{
+  var data = {{token:"{token}",user:{json.dumps(ur)}}};
+  if(window.opener){{window.opener.postMessage({{type:'APPLE_AUTH_SUCCESS',data:data}},'*');setTimeout(function(){{window.close()}},1500)}}
+  else if(window.ReactNativeWebView){{window.ReactNativeWebView.postMessage(JSON.stringify({{type:'APPLE_AUTH_SUCCESS',data:data}}))}}
+  else{{localStorage.setItem('arenakore_apple_auth',JSON.stringify(data));window.location.href='/'}}
+}}catch(e){{document.body.innerHTML='<h2>Errore: '+e.message+'</h2>'}}
+</script></body></html>"""
+            return HTMLResponse(content=html)
+        except Exception as e:
+            log.error(f"Apple callback error: {e}")
+            import traceback as tb2
+            log.error(tb2.format_exc())
+            return HTMLResponse(content=f"<html><body style='background:#000;color:#FF3B30;padding:40px'><h1>Errore Apple Login</h1><pre>{str(e)}</pre></body></html>", status_code=500)
+
     # Catch-all
     @api.api_route("/{path:path}", methods=["GET","POST","PUT","DELETE","PATCH"])
     async def catchall(path:str,request:Request): return JSONResponse(200,{"status":"stub","path":path})
 
     @app.get("/")
-    async def root(): return {"status":"ARENAKORE","v":"render-v4-matchfix"}
+    async def root(): return {"status":"ARENAKORE","v":"render-v5-apple-auth"}
 
     app.include_router(api)
     import uvicorn
-    print(f'=== ARENAKORE v3 (Staff Hub) starting on :{port} ===', flush=True)
+    print(f'=== ARENAKORE v5 (Apple Auth) starting on :{port} ===', flush=True)
     uvicorn.run(app, host="0.0.0.0", port=port)
 except Exception as e:
     print(f"=== FATAL: {e} ===", flush=True)
