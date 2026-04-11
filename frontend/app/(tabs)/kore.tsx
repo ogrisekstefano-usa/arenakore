@@ -220,7 +220,7 @@ export default function KoreTab() {
       setFluxVital(v => v + (res.flux_awarded || 10));
       const weekRes = await safeFetchApi('/checkin/week');
       if (!weekRes?._error && Array.isArray(weekRes?.week)) setWeekData(weekRes.week);
-      Alert.alert('✅ CHECK-IN!', res.message || `+${res.flux_awarded} Vital Flux`, [{ text: 'KORE!' }]);
+      Alert.alert('✅ CHECK-IN!', res.message || `+${res.flux_awarded} Vital K-Flux`, [{ text: 'KORE!' }]);
     } else { Alert.alert('⚠️', res?.message || 'Errore nel check-in'); }
     setCheckinLoading(false);
   };
@@ -296,7 +296,7 @@ export default function KoreTab() {
         </Animated.View>
 
         {/* ══════ FLUX BREAKDOWN (3 Types) ══════ */}
-        <SectionHeader icon="flash" title="FLUX SYSTEM" color={CYAN} />
+        <SectionHeader icon="flash" title="K-FLUX" color={CYAN} />
         <View style={s.fluxGrid}>
           <StatCard value={String(fluxVital)} label="VITAL" color={CYAN} icon="heart" delay={100} />
           <StatCard value={String(fluxPerform)} label="PERFORM" color={GOLD} icon="trophy" delay={150} />
@@ -305,7 +305,7 @@ export default function KoreTab() {
 
         {/* ══════ STATS GRID ══════ */}
         <View style={s.statsGrid}>
-          <StatCard value={totalFlux.toLocaleString()} label="TOTAL FLUX" color={CYAN} icon="flash" delay={250} />
+          <StatCard value={totalFlux.toLocaleString()} label="K-FLUX" color={CYAN} icon="flash" delay={250} />
           <StatCard value={`LV ${level}`} label="LIVELLO" color={GOLD} icon="ribbon" delay={300} />
           <StatCard value={rank ? `#${rank}` : '—'} label="RANK" color={PURPLE} icon="podium" delay={350} />
           <StatCard value={String(totalScans)} label="SCANS" color="#32D74B" icon="scan" delay={400} />
@@ -334,7 +334,7 @@ export default function KoreTab() {
         </Animated.View>
 
         {/* ══════ FLUX WALLET ══════ */}
-        <SectionHeader icon="flash" title="FLUX WALLET" color={CYAN} />
+        <SectionHeader icon="flash" title="K-FLUX WALLET" color={CYAN} />
         <AKDropsWallet user={user} />
 
         {/* ══════ PERFORMANCE HISTORY ══════ */}
