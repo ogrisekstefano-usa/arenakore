@@ -4588,22 +4588,22 @@ SIX_AXIS_LABELS = {
 
 def compute_kore_score(user: dict, scan_trend: list = None) -> dict:
     """
-    KORE SCORE — L'Arbitro Multidisciplinare Proprietario.
-
-    Incrocia 3 dimensioni con un sistema di penalità posturale:
+    K-RATING — Build 33 · INCLUSIVITÀ
+    ═══════════════════════════════════
+    ARENA KORE premia il MOVIMENTO, non il dispositivo.
 
     ┌─────────────────────────────────────────────────────────────┐
-    │  VOLUME INDEX (30%)   →  resistenza + GPS + frequenza scan  │
-    │  INTENSITY INDEX (30%)→  forza + potenza + strength watts   │
-    │  BIOMETRIC QUALITY (40%)→  media NÈXUS scan quality         │
+    │  PERFORMANCE PURA (45%)  → Volume + Intensità combinati     │
+    │  K-TIMELINE (30%)        → Costanza (streak, frequenza)     │
+    │  SFORZO (15%)            → RPE (1-10) o Bio-Quality         │
+    │  BIO BONUS (+0-10)       → Solo se dati da sensori reali    │
     │  ──────────────────────────────────────────────────────────  │
-    │  POSTURE PENALTY (−0 a −30) se qualità scan < DNA potential │
-    │  L'atleta fa volume MA mostra decadimento posturale → cala  │
+    │  POSTURE PENALTY (−0 a −15) se scan < DNA potential         │
+    │  Badge "Bio-Verified" se dati provengono da wearable        │
     └─────────────────────────────────────────────────────────────┘
 
-    Ritorna:
-      score (0-100), grade (S/A/B/C/D), breakdown, posture_penalty,
-      verdict (messaggio sintetico dell'Arbitro)
+    Un atleta costante senza hardware DEVE poter superare
+    un atleta incostante con hardware.
     """
     dna = user.get("dna") or {}
     ms  = user.get("multiskill") or {}
@@ -4612,105 +4612,167 @@ def compute_kore_score(user: dict, scan_trend: list = None) -> dict:
     def r(k: str) -> float:
         return float(dna.get(k, 50))
 
-    # ── 1. VOLUME INDEX (0-100) ───────────────────────────────────
-    # DNA endurance (base) + GPS data (external) + scan frequency bonus
+    # ── 1. PERFORMANCE PURA (0-100, weight 45%) ─────────────────
+    # Volume: Resistenza + GPS + Scan frequency
     base_volume = r("resistenza")
     gps_boost   = float(ms.get("endurance_gps", base_volume)) * 0.35
-    # Scan frequency: more scans = higher volume signal
     scan_freq_bonus = min(15, len(scans) * 2.5)
-    volume_index = round(min(100, base_volume * 0.65 + gps_boost + scan_freq_bonus), 1)
+    volume_raw = min(100, base_volume * 0.65 + gps_boost + scan_freq_bonus)
 
-    # ── 2. INTENSITY INDEX (0-100) ───────────────────────────────
-    # DNA forza + potenza + Technogym Watts
+    # Intensity: Forza + Potenza + Watts
     base_intensity = (r("forza") * 0.5 + r("potenza") * 0.3)
     watts_boost    = float(ms.get("strength_watts", base_intensity)) * 0.2
-    intensity_index = round(min(100, base_intensity + watts_boost), 1)
+    intensity_raw = min(100, base_intensity + watts_boost)
 
-    # ── 3. BIOMETRIC QUALITY (0-100) ────────────────────────────
-    # Media qualità NÈXUS scan (ultimi 6) — questo è il differenziatore
-    if scans:
+    # Combined Performance Pura
+    performance_pura = round((volume_raw * 0.55 + intensity_raw * 0.45), 1)
+
+    # ── 2. K-TIMELINE — Costanza (0-100, weight 30%) ────────────
+    # Check-in streak + XP earned + Activity count
+    checkin_streak = user.get("checkin_streak", 0)
+    total_activities = user.get("total_scans", 0) + user.get("total_activities", 0)
+    level = user.get("level", 1)
+
+    # Streak contributes up to 40 pts
+    streak_score = min(40, checkin_streak * 5)
+    # Activity volume contributes up to 35 pts
+    activity_score = min(35, total_activities * 1.5)
+    # Level consistency: up to 25 pts
+    level_score = min(25, level * 2.5)
+    timeline_index = round(min(100, streak_score + activity_score + level_score), 1)
+
+    # ── 3. SFORZO PERCEPITO (0-100, weight 15%) ─────────────────
+    # RPE (1-10) → mapped to 0-100 scale
+    # If no RPE provided, default to 5 (neutral baseline)
+    user_rpe = user.get("last_rpe", 5)
+    has_bio_data = len(scans) > 0 and any(s.get("quality", 0) > 0 for s in scans)
+
+    if has_bio_data:
+        # Use actual bio quality from scans
         avg_scan_quality = sum(s.get("quality", 50) for s in scans) / len(scans)
+        sforzo_index = round(avg_scan_quality, 1)
     else:
-        avg_scan_quality = r("tecnica")  # Fallback to technique DNA if no scans
-    biometric_quality = round(avg_scan_quality, 1)
+        # Use RPE (perceived exertion) * 10 → 0-100 scale
+        sforzo_index = round(min(100, max(0, user_rpe * 10)), 1)
 
-    # ── 4. POSTURE PENALTY ─────────────────────────────────────
-    # Se qualità scan < potenziale DNA: l'atleta degrada sotto sforzo
+    # ── 4. BIO BONUS (only for sensor users: +0 to +10) ────────
+    bio_bonus = 0.0
+    bio_verified = False
+    if has_bio_data:
+        bio_verified = True
+        avg_q = sum(s.get("quality", 50) for s in scans) / len(scans)
+        bio_bonus = round(min(10, avg_q * 0.12), 1)
+
+    # ── 5. POSTURE PENALTY (reduced: max -15) ──────────────────
     dna_potential = round((r("velocita") + r("forza") + r("resistenza") + r("agilita") + r("tecnica") + r("potenza")) / 6, 1)
-    posture_gap = dna_potential - avg_scan_quality
-    # Penalty: fino a -30 punti. Scala da 0 se gap ≤ 0 a -30 se gap ≥ 40
-    posture_penalty = round(max(0, min(30, posture_gap * 0.75)), 1)
-    penalty_active  = posture_gap > 10  # Significant only if gap > 10 pts
+    if has_bio_data:
+        avg_scan_q = sum(s.get("quality", 50) for s in scans) / len(scans)
+        posture_gap = dna_potential - avg_scan_q
+        posture_penalty = round(max(0, min(15, posture_gap * 0.5)), 1)
+    else:
+        posture_gap = 0.0
+        posture_penalty = 0.0
+    penalty_active = posture_gap > 10
 
-    # ── 5. FINAL KORE SCORE ────────────────────────────────────
+    # ── 6. FINAL K-RATING ──────────────────────────────────────
     raw_score = (
-        volume_index    * 0.30 +
-        intensity_index * 0.30 +
-        biometric_quality * 0.40
+        performance_pura * 0.45 +
+        timeline_index   * 0.30 +
+        sforzo_index     * 0.15 +
+        bio_bonus
     ) - posture_penalty
     kore_score = round(max(0, min(100, raw_score)), 1)
 
-    # ── 6. GRADE & VERDICT ─────────────────────────────────────
+    # ── 7. GRADE & VERDICT ─────────────────────────────────────
     if kore_score >= 88:
-        grade, color = "S", "#D4AF37"   # Gold — Elite
-        verdict = "PERFORMANCE ÉLITE. Tutti i parametri sopra il potenziale."
+        grade, color = "S", "#D4AF37"
+        verdict = "PERFORMANCE ÉLITE. Determinazione e costanza al massimo."
     elif kore_score >= 74:
-        grade, color = "A", "#00F2FF"   # Cyan — Pro
+        grade, color = "A", "#00F2FF"
         verdict = "PROFILO BILANCIATO. Mantieni questo ritmo di allenamento."
     elif kore_score >= 58:
-        grade, color = "B", "#34C759"   # Green — Good
-        verdict = "SOLIDO. Incrementa l'intensità o la qualità degli scan."
+        grade, color = "B", "#34C759"
+        verdict = "SOLIDO. Incrementa la costanza sulla K-Timeline per salire."
     elif kore_score >= 40:
-        grade, color = "C", "#FF9500"   # Orange — Average
+        grade, color = "C", "#FF9500"
         if penalty_active:
-            verdict = f"ATTENZIONE: stai accumulando volume con decadimento posturale ({round(posture_gap, 1)} punti di gap). Riduci il volume e lavora sulla tecnica."
+            verdict = f"ATTENZIONE: decadimento posturale ({round(posture_gap, 1)} gap). Lavora sulla tecnica."
         else:
-            verdict = "NELLA MEDIA. Aumenta la frequenza degli scan NÈXUS per validare il tuo potenziale."
+            verdict = "NELLA MEDIA. Più check-in e costanza per scalare la classifica."
     else:
-        grade, color = "D", "#FF453A"   # Red — Critical
-        if penalty_active:
-            verdict = f"RISCHIO INFORTUNIO: qualità scan ({round(avg_scan_quality, 1)}) molto sotto DNA ({dna_potential}). Ferma il volume, priorità Recovery."
-        else:
-            verdict = "UNDER-PERFORMANCE. Rivedi il piano di allenamento con il tuo Coach."
+        grade, color = "D", "#FF453A"
+        verdict = "UNDER-PERFORMANCE. Più costanza e frequenza per risalire."
 
     return {
-        "score":        kore_score,
-        "grade":        grade,
-        "color":        color,
-        "verdict":      verdict,
+        "score":          kore_score,
+        "grade":          grade,
+        "color":          color,
+        "verdict":        verdict,
+        "bio_verified":   bio_verified,
         "penalty_active": penalty_active,
         "breakdown": {
-            "volume": {
-                "value":  volume_index,
-                "weight": 0.30,
-                "contribution": round(volume_index * 0.30, 1),
-                "label": "VOLUME",
-                "sub":   "Resistenza · GPS · Frequenza scan",
+            "performance": {
+                "value":  performance_pura,
+                "weight": 0.45,
+                "contribution": round(performance_pura * 0.45, 1),
+                "label": "PERFORMANCE PURA",
+                "sub":   "Volume + Intensità degli esercizi",
                 "color": "#00F2FF",
             },
-            "intensity": {
-                "value":  intensity_index,
+            "timeline": {
+                "value":  timeline_index,
                 "weight": 0.30,
-                "contribution": round(intensity_index * 0.30, 1),
-                "label": "INTENSITÀ",
-                "sub":   "Forza · Potenza · Technogym Watts",
-                "color": "#FF453A",
+                "contribution": round(timeline_index * 0.30, 1),
+                "label": "K-TIMELINE",
+                "sub":   f"Streak {checkin_streak}gg · {total_activities} attività",
+                "color": "#FFD700",
             },
-            "biometric": {
-                "value":  biometric_quality,
-                "weight": 0.40,
-                "contribution": round(biometric_quality * 0.40, 1),
-                "label": "QUALITÀ BIO",
-                "sub":   f"Media {len(scans)} scan NÈXUS · Tecnica",
-                "color": "#34C759",
+            "sforzo": {
+                "value":  sforzo_index,
+                "weight": 0.15,
+                "contribution": round(sforzo_index * 0.15, 1),
+                "label": "SFORZO" + (" (BIO)" if bio_verified else " (RPE)"),
+                "sub":   f"{'Sensori verificati' if bio_verified else f'RPE {user_rpe}/10 · Percezione'}",
+                "color": "#BF5AF2",
             },
         },
+        "bio_bonus":       bio_bonus,
         "posture_penalty": posture_penalty,
         "posture_gap":     round(posture_gap, 1),
         "dna_potential":   dna_potential,
-        "avg_scan_quality": round(avg_scan_quality, 1),
+        "avg_scan_quality": round(sforzo_index, 1),
         "scans_used":      len(scans),
+        "rpe_used":        not bio_verified,
     }
+
+
+# ═══ RPE — Rating of Perceived Exertion ═══
+@api_router.post("/activity/rpe")
+async def submit_rpe(request: Request, current_user: dict = Depends(get_current_user)):
+    """
+    Build 33 · Inclusività — Registra lo sforzo percepito (RPE 1-10).
+    Usato nel K-Rating quando dati biometrici non disponibili.
+    """
+    body = await request.json()
+    rpe_value = body.get("rpe", 5)
+    rpe_value = max(1, min(10, int(rpe_value)))
+
+    # Update user's last_rpe
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": {"last_rpe": rpe_value, "last_rpe_at": datetime.utcnow()}}
+    )
+
+    # Also store in activity log
+    await db.activity_log.insert_one({
+        "user_id": current_user["_id"],
+        "type": "rpe_report",
+        "rpe": rpe_value,
+        "timestamp": datetime.utcnow(),
+    })
+
+    return {"status": "ok", "rpe": rpe_value, "message": f"Sforzo percepito registrato: {rpe_value}/10"}
+
 
 
 @api_router.get("/coach/kore-score/{athlete_id}/breakdown")

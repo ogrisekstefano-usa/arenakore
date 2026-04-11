@@ -28,6 +28,7 @@ import { Header } from '../../components/Header';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeIn, FadeOut, SlideInUp } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RPESelector } from '../../components/RPESelector';
 
 const { width: SW } = Dimensions.get('window');
 const GOLD = '#FFD700';
@@ -329,6 +330,8 @@ function NexusDashboard() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const [koreScore, setKoreScore] = useState<number | null>(null);
+  const [koreData, setKoreData] = useState<any>(null);
+  const [showRPE, setShowRPE] = useState(false);
   const [weekData, setWeekData] = useState([
     { date: '', day_name: 'LUN', checked_in: false }, { date: '', day_name: 'MAR', checked_in: false },
     { date: '', day_name: 'MER', checked_in: false }, { date: '', day_name: 'GIO', checked_in: false },
@@ -381,7 +384,11 @@ function NexusDashboard() {
       const uid = user?._id || user?.id;
       if (uid) {
         const d = await api.get(`/api/coach/kore-score/${uid}/breakdown`, token);
-        if (d && typeof d === 'object' && !d._raw) setKoreScore(d?.total || d?.kore_score || 0);
+        if (d && typeof d === 'object' && !d._raw) {
+          const ks = d?.kore_score || d;
+          setKoreScore(ks?.score || ks?.total || 0);
+          setKoreData(ks);
+        }
       }
     } catch { setKoreScore(0); }
     try {
@@ -401,6 +408,15 @@ function NexusDashboard() {
     await loadData();
     setRefreshing(false);
   };
+
+  const handleRPESubmit = async (rpe: number) => {
+    try {
+      await apiClient('/activity/rpe', { method: 'POST', body: JSON.stringify({ rpe }) });
+      setShowRPE(false);
+      loadData();
+    } catch { setShowRPE(false); }
+  };
+
 
   const username = (user?.username || 'KORE').toUpperCase();
 
@@ -489,11 +505,23 @@ function NexusDashboard() {
           />
         </View>
 
-        {/* KORE SCORE COMPACT */}
+        {/* KORE SCORE + K-RATING (Build 33 Inclusivity) */}
         <Animated.View entering={FadeInDown.delay(400).duration(400)} style={s.koreMini}>
           <View style={s.koreHeader}>
-            <Ionicons name="flash" size={12} color={GOLD} />
-            <Text style={s.koreLabel}>KORE SCORE</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <Ionicons name="flash" size={12} color={GOLD} />
+              <Text style={s.koreLabel}>K-RATING</Text>
+            </View>
+            {koreData?.bio_verified ? (
+              <View style={s.bioVerifiedBadge}>
+                <Ionicons name="shield-checkmark" size={10} color={CYAN} />
+                <Text style={s.bioVerifiedText}>BIO-VERIFIED</Text>
+              </View>
+            ) : (
+              <TouchableOpacity style={s.rpeBadge} onPress={() => setShowRPE(true)} activeOpacity={0.7}>
+                <Text style={s.rpeBadgeText}>⚡ RPE</Text>
+              </TouchableOpacity>
+            )}
           </View>
           <View style={s.koreRow}>
             <Text style={s.koreValue}>{koreScore ?? '—'}</Text>
@@ -506,6 +534,28 @@ function NexusDashboard() {
               style={[s.koreBarFill, { width: `${Math.min(koreScore || 0, 100)}%` as any }]}
             />
           </View>
+          {/* Breakdown pillars */}
+          {koreData?.breakdown && (
+            <View style={s.breakdownRow}>
+              {Object.values(koreData.breakdown).map((p: any, i: number) => (
+                <View key={i} style={s.breakdownPillar}>
+                  <View style={[s.breakdownDot, { backgroundColor: p.color }]} />
+                  <Text style={s.breakdownLabel}>{p.label}</Text>
+                  <Text style={[s.breakdownVal, { color: p.color }]}>{p.contribution}</Text>
+                </View>
+              ))}
+              {koreData.bio_bonus > 0 && (
+                <View style={s.breakdownPillar}>
+                  <View style={[s.breakdownDot, { backgroundColor: CYAN }]} />
+                  <Text style={s.breakdownLabel}>BIO BONUS</Text>
+                  <Text style={[s.breakdownVal, { color: CYAN }]}>+{koreData.bio_bonus}</Text>
+                </View>
+              )}
+            </View>
+          )}
+          {koreData?.verdict && (
+            <Text style={s.verdict}>{koreData.verdict}</Text>
+          )}
         </Animated.View>
 
         {/* HEARTBEAT */}
@@ -513,9 +563,16 @@ function NexusDashboard() {
 
         {/* FOOTER */}
         <View style={s.footer}>
-          <Text style={s.footerText}>NÈXUS PREMIUM · v3.0.0 · Build 32</Text>
+          <Text style={s.footerText}>NÈXUS PREMIUM · v3.1.0 · Build 33 · INCLUSIVITÀ</Text>
         </View>
       </ScrollView>
+
+      {/* RPE SELECTOR MODAL */}
+      <RPESelector
+        visible={showRPE}
+        onClose={() => setShowRPE(false)}
+        onSubmit={handleRPESubmit}
+      />
     </View>
   );
 }
@@ -539,19 +596,46 @@ const s = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // KORE Score
+  // KORE Score / K-Rating
   koreMini: {
     backgroundColor: 'rgba(255,215,0,0.03)', borderRadius: 14,
     borderWidth: 1, borderColor: 'rgba(255,215,0,0.08)',
     padding: 14, marginBottom: 10, gap: 6,
   },
-  koreHeader: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  koreHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   koreLabel: { color: GOLD, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   koreRow: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
   koreValue: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: -1 },
   koreMax: { color: 'rgba(255,255,255,0.15)', fontSize: 13, fontWeight: '700' },
   koreBar: { height: 3, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 2, overflow: 'hidden' },
   koreBarFill: { height: '100%', borderRadius: 2 },
+
+  // Bio-Verified / RPE badges
+  bioVerifiedBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: 'rgba(0,229,255,0.08)', borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)',
+  },
+  bioVerifiedText: { color: CYAN, fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
+  rpeBadge: {
+    backgroundColor: 'rgba(191,90,242,0.08)', borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1, borderColor: 'rgba(191,90,242,0.15)',
+  },
+  rpeBadgeText: { color: PURPLE, fontSize: 8, fontWeight: '900', letterSpacing: 1 },
+
+  // Breakdown pillars
+  breakdownRow: {
+    flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4,
+  },
+  breakdownPillar: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+  },
+  breakdownDot: { width: 5, height: 5, borderRadius: 3 },
+  breakdownLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 8, fontWeight: '800', letterSpacing: 1 },
+  breakdownVal: { fontSize: 10, fontWeight: '900' },
+  verdict: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '600', marginTop: 4, lineHeight: 14 },
 
   footer: { alignItems: 'center', marginTop: 12, paddingBottom: 16 },
   footerText: { color: 'rgba(255,255,255,0.04)', fontSize: 8, fontWeight: '700', letterSpacing: 1 },
