@@ -87,7 +87,7 @@ const KORE_OF_DAY = {
 };
 
 // ========== HERO BANNER ==========
-function HeroBanner() {
+function HeroBanner({ stats }: { stats: { kore_attivi: number; sessioni_oggi: number; record_battuti: number } | null }) {
   const pulse = useSharedValue(0.6);
   useEffect(() => {
     pulse.value = withRepeat(
@@ -104,16 +104,16 @@ function HeroBanner() {
         <View style={hero$.blBracket} />
         <View style={hero$.brBracket} />
         <View style={hero$.inner}>
-          <Text style={hero$.brandLine}>ARENAKORE</Text>
+          <Text style={hero$.brandLine}>ARENA<Text style={{ color: '#00E5FF' }}>KORE</Text></Text>
           <Text style={hero$.titleLine}>L'ELITE{'\n'}SI CONFRONTA</Text>
           <Animated.View style={[hero$.cyanLine, lineStyle]} />
           <Text style={hero$.tagLine}>SFIDE · RECORD · DETERMINAZIONE</Text>
         </View>
         <View style={hero$.statsRow}>
           {[
-            { label: 'KORE ATTIVI', val: '1,240', icon: 'people' as const },
-            { label: 'SESSIONI OGGI', val: '384', icon: 'flash' as const },
-            { label: 'RECORD BATTUTI', val: '23', icon: 'trophy' as const },
+            { label: 'KORE ATTIVI', val: stats ? stats.kore_attivi.toLocaleString() : '—', icon: 'people' as const },
+            { label: 'SESSIONI OGGI', val: stats ? String(stats.sessioni_oggi) : '—', icon: 'flash' as const },
+            { label: 'RECORD BATTUTI', val: stats ? String(stats.record_battuti) : '—', icon: 'trophy' as const },
           ].map((st, i) => (
             <View key={i} style={hero$.statItem}>
               <Ionicons name={st.icon} size={14} color="#00E5FF" />
@@ -428,27 +428,16 @@ function LiveBattleDashboard() {
       <View style={lbd$.sectionHeader}>
         <Ionicons name="flash" size={12} color="#FF3B30" />
         <Text style={lbd$.sectionTitle}>SFIDA LIVE</Text>
-        {!loading && <View style={lbd$.countBadge}><Text style={lbd$.countText}>{battles.length} ATTIVE</Text></View>}
+        {!loading && battles.length > 0 && <View style={lbd$.countBadge}><Text style={lbd$.countText}>{battles.length} ATTIVE</Text></View>}
       </View>
       {loading ? (
         <><SkeletonBattleCard /><SkeletonBattleCard /></>
       ) : error ? (
         <RetryBlock error={error} onRetry={load} />
       ) : battles.length === 0 ? (
-        <TouchableOpacity
-          style={lbd$.ctaCard}
-          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); router.push('/(tabs)/nexus-trigger'); }}
-          activeOpacity={0.85}
-        >
-          <View style={lbd$.ctaIconWrap}>
-            <Ionicons name="flash" size={22} color="#000" />
-          </View>
-          <View style={lbd$.ctaTextCol}>
-            <Text style={lbd$.ctaTitle}>LANCIA IL GUANTO</Text>
-            <Text style={lbd$.ctaSub}>Vai alla sezione SFIDA su NÈXUS</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color="rgba(255,215,0,0.5)" />
-        </TouchableOpacity>
+        <View style={lbd$.emptyWrap}>
+          <Text style={lbd$.emptyText}>Nessuna sfida live in corso</Text>
+        </View>
       ) : (
         battles.map(b => <LiveBattleCard key={b.id} battle={b} onOpenDashboard={(id: string) => setDashboardBattleId(id)} />)
       )}
@@ -475,6 +464,8 @@ const lbd$ = StyleSheet.create({
   ctaTextCol: { flex: 1, gap: 2 },
   ctaTitle: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
   ctaSub: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '600' },
+  emptyWrap: { marginHorizontal: 24, paddingVertical: 16, alignItems: 'center' },
+  emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '600' },
 });
 
 // ========== PENDING VIDEO PROOFS SECTION ==========
@@ -557,19 +548,36 @@ const pp$ = StyleSheet.create({
 
 // MatchmakingPanel REMOVED — Build 34 Cleanup
 
+// ═══ SAFE FETCH FOR ARENA STATS ═══
+async function safeFetchApiArena(path: string): Promise<any> {
+  try {
+    const { apiClient } = require('../../utils/api');
+    return await apiClient(path);
+  } catch { return null; }
+}
+
 // ══════════════════════════════════════════════════════════
 // MAIN ARENA TAB
 // ══════════════════════════════════════════════════════════
 export default function ArenaTab() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const router = useRouter();
   const isCertified = !!(user?.onboarding_completed && user?.dna);
   const [refreshing, setRefreshing] = useState(false);
+  const [liveStats, setLiveStats] = useState<{ kore_attivi: number; sessioni_oggi: number; record_battuti: number } | null>(null);
+
+  const loadStats = useCallback(async () => {
+    if (!token) return;
+    const data = await safeFetchApiArena('/stats/live');
+    if (data && !data._error) setLiveStats(data);
+  }, [token]);
+
+  useEffect(() => { loadStats(); }, [loadStats]);
 
   const handleRefresh = () => {
-    // Clear cache to force fresh data
     Object.keys(_cache).forEach(k => delete _cache[k]);
     setRefreshing(true);
+    loadStats();
     setTimeout(() => setRefreshing(false), 1500);
   };
 
@@ -596,9 +604,27 @@ export default function ArenaTab() {
         contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#FF453A" />}
       >
+        {/* CTA: LANCIA IL GUANTO */}
+        <Animated.View entering={FadeInDown.delay(50).duration(300)} style={s.guantoSection}>
+          <TouchableOpacity
+            style={s.guantoCard}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); router.push('/create-challenge'); }}
+            activeOpacity={0.85}
+          >
+            <View style={s.guantoIconWrap}>
+              <Ionicons name="flash" size={24} color="#000" />
+            </View>
+            <View style={s.guantoTextCol}>
+              <Text style={s.guantoTitle}>LANCIA IL GUANTO</Text>
+              <Text style={s.guantoSub}>Scegli una disciplina e sfida un atleta</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="rgba(255,215,0,0.5)" />
+          </TouchableOpacity>
+        </Animated.View>
+
         <LiveBattleDashboard key={refreshing ? 'r' : 's'} />
         <PendingProofsSection />
-        <HeroBanner />
+        <HeroBanner stats={liveStats} />
         <KoreOfTheDay />
         <View style={s.dividerSection}>
           <View style={s.divLine} />
@@ -607,11 +633,7 @@ export default function ArenaTab() {
         </View>
         <EliteActivityFeed />
 
-        {/* Footer */}
-        <View style={s.footer}>
-          <Text style={s.footerText}>ARENA · SFIDA · COMPETE</Text>
-          <Text style={s.versionLabel}>v3.5.0 — Build 35 · ARENA + VIDEO PROOF</Text>
-        </View>
+        <View style={{ height: 40 }} />
       </ScrollView>
     </ImageBackground>
   );
@@ -630,7 +652,19 @@ const s = StyleSheet.create({
   urgencyText: { color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: '300', flex: 1, lineHeight: 15 },
   urgencyCta: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#FFD700', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
   urgencyCtaText: { color: '#000', fontSize: 12, fontWeight: '900', letterSpacing: 1.5 },
-  footer: { alignItems: 'center', gap: 6, marginTop: 24, paddingBottom: 20 },
-  footerText: { color: 'rgba(255,255,255,0.08)', fontSize: 9, fontWeight: '800', letterSpacing: 3 },
-  versionLabel: { color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.6 },
+  // LANCIA IL GUANTO CTA
+  guantoSection: { paddingHorizontal: 24, marginTop: 8, marginBottom: 12 },
+  guantoCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    paddingVertical: 16, paddingHorizontal: 18,
+    backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 16,
+    borderWidth: 1.5, borderColor: 'rgba(255,215,0,0.2)',
+  },
+  guantoIconWrap: {
+    width: 48, height: 48, borderRadius: 14,
+    backgroundColor: '#FFD700', alignItems: 'center', justifyContent: 'center',
+  },
+  guantoTextCol: { flex: 1, gap: 2 },
+  guantoTitle: { color: '#FFD700', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
+  guantoSub: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '600' },
 });

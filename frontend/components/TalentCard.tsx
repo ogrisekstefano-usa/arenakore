@@ -109,7 +109,7 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
         </View>
         <View style={styles.profileInfo}>
           <View style={styles.nameRow}>
-            <Text style={styles.username}>{user.username?.toUpperCase()}</Text>
+            <Text style={styles.username} numberOfLines={1} adjustsFontSizeToFit>{user.username?.toUpperCase()}</Text>
             {showFounder && (
               <View style={styles.founderBadge}>
                 <Text style={styles.founderText}>FOUNDER</Text>

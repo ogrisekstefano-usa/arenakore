@@ -58,7 +58,7 @@ export function Header({ title, rightAction }: HeaderProps) {
               <Ionicons name="notifications-outline" size={20} color="rgba(255,255,255,0.5)" />
               {notifications.length > 0 && <View style={h.bellDot} />}
             </TouchableOpacity>
-            <Text style={h.logoText}>ARENAKORE</Text>
+            <Text style={h.logoText}>ARENA<Text style={h.logoAccent}>KORE</Text></Text>
           </View>
 
           {/* ═══ CENTER: 3 K-FLUX Indicators (clickable) ═══ */}

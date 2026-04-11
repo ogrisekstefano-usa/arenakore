@@ -287,13 +287,8 @@ export default function DNATab() {
             style={styles.heroGradient}
           >
             <View style={styles.dnaHeader}>
-              <Text style={styles.dnaLabel}>ANALISI BIOMETRICA</Text>
-              <Text style={styles.dnaSport}>{user?.sport?.toUpperCase() || '\u2014'}</Text>
-              <View style={[styles.roleBadge, { backgroundColor: getRoleColor(user?.role) + '18' }]}>
-                <Text style={[styles.roleText, { color: getRoleColor(user?.role) }]}>
-                  {user?.role?.toUpperCase() || 'KORE MEMBER'}
-                </Text>
-              </View>
+              <Text style={styles.dnaLabel}>TALENT CARD</Text>
+              <Text style={styles.dnaSport}>DNA UNIVERSALE</Text>
             </View>
 
             {dna && (
@@ -404,8 +399,7 @@ export default function DNATab() {
                     <View style={styles.talosLogoWrap}>
                       <Text style={styles.talosLogoT}>T</Text>
                     </View>
-                    <Text style={styles.talosLogoName}>TALOS</Text>
-                    <Text style={styles.talosLogoFit}>FIT</Text>
+                    <Text style={styles.talosLogoName}>TALOSFIT</Text>
                   </View>
                 </View>
                 <View style={styles.talosBottomLine} />
@@ -461,7 +455,7 @@ export default function DNATab() {
           <View style={styles.talentSection}>
             <View style={styles.sectionRow}>
               <Ionicons name="flash" size={14} color="rgba(255,255,255,0.4)" />
-              <Text style={styles.sectionTitle}>KORE DNA ID</Text>
+              <Text style={styles.sectionTitle}>TALENT CARD</Text>
             </View>
             <TalentCard
               user={user}

@@ -154,11 +154,12 @@ function LeaderRow({ item, index, onChallenge }: { item: any; index: number; onC
           </View>
           <View style={row$.sportRow}>
             <Ionicons name={sportCfg?.icon || 'flash'} size={10} color={sportCfg?.color || '#00E5FF'} />
-            <Text style={row$.sport}>{item.sport || '\u2014'} {'\u00b7'} LVL {item.level}</Text>
+            <Text style={row$.sport}>{item.preferred_sport || item.sport || '—'} · LVL {item.level}</Text>
           </View>
         </View>
         <View style={row$.right}>
-          <Text style={row$.xp}>{item.xp?.toLocaleString()}</Text>
+          <Text style={row$.xp}>{(item.flux || item.xp || 0).toLocaleString()}</Text>
+          <Text style={row$.fluxLabel}>K-FLUX</Text>
           {onChallenge && (
             <TouchableOpacity style={row$.challengeBtn} onPress={() => onChallenge(item)} activeOpacity={0.8}>
               <Ionicons name="flash-sharp" size={10} color="#050505" />
@@ -194,7 +195,8 @@ const row$ = StyleSheet.create({
   right: { alignItems: 'flex-end', gap: 4 },
   xp: { color: '#FFD700', fontSize: 19, fontWeight: '900' },
   challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FF3B30', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
-  challengeText: { color: '#000000', fontSize: 12, fontWeight: '900', letterSpacing: 1 }
+  challengeText: { color: '#000000', fontSize: 12, fontWeight: '900', letterSpacing: 1 },
+  fluxLabel: { color: 'rgba(255,215,0,0.35)', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
 });
 
 // CREW LEADERBOARD ROW
@@ -394,7 +396,7 @@ export function HallOfKore() {
           {/* Menu removed — uses only ••• from top Header */}
         </View>
 
-        {/* Tab Switcher */}
+        {/* ROW 1: Scope Tabs (GLOBAL / SPORT / CREWS) */}
         <View style={gl$.tabRow}>
           {tabs.map(t => (
             <TouchableOpacity
@@ -406,8 +408,38 @@ export function HallOfKore() {
             </TouchableOpacity>
           ))}
         </View>
-        {/* Verified + Category on second row */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 16, marginTop: 6, gap: 6 }}>
+        {/* ROW 2: Sport Filters (always visible) + Verified toggle */}
+        <View style={gl$.filterRow2}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={gl$.filterChipsRow}>
+            {activeTab === 'sport' ? (
+              <>
+                <TouchableOpacity
+                  style={[gl$.catChip, !selectedCategory && gl$.catChipActive]}
+                  onPress={() => setSelectedCategory(null)}
+                >
+                  <Text style={[gl$.catChipText, !selectedCategory && gl$.catChipTextActive]}>TUTTI</Text>
+                </TouchableOpacity>
+                {categories.map(c => {
+                  const cfg = SPORT_ICON_MAP[c];
+                  return (
+                    <TouchableOpacity
+                      key={c}
+                      style={[gl$.catChip, selectedCategory === c && gl$.catChipActive]}
+                      onPress={() => setSelectedCategory(c)}
+                    >
+                      {cfg && <Ionicons name={cfg.icon} size={12} color={selectedCategory === c ? '#FFD700' : cfg.color} />}
+                      <Text style={[gl$.catChipText, selectedCategory === c && gl$.catChipTextActive]}>{CATEGORY_LABELS[c]}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </>
+            ) : (
+              <View style={gl$.filterPlaceholder}>
+                <Ionicons name="filter" size={12} color="rgba(255,255,255,0.2)" />
+                <Text style={gl$.filterPlaceholderText}>Seleziona "PER SPORT" per filtrare</Text>
+              </View>
+            )}
+          </ScrollView>
           <TouchableOpacity
             style={[gl$.verifiedToggle, verifiedOnly && gl$.verifiedToggleOn]}
             onPress={() => setVerifiedOnly(v => !v)}
@@ -417,31 +449,6 @@ export function HallOfKore() {
             <Text style={[gl$.verifiedText, verifiedOnly && { color: '#000' }]}>VERIFIED</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Category Filter (for SPORT tab) */}
-        {activeTab === 'sport' && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={gl$.catRow}>
-            <TouchableOpacity
-              style={[gl$.catChip, !selectedCategory && gl$.catChipActive]}
-              onPress={() => setSelectedCategory(null)}
-            >
-              <Text style={[gl$.catChipText, !selectedCategory && gl$.catChipTextActive]}>TUTTI</Text>
-            </TouchableOpacity>
-            {categories.map(c => {
-              const cfg = SPORT_ICON_MAP[c];
-              return (
-                <TouchableOpacity
-                  key={c}
-                  style={[gl$.catChip, selectedCategory === c && gl$.catChipActive]}
-                  onPress={() => setSelectedCategory(c)}
-                >
-                  {cfg && <Ionicons name={cfg.icon} size={12} color={selectedCategory === c ? '#FFD700' : cfg.color} />}
-                  <Text style={[gl$.catChipText, selectedCategory === c && gl$.catChipTextActive]}>{CATEGORY_LABELS[c]}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        )}
 
         {/* Content */}
         {loading ? (
@@ -545,6 +552,11 @@ const gl$ = StyleSheet.create({
   verifiedToggle: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: '#00E5FF22', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 6, backgroundColor: 'rgba(0,229,255,0.04)' },
   verifiedToggleOn: { backgroundColor: '#00E5FF', borderColor: '#00E5FF' },
   verifiedText: { color: '#00E5FF', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
+  // Filter Row 2
+  filterRow2: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 16, marginTop: 8, gap: 8 },
+  filterChipsRow: { flexDirection: 'row', gap: 6, alignItems: 'center', paddingRight: 8 },
+  filterPlaceholder: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4 },
+  filterPlaceholderText: { color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: '600' },
   // Certified row glow border
   certifiedRow: { borderLeftWidth: 2, borderLeftColor: '#00E5FF', borderRadius: 4 },
   catRow: { paddingHorizontal: 16, paddingVertical: 8, gap: 6, flexDirection: 'row', alignItems: 'center' },
