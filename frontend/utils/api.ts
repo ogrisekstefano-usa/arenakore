@@ -658,4 +658,19 @@ export const api = {
 
   getChallengeDeepLink: (token: string, templateId: string) =>
     request(`/deeplink/challenge/${templateId}`, { method: 'GET' }, token),
+
+  // ========== BUILD 35 — NEW ROUTES ==========
+  getChallengeTemplatePresets: (token: string) =>
+    request('/challenge-templates/presets', {}, token),
+
+  saveQuickTraining: (data: {
+    category: string; duration_seconds: number; rpe: number; exercises: string[];
+  }, token: string) =>
+    request('/training/quick-session', { method: 'POST', body: JSON.stringify(data) }, token),
+
+  getLiveChallenges: (token: string) =>
+    request('/challenges/live', {}, token),
+
+  getRespondEligible: (token: string) =>
+    request('/challenges/respond-eligible', {}, token),
 };

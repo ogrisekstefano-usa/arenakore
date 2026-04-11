@@ -9450,6 +9450,314 @@ async def update_permissions(body: dict, current_user: dict = Depends(get_curren
 
 
 # ====================================
+# BUILD 35 — CHALLENGE TEMPLATE PRESETS (Sport-Specific)
+# GET /api/challenge-templates/presets
+# ====================================
+CHALLENGE_TEMPLATE_PRESETS = [
+    {
+        "id": "basket_tiri_liberi",
+        "sport": "BASKET",
+        "name": "Tiri Liberi",
+        "icon": "basketball",
+        "color": "#FF6B00",
+        "description": "Sessione di tiri liberi cronometrata",
+        "fields": [
+            {"key": "tiri_totali", "label": "Tiri Totali", "type": "number", "default": 20, "min": 5, "max": 100},
+            {"key": "tempo_limite", "label": "Tempo Limite (sec)", "type": "number", "default": 120, "min": 30, "max": 600},
+        ],
+        "scoring": "percentuale_canestri",
+        "xp_reward": 150,
+        "discipline": "power",
+    },
+    {
+        "id": "basket_3_punti",
+        "sport": "BASKET",
+        "name": "Tiro da 3 Punti",
+        "icon": "basketball",
+        "color": "#FF6B00",
+        "description": "Challenge da oltre l'arco dei 3 punti",
+        "fields": [
+            {"key": "tiri_totali", "label": "Tiri da 3", "type": "number", "default": 15, "min": 5, "max": 50},
+            {"key": "tempo_limite", "label": "Tempo Limite (sec)", "type": "number", "default": 180, "min": 60, "max": 600},
+        ],
+        "scoring": "percentuale_canestri",
+        "xp_reward": 200,
+        "discipline": "agility",
+    },
+    {
+        "id": "golf_putting",
+        "sport": "GOLF",
+        "name": "Putting Challenge",
+        "icon": "golf",
+        "color": "#2ECC71",
+        "description": "Sfida di precisione sul green",
+        "fields": [
+            {"key": "buche", "label": "Numero Buche", "type": "number", "default": 9, "min": 3, "max": 18},
+            {"key": "handicap", "label": "Handicap", "type": "number", "default": 0, "min": 0, "max": 54},
+            {"key": "distanza_mt", "label": "Distanza Media (mt)", "type": "number", "default": 3, "min": 1, "max": 15},
+        ],
+        "scoring": "colpi_totali",
+        "xp_reward": 180,
+        "discipline": "agility",
+    },
+    {
+        "id": "golf_driving",
+        "sport": "GOLF",
+        "name": "Driving Range",
+        "icon": "golf",
+        "color": "#2ECC71",
+        "description": "Massima distanza dal tee",
+        "fields": [
+            {"key": "tiri", "label": "Numero Tiri", "type": "number", "default": 10, "min": 5, "max": 30},
+            {"key": "handicap", "label": "Handicap", "type": "number", "default": 0, "min": 0, "max": 54},
+        ],
+        "scoring": "distanza_media",
+        "xp_reward": 170,
+        "discipline": "power",
+    },
+    {
+        "id": "fitness_ripetizioni",
+        "sport": "FITNESS",
+        "name": "Max Ripetizioni",
+        "icon": "barbell",
+        "color": "#00E5FF",
+        "description": "Massime ripetizioni in tempo limite",
+        "fields": [
+            {"key": "esercizio", "label": "Esercizio", "type": "select", "options": ["Push-up", "Squat", "Burpee", "Pull-up", "Plank Hold"], "default": "Push-up"},
+            {"key": "tempo_limite", "label": "Tempo Limite (sec)", "type": "number", "default": 60, "min": 30, "max": 300},
+        ],
+        "scoring": "ripetizioni_totali",
+        "xp_reward": 160,
+        "discipline": "endurance",
+    },
+    {
+        "id": "fitness_circuito",
+        "sport": "FITNESS",
+        "name": "Circuito HIIT",
+        "icon": "fitness",
+        "color": "#00E5FF",
+        "description": "Circuito ad alta intensità multi-esercizio",
+        "fields": [
+            {"key": "rounds", "label": "Rounds", "type": "number", "default": 3, "min": 1, "max": 10},
+            {"key": "tempo_round", "label": "Tempo per Round (sec)", "type": "number", "default": 45, "min": 20, "max": 120},
+            {"key": "riposo", "label": "Riposo tra Rounds (sec)", "type": "number", "default": 15, "min": 5, "max": 60},
+        ],
+        "scoring": "rounds_completati",
+        "xp_reward": 200,
+        "discipline": "endurance",
+    },
+    {
+        "id": "running_sprint",
+        "sport": "RUNNING",
+        "name": "Sprint Challenge",
+        "icon": "walk",
+        "color": "#FFD700",
+        "description": "Corsa sprint a tempo",
+        "fields": [
+            {"key": "distanza_mt", "label": "Distanza (mt)", "type": "number", "default": 100, "min": 50, "max": 1000},
+            {"key": "ripetizioni", "label": "Ripetizioni", "type": "number", "default": 3, "min": 1, "max": 10},
+        ],
+        "scoring": "tempo_migliore",
+        "xp_reward": 180,
+        "discipline": "agility",
+    },
+    {
+        "id": "running_endurance",
+        "sport": "RUNNING",
+        "name": "Endurance Run",
+        "icon": "walk",
+        "color": "#FFD700",
+        "description": "Corsa di resistenza a ritmo costante",
+        "fields": [
+            {"key": "tempo_minuti", "label": "Durata (min)", "type": "number", "default": 20, "min": 5, "max": 120},
+            {"key": "target_km", "label": "Obiettivo KM", "type": "number", "default": 3, "min": 1, "max": 42},
+        ],
+        "scoring": "distanza_coperta",
+        "xp_reward": 200,
+        "discipline": "endurance",
+    },
+]
+
+@api_router.get("/challenge-templates/presets")
+async def get_challenge_template_presets(current_user: dict = Depends(get_current_user)):
+    """Get sport-specific challenge template presets for CREA SFIDA"""
+    return {"templates": CHALLENGE_TEMPLATE_PRESETS, "sports": list(set(t["sport"] for t in CHALLENGE_TEMPLATE_PRESETS))}
+
+
+# ====================================
+# BUILD 35 — QUICK TRAINING SESSION
+# POST /api/training/quick-session
+# ====================================
+@api_router.post("/training/quick-session")
+async def save_quick_training(body: dict, current_user: dict = Depends(get_current_user)):
+    """Save a quick training session (Cardio/Strength/Core). Awards Vital K-Flux and validates K-Timeline."""
+    category = body.get("category", "cardio").lower()
+    duration_seconds = int(body.get("duration_seconds", 0))
+    rpe = int(body.get("rpe", 5))
+    exercises_done = body.get("exercises", [])
+
+    if duration_seconds < 30:
+        raise HTTPException(status_code=400, detail="Sessione troppo breve (min 30 sec)")
+
+    # Calculate Vital K-Flux based on duration and RPE
+    base_flux = min(duration_seconds / 60, 30)  # max 30 for 30 min
+    rpe_mult = 0.6 + (rpe / 10) * 0.8  # RPE 1=0.68x, RPE 10=1.4x
+    vital_flux = round(base_flux * rpe_mult)
+
+    # Save training record
+    record = {
+        "user_id": current_user["_id"],
+        "type": "quick_training",
+        "category": category,
+        "duration_seconds": duration_seconds,
+        "rpe": rpe,
+        "exercises": exercises_done,
+        "vital_flux_earned": vital_flux,
+        "created_at": datetime.now(timezone.utc),
+    }
+    await db.training_sessions.insert_one(record)
+
+    # Award Vital K-Flux
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$inc": {"flux_vital": vital_flux, "xp": vital_flux * 2}}
+    )
+
+    # Auto check-in for K-Timeline
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    existing = await db.checkins.find_one({"user_id": current_user["_id"], "date": today})
+    if not existing:
+        await db.checkins.insert_one({
+            "user_id": current_user["_id"],
+            "date": today,
+            "source": "training_session",
+            "created_at": datetime.now(timezone.utc),
+        })
+
+    return {
+        "status": "completed",
+        "category": category,
+        "duration_seconds": duration_seconds,
+        "rpe": rpe,
+        "vital_flux_earned": vital_flux,
+        "xp_earned": vital_flux * 2,
+        "checkin_validated": True,
+    }
+
+
+# ====================================
+# BUILD 35 — LIVE CHALLENGES
+# GET /api/challenges/live
+# ====================================
+@api_router.get("/challenges/live")
+async def get_live_challenges(current_user: dict = Depends(get_current_user)):
+    """Get challenges that are live or starting within next 15 minutes"""
+    now = datetime.now(timezone.utc)
+    window = now + timedelta(minutes=15)
+
+    # Get active PvP challenges for this user
+    active = await db.pvp_challenges.find({
+        "$or": [
+            {"challenger_id": current_user["_id"]},
+            {"challenged_id": current_user["_id"]},
+        ],
+        "status": {"$in": ["accepted", "challenger_done"]},
+    }).sort("created_at", -1).to_list(20)
+
+    # Get pending crew battles
+    user_crews = await db.crews.find({
+        "members": {"$elemMatch": {"user_id": current_user["_id"]}}
+    }).to_list(50)
+    crew_ids = [c["_id"] for c in user_crews]
+
+    crew_battles = []
+    if crew_ids:
+        crew_battles = await db.battles.find({
+            "$or": [{"crew_a_id": {"$in": crew_ids}}, {"crew_b_id": {"$in": crew_ids}}],
+            "status": "active",
+        }).sort("created_at", -1).to_list(10)
+
+    results = []
+    for ch in active:
+        is_challenger = str(ch["challenger_id"]) == str(current_user["_id"])
+        opponent = ch.get("challenged_username") if is_challenger else ch.get("challenger_username")
+        results.append({
+            "id": str(ch["_id"]),
+            "type": "pvp",
+            "opponent": opponent or "KORE",
+            "discipline": ch.get("discipline", "power"),
+            "status": ch.get("status"),
+            "xp_stake": ch.get("xp_stake", 100),
+            "created_at": ch["created_at"].isoformat() if ch.get("created_at") else None,
+            "expires_at": ch["expires_at"].isoformat() if ch.get("expires_at") else None,
+        })
+
+    for b in crew_battles:
+        results.append({
+            "id": str(b["_id"]),
+            "type": "crew",
+            "opponent": b.get("crew_b_name") or b.get("crew_a_name", "CREW"),
+            "discipline": "crew_battle",
+            "status": b.get("status"),
+            "created_at": b["created_at"].isoformat() if b.get("created_at") else None,
+        })
+
+    return {"live": results, "count": len(results)}
+
+
+# ====================================
+# BUILD 35 — RESPOND/REMATCH ENGINE
+# GET /api/challenges/respond-eligible
+# ====================================
+@api_router.get("/challenges/respond-eligible")
+async def get_respond_eligible(current_user: dict = Depends(get_current_user)):
+    """Check if user has pending challenges or lost last one (eligible for RISPONDI/rematch)"""
+    uid = current_user["_id"]
+
+    # Check pending challenges
+    pending = await db.pvp_challenges.find({
+        "challenged_id": uid,
+        "status": "pending",
+    }).sort("created_at", -1).to_list(5)
+
+    # Check last completed challenge (did user lose?)
+    last_completed = await db.pvp_challenges.find_one({
+        "$or": [{"challenger_id": uid}, {"challenged_id": uid}],
+        "status": "completed",
+        "winner_id": {"$exists": True},
+    }, sort=[("created_at", -1)])
+
+    lost_last = False
+    rematch_data = None
+    if last_completed and str(last_completed.get("winner_id")) != str(uid):
+        lost_last = True
+        rematch_data = {
+            "challenge_id": str(last_completed["_id"]),
+            "opponent_id": str(last_completed["challenger_id"]) if str(last_completed["challenged_id"]) == str(uid) else str(last_completed["challenged_id"]),
+            "opponent_username": last_completed.get("challenger_username") if str(last_completed["challenged_id"]) == str(uid) else last_completed.get("challenged_username"),
+            "discipline": last_completed.get("discipline"),
+            "xp_stake": last_completed.get("xp_stake", 100),
+        }
+
+    pending_list = []
+    for p in pending:
+        pending_list.append({
+            "id": str(p["_id"]),
+            "challenger": p.get("challenger_username", "KORE"),
+            "discipline": p.get("discipline"),
+            "xp_stake": p.get("xp_stake", 100),
+            "created_at": p["created_at"].isoformat() if p.get("created_at") else None,
+        })
+
+    return {
+        "eligible": len(pending_list) > 0 or lost_last,
+        "pending": pending_list,
+        "lost_last": lost_last,
+        "rematch": rematch_data,
+    }
+
+
+# ====================================
 # SCAN RESULT — Indestructible Save
 # POST /api/scan/result
 # Saves NEXUS Bio-Scan outcome: updates DNA, assigns XP, forces city for ranking.

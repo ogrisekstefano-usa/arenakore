@@ -316,6 +316,7 @@ function NexusDashboard() {
   const [checkinStreak, setCheckinStreak] = useState(0);
   const [pendingChallenge, setPendingChallenge] = useState<any>(null);
   const [showGhostBanner, setShowGhostBanner] = useState(false);
+  const [respondEligible, setRespondEligible] = useState(false);
   const checkinDoneRef = useRef(false);
 
   // Random photo selection per render/refresh
@@ -373,6 +374,11 @@ function NexusDashboard() {
     try {
       const duels = await apiClient('/duels/pending');
       if (duels && Array.isArray(duels) && duels.length > 0) setPendingChallenge(duels[0]);
+    } catch { /* */ }
+    try {
+      const resp = await apiClient('/challenges/respond-eligible');
+      if (resp && resp.eligible) setRespondEligible(true);
+      else setRespondEligible(false);
     } catch { /* */ }
   }, [token, user]);
 
@@ -466,12 +472,12 @@ function NexusDashboard() {
           <HeroCard
             icon="barbell"
             title="ALLENAMENTO"
-            sub="Avvio rapido sessione di base"
+            sub="Sessione rapida con timer & RPE"
             color={CYAN}
             imageUri={cardPhotos.training}
             delay={100}
             size="half"
-            onPress={() => router.push('/(tabs)/arena' as any)}
+            onPress={() => router.push('/training-session' as any)}
           />
           <HeroCard
             icon="trophy"
@@ -486,12 +492,12 @@ function NexusDashboard() {
           <HeroCard
             icon="radio"
             title="LIVE"
-            sub="Entra nell'Arena ora"
+            sub="Sfide in corso & programmate"
             color={RED}
             imageUri={cardPhotos.live}
             delay={200}
             size="half"
-            onPress={() => router.push('/(tabs)/arena' as any)}
+            onPress={() => router.push('/live-challenges' as any)}
           />
           <HeroCard
             icon="people"
@@ -511,17 +517,31 @@ function NexusDashboard() {
             imageUri={cardPhotos.create}
             delay={300}
             size="half"
-            onPress={() => router.push('/(tabs)/arena' as any)}
+            onPress={() => router.push('/create-challenge' as any)}
           />
-          <HeroCard
-            icon="refresh"
-            title="RISPONDI"
-            sub="Rilancia e Rematch"
-            color={CYAN}
-            imageUri={cardPhotos.respond}
-            delay={350}
-            size="half"
-            onPress={() => router.push('/duel-search' as any)}
+          {respondEligible ? (
+            <HeroCard
+              icon="refresh"
+              title="RISPONDI"
+              sub="Rivincita o Sfida Pendente!"
+              color={RED}
+              imageUri={cardPhotos.respond}
+              delay={350}
+              size="half"
+              onPress={() => router.push('/live-challenges' as any)}
+            />
+          ) : (
+            <HeroCard
+              icon="body"
+              title="K-SCAN"
+              sub="Bio-Analisi Puppet Motion"
+              color={CYAN}
+              imageUri={cardPhotos.respond}
+              delay={350}
+              size="half"
+              onPress={() => router.push('/k-scan' as any)}
+            />
+          )}}
           />
         </View>
 
