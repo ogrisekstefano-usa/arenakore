@@ -90,7 +90,7 @@ try:
 
     def u2r(u):
         nc = bool(u.get("onboarding_completed") and u.get("baseline_scanned_at") and u.get("dna"))
-        return {"id":str(u["_id"]),"username":u["username"],"email":u["email"],"first_name":u.get("first_name",""),"last_name":u.get("last_name",""),"language":u.get("language","IT"),"role":nr(u),"gym_id":str(u["gym_id"]) if u.get("gym_id") else None,"sport":u.get("sport"),"xp":u.get("xp",0),"flux":u.get("xp",0),"level":u.get("level",1),"onboarding_completed":u.get("onboarding_completed",False),"is_nexus_certified":nc,"baseline_scanned_at":u.get("baseline_scanned_at").isoformat() if u.get("baseline_scanned_at") else None,"scout_visible":u.get("scout_visible",True),"dna":u.get("dna"),"avatar_color":u.get("avatar_color","#00E5FF"),"is_admin":u.get("is_admin",False),"is_founder":u.get("is_founder",False),"founder_number":u.get("founder_number"),"height_cm":u.get("height_cm"),"weight_kg":u.get("weight_kg"),"age":u.get("age"),"gender":u.get("gender"),"is_pro":(u.get("level",1)>=10 or u.get("xp",0)>=3000),"pro_unlocked":u.get("pro_unlocked",False),"ghost_mode":u.get("ghost_mode",False),"camera_enabled":u.get("camera_enabled",False),"mic_enabled":u.get("mic_enabled",False),"city":u.get("city"),"ak_credits":u.get("ak_credits",0),"master_flux":u.get("master_flux",0),"diamond_flux":u.get("diamond_flux",0),"unlocked_tools":u.get("unlocked_tools",[]),"total_scans":len(u.get("dna_scans",[])),"bmi":u.get("bmi"),"bio_coefficient":u.get("bio_coefficient"),"profile_picture":u.get("profile_picture"),"cover_photo":u.get("cover_photo"),"preferred_sport":u.get("preferred_sport") or u.get("sport"),"training_level":u.get("training_level","Amateur")}
+        return {"id":str(u["_id"]),"username":u["username"],"email":u["email"],"first_name":u.get("first_name",""),"last_name":u.get("last_name",""),"language":u.get("language","IT"),"role":nr(u),"gym_id":str(u["gym_id"]) if u.get("gym_id") else None,"sport":u.get("sport"),"xp":u.get("xp",0),"flux_vital":u.get("flux_vital",0),"flux_perform":u.get("flux_perform",0),"flux_team":u.get("flux_team",0),"flux":u.get("flux_vital",0)+u.get("flux_perform",0)+u.get("flux_team",0),"level":u.get("level",1),"onboarding_completed":u.get("onboarding_completed",False),"is_nexus_certified":nc,"baseline_scanned_at":u.get("baseline_scanned_at").isoformat() if u.get("baseline_scanned_at") else None,"scout_visible":u.get("scout_visible",True),"dna":u.get("dna"),"avatar_color":u.get("avatar_color","#00E5FF"),"is_admin":u.get("is_admin",False),"is_founder":u.get("is_founder",False),"founder_number":u.get("founder_number"),"height_cm":u.get("height_cm"),"weight_kg":u.get("weight_kg"),"age":u.get("age"),"gender":u.get("gender"),"is_pro":(u.get("level",1)>=10 or u.get("xp",0)>=3000),"pro_unlocked":u.get("pro_unlocked",False),"ghost_mode":u.get("ghost_mode",False),"camera_enabled":u.get("camera_enabled",False),"mic_enabled":u.get("mic_enabled",False),"city":u.get("city"),"ak_credits":u.get("ak_credits",0),"master_flux":u.get("master_flux",0),"diamond_flux":u.get("diamond_flux",0),"unlocked_tools":u.get("unlocked_tools",[]),"total_scans":len(u.get("dna_scans",[])),"bmi":u.get("bmi"),"bio_coefficient":u.get("bio_coefficient"),"profile_picture":u.get("profile_picture"),"cover_photo":u.get("cover_photo"),"preferred_sport":u.get("preferred_sport") or u.get("sport"),"training_level":u.get("training_level","Amateur"),"checkin_streak":u.get("checkin_streak",0)}
 
     # ── RBAC Helpers ──
     def require_role(*roles):
@@ -249,6 +249,91 @@ try:
     async def gab(cu:dict=Depends(gcu)): return {"ak_credits":cu.get("ak_credits",0),"master_flux":cu.get("master_flux",0)}
     @api.get("/ak/tools")
     async def gat(cu:dict=Depends(gcu)): return {"tools":[],"unlocked":cu.get("unlocked_tools",[])}
+
+    # ═══════════════════════════════════════════════════════════════
+    # CHECK-IN & FLUX SYSTEM (Build 30 — Logica di Presenza)
+    # ═══════════════════════════════════════════════════════════════
+    VITAL_FLUX_CHECKIN = 10  # Flux per daily check-in
+
+    @api.post("/checkin")
+    async def do_checkin(cu:dict=Depends(gcu)):
+        """Daily check-in — awards Vital Flux. Max 1 per day."""
+        try:
+            uid = str(cu["_id"])
+            today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            # Check if already checked in today
+            existing = await db.checkins.find_one({"user_id": uid, "date": today})
+            if existing:
+                return {"status": "already_checked_in", "date": today, "flux_awarded": 0, "message": "Hai già fatto il check-in oggi!"}
+            # Record check-in
+            await db.checkins.insert_one({"user_id": uid, "date": today, "created_at": datetime.now(timezone.utc)})
+            # Award Vital Flux
+            streak = cu.get("checkin_streak", 0) + 1
+            bonus = min(streak, 7) * 2  # Streak bonus: up to +14
+            total_flux = VITAL_FLUX_CHECKIN + bonus
+            await db.users.update_one({"_id": cu["_id"]}, {
+                "$inc": {"flux_vital": total_flux, "xp": total_flux},
+                "$set": {"checkin_streak": streak, "last_checkin": today}
+            })
+            return {"status": "checked_in", "date": today, "flux_awarded": total_flux, "streak": streak, "message": f"Check-in completato! +{total_flux} Vital Flux"}
+        except Exception as e:
+            log.error(f"Check-in error: {e}")
+            return {"status": "error", "message": str(e)}
+
+    @api.get("/checkin/today")
+    async def checkin_today(cu:dict=Depends(gcu)):
+        """Check if user has checked in today"""
+        try:
+            uid = str(cu["_id"])
+            today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            existing = await db.checkins.find_one({"user_id": uid, "date": today})
+            return {"checked_in": bool(existing), "date": today, "streak": cu.get("checkin_streak", 0)}
+        except Exception:
+            return {"checked_in": False, "date": "", "streak": 0}
+
+    @api.get("/checkin/week")
+    async def checkin_week(cu:dict=Depends(gcu)):
+        """Get current week check-in status (7 days)"""
+        try:
+            uid = str(cu["_id"])
+            today = datetime.now(timezone.utc)
+            # Calculate Monday of current week
+            monday = today - timedelta(days=today.weekday())
+            days = []
+            for i in range(7):
+                d = monday + timedelta(days=i)
+                date_str = d.strftime("%Y-%m-%d")
+                ci = await db.checkins.find_one({"user_id": uid, "date": date_str})
+                days.append({"date": date_str, "day_name": ["LUN","MAR","MER","GIO","VEN","SAB","DOM"][i], "checked_in": bool(ci)})
+            return {"week": days, "streak": cu.get("checkin_streak", 0)}
+        except Exception:
+            return {"week": [], "streak": 0}
+
+    @api.get("/checkin/history")
+    async def checkin_history(month:int=0,year:int=0,cu:dict=Depends(gcu)):
+        """Get monthly check-in history for calendar view"""
+        try:
+            uid = str(cu["_id"])
+            now = datetime.now(timezone.utc)
+            m = month or now.month
+            y = year or now.year
+            start = f"{y}-{m:02d}-01"
+            end_m = m + 1 if m < 12 else 1
+            end_y = y if m < 12 else y + 1
+            end = f"{end_y}-{end_m:02d}-01"
+            cis = await db.checkins.find({"user_id": uid, "date": {"$gte": start, "$lt": end}}).to_list(31)
+            checked_dates = [c["date"] for c in cis]
+            return {"month": m, "year": y, "checked_dates": checked_dates, "total_checkins": len(checked_dates)}
+        except Exception:
+            return {"month": 0, "year": 0, "checked_dates": [], "total_checkins": 0}
+
+    @api.get("/flux/balance")
+    async def flux_balance(cu:dict=Depends(gcu)):
+        """Get detailed Flux breakdown"""
+        v = cu.get("flux_vital", 0)
+        p = cu.get("flux_perform", 0)
+        t = cu.get("flux_team", 0)
+        return {"vital": v, "perform": p, "team": t, "total": v + p + t, "streak": cu.get("checkin_streak", 0)}
 
     # ═══════════════════════════════════════════════════════════════
     # GYM & STAFF HUB ENDPOINTS
