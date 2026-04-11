@@ -23,7 +23,6 @@ import { TAB_BACKGROUNDS } from '../../utils/images';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { CrewBattleDashboard } from '../../components/CrewBattleDashboard';
-import { ToolLock } from '../../components/KoreVault';
 import { ChallengeInviteModal } from '../../components/crew/ChallengeInviteModal';
 import { CertBadge } from '../../components/CertBadge';
 import { SkeletonBattleCard, SkeletonCard, SkeletonRow } from '../../components/SkeletonLoader';
@@ -407,6 +406,7 @@ const wrc$ = StyleSheet.create({
 // ========== LIVE BATTLE DASHBOARD ==========
 function LiveBattleDashboard() {
   const { token } = useAuth();
+  const router = useRouter();
   const [battles, setBattles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -435,13 +435,19 @@ function LiveBattleDashboard() {
       ) : error ? (
         <RetryBlock error={error} onRetry={load} />
       ) : battles.length === 0 ? (
-        <TouchableOpacity style={lbd$.ctaCard} onPress={() => router.push('/duel-search' as any)} activeOpacity={0.85}>
-          <Ionicons name="flash" size={20} color="#FFD700" />
-          <View style={lbd$.ctaText}>
-            <Text style={lbd$.ctaTitle}>LANCIA IL GUANTO</Text>
-            <Text style={lbd$.ctaSub}>Inizia una nuova sfida agonistica</Text>
+        <TouchableOpacity
+          style={lbd$.ctaCard}
+          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}); router.push('/(tabs)/nexus-trigger'); }}
+          activeOpacity={0.85}
+        >
+          <View style={lbd$.ctaIconWrap}>
+            <Ionicons name="flash" size={22} color="#000" />
           </View>
-          <Ionicons name="chevron-forward" size={16} color="rgba(255,215,0,0.4)" />
+          <View style={lbd$.ctaTextCol}>
+            <Text style={lbd$.ctaTitle}>LANCIA IL GUANTO</Text>
+            <Text style={lbd$.ctaSub}>Vai alla sezione SFIDA su NÈXUS</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="rgba(255,215,0,0.5)" />
         </TouchableOpacity>
       ) : (
         battles.map(b => <LiveBattleCard key={b.id} battle={b} onOpenDashboard={(id: string) => setDashboardBattleId(id)} />)
@@ -456,162 +462,22 @@ const lbd$ = StyleSheet.create({
   sectionTitle: { flex: 1, color: '#FFFFFF', fontSize: 16, fontWeight: '800', letterSpacing: -0.5, lineHeight: 19 },
   countBadge: { backgroundColor: 'rgba(255,59,48,0.15)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(255,59,48,0.3)' },
   countText: { color: '#FF3B30', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  emptyCard: { marginHorizontal: 24, backgroundColor: 'rgba(255,59,48,0.04)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(255,59,48,0.1)', gap: 4 },
-  emptyTitle: { color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
-  emptySub: { color: 'rgba(255,255,255,0.25)', fontSize: 14, fontWeight: '400' }
+  ctaCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    marginHorizontal: 24, paddingVertical: 16, paddingHorizontal: 18,
+    backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 16,
+    borderWidth: 1.5, borderColor: 'rgba(255,215,0,0.2)',
+  },
+  ctaIconWrap: {
+    width: 44, height: 44, borderRadius: 14,
+    backgroundColor: '#FFD700', alignItems: 'center', justifyContent: 'center',
+  },
+  ctaTextCol: { flex: 1, gap: 2 },
+  ctaTitle: { color: '#FFD700', fontSize: 16, fontWeight: '900', letterSpacing: 2 },
+  ctaSub: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '600' },
 });
 
-// ========== MATCHMAKING AI ==========
-function MatchmakingPanel() {
-  const { token, user } = useAuth();
-  const router = useRouter();
-  const [data, setData] = useState<any>(null);
-  const [challenging, setChallengingId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const isUnlocked = user?.unlocked_tools?.includes('ai_matchmaker');
-
-  const loadMatchmaking = useCallback(async () => {
-    if (!token) { setLoading(false); return; }
-    setFetchError(null);
-    const { data: d, error } = await safeFetch(() => api.getCrewMatchmake(token), 'matchmaking');
-    if (error) setFetchError(error);
-    else setData(d);
-    setLoading(false);
-  }, [token]);
-
-  useEffect(() => { loadMatchmaking(); }, [loadMatchmaking]);
-
-  const handleChallenge = async (crewId: string, crewName: string) => {
-    if (!token || !data?.has_crew) return;
-    setChallengingId(crewId);
-    try {
-      await api.challengeCrew(crewId, token, 24);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      Alert.alert('SFIDA LANCIATA', `${crewName} è stata sfidata! La battle dura 24h.`);
-      const { data: newData } = await safeFetch(() => api.getCrewMatchmake(token));
-      if (newData) setData(newData);
-    } catch (e: any) {
-      Alert.alert('SFIDA FALLITA', e?.message || 'Errore nell\'avviare la battle');
-    } finally {
-      setChallengingId(null);
-    }
-  };
-
-  if (loading) return (
-    <View style={{ marginHorizontal: 24, marginBottom: 12, gap: 8 }}>
-      <SkeletonRow /><SkeletonRow />
-    </View>
-  );
-
-  if (fetchError || !data) {
-    return (
-      <View style={mp$.section}>
-        <View style={mp$.header}>
-          <View style={mp$.headerLeft}>
-            <Ionicons name="analytics" size={12} color="#FFD700" />
-            <Text style={mp$.title}>MATCHMAKING AI</Text>
-          </View>
-        </View>
-        <RetryBlock error={fetchError || 'Server non disponibile'} onRetry={loadMatchmaking} />
-      </View>
-    );
-  }
-
-  const suggestions = Array.isArray(data?.suggestions) ? data.suggestions : [];
-  if (!suggestions.length && isUnlocked) return null;
-
-  return (
-    <Animated.View entering={FadeInDown.delay(200).duration(400)} style={[mp$.section, { position: 'relative' as any }]}>
-      {!isUnlocked && (
-        <ToolLock toolId="ai_matchmaker" toolName="AI MATCHMAKER" costAk={500} onNavigate={() => router.push('/(tabs)/kore')} />
-      )}
-      <View style={mp$.header}>
-        <View style={mp$.headerLeft}>
-          <Ionicons name="analytics" size={12} color="#FFD700" />
-          <Text style={mp$.title}>MATCHMAKING AI</Text>
-        </View>
-        {data?.has_crew && (
-          <View style={mp$.myScorePill}>
-            <Text style={mp$.myScoreLabel}>IL TUO KORE</Text>
-            <Text style={mp$.myScoreVal}>{data?.my_kore_score ?? '—'}</Text>
-          </View>
-        )}
-      </View>
-      {!data?.has_crew && (
-        <View style={mp$.noCrew}>
-          <Ionicons name="people" size={16} color="rgba(255,215,0,0.5)" />
-          <Text style={mp$.noCrewText}>Unisciti a una Crew per sfidare avversari compatibili</Text>
-        </View>
-      )}
-      {suggestions.map((opp: any, idx: number) => {
-        const scoreDiff = opp.score_diff;
-        const matchLabel = scoreDiff <= 2 ? 'MATCH PERFETTO' : scoreDiff <= 8 ? 'MATCH BUONO' : 'MATCH ACCETTABILE';
-        const matchColor = scoreDiff <= 2 ? '#00E5FF' : scoreDiff <= 8 ? '#FFD700' : '#FF9500';
-        return (
-          <Animated.View key={opp.id} entering={FadeInDown.delay(idx * 80).duration(300)} style={mp$.card}>
-            <View style={mp$.cardLeft}>
-              <View style={mp$.nameRow}>
-                <Text style={mp$.crewName}>{opp.name.toUpperCase()}</Text>
-                <View style={[mp$.matchPill, { borderColor: matchColor + '40' }]}>
-                  <Text style={[mp$.matchText, { color: matchColor }]}>{matchLabel}</Text>
-                </View>
-              </View>
-              <View style={mp$.metaRow}>
-                <Ionicons name="people" size={10} color="rgba(255,255,255,0.3)" />
-                <Text style={mp$.meta}>{opp.members_count} Kore</Text>
-                <Text style={mp$.meta}>·</Text>
-                <Text style={mp$.meta}>KORE {opp.kore_battle_score}</Text>
-              </View>
-            </View>
-            {opp.already_challenged ? (
-              <View style={mp$.challenged}>
-                <Ionicons name="checkmark-circle" size={14} color="#00FF87" />
-                <Text style={mp$.challengedText}>IN CORSO</Text>
-              </View>
-            ) : (
-              <TouchableOpacity
-                style={[mp$.challengeBtn, data?.has_crew ? {} : mp$.challengeBtnDisabled]}
-                onPress={() => data?.has_crew ? handleChallenge(opp.id, opp.name) : null}
-                disabled={!data?.has_crew || challenging === opp.id}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="flash-sharp" size={12} color="#050505" />
-                <Text style={mp$.challengeBtnText}>SFIDA</Text>
-              </TouchableOpacity>
-            )}
-          </Animated.View>
-        );
-      })}
-      <Text style={mp$.footNote}>Matchmaking AI — differenza max 35% KORE Score</Text>
-    </Animated.View>
-  );
-}
-const mp$ = StyleSheet.create({
-  section: { marginHorizontal: 24, marginBottom: 12, backgroundColor: 'rgba(255,215,0,0.04)', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: 'rgba(255,215,0,0.14)' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { color: '#FFD700', fontSize: 15, fontWeight: '900', letterSpacing: 3 },
-  myScorePill: { alignItems: 'flex-end', gap: 1 },
-  myScoreLabel: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '900', letterSpacing: 2 },
-  myScoreVal: { color: '#FFD700', fontSize: 18, fontWeight: '900', letterSpacing: 1 },
-  noCrew: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
-  noCrewText: { flex: 1, color: 'rgba(255,215,0,0.5)', fontSize: 14, fontWeight: '400', lineHeight: 17 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
-  cardLeft: { flex: 1, gap: 4 },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  crewName: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: 1 },
-  matchPill: { borderWidth: 1, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
-  matchText: { fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  meta: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '400' },
-  challengeBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#FFD700', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, minWidth: 68 },
-  challengeBtnDisabled: { backgroundColor: 'rgba(255,215,0,0.3)' },
-  challengeBtnText: { color: '#000000', fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
-  challenged: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  challengedText: { color: '#00FF87', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
-  footNote: { color: 'rgba(0,229,255,0.3)', fontSize: 12, fontWeight: '400', letterSpacing: 0.5, marginTop: 10, textAlign: 'center' }
-});
+// MatchmakingPanel REMOVED — Build 34 Cleanup
 
 // ══════════════════════════════════════════════════════════
 // MAIN ARENA TAB
@@ -653,7 +519,6 @@ export default function ArenaTab() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#FF453A" />}
       >
         <LiveBattleDashboard key={refreshing ? 'r' : 's'} />
-        <MatchmakingPanel key={refreshing ? 'mr' : 'ms'} />
         <HeroBanner />
         <KoreOfTheDay />
         <View style={s.dividerSection}>
@@ -665,8 +530,8 @@ export default function ArenaTab() {
 
         {/* Footer */}
         <View style={s.footer}>
-          <Text style={s.footerText}>ARENA · IRONCLAD NETWORK · CACHED</Text>
-          <Text style={s.versionLabel}>v2.1.0 — Build 25 · ARENA</Text>
+          <Text style={s.footerText}>ARENA · SFIDA · COMPETE</Text>
+          <Text style={s.versionLabel}>v3.4.0 — Build 34 · ARENA</Text>
         </View>
       </ScrollView>
     </ImageBackground>

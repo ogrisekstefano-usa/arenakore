@@ -296,32 +296,7 @@ const hc$ = StyleSheet.create({
   sub: { color: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: '600', letterSpacing: 0.3 },
 });
 
-// ═══ HEARTBEAT WIDGET ═══
-function HeartbeatWidget() {
-  const [connected] = useState(false);
-  return (
-    <View style={hb$.container}>
-      <View style={hb$.left}>
-        <View style={[hb$.dot, connected && hb$.dotActive]} />
-        <Ionicons name="heart" size={12} color={connected ? RED : 'rgba(255,255,255,0.1)'} />
-        <Text style={hb$.label}>{connected ? 'APPLE WATCH' : 'DISPOSITIVO NON CONNESSO'}</Text>
-      </View>
-      <Ionicons name="watch-outline" size={14} color="rgba(255,255,255,0.08)" />
-    </View>
-  );
-}
-const hb$ = StyleSheet.create({
-  container: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: 'rgba(255,255,255,0.01)', borderRadius: 10,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.03)',
-    paddingHorizontal: 12, paddingVertical: 8, marginBottom: 10,
-  },
-  left: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.08)' },
-  dotActive: { backgroundColor: RED },
-  label: { color: 'rgba(255,255,255,0.15)', fontSize: 8, fontWeight: '800', letterSpacing: 1.5 },
-});
+// HeartbeatWidget REMOVED — Build 34 (K-Rating replaces it)
 
 // ═══ MAIN DASHBOARD ═══
 function NexusDashboard() {
@@ -435,7 +410,7 @@ function NexusDashboard() {
         {/* K-TIMELINE */}
         <KTimeline weekData={weekData} streak={checkinStreak} />
 
-        {/* ═══ K-RATING PROMINENTE (0-1000) ═══ */}
+        {/* ═══ K-RATING PROMINENTE (0-1000) — NIKE PREMIUM ═══ */}
         <Animated.View entering={FadeInDown.delay(100).duration(400)} style={s.kRatingCard}>
           <View style={s.kRatingHeader}>
             <Text style={s.kRatingLabel}>K-RATING</Text>
@@ -452,11 +427,15 @@ function NexusDashboard() {
           </View>
           <View style={s.kRatingRow}>
             <Text style={s.kRatingValue}>{koreScore ?? 0}</Text>
-            <Text style={s.kRatingMax}>/1000</Text>
+            <View style={s.kRatingMaxWrap}>
+              <Text style={s.kRatingSlash}>/</Text>
+              <Text style={s.kRatingMax}>1000</Text>
+            </View>
             {koreData?.weekly_trend !== undefined && koreData.weekly_trend !== 0 && (
               <View style={[s.trendBadge, koreData.weekly_trend > 0 ? s.trendUp : s.trendDown]}>
+                <Ionicons name={koreData.weekly_trend > 0 ? 'trending-up' : 'trending-down'} size={14} color={koreData.weekly_trend > 0 ? '#32D74B' : '#FF453A'} />
                 <Text style={[s.trendText, koreData.weekly_trend > 0 ? s.trendTextUp : s.trendTextDown]}>
-                  {koreData.weekly_trend > 0 ? '+' : ''}{koreData.weekly_trend} {koreData.weekly_trend > 0 ? '📈' : '📉'}
+                  {koreData.weekly_trend > 0 ? '+' : ''}{koreData.weekly_trend}
                 </Text>
               </View>
             )}
@@ -581,23 +560,29 @@ const s = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // K-RATING PROMINENTE (0-1000)
+  // K-RATING PROMINENTE — NIKE PREMIUM (0-1000)
   kRatingCard: {
-    backgroundColor: 'rgba(0,229,255,0.03)', borderRadius: 16,
-    borderWidth: 1, borderColor: 'rgba(0,229,255,0.1)',
-    padding: 16, marginBottom: 16, gap: 8,
+    backgroundColor: 'rgba(0,229,255,0.04)', borderRadius: 20,
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)',
+    padding: 20, marginBottom: 16, gap: 10,
   },
   kRatingHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  kRatingLabel: { color: CYAN, fontSize: 12, fontWeight: '900', letterSpacing: 3 },
-  kRatingRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4, flexWrap: 'wrap' },
-  kRatingValue: { color: CYAN, fontSize: 42, fontWeight: '900', letterSpacing: -2 },
-  kRatingMax: { color: 'rgba(0,229,255,0.2)', fontSize: 16, fontWeight: '700' },
-  kRatingBar: { height: 4, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 2, overflow: 'hidden' },
-  kRatingBarFill: { height: '100%', borderRadius: 2 },
-  trendBadge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2, marginLeft: 8 },
-  trendUp: { backgroundColor: 'rgba(50,215,75,0.1)' },
-  trendDown: { backgroundColor: 'rgba(255,69,58,0.1)' },
-  trendText: { fontSize: 12, fontWeight: '900' },
+  kRatingLabel: { color: CYAN, fontSize: 11, fontWeight: '900', letterSpacing: 4 },
+  kRatingRow: { flexDirection: 'row', alignItems: 'baseline', gap: 2, flexWrap: 'wrap' },
+  kRatingValue: {
+    color: CYAN, fontSize: 64, fontWeight: '900',
+    letterSpacing: -3, lineHeight: 68,
+    fontStyle: 'italic',
+  },
+  kRatingMaxWrap: { flexDirection: 'row', alignItems: 'baseline', gap: 0, marginLeft: 2 },
+  kRatingSlash: { color: 'rgba(0,229,255,0.15)', fontSize: 28, fontWeight: '300', fontStyle: 'italic' },
+  kRatingMax: { color: 'rgba(0,229,255,0.15)', fontSize: 20, fontWeight: '700', fontStyle: 'italic' },
+  kRatingBar: { height: 5, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' },
+  kRatingBarFill: { height: '100%', borderRadius: 3 },
+  trendBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4, marginLeft: 12 },
+  trendUp: { backgroundColor: 'rgba(50,215,75,0.12)' },
+  trendDown: { backgroundColor: 'rgba(255,69,58,0.12)' },
+  trendText: { fontSize: 14, fontWeight: '900', letterSpacing: 0.5 },
   trendTextUp: { color: '#32D74B' },
   trendTextDown: { color: '#FF453A' },
 

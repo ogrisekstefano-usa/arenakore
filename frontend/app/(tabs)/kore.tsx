@@ -269,12 +269,31 @@ export default function KoreTab() {
           { date: '', day_name: 'DOM', checked_in: false },
         ]} streak={checkinStreak} onTap={() => setShowCalendar(true)} />
 
-        {/* ══════ K-FLUX BREAKDOWN (3 Types) ══════ */}
-        <SectionHeader icon="flash" title="K-FLUX" color={CYAN} />
-        <View style={s.fluxGrid}>
-          <StatCard value={String(fluxVital)} label="VITAL" color={CYAN} icon="heart" delay={100} />
-          <StatCard value={String(fluxPerform)} label="PERFORM" color={GOLD} icon="trophy" delay={150} />
-          <StatCard value={String(fluxTeam)} label="TEAM" color={PURPLE} icon="people" delay={200} />
+        {/* ══════ K-FLUX BREAKDOWN (Flat Premium Inline) ══════ */}
+        <View style={s.fluxInlineSection}>
+          <View style={s.fluxInlineHeader}>
+            <Ionicons name="flash" size={12} color={CYAN} />
+            <Text style={s.fluxInlineTitle}>K-FLUX</Text>
+          </View>
+          <View style={s.fluxInlineRow}>
+            <View style={s.fluxInlineItem}>
+              <Ionicons name="heart" size={16} color={CYAN} />
+              <Text style={[s.fluxInlineVal, { color: CYAN }]}>{fluxVital}</Text>
+              <Text style={s.fluxInlineLabel}>VITAL</Text>
+            </View>
+            <View style={s.fluxInlineDivider} />
+            <View style={s.fluxInlineItem}>
+              <Ionicons name="trophy" size={16} color={GOLD} />
+              <Text style={[s.fluxInlineVal, { color: GOLD }]}>{fluxPerform}</Text>
+              <Text style={s.fluxInlineLabel}>PERFORM</Text>
+            </View>
+            <View style={s.fluxInlineDivider} />
+            <View style={s.fluxInlineItem}>
+              <Ionicons name="people" size={16} color={PURPLE} />
+              <Text style={[s.fluxInlineVal, { color: PURPLE }]}>{fluxTeam}</Text>
+              <Text style={s.fluxInlineLabel}>TEAM</Text>
+            </View>
+          </View>
         </View>
 
         {/* ══════ STATS GRID ══════ */}
@@ -323,8 +342,8 @@ export default function KoreTab() {
         {/* ══════ FOOTER ══════ */}
         <View style={s.footer}>
           <View style={s.footerLine} />
-          <Text style={s.footerText}>KORE ID · IRONCLAD NETWORK</Text>
-          <Text style={s.versionLabel}>v2.5.0 — Build 31 · K-TIMELINE</Text>
+          <Text style={s.footerText}>KORE ID · FLAT PREMIUM</Text>
+          <Text style={s.versionLabel}>v3.4.0 — Build 34 · K-FLUX</Text>
         </View>
       </ScrollView>
 
@@ -355,8 +374,15 @@ const s = StyleSheet.create({
   founderText: { color: GOLD, fontSize: 8, fontWeight: '900', letterSpacing: 1 },
   koreSerial: { color: 'rgba(255,255,255,0.15)', fontSize: 10, fontWeight: '700', letterSpacing: 2 },
 
-  // K-Flux Grid
-  fluxGrid: { flexDirection: 'row', gap: 8 },
+  // K-Flux Flat Premium Inline
+  fluxInlineSection: { marginTop: 20, marginBottom: 4 },
+  fluxInlineHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 14 },
+  fluxInlineTitle: { color: CYAN, fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  fluxInlineRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' },
+  fluxInlineItem: { alignItems: 'center', gap: 4, flex: 1 },
+  fluxInlineVal: { fontSize: 22, fontWeight: '900', letterSpacing: -0.5 },
+  fluxInlineLabel: { color: 'rgba(255,255,255,0.18)', fontSize: 8, fontWeight: '900', letterSpacing: 2.5 },
+  fluxInlineDivider: { width: 1, height: 36, backgroundColor: 'rgba(255,255,255,0.05)' },
   statsGrid: { flexDirection: 'row', gap: 8, marginTop: 12 },
   radarWrap: { alignItems: 'center', marginBottom: 8 },
   emptyDna: { alignItems: 'center', gap: 8, paddingVertical: 32, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)' },
