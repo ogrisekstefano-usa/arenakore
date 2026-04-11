@@ -22,7 +22,12 @@
         "NSMicrophoneUsageDescription": "Comandi vocali durante K-Scan",
         "NSHealthShareUsageDescription": "Frequenza cardiaca per K-Rating bio-verified",
         "NSHealthUpdateUsageDescription": "Salvataggio dati allenamento su Apple Health",
-        "NSMotionUsageDescription": "Tracking movimenti durante K-Scan"
+        "NSMotionUsageDescription": "Tracking movimenti durante K-Scan",
+        "UIBackgroundModes": ["processing", "fetch"]
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.background-delivery": true
       }
     },
     "android": {
