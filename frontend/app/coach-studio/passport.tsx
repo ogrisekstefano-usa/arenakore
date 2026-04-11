@@ -69,7 +69,7 @@ export default function AthletePasPport() {
         </View>
         <View style={p$.headerInfo}>
           <Text style={p$.name}>{user?.username?.toUpperCase() || '—'}</Text>
-          <Text style={p$.sub}>LVL {user?.level || 1} · {user?.xp?.toLocaleString() || 0} FLUX</Text>
+          <Text style={p$.sub}>LVL {user?.level || 1} · {user?.xp?.toLocaleString() || 0} K-FLUX</Text>
           <View style={p$.rolePill}>
             <Text style={p$.roleText}>ATHLETE · SOLA LETTURA</Text>
           </View>
@@ -108,7 +108,7 @@ export default function AthletePasPport() {
           <View style={p$.statsCard}>
             {[
               { label: 'LIVELLO', val: user?.level || 1, color: '#FFD700' },
-              { label: 'FLUX TOTALI', val: (user?.xp || 0).toLocaleString(), color: '#00E5FF' },
+              { label: 'K-FLUX TOTALI', val: (user?.xp || 0).toLocaleString(), color: '#00E5FF' },
               { label: 'DNA MEDIO', val: dnaAvg, color: '#AF52DE' },
             ].map((stat, i) => (
               <Animated.View key={stat.label} entering={FadeInDown.delay(i * 80).duration(200)} style={p$.statRow}>

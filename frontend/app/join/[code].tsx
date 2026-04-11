@@ -153,7 +153,7 @@ export default function JoinEventScreen() {
               {state === 'enrolled' && enrollResult?.xp_reward && (
                 <View style={styles.xpBadge}>
                   <Ionicons name="flash" size={14} color="#FFD700" />
-                  <Text style={styles.xpBadgeText}>+{enrollResult.xp_reward} FLUX IN PALIO</Text>
+                  <Text style={styles.xpBadgeText}>+{enrollResult.xp_reward} K-FLUX IN PALIO</Text>
                 </View>
               )}
               <TouchableOpacity style={styles.nexusBtn} onPress={goToNexus} activeOpacity={0.85}>
@@ -220,7 +220,7 @@ export default function JoinEventScreen() {
                 </View>
                 <View style={styles.statBlock}>
                   <Text style={[styles.statVal, { color: '#FFD700' }]}>+{event.xp_reward}</Text>
-                  <Text style={styles.statLabel}>FLUX REWARD</Text>
+                  <Text style={styles.statLabel}>K-FLUX REWARD</Text>
                 </View>
               </View>
 

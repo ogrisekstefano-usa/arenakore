@@ -1,12 +1,14 @@
 /**
- * NEXUS COMMAND CENTER — Build 27 · THE BIO-CORE BUILD
- * ═══════════════════════════════════════════════════════
+ * NEXUS COMMAND CENTER — Build 31 · AUTO-CHECK-IN + GHOST BANNER
+ * ═══════════════════════════════════════════════════════════════════
  * 4-Quadrant Grid matching original ExpoGo design:
  * [NEXUS SCAN]  [THE FORGE]
  * [HALL OF KORE] [MY DNA]
  * + KORE Score banner + HealthKit BPM widget + IRONCLAD
+ * + Auto-check-in al primo accesso giornaliero
+ * + Ghost Banner "Bentornato [Username], check-in effettuato"
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, TouchableOpacity,
   ScrollView, RefreshControl, Dimensions, Platform, Keyboard,
@@ -17,8 +19,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
+import { apiClient } from '../../utils/api';
 import { useRouter } from 'expo-router';
-import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeIn, FadeOut, SlideInUp, SlideOutUp } from 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SW } = Dimensions.get('window');
 const GOLD = '#FFD700';
@@ -200,6 +204,54 @@ const hb$ = StyleSheet.create({
   watchIcon: { opacity: 0.5 },
 });
 
+// ═══ GHOST BANNER — "Bentornato [Username], check-in effettuato" ═══
+function GhostBanner({ username, visible }: { username: string; visible: boolean }) {
+  if (!visible) return null;
+  return (
+    <Animated.View
+      entering={SlideInUp.duration(600)}
+      exiting={FadeOut.duration(800)}
+      style={gb$.container}
+    >
+      <LinearGradient
+        colors={['rgba(0,229,255,0.12)', 'rgba(0,229,255,0.03)', 'transparent']}
+        style={gb$.gradient}
+      >
+        <View style={gb$.inner}>
+          <View style={gb$.checkCircle}>
+            <Ionicons name="checkmark" size={12} color="#000" />
+          </View>
+          <View style={gb$.textCol}>
+            <Text style={gb$.title}>BENTORNATO {username}</Text>
+            <Text style={gb$.sub}>check-in effettuato</Text>
+          </View>
+        </View>
+      </LinearGradient>
+    </Animated.View>
+  );
+}
+const gb$ = StyleSheet.create({
+  container: {
+    position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100,
+  },
+  gradient: {
+    paddingTop: 8, paddingBottom: 16, paddingHorizontal: 20,
+  },
+  inner: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: 'rgba(0,229,255,0.08)',
+    borderRadius: 14, borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)',
+    paddingHorizontal: 16, paddingVertical: 12,
+  },
+  checkCircle: {
+    width: 24, height: 24, borderRadius: 12,
+    backgroundColor: '#00E5FF', alignItems: 'center', justifyContent: 'center',
+  },
+  textCol: { flex: 1, gap: 1 },
+  title: { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1 },
+  sub: { color: 'rgba(0,229,255,0.6)', fontSize: 11, fontWeight: '600', letterSpacing: 0.5 },
+});
+
 // ═══ CARD IMAGES ═══
 const QUAD_IMAGES = {
   nexusScan: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?crop=entropy&cs=srgb&fm=jpg&q=75&w=600',
@@ -216,6 +268,51 @@ function NexusDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [koreScore, setKoreScore] = useState<number | null>(null);
   const [eligibility, setEligibility] = useState<any>(null);
+  const [showGhostBanner, setShowGhostBanner] = useState(false);
+  const checkinDoneRef = useRef(false);
+
+  // ═══ AUTO CHECK-IN (Zero-Friction) ═══
+  useEffect(() => {
+    if (!token || checkinDoneRef.current) return;
+    checkinDoneRef.current = true;
+
+    const autoCheckin = async () => {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const bannerKey = `@ak_checkin_banner_${today}`;
+
+        // Check if we already showed banner today
+        const alreadyShown = await AsyncStorage.getItem(bannerKey).catch(() => null);
+        if (alreadyShown === 'true') return;
+
+        // Check if already checked in today
+        const todayRes = await apiClient('/checkin/today').catch(() => null);
+        if (todayRes && todayRes.checked_in === true) {
+          // Already checked in but haven't shown banner this session
+          return;
+        }
+
+        // Perform silent check-in
+        const res = await apiClient('/checkin', { method: 'POST' }).catch(() => null);
+        if (res && res.status !== 'error' && !res._error) {
+          // Show Ghost Banner
+          setShowGhostBanner(true);
+          await AsyncStorage.setItem(bannerKey, 'true').catch(() => {});
+
+          // Hide after 5 seconds
+          setTimeout(() => {
+            setShowGhostBanner(false);
+          }, 5000);
+        }
+      } catch (e) {
+        console.log('[AutoCheckin] Silent error:', e);
+      }
+    };
+
+    // Small delay to let the UI render first
+    const timer = setTimeout(autoCheckin, 800);
+    return () => clearTimeout(timer);
+  }, [token]);
 
   const loadData = useCallback(async () => {
     if (!token) return;
@@ -253,6 +350,10 @@ function NexusDashboard() {
   return (
     <View style={s.container}>
       <StatusBar barStyle="light-content" />
+
+      {/* ══ GHOST BANNER (Auto-check-in feedback) ══ */}
+      <GhostBanner username={username} visible={showGhostBanner} />
+
       <ScrollView
         style={s.scroll}
         contentContainerStyle={[s.scrollContent, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 100 }]}
@@ -393,7 +494,7 @@ function NexusDashboard() {
 
         {/* FOOTER */}
         <View style={s.buildInfo}>
-          <Text style={s.buildText}>NEXUS COMMAND CENTER · v2.2.0 · Build 28</Text>
+          <Text style={s.buildText}>NEXUS COMMAND CENTER · v2.5.0 · Build 31</Text>
           <Text style={s.buildText}>IRONCLAD Network · {Platform.OS.toUpperCase()}</Text>
         </View>
       </ScrollView>

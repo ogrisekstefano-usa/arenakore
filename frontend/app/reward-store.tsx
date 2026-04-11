@@ -18,7 +18,7 @@ const REWARDS = [
   { id: 'badge_duel_win', icon: 'flash', color: '#FF3B30', title: 'DUEL WINNER', desc: 'Vinci il tuo primo duello 1vs1', flux: 25, requirement: '1 Duel Won' },
   { id: 'badge_crew_mvp', icon: 'shield', color: '#AF52DE', title: 'CREW MVP', desc: 'Diventa MVP della tua Crew in una battaglia', flux: 75, requirement: 'Crew MVP' },
   { id: 'badge_certified', icon: 'shield-checkmark', color: '#00FF87', title: 'NEXUS CERTIFIED', desc: 'Ottieni la certificazione NEXUS completa', flux: 200, requirement: 'NEXUS Certification' },
-  { id: 'badge_flux_1000', icon: 'diamond', color: '#FFD700', title: '1000 FLUX', desc: 'Accumula 1000 FLUX totali', flux: 0, requirement: '1000 FLUX earned' },
+  { id: 'badge_flux_1000', icon: 'diamond', color: '#FFD700', title: '1000 K-FLUX', desc: 'Accumula 1000 K-FLUX totali', flux: 0, requirement: '1000 K-FLUX earned' },
   { id: 'badge_top10', icon: 'podium', color: '#FF9500', title: 'TOP 10 CITY', desc: 'Entra nella Top 10 della tua città', flux: 150, requirement: 'City Top 10' },
 ];
 
@@ -76,7 +76,7 @@ export default function RewardStore() {
                   <Text style={rs$.cardDesc}>{r.desc}</Text>
                   <View style={rs$.cardBottom}>
                     <Text style={rs$.reqText}>{r.requirement}</Text>
-                    {r.flux > 0 && <Text style={rs$.fluxReward}>+{r.flux} FLUX</Text>}
+                    {r.flux > 0 && <Text style={rs$.fluxReward}>+{r.flux} K-FLUX</Text>}
                   </View>
                 </View>
               </View>

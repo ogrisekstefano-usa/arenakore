@@ -1,10 +1,9 @@
 /**
- * KORE TAB — Build 30 · LOGICA DI PRESENZA
- * ═══════════════════════════════════════════
+ * KORE TAB — Build 31 · K-TIMELINE & AUTO-CHECK-IN
+ * ═══════════════════════════════════════════════════
  * - Hero Header (Avatar + Username + Mood)
- * - Timeline della Determinazione (7 giorni)
- * - Check-in Giornaliero
- * - 3 Flux Types (Vital/Perform/Team)
+ * - K-Timeline (7 giorni, auto-check-in)
+ * - 3 K-Flux Types (Vital/Perform/Team)
  * - DNA Radar Chart
  * - Calendar Modal
  * - Performance History
@@ -14,7 +13,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, ScrollView, TouchableOpacity,
-  ActivityIndicator, RefreshControl, useWindowDimensions, Alert
+  ActivityIndicator, RefreshControl, useWindowDimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -66,7 +65,7 @@ const sc$ = StyleSheet.create({
   label: { color: 'rgba(255,255,255,0.25)', fontSize: 7, fontWeight: '900', letterSpacing: 2 },
 });
 
-// ═══ TIMELINE DELLA DETERMINAZIONE ═══
+// ═══ K-TIMELINE ═══
 function WeekTimeline({ weekData, streak, onTap }: { weekData: Array<{ date: string; day_name: string; checked_in: boolean }>; streak: number; onTap: () => void }) {
   const today = new Date().toISOString().split('T')[0];
   return (
@@ -75,7 +74,7 @@ function WeekTimeline({ weekData, streak, onTap }: { weekData: Array<{ date: str
         <View style={tw$.header}>
           <View style={tw$.titleRow}>
             <Ionicons name="flame" size={14} color={GOLD} />
-            <Text style={tw$.title}>DETERMINAZIONE</Text>
+            <Text style={tw$.title}>K-TIMELINE</Text>
           </View>
           <View style={tw$.streakBadge}>
             <Text style={tw$.streakText}>{streak} 🔥</Text>
@@ -145,7 +144,7 @@ function RecordCard({ record, index }: { record: any; index: number }) {
       <View style={rc$.card}>
         <View style={[rc$.dot, { backgroundColor: color }]} />
         <View style={rc$.info}><Text style={rc$.tipo}>{(record.tipo || 'RECORD').toUpperCase()}</Text><Text style={rc$.disciplina}>{record.disciplina || record.exercise_type || '—'}</Text></View>
-        <View style={rc$.right}>{record.kpi?.kore_score != null && <Text style={[rc$.score, { color }]}>{Math.round(record.kpi.kore_score)}</Text>}{record.flux_earned > 0 && <Text style={rc$.flux}>+{record.flux_earned} FLUX</Text>}<Text style={rc$.date}>{dateStr}</Text></View>
+        <View style={rc$.right}>{record.kpi?.kore_score != null && <Text style={[rc$.score, { color }]}>{Math.round(record.kpi.kore_score)}</Text>}{record.flux_earned > 0 && <Text style={rc$.flux}>+{record.flux_earned} K-FLUX</Text>}<Text style={rc$.date}>{dateStr}</Text></View>
       </View>
     </Animated.View>
   );
@@ -183,7 +182,6 @@ export default function KoreTab() {
   const [weekData, setWeekData] = useState<Array<{ date: string; day_name: string; checked_in: boolean }>>([]);
   const [checkinStreak, setCheckinStreak] = useState(0);
   const [checkedToday, setCheckedToday] = useState(false);
-  const [checkinLoading, setCheckinLoading] = useState(false);
   const [fluxVital, setFluxVital] = useState(0);
   const [fluxPerform, setFluxPerform] = useState(0);
   const [fluxTeam, setFluxTeam] = useState(0);
@@ -209,21 +207,6 @@ export default function KoreTab() {
 
   useEffect(() => { loadData(); }, [loadData]);
   const handleRefresh = () => { setRefreshing(true); loadData(); };
-
-  const handleCheckin = async () => {
-    if (checkedToday || checkinLoading) return;
-    setCheckinLoading(true);
-    const res = await safeFetchApi('/checkin', { method: 'POST' });
-    if (!res?._error && res?.status !== 'error') {
-      setCheckedToday(true);
-      setCheckinStreak(res.streak || checkinStreak + 1);
-      setFluxVital(v => v + (res.flux_awarded || 10));
-      const weekRes = await safeFetchApi('/checkin/week');
-      if (!weekRes?._error && Array.isArray(weekRes?.week)) setWeekData(weekRes.week);
-      Alert.alert('✅ CHECK-IN!', res.message || `+${res.flux_awarded} Vital K-Flux`, [{ text: 'KORE!' }]);
-    } else { Alert.alert('⚠️', res?.message || 'Errore nel check-in'); }
-    setCheckinLoading(false);
-  };
 
   const fetchCalendarHistory = useCallback(async (month: number, year: number): Promise<string[]> => {
     const res = await safeFetchApi(`/checkin/history?month=${month}&year=${year}`);
@@ -276,7 +259,7 @@ export default function KoreTab() {
           </View>
         </Animated.View>
 
-        {/* ══════ TIMELINE DELLA DETERMINAZIONE ══════ */}
+        {/* ══════ K-TIMELINE ══════ */}
         <WeekTimeline weekData={weekData.length > 0 ? weekData : [
           { date: '', day_name: 'LUN', checked_in: false }, { date: '', day_name: 'MAR', checked_in: false },
           { date: '', day_name: 'MER', checked_in: false }, { date: '', day_name: 'GIO', checked_in: false },
@@ -284,18 +267,7 @@ export default function KoreTab() {
           { date: '', day_name: 'DOM', checked_in: false },
         ]} streak={checkinStreak} onTap={() => setShowCalendar(true)} />
 
-        {/* ══════ CHECK-IN BUTTON ══════ */}
-        <Animated.View entering={FadeInDown.delay(100).duration(350)}>
-          <TouchableOpacity onPress={handleCheckin} activeOpacity={checkedToday ? 1 : 0.8}
-            style={[s.checkinBtn, checkedToday && s.checkinBtnDone]} disabled={checkedToday || checkinLoading}>
-            {checkinLoading ? <ActivityIndicator color="#000" /> : (
-              <><Ionicons name={checkedToday ? 'checkmark-circle' : 'flash'} size={20} color="#000" />
-              <Text style={s.checkinBtnText}>{checkedToday ? 'CHECK-IN COMPLETATO ✓' : 'CHECK-IN GIORNALIERO'}</Text></>
-            )}
-          </TouchableOpacity>
-        </Animated.View>
-
-        {/* ══════ FLUX BREAKDOWN (3 Types) ══════ */}
+        {/* ══════ K-FLUX BREAKDOWN (3 Types) ══════ */}
         <SectionHeader icon="flash" title="K-FLUX" color={CYAN} />
         <View style={s.fluxGrid}>
           <StatCard value={String(fluxVital)} label="VITAL" color={CYAN} icon="heart" delay={100} />
@@ -333,7 +305,7 @@ export default function KoreTab() {
           <BioRow icon="football" label="SPORT" value={user?.sport?.toUpperCase() || user?.preferred_sport?.toUpperCase() || '—'} />
         </Animated.View>
 
-        {/* ══════ FLUX WALLET ══════ */}
+        {/* ══════ K-FLUX WALLET ══════ */}
         <SectionHeader icon="flash" title="K-FLUX WALLET" color={CYAN} />
         <AKDropsWallet user={user} />
 
@@ -350,7 +322,7 @@ export default function KoreTab() {
         <View style={s.footer}>
           <View style={s.footerLine} />
           <Text style={s.footerText}>KORE ID · IRONCLAD NETWORK</Text>
-          <Text style={s.versionLabel}>v2.4.0 — Build 30 · PRESENZA</Text>
+          <Text style={s.versionLabel}>v2.5.0 — Build 31 · K-TIMELINE</Text>
         </View>
       </ScrollView>
 
@@ -381,12 +353,7 @@ const s = StyleSheet.create({
   founderText: { color: GOLD, fontSize: 8, fontWeight: '900', letterSpacing: 1 },
   koreSerial: { color: 'rgba(255,255,255,0.15)', fontSize: 10, fontWeight: '700', letterSpacing: 2 },
 
-  // Check-in Button
-  checkinBtn: { marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: CYAN, borderRadius: 16, paddingVertical: 16 },
-  checkinBtnDone: { backgroundColor: GOLD, opacity: 0.7 },
-  checkinBtnText: { color: '#000', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
-
-  // Flux Grid
+  // K-Flux Grid
   fluxGrid: { flexDirection: 'row', gap: 8 },
   statsGrid: { flexDirection: 'row', gap: 8, marginTop: 12 },
   radarWrap: { alignItems: 'center', marginBottom: 8 },

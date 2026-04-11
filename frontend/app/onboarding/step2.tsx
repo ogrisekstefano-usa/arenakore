@@ -1647,12 +1647,12 @@ export default function NexusBioScan() {
             </G>
           )}
 
-          {/* FLUX Estimation floating */}
+          {/* K-FLUX Estimation floating */}
           {phase === 'beats' && currentBeat >= 2 && (
             <G opacity={0.6}>
               <SvgText x={SCAN_W - 14} y={SCAN_H * 0.12}
                 fill="#FFD700" fontSize={8} fontWeight="900" textAnchor="end" letterSpacing={1}>
-                FLUX EST: +47
+                K-FLUX EST: +47
               </SvgText>
             </G>
           )}

@@ -170,7 +170,7 @@ export default function CrewsTab() {
                             </View>
                             <View style={s.crewStatItem}>
                               <Ionicons name="flash" size={12} color="#FFD700" />
-                              <Text style={[s.crewStatText, { color: '#FFD700' }]}>{crew.xp_total} FLUX</Text>
+                              <Text style={[s.crewStatText, { color: '#FFD700' }]}>{crew.xp_total} K-FLUX</Text>
                             </View>
                           </View>
                         </View>

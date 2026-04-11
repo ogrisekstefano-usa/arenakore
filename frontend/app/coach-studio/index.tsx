@@ -239,7 +239,7 @@ export default function GlobalDashboard() {
                   {a.username}
                 </Text>
                 <Text style={[pg$.perfSub, MONT('300'), { color: theme.textTer }]}>
-                  LVL {a.level} · {a.xp?.toLocaleString()} FLUX
+                  LVL {a.level} · {a.xp?.toLocaleString()} K-FLUX
                 </Text>
               </View>
               <Text style={[pg$.perfDna, MONT('900'), {

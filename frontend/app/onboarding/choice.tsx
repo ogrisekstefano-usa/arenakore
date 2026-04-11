@@ -174,7 +174,7 @@ export default function OnboardingChoice() {
             </View>
             <View style={s.featurePill}>
               <Ionicons name="flash" size={12} color={GOLD} />
-              <Text style={s.featureTxt}>+50 FLUX</Text>
+              <Text style={s.featureTxt}>+50 K-FLUX</Text>
             </View>
           </View>
         </TouchableOpacity>

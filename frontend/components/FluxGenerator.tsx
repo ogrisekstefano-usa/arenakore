@@ -121,7 +121,7 @@ export function FluxGenerator({ visible, onClose, onPurchased }: FluxGeneratorPr
                   <View style={[s.crewBoostBadge, { borderColor: successTier.accent + '30' }]}>
                     <Ionicons name="people" size={16} color={successTier.accent} />
                     <Text style={[s.crewBoostText, { color: successTier.accent }]}>
-                      SQUAD BOOST: +{successTier.crew_bonus_total} FLUX alla Crew!
+                      SQUAD BOOST: +{successTier.crew_bonus_total} K-FLUX alla Crew!
                     </Text>
                   </View>
                 )}
@@ -142,7 +142,7 @@ export function FluxGenerator({ visible, onClose, onPurchased }: FluxGeneratorPr
             <Ionicons name="close" size={22} color="#FFF" />
           </TouchableOpacity>
           <View style={s.headerCenter}>
-            <Text style={s.headerTitle}>FLUX GENERATOR</Text>
+            <Text style={s.headerTitle}>K-FLUX GENERATOR</Text>
             <Text style={s.headerSub}>Inietta energia nel tuo DNA.</Text>
           </View>
           <View style={s.balanceBadge}>

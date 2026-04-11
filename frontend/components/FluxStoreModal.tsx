@@ -87,7 +87,7 @@ export function FluxStoreModal({ visible, onClose, userFlux, onPurchase }: Props
       if (res.status === 'purchased') {
         onPurchase(res);
         Alert.alert(
-          '⚡ FLUX Acquistati!',
+          '⚡ K-FLUX Acquistati!',
           `+${res.flux_added} FLUX${res.crew_boost?.active ? `\n\n🔥 Squad Boost: +${res.crew_boost.bonus_per_member} FLUX a ${res.crew_boost.members_boosted} membri di ${res.crew_boost.crew_name}` : ''}`,
         );
       }
@@ -119,7 +119,7 @@ export function FluxStoreModal({ visible, onClose, userFlux, onPurchase }: Props
           <View style={s.balanceRow}>
             <Text style={s.balanceLabel}>BILANCIO ATTUALE</Text>
             <Text style={s.balanceValue}>{userFlux}</Text>
-            <Text style={s.balanceUnit}>FLUX</Text>
+            <Text style={s.balanceUnit}>K-FLUX</Text>
           </View>
 
           {/* Crew Status */}
@@ -173,7 +173,7 @@ export function FluxStoreModal({ visible, onClose, userFlux, onPurchase }: Props
                           <View style={[s.boostRow, { borderTopColor: color + '22' }]}>
                             <Ionicons name="rocket" size={12} color={color} />
                             <Text style={[s.boostText, { color: color + 'CC' }]}>
-                              SQUAD BOOST: +{pkg.crew_bonus_per_member} FLUX × {pkg.crew_members_count} membri = {pkg.total_crew_bonus} FLUX
+                              SQUAD BOOST: +{pkg.crew_bonus_per_member} K-FLUX × {pkg.crew_members_count} membri = {pkg.total_crew_bonus} K-FLUX
                             </Text>
                           </View>
                         )}
@@ -197,7 +197,7 @@ export function FluxStoreModal({ visible, onClose, userFlux, onPurchase }: Props
                     <View key={dest} style={s.feeRow}>
                       <Text style={s.feeDest}>{dest.toUpperCase()}</Text>
                       <Text style={[s.feeCost, fee === 0 && { color: '#00FF87' }]}>
-                        {fee === 0 ? 'GRATUITO' : `${fee} FLUX`}
+                        {fee === 0 ? 'GRATUITO' : `${fee} K-FLUX`}
                       </Text>
                     </View>
                   ))}

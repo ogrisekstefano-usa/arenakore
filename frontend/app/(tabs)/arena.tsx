@@ -84,7 +84,7 @@ const retry$ = StyleSheet.create({
 
 const KORE_OF_DAY = {
   username: 'THUNDER_MAN', sport: 'MMA', achievement: 'RECORD PERSONALE',
-  value: '47 REP', exercise: 'DEEP SQUAT', xp: '+340 FLUX', rank: '#12', level: 14
+  value: '47 REP', exercise: 'DEEP SQUAT', xp: '+340 K-FLUX', rank: '#12', level: 14
 };
 
 // ========== HERO BANNER ==========

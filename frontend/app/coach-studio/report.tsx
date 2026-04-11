@@ -219,7 +219,7 @@ export default function TalentReportPage() {
               <CertBadge certified={athlete.is_nexus_certified} size="sm" />
             </View>
             <Text style={[rp$.athleteMeta, MONT('300'), { color: 'rgba(255,255,255,0.5)' }]}>
-              {athlete.city} · LVL {athlete.level} · {athlete.xp?.toLocaleString()} FLUX
+              {athlete.city} · LVL {athlete.level} · {athlete.xp?.toLocaleString()} K-FLUX
             </Text>
             <View style={rp$.statusRow}>
               {athlete.is_free_agent ? (

@@ -62,7 +62,7 @@ export default function MyAthletes() {
                   <Text style={s.sub}>{a.sport || 'ATHLETE'} · LVL {a.level || 1}</Text>
                 </View>
                 <View style={s.stats}>
-                  <Text style={s.xp}>{a.xp || 0} FLUX</Text>
+                  <Text style={s.xp}>{a.xp || 0} K-FLUX</Text>
                   {avg > 0 && (
                     <View style={s.dnaChip}>
                       <Text style={s.dnaChipText}>DNA {avg}</Text>

@@ -178,7 +178,7 @@ export default function AICoachAssistant() {
                   </View>
                   <View style={ai$.forecastXp}>
                     <Text style={ai$.forecastXpVal}>+{(f.projected_xp_30d - f.current_xp).toLocaleString()}</Text>
-                    <Text style={ai$.forecastXpLabel}>FLUX previsti</Text>
+                    <Text style={ai$.forecastXpLabel}>K-FLUX previsti</Text>
                   </View>
                 </Animated.View>
               );

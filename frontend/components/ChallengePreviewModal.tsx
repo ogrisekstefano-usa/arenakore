@@ -126,7 +126,7 @@ export function ChallengePreviewModal({ visible, challengeData, onClose, onImpor
               <View style={s.statsRow}>
                 <View style={s.statBox}>
                   <Text style={[s.statVal, { color: '#FFD700' }]}>+{challengeData.flux_reward}⚡</Text>
-                  <Text style={s.statLabel}>FLUX REWARD</Text>
+                  <Text style={s.statLabel}>K-FLUX REWARD</Text>
                 </View>
                 <View style={s.statDivider} />
                 <View style={s.statBox}>

@@ -58,9 +58,9 @@ export function AKDropsWallet({ user }: { user: any }) {
           <Ionicons name="lock-closed" size={22} color="#FFD700" />
         </View>
         <View style={dw$.lockedInfo}>
-          <Text style={dw$.lockedTitle}>FLUX BLOCCATI</Text>
+          <Text style={dw$.lockedTitle}>K-FLUX BLOCCATI</Text>
           <Text style={dw$.lockedSub}>
-            Completa la certificazione NÈXUS per guadagnare flux di sudore.
+            Completa la certificazione NÈXUS per guadagnare K-Flux di sudore.
           </Text>
         </View>
         <TouchableOpacity
@@ -82,20 +82,20 @@ export function AKDropsWallet({ user }: { user: any }) {
           <FluxPulse active={drops > 0} color="#00E5FF">
             <FluxIcon size={18} color="#00E5FF" />
           </FluxPulse>
-          <Text style={dw$.headerTitle}>FLUX</Text>
+          <Text style={dw$.headerTitle}>K-FLUX</Text>
         </View>
         <CertBadge certified size="xs" />
       </View>
       <View style={dw$.balanceRow}>
         <Text style={dw$.balance}>{drops.toLocaleString()}</Text>
-        <Text style={dw$.balanceUnit}>FLUX</Text>
+        <Text style={dw$.balanceUnit}>K-FLUX</Text>
       </View>
-      <Text style={dw$.earnHint}>Genera FLUX superando la tua media storica</Text>
+      <Text style={dw$.earnHint}>Genera K-Flux superando la tua media storica</Text>
       <View style={dw$.ruleRow}>
         {[
-          { label: 'Scan migliorato', val: '+10 FLUX' },
-          { label: 'Vittoria PvP', val: '+50 FLUX' },
-          { label: 'Crew Battle', val: '+100 FLUX' },
+          { label: 'Scan migliorato', val: '+10 K-FLUX' },
+          { label: 'Vittoria PvP', val: '+50 K-FLUX' },
+          { label: 'Sfida Agonistica', val: '+100 K-FLUX' },
         ].map(r => (
           <View key={r.label} style={dw$.ruleItem}>
             <Text style={dw$.ruleLabel}>{r.label}</Text>

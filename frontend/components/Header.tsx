@@ -1,8 +1,8 @@
 /**
- * ARENAKORE — Standard Header v4.0 (Build 28)
+ * ARENAKORE — Standard Header v4.1 (Build 31)
  * ═══════════════════════════════════════════════
  * LEFT:   "ARENAKORE" text logo
- * CENTER: 3 FLUSH indicators (clickable → FlushModal)
+ * CENTER: 3 K-FLUX indicators (clickable → KFluxModal)
  * RIGHT:  Notification Bell + Burger Menu (☰)
  */
 import React, { useState } from 'react';
@@ -12,11 +12,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { ControlCenter } from './ControlCenter';
 import { NotificationSheet, Notification } from './NotificationSheet';
-import { FlushModal } from './FlushModal';
+import { KFluxModal } from './KFluxModal';
 
 const GOLD = '#FFD700';
 const CYAN = '#00E5FF';
-const PURPLE = '#E040FB';
+const PURPLE = '#BF5AF2';
 
 interface HeaderProps {
   title?: string;
@@ -28,17 +28,17 @@ export function Header({ title, rightAction }: HeaderProps) {
   const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [flushOpen, setFlushOpen] = useState(false);
-  const [flushTier, setFlushTier] = useState(0);
+  const [kfluxOpen, setKfluxOpen] = useState(false);
+  const [kfluxTier, setKfluxTier] = useState(0);
 
-  const neonFlux = user?.ak_credits || 0;
-  const masterFlux = user?.master_flux || 0;
-  const diamondFlux = user?.diamond_flux || 0;
+  const vitalFlux = user?.ak_credits || 0;
+  const performFlux = user?.master_flux || 0;
+  const teamFlux = user?.diamond_flux || 0;
   const notifications: Notification[] = [];
 
-  const openFlush = (tier: number) => {
-    setFlushTier(tier);
-    setFlushOpen(true);
+  const openKFlux = (tier: number) => {
+    setKfluxTier(tier);
+    setKfluxOpen(true);
   };
 
   return (
@@ -51,35 +51,35 @@ export function Header({ title, rightAction }: HeaderProps) {
             <Text style={h.logoAccent}>KORE</Text>
           </View>
 
-          {/* ═══ CENTER: 3 FLUSH Indicators (clickable) ═══ */}
+          {/* ═══ CENTER: 3 K-FLUX Indicators (clickable) ═══ */}
           <View style={h.flushGroup}>
             <TouchableOpacity
               style={[h.fluxChip, { borderColor: CYAN + '25' }]}
-              onPress={() => openFlush(0)}
+              onPress={() => openKFlux(0)}
               activeOpacity={0.7}
             >
-              <Ionicons name="flash" size={10} color={CYAN} />
+              <Ionicons name="heart" size={10} color={CYAN} />
               <Text style={[h.fluxVal, { color: CYAN }]}>
-                {neonFlux > 999 ? `${(neonFlux / 1000).toFixed(1)}k` : neonFlux}
+                {vitalFlux > 999 ? `${(vitalFlux / 1000).toFixed(1)}k` : vitalFlux}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[h.fluxChip, { borderColor: GOLD + '25' }]}
-              onPress={() => openFlush(1)}
+              onPress={() => openKFlux(1)}
               activeOpacity={0.7}
             >
-              <Ionicons name="shield-half" size={10} color={GOLD} />
-              <Text style={[h.fluxVal, { color: GOLD }]}>{masterFlux}</Text>
+              <Ionicons name="trophy" size={10} color={GOLD} />
+              <Text style={[h.fluxVal, { color: GOLD }]}>{performFlux}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[h.fluxChip, { borderColor: PURPLE + '25' }]}
-              onPress={() => openFlush(2)}
+              onPress={() => openKFlux(2)}
               activeOpacity={0.7}
             >
-              <Ionicons name="diamond" size={10} color={PURPLE} />
-              <Text style={[h.fluxVal, { color: PURPLE }]}>{diamondFlux}</Text>
+              <Ionicons name="people" size={10} color={PURPLE} />
+              <Text style={[h.fluxVal, { color: PURPLE }]}>{teamFlux}</Text>
             </TouchableOpacity>
           </View>
 
@@ -108,13 +108,13 @@ export function Header({ title, rightAction }: HeaderProps) {
 
       <ControlCenter visible={menuOpen} onClose={() => setMenuOpen(false)} />
       <NotificationSheet visible={notifOpen} onClose={() => setNotifOpen(false)} notifications={notifications} />
-      <FlushModal
-        visible={flushOpen}
-        onClose={() => setFlushOpen(false)}
-        neonFlux={neonFlux}
-        masterFlux={masterFlux}
-        diamondFlux={diamondFlux}
-        initialTier={flushTier}
+      <KFluxModal
+        visible={kfluxOpen}
+        onClose={() => setKfluxOpen(false)}
+        vitalFlux={vitalFlux}
+        performFlux={performFlux}
+        teamFlux={teamFlux}
+        initialTier={kfluxTier}
       />
     </>
   );
@@ -153,7 +153,7 @@ const h = StyleSheet.create({
     color: CYAN,
     letterSpacing: 1,
   },
-  // Center — 3 FLUSH
+  // Center — 3 K-FLUX
   flushGroup: {
     flexDirection: 'row',
     alignItems: 'center',

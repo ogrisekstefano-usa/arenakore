@@ -52,7 +52,7 @@ export default function FoundersClub() {
             </View>
             <View style={fc$.perk}>
               <Ionicons name="flash" size={16} color={GOLD} />
-              <Text style={fc$.perkText}>+50% moltiplicatore FLUX su ogni sfida</Text>
+              <Text style={fc$.perkText}>+50% moltiplicatore K-FLUX su ogni sfida</Text>
             </View>
             <View style={fc$.perk}>
               <Ionicons name="people" size={16} color={GOLD} />

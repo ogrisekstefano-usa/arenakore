@@ -73,7 +73,7 @@ export default function PrivacyShield() {
   const handleWipe = useCallback(() => {
     Alert.alert(
       'ELIMINA DATI BIOMETRICI',
-      'Questa azione cancellerà permanentemente il tuo DNA Score, le bio-scan history e i permessi camera/mic. Il profilo base (nome, FLUX, livello) rimarrà intatto.\n\nAzione IRREVERSIBILE.',
+      'Questa azione cancellerà permanentemente il tuo DNA Score, le bio-scan history e i permessi camera/mic. Il profilo base (nome, K-FLUX, livello) rimarrà intatto.\n\nAzione IRREVERSIBILE.',
       [
         { text: 'ANNULLA', style: 'cancel' },
         {

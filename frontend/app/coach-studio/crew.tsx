@@ -122,7 +122,7 @@ export default function CrewStrategist() {
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={[c$.athName, isSelected && { color: '#00E5FF' }]}>{ath.username}</Text>
-                      <Text style={c$.athMeta}>KORE {ath.dna_avg} · {ath.xp?.toLocaleString()} FLUX</Text>
+                      <Text style={c$.athMeta}>KORE {ath.dna_avg} · {ath.xp?.toLocaleString()} K-FLUX</Text>
                     </View>
                     {isSelected && <Ionicons name="checkmark-circle" size={16} color="#00E5FF" />}
                   </TouchableOpacity>
@@ -154,7 +154,7 @@ export default function CrewStrategist() {
                     <View key={i} style={c$.breakdownRow}>
                       <Text style={c$.breakdownName}>{b.username}</Text>
                       <Text style={c$.breakdownScore}>KORE {b.kore_score}</Text>
-                      <Text style={c$.breakdownXp}>{b.xp?.toLocaleString()} FLUX</Text>
+                      <Text style={c$.breakdownXp}>{b.xp?.toLocaleString()} K-FLUX</Text>
                     </View>
                   ))}
                 </View>

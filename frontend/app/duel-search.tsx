@@ -172,7 +172,7 @@ export default function DuelSearch() {
                 </View>
                 <View style={ds$.resultInfo}>
                   <Text style={ds$.resultName}>{r.username || 'Kore'}</Text>
-                  <Text style={ds$.resultMeta}>{r.city || '—'} · {r.flux ?? 0} FLUX · LVL {r.level ?? 1}</Text>
+                  <Text style={ds$.resultMeta}>{r.city || '—'} · {r.flux ?? 0} K-FLUX · LVL {r.level ?? 1}</Text>
                 </View>
                 <TouchableOpacity
                   style={ds$.challengeBtn}

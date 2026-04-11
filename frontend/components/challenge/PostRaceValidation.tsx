@@ -477,13 +477,13 @@ export function PostRaceValidation({
               </Animated.View>
             )}
 
-            {/* FLUX Reward Info */}
+            {/* K-FLUX Reward Info */}
             <Animated.View entering={FadeInDown.delay(700).duration(400)} style={s.rewardCard}>
               <FluxIcon size={16} color={EL.CYAN} />
               <Text style={s.rewardText}>
                 {isOfficial
-                  ? `+${qrData?.flux_earned || 0} FLUX certificati!`
-                  : 'Scansiona i QR dei compagni per +5 FLUX ciascuno'}
+                  ? `+${qrData?.flux_earned || 0} K-FLUX certificati!`
+                  : 'Scansiona i QR dei compagni per +5 K-FLUX ciascuno'}
               </Text>
             </Animated.View>
 
@@ -694,7 +694,7 @@ export function PostRaceValidation({
                 <View style={s.resultFlux}>
                   <FluxIcon size={14} color={EL.CYAN} />
                   <Text style={[s.resultFluxValue, { color: EL.CYAN }]}>+{scanResult.scanner_flux_reward}</Text>
-                  <Text style={s.resultFluxLabel}>FLUX</Text>
+                  <Text style={s.resultFluxLabel}>K-FLUX</Text>
                 </View>
               </View>
             </Animated.View>

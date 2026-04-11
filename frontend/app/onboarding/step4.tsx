@@ -132,7 +132,7 @@ export default function LegacyStep4() {
             style={s.input}
             value={nickname}
             onChangeText={(t) => setNickname(t.toUpperCase().slice(0, 15))}
-            placeholder="IL TUO NOME DI BATTAGLIA"
+            placeholder="IL TUO NOME AGONISTICO"
             placeholderTextColor="#1A1A1A"
             autoCapitalize="characters"
             maxLength={15}

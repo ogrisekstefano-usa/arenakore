@@ -78,7 +78,7 @@ export default function GymDashboard() {
       {/* Business KPIs */}
       <View style={g$.kpiRow}>
         <KPICard icon="👥" label="KORE TOTALI" value={stats.total_members || 0} sub={`${stats.total_coaches || 0} coach`} color="#00E5FF" />
-        <KPICard icon="⚡" label="FLUX GENERATI" value={(stats.total_xp_generated || 0).toLocaleString()} sub="della palestra" color="#FFD700" />
+        <KPICard icon="⚡" label="K-FLUX GENERATI" value={(stats.total_xp_generated || 0).toLocaleString()} sub="della palestra" color="#FFD700" />
         <KPICard icon="📊" label="LIVELLO MEDIO" value={stats.avg_level || 1} sub="kore" color="#00FF87" />
         <KPICard icon="🛡" label="BATTLE" value={stats.battles_count || 0} sub="totali" color="#AF52DE" />
         <KPICard icon="📤" label="TEMPLATE" value={stats.templates_sent || 0} sub="inviati" color="#FF9500" />
@@ -89,7 +89,7 @@ export default function GymDashboard() {
         {/* Left: Top Performers */}
         <View style={g$.col}>
           <View style={g$.sectionCard}>
-            <SectionHeader title="TOP PERFORMERS" sub="Kore con più FLUX" />
+            <SectionHeader title="TOP PERFORMERS" sub="Kore con più K-FLUX" />
             {(data?.top_performers || []).map((p: any, i: number) => (
               <Animated.View key={p.username} entering={FadeInDown.delay(i * 60).duration(200)} style={g$.performerRow}>
                 <View style={g$.performerRank}>
@@ -99,7 +99,7 @@ export default function GymDashboard() {
                   <Text style={g$.perfName}>{p.username}</Text>
                   <Text style={g$.perfMeta}>LVL {p.level}</Text>
                 </View>
-                <Text style={g$.perfXp}>{p.xp?.toLocaleString()} FLUX</Text>
+                <Text style={g$.perfXp}>{p.xp?.toLocaleString()} K-FLUX</Text>
               </Animated.View>
             ))}
           </View>

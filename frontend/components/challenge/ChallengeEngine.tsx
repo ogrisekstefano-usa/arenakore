@@ -37,15 +37,15 @@ const TAG_CONFIG: Record<ChallengeTag, { color: string; icon: string; label: str
 };
 
 const MODE_CONFIG: Record<ValidationMode, { icon: string; title: string; sub: string; badge: string }> = {
-  AUTO_COUNT:    { icon: 'scan',          title: 'NÈXUS VISION',     sub: 'Conteggio rep automatico via camera',      badge: '100% FLUX' },
-  MANUAL_ENTRY:  { icon: 'create-outline', title: 'MANUAL ENTRY',    sub: 'Inserisci dati post-allenamento',           badge: '50% FLUX' },
-  SENSOR_IMPORT: { icon: 'watch-outline',  title: 'SENSOR IMPORT',   sub: 'Importa da Apple Health / Garmin',          badge: '75% FLUX' }
+  AUTO_COUNT:    { icon: 'scan',          title: 'NÈXUS VISION',     sub: 'Conteggio rep automatico via camera',      badge: '100% K-FLUX' },
+  MANUAL_ENTRY:  { icon: 'create-outline', title: 'MANUAL ENTRY',    sub: 'Inserisci dati post-allenamento',           badge: '50% K-FLUX' },
+  SENSOR_IMPORT: { icon: 'watch-outline',  title: 'SENSOR IMPORT',   sub: 'Importa da Apple Health / Garmin',          badge: '75% K-FLUX' }
 };
 
 const PROOF_OPTIONS: { type: ProofType; icon: string; title: string; sub: string; fluxBoost: string }[] = [
-  { type: 'VIDEO_TIME_CHECK', icon: 'videocam', title: 'PROVA VIDEO', sub: 'Registra o carica un video della performance', fluxBoost: '→ 75% FLUX' },
-  { type: 'GPS_IMPORT', icon: 'navigate', title: 'GPS IMPORT', sub: 'Importa traccia GPS da Strava / Garmin', fluxBoost: '→ 100% FLUX' },
-  { type: 'PEER_CONFIRMATION', icon: 'people', title: 'CONFERMA PEER', sub: 'Un compagno di Crew certifica il tuo risultato', fluxBoost: '→ 75% FLUX' },
+  { type: 'VIDEO_TIME_CHECK', icon: 'videocam', title: 'PROVA VIDEO', sub: 'Registra o carica un video della performance', fluxBoost: '→ 75% K-FLUX' },
+  { type: 'GPS_IMPORT', icon: 'navigate', title: 'GPS IMPORT', sub: 'Importa traccia GPS da Strava / Garmin', fluxBoost: '→ 100% K-FLUX' },
+  { type: 'PEER_CONFIRMATION', icon: 'people', title: 'CONFERMA PEER', sub: 'Un compagno di Crew certifica il tuo risultato', fluxBoost: '→ 75% K-FLUX' },
 ];
 
 const VERIFICATION_BADGE_CONFIG: Record<VerificationStatus, { color: string; icon: string; label: string }> = {
@@ -480,7 +480,7 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
                       I risultati manuali senza prova video non concorrono alle Classifiche Pro (Ranked).
                     </Text>
                     <Text style={[s.disclaimerCta, { color: dominantColor }]}>
-                      Passa alla validazione NÈXUS per il 100% dei FLUX e il Rank ufficiale.
+                      Passa alla validazione NÈXUS per il 100% dei K-FLUX e il Rank ufficiale.
                     </Text>
                   </View>
                 </View>
@@ -576,9 +576,9 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
                   </View>
                 </View>
 
-                {/* FLUX Preview */}
+                {/* K-FLUX Preview */}
                 <View style={[s.fluxPreview, { borderColor: dominantColor + '33' }]}>
-                  <Text style={s.fluxPreviewLabel}>FLUX STIMATI</Text>
+                  <Text style={s.fluxPreviewLabel}>K-FLUX STIMATI</Text>
                   <View style={s.fluxCalcRow}>
                     <Text style={[s.fluxBase, { textDecorationLine: 'line-through', color: '#555' }]}>
                       {Math.max(10, (parseInt(manualReps) || 0) * 2 + 7 + Math.floor((parseFloat(manualKg) || 0) / 5))}
@@ -587,7 +587,7 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
                     <Text style={[s.fluxFinal, { color: dominantColor }]}>
                       {Math.floor(Math.max(10, (parseInt(manualReps) || 0) * 2 + 7 + Math.floor((parseFloat(manualKg) || 0) / 5)) * 0.5)}
                     </Text>
-                    <Text style={s.fluxUnit}>FLUX</Text>
+                    <Text style={s.fluxUnit}>K-FLUX</Text>
                   </View>
                   <Text style={s.fluxNote}>50% — Validazione manuale</Text>
                 </View>
@@ -645,7 +645,7 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
 
                 <Animated.View entering={FadeInDown.delay(400).duration(500)}>
                   <Text style={sw.heroBody}>
-                    Kore, questo risultato è incredibile. Registra una prova video per incidere il tuo nome nella classifica Ranked e sbloccare il 100% dei FLUX.
+                    Kore, questo risultato è incredibile. Registra una prova video per incidere il tuo nome nella classifica Ranked e sbloccare il 100% dei K-FLUX.
                   </Text>
                 </Animated.View>
               </View>
@@ -736,7 +736,7 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
                   activeOpacity={0.75}
                 >
                   <Text style={sw.skipBtnText}>CONTINUA SENZA PROVA</Text>
-                  <Text style={sw.skipBtnSub}>50% FLUX · Non valido per Ranked</Text>
+                  <Text style={sw.skipBtnSub}>50% K-FLUX · Non valido per Ranked</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => setPhase('manual_entry')} style={s.backBtn}>
@@ -824,7 +824,7 @@ export function ChallengeEngine({ user, token, exerciseType = 'squat', sessionMo
           <Animated.View entering={FadeIn.duration(300)} style={{ alignItems: 'center', gap: 16 }}>
             <Ionicons name="hourglass" size={48} color={dominantColor} />
             <Text style={[s.phaseTitle, { fontSize: 22 }]}>ELABORAZIONE...</Text>
-            <Text style={s.phaseSub}>Calcolo FLUX e incremento DNA</Text>
+            <Text style={s.phaseSub}>Calcolo K-FLUX e incremento DNA</Text>
           </Animated.View>
         </SafeAreaView>
       </DarkBase>
@@ -1055,7 +1055,7 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
             </Animated.View>
           )}
 
-          {/* ═══ FLUX Calculation — Transparent ═══ */}
+          {/* ═══ K-FLUX Calculation — Transparent ═══ */}
           <Animated.View entering={FadeInDown.delay(400).duration(500)} style={[v.fluxCard, { borderColor: dominantColor + '44' }]}>
             <View style={v.fluxHeader}>
               <FluxIcon size={20} color={dominantColor} />
@@ -1091,11 +1091,11 @@ function VerdictScreen({ verdict, dominantColor, onClose }: { verdict: any; domi
             <View style={v.verificationInfo}>
               <VerificationBadge status={verificationStatus} />
               <Text style={v.verificationMult}>
-                {verificationStatus === 'AI_VERIFIED' ? '100% FLUX · Full Rank' :
-                 verificationStatus === 'TECH_VERIFIED' ? '90% FLUX · Standard Rank' :
-                 verificationStatus === 'PROOF_PENDING' ? '75% FLUX · In attesa verifica' :
-                 verificationStatus === 'SUSPICIOUS' ? '25% FLUX · Revisione richiesta' :
-                 '50% FLUX · Nessuna prova'}
+                {verificationStatus === 'AI_VERIFIED' ? '100% K-FLUX · Full Rank' :
+                 verificationStatus === 'TECH_VERIFIED' ? '90% K-FLUX · Standard Rank' :
+                 verificationStatus === 'PROOF_PENDING' ? '75% K-FLUX · In attesa verifica' :
+                 verificationStatus === 'SUSPICIOUS' ? '25% K-FLUX · Revisione richiesta' :
+                 '50% K-FLUX · Nessuna prova'}
               </Text>
             </View>
 

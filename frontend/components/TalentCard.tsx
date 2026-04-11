@@ -79,10 +79,10 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
     const recordText = recordsBroken.length > 0
       ? `\nRecord: ${recordsBroken.join(', ').toUpperCase()}`
       : '';
-    const xpText = xpEarned ? `\n+${xpEarned} FLUX guadagnati!` : '';
+    const xpText = xpEarned ? `\n+${xpEarned} K-FLUX guadagnati!` : '';
 
     try {
-      await shareText(`ARENAKORE TALENT CARD\n${'━'.repeat(15)}\n${user.username?.toUpperCase()}\nLVL ${user.level} | ${user.ak_credits || 0} FLUX\n${user.sport?.toUpperCase() || 'KORE'}${xpText}${recordText}\n\n${statsText}\n\nOVR: ${avgStat}/100\n${'━'.repeat(15)}\n#ArenaKore #${user.sport} #Performance`, `${user.username} - ArenaKore Talent Card`);
+      await shareText(`ARENAKORE TALENT CARD\n${'━'.repeat(15)}\n${user.username?.toUpperCase()}\nLVL ${user.level} | ${user.ak_credits || 0} K-FLUX\n${user.sport?.toUpperCase() || 'KORE'}${xpText}${recordText}\n\n${statsText}\n\nOVR: ${avgStat}/100\n${'━'.repeat(15)}\n#ArenaKore #${user.sport} #Performance`, `${user.username} - ArenaKore Talent Card`);
     } catch (e) {
       Alert.alert('Condivisione non disponibile');
     }
