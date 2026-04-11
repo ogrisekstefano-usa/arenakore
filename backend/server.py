@@ -4674,26 +4674,28 @@ def compute_kore_score(user: dict, scan_trend: list = None) -> dict:
         posture_penalty = 0.0
     penalty_active = posture_gap > 10
 
-    # ── 6. FINAL K-RATING ──────────────────────────────────────
-    raw_score = (
-        performance_pura * 0.45 +
+    # ── 6. FINAL K-RATING (Scala 0-1000) ─────────────────────
+    raw_100 = (
+        performance_pura * 0.50 +
         timeline_index   * 0.30 +
-        sforzo_index     * 0.15 +
+        sforzo_index     * 0.20 +
         bio_bonus
     ) - posture_penalty
-    kore_score = round(max(0, min(100, raw_score)), 1)
+    raw_100 = max(0, min(100, raw_100))
+    # Scale to 0-1000
+    k_rating = round(raw_100 * 10, 0)
 
     # ── 7. GRADE & VERDICT ─────────────────────────────────────
-    if kore_score >= 88:
+    if k_rating >= 880:
         grade, color = "S", "#D4AF37"
         verdict = "PERFORMANCE ÉLITE. Determinazione e costanza al massimo."
-    elif kore_score >= 74:
+    elif k_rating >= 740:
         grade, color = "A", "#00F2FF"
         verdict = "PROFILO BILANCIATO. Mantieni questo ritmo di allenamento."
-    elif kore_score >= 58:
+    elif k_rating >= 580:
         grade, color = "B", "#34C759"
         verdict = "SOLIDO. Incrementa la costanza sulla K-Timeline per salire."
-    elif kore_score >= 40:
+    elif k_rating >= 400:
         grade, color = "C", "#FF9500"
         if penalty_active:
             verdict = f"ATTENZIONE: decadimento posturale ({round(posture_gap, 1)} gap). Lavora sulla tecnica."
@@ -4704,7 +4706,8 @@ def compute_kore_score(user: dict, scan_trend: list = None) -> dict:
         verdict = "UNDER-PERFORMANCE. Più costanza e frequenza per risalire."
 
     return {
-        "score":          kore_score,
+        "k_rating":       k_rating,
+        "score":          k_rating,  # backward compat
         "grade":          grade,
         "color":          color,
         "verdict":        verdict,
@@ -4713,36 +4716,36 @@ def compute_kore_score(user: dict, scan_trend: list = None) -> dict:
         "breakdown": {
             "performance": {
                 "value":  performance_pura,
-                "weight": 0.45,
-                "contribution": round(performance_pura * 0.45, 1),
-                "label": "PERFORMANCE PURA",
-                "sub":   "Volume + Intensità degli esercizi",
+                "weight": 0.50,
+                "contribution": round(performance_pura * 0.50 * 10, 0),
+                "label": "PERFORMANCE",
+                "sub":   "Risultati delle Challenge completate",
                 "color": "#00F2FF",
             },
             "timeline": {
                 "value":  timeline_index,
                 "weight": 0.30,
-                "contribution": round(timeline_index * 0.30, 1),
-                "label": "K-TIMELINE",
+                "contribution": round(timeline_index * 0.30 * 10, 0),
+                "label": "DETERMINAZIONE",
                 "sub":   f"Streak {checkin_streak}gg · {total_activities} attività",
                 "color": "#FFD700",
             },
-            "sforzo": {
+            "bio": {
                 "value":  sforzo_index,
-                "weight": 0.15,
-                "contribution": round(sforzo_index * 0.15, 1),
-                "label": "SFORZO" + (" (BIO)" if bio_verified else " (RPE)"),
-                "sub":   f"{'Sensori verificati' if bio_verified else f'RPE {user_rpe}/10 · Percezione'}",
+                "weight": 0.20,
+                "contribution": round(sforzo_index * 0.20 * 10, 0),
+                "label": "BIO-PRECISION" if bio_verified else "RPE",
+                "sub":   f"{'Sensori verificati' if bio_verified else f'RPE {user_rpe}/10'}",
                 "color": "#BF5AF2",
             },
         },
-        "bio_bonus":       bio_bonus,
-        "posture_penalty": posture_penalty,
+        "bio_bonus":       round(bio_bonus * 10, 0),
+        "posture_penalty": round(posture_penalty * 10, 0),
         "posture_gap":     round(posture_gap, 1),
         "dna_potential":   dna_potential,
-        "avg_scan_quality": round(sforzo_index, 1),
         "scans_used":      len(scans),
         "rpe_used":        not bio_verified,
+        "weekly_trend":    0,  # TODO: calculate from history
     }
 
 

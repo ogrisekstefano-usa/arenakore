@@ -106,9 +106,9 @@ function HeroBanner() {
         <View style={hero$.brBracket} />
         <View style={hero$.inner}>
           <Text style={hero$.brandLine}>ARENAKORE</Text>
-          <Text style={hero$.titleLine}>COMMUNITY{'\n'}HUB</Text>
+          <Text style={hero$.titleLine}>L'ELITE{'\n'}SI CONFRONTA</Text>
           <Animated.View style={[hero$.cyanLine, lineStyle]} />
-          <Text style={hero$.tagLine}>DOVE L'ELITE SI CONFRONTA</Text>
+          <Text style={hero$.tagLine}>SFIDE · RECORD · DETERMINAZIONE</Text>
         </View>
         <View style={hero$.statsRow}>
           {[
@@ -435,10 +435,14 @@ function LiveBattleDashboard() {
       ) : error ? (
         <RetryBlock error={error} onRetry={load} />
       ) : battles.length === 0 ? (
-        <View style={lbd$.emptyCard}>
-          <Text style={lbd$.emptyTitle}>NESSUNA SFIDA ATTIVA</Text>
-          <Text style={lbd$.emptySub}>Usa il Matchmaking AI per trovare un avversario</Text>
-        </View>
+        <TouchableOpacity style={lbd$.ctaCard} onPress={() => router.push('/duel-search' as any)} activeOpacity={0.85}>
+          <Ionicons name="flash" size={20} color="#FFD700" />
+          <View style={lbd$.ctaText}>
+            <Text style={lbd$.ctaTitle}>LANCIA IL GUANTO</Text>
+            <Text style={lbd$.ctaSub}>Inizia una nuova sfida agonistica</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color="rgba(255,215,0,0.4)" />
+        </TouchableOpacity>
       ) : (
         battles.map(b => <LiveBattleCard key={b.id} battle={b} onOpenDashboard={(id: string) => setDashboardBattleId(id)} />)
       )}
