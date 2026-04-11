@@ -192,7 +192,7 @@ export default function GlobalDashboard() {
         <KPITile icon="people" label="KORE ATTIVI" value={athletes?.total || 0} sub={`${athletes?.crew_count || 0} crew`} color={theme.accent} trend="up" />
         <KPITile icon="analytics" label="DNA MEDIO" value={avgDna} sub="/ 100 KORE" color={theme.accentGold} trend="up" />
         <KPITile icon="checkmark-circle" label="COMPLIANCE" value={`${avgComp}%`} sub="template completion" color={theme.positive} />
-        <KPITile icon="shield" label="BATTLE W/L" value={`${battles?.wins || 0}/${battles?.losses || 0}`} sub={`${battles?.win_rate || 0}% win rate`} color="#AF52DE" />
+        <KPITile icon="shield" label="SFIDE W/L" value={`${battles?.wins || 0}/${battles?.losses || 0}`} sub={`${battles?.win_rate || 0}% win rate`} color="#AF52DE" />
         <KPITile icon="document-text" label="TEMPLATE" value={compliance?.total || 0} sub="inviati" color={theme.accentGold} />
       </Animated.View>
 
@@ -260,7 +260,7 @@ export default function GlobalDashboard() {
             <QuickAction label="NUOVO TEMPLATE" icon="add-circle" color={theme.accent} onPress={() => router.push('/coach-studio/builder' as any)} />
             <QuickAction label="SCOUT KORE" icon="star" color={theme.accentGold} onPress={() => router.push('/coach-studio/talent' as any)} />
             <QuickAction label="AI ANALYSIS" icon="hardware-chip" color="#AF52DE" onPress={() => router.push('/coach-studio/ai' as any)} />
-            <QuickAction label="CREW BATTLE" icon="shield" color={theme.accentRed} onPress={() => router.push('/coach-studio/crew' as any)} />
+            <QuickAction label="SFIDA CREW" icon="shield" color={theme.accentRed} onPress={() => router.push('/coach-studio/crew' as any)} />
           </View>
         </Widget>
       </Animated.View>
@@ -268,7 +268,7 @@ export default function GlobalDashboard() {
       {/* ── RECENT BATTLES ── */}
       {battles?.battles?.length > 0 && (
         <Animated.View entering={FadeInDown.delay(300).duration(300)}>
-          <Widget title="BATTLE RECENTI" subtitle="Crew battle history" icon="flash" iconColor={theme.accentRed}>
+          <Widget title="SFIDE RECENTI" subtitle="Crew sfide history" icon="flash" iconColor={theme.accentRed}>
             {battles.battles.slice(0, 4).map((b: any) => (
               <View key={b.id} style={[pg$.battleRow, { borderBottomColor: theme.border }]}>
                 <View style={[pg$.resultPill, {

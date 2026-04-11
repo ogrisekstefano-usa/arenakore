@@ -117,7 +117,7 @@ export function PvPPendingCard() {
           <Animated.View key={ch.id} entering={FadeInDown.delay(idx * 60).duration(250)} style={p$.activeCard}>
             <View style={p$.activeHeader}>
               <Ionicons name="flash" size={12} color="#FF3B30" />
-              <Text style={p$.activeLabel}>BATTLE ATTIVA</Text>
+              <Text style={p$.activeLabel}>SFIDA ATTIVA</Text>
               <View style={p$.discPill}>
                 <Text style={[p$.discPillText, { color: DISC_COLORS[ch.discipline] }]}>{ch.discipline_label}</Text>
               </View>

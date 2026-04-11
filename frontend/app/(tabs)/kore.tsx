@@ -24,6 +24,7 @@ import { RadarChart } from '../../components/RadarChart';
 import { CertBadge, AKDropsWallet } from '../../components/CertBadge';
 import { KoreIDModal } from '../../components/KoreIDModal';
 import { CalendarModal } from '../../components/CalendarModal';
+import { Header } from '../../components/Header';
 
 const GOLD = '#FFD700';
 const CYAN = '#00E5FF';
@@ -223,6 +224,7 @@ export default function KoreTab() {
   return (
     <SafeAreaView style={s.safe}>
       <StatusBar barStyle="light-content" />
+      <Header />
       <ScrollView style={s.scroll} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={GOLD} />}>
 

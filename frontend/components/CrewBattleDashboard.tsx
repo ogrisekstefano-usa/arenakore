@@ -124,7 +124,7 @@ export function CrewBattleDashboard({ visible, battleId, onClose }: Props) {
             <Ionicons name="close" size={22} color="#FFF" />
           </TouchableOpacity>
           <View style={s.headerCenter}>
-            <Text style={s.headerTitle}>CREW BATTLE</Text>
+            <Text style={s.headerTitle}>SFIDA CREW</Text>
             <Text style={s.headerSub}>
               {data?.status === 'live' ? '🔴 LIVE' : data?.status?.toUpperCase() || 'LOADING...'}
               {countdown ? ` — ${countdown}` : ''}

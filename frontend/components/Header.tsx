@@ -1,9 +1,12 @@
 /**
- * ARENAKORE — Standard Header v4.1 (Build 31)
+ * ARENAKORE — Universal Header v5.0 (Build 31)
  * ═══════════════════════════════════════════════
- * LEFT:   "ARENAKORE" text logo
+ * NEW LAYOUT (per direttiva utente):
+ * LEFT:   Notification Bell (🔔) + "ARENAKORE" text logo
  * CENTER: 3 K-FLUX indicators (clickable → KFluxModal)
- * RIGHT:  Notification Bell + Burger Menu (☰)
+ * RIGHT:  Burger Menu (☰)
+ *
+ * IDENTICO su: NÈXUS, KORE ID, ARENA, CREW, CHALLENGE
  */
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
@@ -45,8 +48,16 @@ export function Header({ title, rightAction }: HeaderProps) {
     <>
       <View style={[h.container, { paddingTop: insets.top + 4 }]}>
         <View style={h.row}>
-          {/* ═══ LEFT: ARENAKORE Logo ═══ */}
+          {/* ═══ LEFT: Bell + ARENAKORE Logo ═══ */}
           <View style={h.leftGroup}>
+            <TouchableOpacity
+              style={h.bellBtn}
+              onPress={() => setNotifOpen(true)}
+              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
+            >
+              <Ionicons name="notifications-outline" size={20} color="rgba(255,255,255,0.5)" />
+              {notifications.length > 0 && <View style={h.bellDot} />}
+            </TouchableOpacity>
             <Text style={h.logoText}>ARENA</Text>
             <Text style={h.logoAccent}>KORE</Text>
           </View>
@@ -58,7 +69,7 @@ export function Header({ title, rightAction }: HeaderProps) {
               onPress={() => openKFlux(0)}
               activeOpacity={0.7}
             >
-              <Ionicons name="heart" size={10} color={CYAN} />
+              <Ionicons name="flash" size={10} color={CYAN} />
               <Text style={[h.fluxVal, { color: CYAN }]}>
                 {vitalFlux > 999 ? `${(vitalFlux / 1000).toFixed(1)}k` : vitalFlux}
               </Text>
@@ -83,18 +94,9 @@ export function Header({ title, rightAction }: HeaderProps) {
             </TouchableOpacity>
           </View>
 
-          {/* ═══ RIGHT: Notifications + Burger ═══ */}
+          {/* ═══ RIGHT: Burger Menu (☰) ═══ */}
           <View style={h.rightGroup}>
             {rightAction}
-            <TouchableOpacity
-              style={h.iconBtn}
-              onPress={() => setNotifOpen(true)}
-              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
-            >
-              <Ionicons name="notifications-outline" size={20} color="rgba(255,255,255,0.5)" />
-              {notifications.length > 0 && <View style={h.bellDot} />}
-            </TouchableOpacity>
-
             <TouchableOpacity
               onPress={() => setMenuOpen(true)}
               style={h.iconBtn}
@@ -134,12 +136,20 @@ const h = StyleSheet.create({
     justifyContent: 'space-between',
     minHeight: 44,
   },
-  // Left — Logo
+  // Left — Bell + Logo
   leftGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 0,
-    minWidth: 100,
+    gap: 4,
+    minWidth: 120,
+  },
+  bellBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 2,
   },
   logoText: {
     fontWeight: '900',
@@ -176,12 +186,12 @@ const h = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 0.2,
   },
-  // Right — Icons
+  // Right — Menu
   rightGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
-    minWidth: 80,
+    minWidth: 44,
     justifyContent: 'flex-end',
   },
   iconBtn: {
@@ -193,8 +203,8 @@ const h = StyleSheet.create({
   },
   bellDot: {
     position: 'absolute',
-    top: 6,
-    right: 7,
+    top: 4,
+    right: 5,
     width: 8,
     height: 8,
     borderRadius: 4,

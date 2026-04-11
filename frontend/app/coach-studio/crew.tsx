@@ -59,7 +59,7 @@ export default function CrewStrategist() {
       <View style={c$.twoCol}>
         {/* LEFT: Battle History */}
         <View style={c$.leftCol}>
-          <SectionHeader title="BATTLE HISTORY" sub="Risultati crew battles" />
+          <SectionHeader title="SFIDE HISTORY" sub="Risultati sfide crew" />
           <View style={c$.statsRow}>
             <View style={c$.statBox}>
               <Text style={[c$.statVal, { color: '#00FF87' }]}>{stats?.wins || 0}</Text>
@@ -143,7 +143,7 @@ export default function CrewStrategist() {
 
             {simResult && (
               <View style={c$.simResult}>
-                <Text style={c$.simResultLabel}>KORE BATTLE SCORE SIMULATO</Text>
+                <Text style={c$.simResultLabel}>KORE SFIDA SCORE SIMULATO</Text>
                 <Text style={c$.simScore}>{simResult.score}</Text>
                 <Text style={[c$.simIntensity, { color: simResult.intensity === 'high' ? '#00FF87' : simResult.intensity === 'medium' ? '#FF9500' : '#FF3B30' }]}>
                   {(simResult.intensity || '').toUpperCase()} INTENSITY

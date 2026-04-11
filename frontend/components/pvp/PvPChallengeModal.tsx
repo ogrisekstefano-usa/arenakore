@@ -23,7 +23,7 @@ const STAKES = [
   { xp: 50,  label: '50 FLUX',  sub: 'Partita amichevole' },
   { xp: 100, label: '100 FLUX', sub: 'Standard' },
   { xp: 200, label: '200 FLUX', sub: 'Alta posta' },
-  { xp: 500, label: '500 FLUX', sub: 'All-in KORE' },
+  { xp: 500, label: '500 K-FLUX', sub: 'All-in KORE' },
 ];
 
 interface Props {

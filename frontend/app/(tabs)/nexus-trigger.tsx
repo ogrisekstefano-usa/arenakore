@@ -20,6 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import { apiClient } from '../../utils/api';
+import { Header } from '../../components/Header';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeIn, FadeOut, SlideInUp, SlideOutUp } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -350,6 +351,7 @@ function NexusDashboard() {
   return (
     <View style={s.container}>
       <StatusBar barStyle="light-content" />
+      <Header />
 
       {/* ══ GHOST BANNER (Auto-check-in feedback) ══ */}
       <GhostBanner username={username} visible={showGhostBanner} />

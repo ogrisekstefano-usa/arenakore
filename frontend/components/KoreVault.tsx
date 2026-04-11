@@ -45,7 +45,7 @@ export function AKBadge({ compact = false }: { compact?: boolean }) {
       <Text style={ak$.badgeIcon}></Text>
       <View>
         <Text style={ak$.badgeVal}>{ak.toLocaleString()}</Text>
-        <Text style={ak$.badgeLabel}>FLUX</Text>
+        <Text style={ak$.badgeLabel}>K-FLUX</Text>
       </View>
     </Animated.View>
   );
@@ -118,7 +118,7 @@ function ToolCard({ tool, ak, onUnlock, unlocking }: { tool: any; ak: number; on
       ) : (
         <TouchableOpacity
           style={[tc$.unlockBtn, !canAfford && tc$.unlockBtnOff]}
-          onPress={() => canAfford ? onUnlock(tool.id) : Alert.alert('FLUX INSUFFICIENTI', `Servono ${tool.cost_ak} FLUX. Hai ${ak} FLUX.\nFai più Scan Nexus per guadagnare FLUX.`)}
+          onPress={() => canAfford ? onUnlock(tool.id) : Alert.alert('K-FLUX INSUFFICIENTI', `Servono ${tool.cost_ak} K-FLUX. Hai ${ak} K-FLUX.\nFai più Scan Nexus per guadagnare K-FLUX.`)}
           disabled={isUnlocking}
           activeOpacity={0.85}
         >
@@ -164,7 +164,7 @@ function EarnGuide() {
   ];
   return (
     <View style={eg$.wrap}>
-      <Text style={eg$.title}>COME GUADAGNARE FLUX</Text>
+      <Text style={eg$.title}>COME GUADAGNARE K-FLUX</Text>
       <View style={eg$.grid}>
         {RULES.map(r => (
           <View key={r.label} style={eg$.item}>
@@ -293,7 +293,7 @@ export function ToolLock({ toolId, toolName, costAk, requiresPro = false, onNavi
       {requiresPro ? (
         <View style={tl$.proPill}><Text style={tl$.proText}>RISERVATO A PRO / ENTERPRISE</Text></View>
       ) : (
-        <Text style={tl$.cost}>Sblocca con <Text style={{ color: '#FFD700', fontWeight: '900' }}>{costAk} FLUX</Text></Text>
+        <Text style={tl$.cost}>Sblocca con <Text style={{ color: '#FFD700', fontWeight: '900' }}>{costAk} K-FLUX</Text></Text>
       )}
       {onNavigate && (
         <TouchableOpacity style={tl$.cta} onPress={onNavigate} activeOpacity={0.85}>

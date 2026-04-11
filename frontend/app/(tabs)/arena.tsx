@@ -201,14 +201,14 @@ const FEED_IMAGES = [
   'https://images.unsplash.com/photo-1589104666851-dffe3a15aace?crop=entropy&cs=srgb&fm=jpg&q=75&w=800',
 ];
 const ACTION_COLORS: Record<string, string> = {
-  'BATTLE VINTA': '#FFD700', 'NUOVO RECORD': '#00E5FF', 'LVL 12 RAGGIUNTO': '#AF52DE',
-  'CREW BATTLE': '#FF3B30', 'DNA AGGIORNATO': '#00FF87', 'SCAN COMPLETATO': '#00E5FF'
+  'SFIDA VINTA': '#FFD700', 'NUOVO RECORD': '#00E5FF', 'LVL 12 RAGGIUNTO': '#AF52DE',
+  'SFIDA CREW': '#FF3B30', 'DNA AGGIORNATO': '#00FF87', 'SCAN COMPLETATO': '#00E5FF'
 };
 const ELITE_FEED = [
-  { id: '1', athlete: 'THUNDER_MAN', action: 'BATTLE VINTA', sport: 'ATLETICA', xp: '+220', dna: { velocita: 88, forza: 82, resistenza: 85, agilita: 80, tecnica: 84, potenza: 86 } },
+  { id: '1', athlete: 'THUNDER_MAN', action: 'SFIDA VINTA', sport: 'ATLETICA', xp: '+220', dna: { velocita: 88, forza: 82, resistenza: 85, agilita: 80, tecnica: 84, potenza: 86 } },
   { id: '2', athlete: 'MAYA_J', action: 'NUOVO RECORD', sport: 'MMA', xp: '+180', dna: { velocita: 79, forza: 91, resistenza: 83, agilita: 88, tecnica: 77, potenza: 90 } },
   { id: '3', athlete: 'AXEL_V', action: 'SCAN COMPLETATO', sport: 'CROSSFIT', xp: '+150', dna: { velocita: 75, forza: 88, resistenza: 90, agilita: 72, tecnica: 80, potenza: 85 } },
-  { id: '4', athlete: 'TORO_94', action: 'CREW BATTLE', sport: 'BOXE', xp: '+200', dna: { velocita: 83, forza: 90, resistenza: 78, agilita: 82, tecnica: 86, potenza: 91 } },
+  { id: '4', athlete: 'TORO_94', action: 'SFIDA CREW', sport: 'BOXE', xp: '+200', dna: { velocita: 83, forza: 90, resistenza: 78, agilita: 82, tecnica: 86, potenza: 91 } },
   { id: '5', athlete: 'SARA_K', action: 'DNA AGGIORNATO', sport: 'ATLETICA', xp: '+120', dna: { velocita: 86, forza: 74, resistenza: 88, agilita: 84, tecnica: 82, potenza: 76 } },
 ];
 
@@ -427,7 +427,7 @@ function LiveBattleDashboard() {
     <View style={lbd$.section}>
       <View style={lbd$.sectionHeader}>
         <Ionicons name="flash" size={12} color="#FF3B30" />
-        <Text style={lbd$.sectionTitle}>BATTLE LIVE</Text>
+        <Text style={lbd$.sectionTitle}>SFIDA LIVE</Text>
         {!loading && <View style={lbd$.countBadge}><Text style={lbd$.countText}>{battles.length} ATTIVE</Text></View>}
       </View>
       {loading ? (
@@ -436,7 +436,7 @@ function LiveBattleDashboard() {
         <RetryBlock error={error} onRetry={load} />
       ) : battles.length === 0 ? (
         <View style={lbd$.emptyCard}>
-          <Text style={lbd$.emptyTitle}>NESSUNA BATTLE ATTIVA</Text>
+          <Text style={lbd$.emptyTitle}>NESSUNA SFIDA ATTIVA</Text>
           <Text style={lbd$.emptySub}>Usa il Matchmaking AI per trovare un avversario</Text>
         </View>
       ) : (

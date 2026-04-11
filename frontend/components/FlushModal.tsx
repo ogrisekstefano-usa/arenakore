@@ -32,7 +32,7 @@ const TIERS: FlushTier[] = [
   {
     key: 'neon', name: 'NEON FLUX', icon: 'flash', color: CYAN, value: 0, goal: 1000,
     perks: [
-      'Sblocca AI Matchmaker (500 FLUX)',
+      'Sblocca AI Matchmaker (500 K-FLUX)',
       'Accesso Template Coach Certificati',
       'Partecipazione Crew Battle',
       'Custom Avatar Frame',
