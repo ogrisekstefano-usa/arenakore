@@ -9,7 +9,7 @@ import { View, Text, StyleSheet } from 'react-native';
 export default function SafeTestScreen() {
   return (
     <View style={s.root}>
-      <Text style={s.title}>ARENA KORE</Text>
+      <Text style={s.title}>ARENAKORE</Text>
       <Text style={s.sub}>BOOT TEST — OK</Text>
       <Text style={s.info}>Se vedi questo, il boot è riuscito.</Text>
       <Text style={s.info}>Nessun modulo nativo caricato.</Text>

@@ -57,7 +57,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
     setSharing(true);
     try {
       const uri = await captureRef(victoryRef, { format: 'png', quality: 1 });
-      await shareImageWithText(uri, 'Sfidami su ARENA KORE! https://arenakore.app', 'ARENAKORE — Risultato Sessione');
+      await shareImageWithText(uri, 'Sfidami su ARENAKORE! https://arenakore.app', 'ARENAKORE — Risultato Sessione');
     } catch (e) {
       Alert.alert('Errore', 'Impossibile condividere');
     } finally {
@@ -67,7 +67,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
 
   const handleShareSnap = useCallback(async (dataUri: string, label: string) => {
     try {
-      await shareImageWithText(dataUri, `${label} — La mia sfida su ARENA KORE! 🔥 https://arenakore.app`, `ARENA KORE — ${label}`);
+      await shareImageWithText(dataUri, `${label} — La mia sfida su ARENAKORE! 🔥 https://arenakore.app`, `ARENAKORE — ${label}`);
     } catch {
       Alert.alert('Errore', 'Impossibile condividere lo scatto');
     }
@@ -80,7 +80,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
     setSharing(true);
     try {
       const uri = await captureRef(talentRef, { format: 'png', quality: 1 });
-      await shareImageWithText(uri, 'La mia Talent Card su ARENA KORE! 🏆 https://arenakore.app', 'ARENAKORE — Talent Card');
+      await shareImageWithText(uri, 'La mia Talent Card su ARENAKORE! 🏆 https://arenakore.app', 'ARENAKORE — Talent Card');
     } catch {
       Alert.alert('Errore', 'Impossibile generare la Talent Card');
     }
@@ -301,7 +301,7 @@ export function CinemaResults({ visible, result, user, onClose }: { visible: boo
                 <Ionicons name="eye" size={14} color="rgba(255,255,255,0.3)" />
                 <Text style={vic$.validText}>NEXUS VALIDATED</Text>
               </View>
-              <Text style={vic$.tagline}>Sfidami su ARENA KORE!</Text>
+              <Text style={vic$.tagline}>Sfidami su ARENAKORE!</Text>
               <Text style={vic$.footer}>arenakore.app</Text>
             </View>
           </ViewShot>

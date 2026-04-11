@@ -56,7 +56,7 @@ export async function shareImageWithText(
       // Use expo-sharing for proper image sharing on both iOS and Android
       await Sharing.shareAsync(fileUri, {
         mimeType: 'image/png',
-        dialogTitle: title || 'ARENA KORE',
+        dialogTitle: title || 'ARENAKORE',
         UTI: 'public.png',
       });
       return true;
@@ -67,13 +67,13 @@ export async function shareImageWithText(
       await Share.share({
         url: imageUri,
         message: message,
-        title: title || 'ARENA KORE',
+        title: title || 'ARENAKORE',
       });
     } else {
       // Android: text-only fallback
       await Share.share({
         message: message,
-        title: title || 'ARENA KORE',
+        title: title || 'ARENAKORE',
       });
     }
     return true;
@@ -92,7 +92,7 @@ export async function shareText(message: string, title?: string): Promise<boolea
   try {
     await Share.share({
       message,
-      title: title || 'ARENA KORE',
+      title: title || 'ARENAKORE',
     });
     return true;
   } catch {

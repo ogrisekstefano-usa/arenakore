@@ -53,9 +53,12 @@ export default function Login() {
       if (pendingCode) {
         router.replace(`/join/${pendingCode}`);
       } else {
-        // BUILD 15: Do NOT auto-redirect. Show manual gate.
-        setLoggedUser(result);
-        setLoginSuccess(true);
+        // BUILD 36: Auto-redirect to NEXUS — no manual gate
+        if (result && !result.onboarding_completed) {
+          router.replace('/onboarding/choice');
+        } else {
+          router.replace('/(tabs)/nexus-trigger');
+        }
       }
     } catch (e: any) {
       setError(e.message || 'Credenziali non valide');
@@ -106,8 +109,12 @@ export default function Login() {
               // Store token and user in auth context
               await AsyncStorage.setItem('auth_token', token);
               await AsyncStorage.setItem('user_data', JSON.stringify(user));
-              setLoggedUser(user);
-              setLoginSuccess(true);
+              // BUILD 36: Auto-redirect
+              if (!user.onboarding_completed) {
+                router.replace('/onboarding/choice');
+              } else {
+                router.replace('/(tabs)/nexus-trigger');
+              }
             }
             setAppleLoading(false);
           }

@@ -1762,6 +1762,100 @@ async def get_challenges_pending_proof(current_user: dict = Depends(get_current_
     ]
 
 
+# =====================================================================
+# CHECK-IN / K-TIMELINE — BUILD 36: Weekly check-in tracker
+# =====================================================================
+
+@api_router.get("/checkin/week")
+async def get_checkin_week(current_user: dict = Depends(get_current_user)):
+    """Get check-in data for the current week (Mon-Sun)."""
+    user_id = current_user["_id"]
+    now = datetime.now(timezone.utc)
+    # Find Monday of this week
+    monday = now - timedelta(days=now.weekday())
+    monday = monday.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    days = []
+    day_names = ['LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB', 'DOM']
+    
+    for i in range(7):
+        day_date = monday + timedelta(days=i)
+        date_str = day_date.strftime("%Y-%m-%d")
+        checkin = await db.checkins.find_one({"user_id": user_id, "date": date_str})
+        days.append({
+            "day_name": day_names[i],
+            "date": date_str,
+            "checked_in": bool(checkin),
+        })
+    
+    streak = current_user.get("checkin_streak", 0)
+    return {"days": days, "streak": streak}
+
+
+@api_router.get("/checkin/today")
+async def get_checkin_today(current_user: dict = Depends(get_current_user)):
+    """Check if user has checked in today."""
+    user_id = current_user["_id"]
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    checkin = await db.checkins.find_one({"user_id": user_id, "date": today})
+    return {"checked_in": bool(checkin), "date": today}
+
+
+@api_router.post("/checkin")
+async def do_checkin(current_user: dict = Depends(get_current_user)):
+    """Perform daily check-in. Idempotent — won't duplicate."""
+    user_id = current_user["_id"]
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    existing = await db.checkins.find_one({"user_id": user_id, "date": today})
+    if existing:
+        return {"success": True, "already_checked": True, "date": today}
+    
+    await db.checkins.insert_one({
+        "user_id": user_id,
+        "date": today,
+        "created_at": datetime.now(timezone.utc),
+    })
+    
+    # Update streak
+    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+    yesterday_checkin = await db.checkins.find_one({"user_id": user_id, "date": yesterday})
+    
+    if yesterday_checkin:
+        new_streak = current_user.get("checkin_streak", 0) + 1
+    else:
+        new_streak = 1
+    
+    await db.users.update_one(
+        {"_id": user_id},
+        {"$set": {"checkin_streak": new_streak}}
+    )
+    
+    return {"success": True, "already_checked": False, "date": today, "streak": new_streak}
+
+
+@api_router.get("/duels/pending")
+async def get_pending_duels(current_user: dict = Depends(get_current_user)):
+    """Get pending duel challenges for the current user."""
+    user_id = str(current_user["_id"])
+    pending = await db.challenges_engine.find({
+        "challenged_user_id": user_id,
+        "status": "PENDING",
+        "type": {"$in": ["PVP", "DUEL"]},
+    }).sort("created_at", -1).to_list(10)
+    
+    return [
+        {
+            "id": str(d["_id"]),
+            "challenger": d.get("user_id", ""),
+            "exercise": d.get("exercise", "Sfida"),
+            "sport": d.get("sport", ""),
+            "created_at": d.get("created_at", "").isoformat() if d.get("created_at") else None,
+        }
+        for d in pending
+    ]
+
+
 
 # =====================================================================
 # VALIDATION BREAKDOWN — Compute athlete's trust reputation

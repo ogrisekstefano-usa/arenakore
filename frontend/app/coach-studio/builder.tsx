@@ -482,7 +482,7 @@ export default function TemplateBuilder() {
         }, 2000);
       }
     } catch {
-      Alert.alert('Info', 'Apri l\'app ARENA KORE sul tuo telefono per testare questa sfida.');
+      Alert.alert('Info', 'Apri l\'app ARENAKORE sul tuo telefono per testare questa sfida.');
     }
   }, [selectedChallenge]);
   const [crews, setCrews] = useState<any[]>([]);

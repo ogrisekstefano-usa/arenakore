@@ -1,5 +1,5 @@
 /**
- * VIDEO PROOF PAGE — ARENA KORE
+ * VIDEO PROOF PAGE — ARENAKORE
  * Upload video proof for a specific challenge
  */
 import React from 'react';

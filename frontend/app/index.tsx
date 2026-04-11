@@ -94,27 +94,16 @@ export default function HeroIndex() {
   const { height: SH, width: SW } = useWindowDimensions();
   const [videoError, setVideoError] = useState(false);
 
-  // Auth redirect — BUILD 22: Manual button gate replaces auto-redirect
-  const [showGate, setShowGate] = useState(false);
-  
-  // BUILD 25: Pre-wake removed — Render Always-On (Starter plan)
-  useEffect(() => {
-    console.log('[ARENAKORE] Server Always-On — no pre-wake needed');
-  }, []);
-
+  // Auth redirect — BUILD 36: Direct to NEXUS (no landing gate)
   useEffect(() => {
     if (!isLoading && token && user) {
-      setShowGate(true);
+      if (user && !user.onboarding_completed) {
+        router.replace('/onboarding/choice');
+      } else {
+        router.replace('/(tabs)/nexus-trigger');
+      }
     }
   }, [isLoading, token, user]);
-
-  const handleEnterNexus = () => {
-    if (user && !user.onboarding_completed) {
-      router.replace('/onboarding/choice');
-    } else {
-      router.replace('/(tabs)/nexus-trigger');
-    }
-  };
 
   // ── Gold pulse for brand title
   const glow = useSharedValue(0.6);
@@ -144,78 +133,13 @@ export default function HeroIndex() {
     return (
       <View style={s.loadWrap}>
         <StatusBar barStyle="light-content" />
-        <View style={s.loadRow}>
-          <Text style={[s.loadArena, { fontSize: loadingSize }]}>ARENA</Text>
-          <Text style={[s.loadKore, { fontSize: loadingSize }]}>KORE</Text>
-        </View>
+        <Text style={[s.loadArena, { fontSize: loadingSize }]}>ARENAKORE</Text>
         <Text style={s.loadSub}>NEXUS INITIALIZING...</Text>
       </View>
     );
   }
 
-  // ══ BUILD 15: Logged-in user gate — manual button to enter Dashboard ══
-  if (showGate && user) {
-    return (
-      <View style={s.root}>
-        <StatusBar barStyle="light-content" />
-        <Image
-          source={{ uri: ATHLETE_BG }}
-          style={[{ position: 'absolute', top: -80, left: 0, right: 0, bottom: 0, opacity: 0.45 }]}
-          blurRadius={6}
-          resizeMode="cover"
-        />
-        <LinearGradient
-          colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.8)', '#000000']}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 28, paddingHorizontal: 32 }}>
-          {/* Chip */}
-          <Animated.View entering={FadeInDown.delay(100)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(50,215,75,0.1)', borderWidth: 1, borderColor: 'rgba(50,215,75,0.3)', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 }}>
-            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#32D74B' }} />
-            <Text style={{ color: '#32D74B', fontSize: 11, fontWeight: '900', letterSpacing: 2 }}>SESSIONE ATTIVA</Text>
-          </Animated.View>
-
-          {/* Brand */}
-          <Animated.View entering={FadeInDown.delay(200)} style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 48, fontWeight: '900', letterSpacing: -2 }}>ARENA</Text>
-            <Text style={{ color: '#00E5FF', fontSize: 48, fontWeight: '900', letterSpacing: -2 }}>KORE</Text>
-          </Animated.View>
-
-          {/* Username */}
-          <Animated.View entering={FadeInDown.delay(300)}>
-            <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: '800', letterSpacing: 3, textAlign: 'center' }}>
-              {(user.username || 'KORE').toUpperCase()} · {user.role || 'ATHLETE'}
-            </Text>
-          </Animated.View>
-
-          {/* ENTRA NEL NEXUS — Gold button */}
-          <Animated.View entering={FadeInDown.delay(450)} style={{ width: '100%' }}>
-            <TouchableOpacity
-              testID="gate-enter-nexus-btn"
-              style={{
-                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
-                backgroundColor: '#FFD700', borderRadius: 14, paddingVertical: 20
-              }}
-              onPress={handleEnterNexus}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="flash" size={22} color="#050505" />
-              <Text style={{ color: '#050505', fontSize: 18, fontWeight: '900', letterSpacing: 2 }}>ENTRA NEL NEXUS</Text>
-            </TouchableOpacity>
-          </Animated.View>
-
-          {/* Logout */}
-          <Animated.View entering={FadeInDown.delay(550)}>
-            <TouchableOpacity onPress={() => { setShowGate(false); }} activeOpacity={0.7}>
-              <Text style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '800', letterSpacing: 2 }}>CAMBIA ACCOUNT</Text>
-            </TouchableOpacity>
-          </Animated.View>
-
-          <Text style={s.versionLabel}>v2.1.0 — Build 27 · NEXUS</Text>
-        </View>
-      </View>
-    );
-  }
+  // ══ BUILD 36: Logged-in users auto-redirect to NEXUS — No landing page ══
 
   return (
     <View style={s.root}>

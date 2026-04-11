@@ -221,8 +221,7 @@ export function ControlCenter({ visible, onClose }: { visible: boolean; onClose:
                 </TouchableOpacity>
               </ScrollView>
 
-              <PulseTicker />
-              <Text style={st.footer}>ARENAKORE v3.0 · BUILD 2026</Text>
+              <Text style={st.footer}>ARENAKORE · v3.6.0 · Build 36</Text>
             </LinearGradient>
           </Pressable>
         </Animated.View>

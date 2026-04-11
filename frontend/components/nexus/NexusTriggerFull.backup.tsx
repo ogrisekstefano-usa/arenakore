@@ -1874,12 +1874,12 @@ export default function NexusTriggerScreen() {
       const sw = w / scale; const sh = h / scale;
       const sx = (vw - sw) / 2; const sy = (vh - sh) / 2;
       ctx.drawImage(videoEl, sx, sy, sw, sh, 0, 0, w, h);
-      // Watermark: ARENA KORE bottom-right
+      // Watermark: ARENAKORE bottom-right
       ctx.save();
       ctx.font = '700 16px Montserrat, sans-serif';
       ctx.fillStyle = 'rgba(255,255,255,0.35)';
       ctx.textAlign = 'right';
-      ctx.fillText('ARENA KORE', w - 20, h - 20);
+      ctx.fillText('ARENAKORE', w - 20, h - 20);
       // Shot label top-left
       ctx.font = '900 12px Montserrat, sans-serif';
       ctx.fillStyle = 'rgba(0,229,255,0.6)';

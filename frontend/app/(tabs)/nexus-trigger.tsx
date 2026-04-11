@@ -36,37 +36,25 @@ const CYAN = '#00E5FF';
 const PURPLE = '#BF5AF2';
 const RED = '#FF3B30';
 
-// ═══ SPORT PHOTO POOL (Nike Premium) ═══
+// ═══ SPORT PHOTO POOL — BUILD 36: Unique images per sport, NO repeats ═══
 const SPORT_PHOTOS = {
   training: [
-    'https://images.unsplash.com/photo-1521804906057-1df8fdb718b7?w=600&q=75&auto=format',
-    'https://images.unsplash.com/photo-1585071258252-369a36d89e30?w=600&q=75&auto=format',
-    'https://images.unsplash.com/photo-1695918430535-775f1030f2d9?w=600&q=75&auto=format',
+    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=75&auto=format',
   ],
   challenge: [
-    'https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?w=600&q=75&auto=format',
-    'https://images.unsplash.com/photo-1579487685737-e435a87b2518?w=600&q=75&auto=format',
-    'https://images.unsplash.com/photo-1585071258252-369a36d89e30?w=600&q=75&auto=format',
+    'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=600&q=75&auto=format',
   ],
   live: [
-    'https://images.unsplash.com/photo-1579487685737-e435a87b2518?w=600&q=75&auto=format',
-    'https://images.unsplash.com/photo-1529929344488-5e812ddb6e2a?w=600&q=75&auto=format',
-    'https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?w=600&q=75&auto=format',
+    'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&q=75&auto=format',
   ],
   crew: [
-    'https://images.unsplash.com/photo-1529929344488-5e812ddb6e2a?w=600&q=75&auto=format',
-    'https://images.unsplash.com/photo-1521804906057-1df8fdb718b7?w=600&q=75&auto=format',
-    'https://images.unsplash.com/photo-1695918430535-775f1030f2d9?w=600&q=75&auto=format',
+    'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=600&q=75&auto=format',
   ],
   create: [
-    'https://images.unsplash.com/photo-1695918430535-775f1030f2d9?w=600&q=75&auto=format',
-    'https://images.unsplash.com/photo-1521804906057-1df8fdb718b7?w=600&q=75&auto=format',
-    'https://images.unsplash.com/photo-1579487685737-e435a87b2518?w=600&q=75&auto=format',
+    'https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=600&q=75&auto=format',
   ],
   respond: [
-    'https://images.unsplash.com/photo-1585071258252-369a36d89e30?w=600&q=75&auto=format',
-    'https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?w=600&q=75&auto=format',
-    'https://images.unsplash.com/photo-1529929344488-5e812ddb6e2a?w=600&q=75&auto=format',
+    'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&q=75&auto=format',
   ],
 };
 
@@ -139,14 +127,20 @@ const gb$ = StyleSheet.create({
 // ═══ K-TIMELINE (Compact) ═══
 function KTimeline({ weekData, streak }: { weekData: Array<{ date: string; day_name: string; checked_in: boolean }>; streak: number }) {
   const today = new Date().toISOString().split('T')[0];
+  // Count checked-in days this week
+  const checkedCount = weekData.filter(d => d.checked_in).length;
+
   return (
     <View style={kt$.container}>
       <View style={kt$.header}>
         <View style={kt$.titleRow}>
-          <Ionicons name="flame" size={11} color={GOLD} />
+          <Ionicons name="calendar" size={11} color={GOLD} />
           <Text style={kt$.title}>K-TIMELINE</Text>
         </View>
-        <Text style={kt$.streak}>{streak} 🔥</Text>
+        <View style={kt$.counterBadge}>
+          <Text style={kt$.counterNum}>{checkedCount}</Text>
+          <Text style={kt$.counterSlash}>/7</Text>
+        </View>
       </View>
       <View style={kt$.days}>
         {weekData.map((d, i) => {
@@ -170,7 +164,9 @@ const kt$ = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   title: { color: GOLD, fontSize: 11, fontWeight: '900', letterSpacing: 2 },
-  streak: { color: GOLD, fontSize: 11, fontWeight: '900' },
+  counterBadge: { flexDirection: 'row', alignItems: 'baseline' },
+  counterNum: { color: CYAN, fontSize: 18, fontWeight: '900' },
+  counterSlash: { color: 'rgba(255,255,255,0.2)', fontSize: 12, fontWeight: '800' },
   days: { flexDirection: 'row', justifyContent: 'space-between' },
   dayCol: { alignItems: 'center', gap: 4 },
   circle: { width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' },
@@ -473,7 +469,7 @@ function NexusDashboard() {
           )}
         </Animated.View>
 
-        {/* ═══ HERO CARD GRID ═══ */}
+        {/* ═══ HERO CARD GRID — 4 Sport Cards ═══ */}
         <View style={s.heroGrid}>
           <HeroCard
             icon="barbell"
@@ -509,12 +505,19 @@ function NexusDashboard() {
             icon="people"
             title="CREW"
             sub="Gestisci il tuo Branco"
-            color={PURPLE}
+            color={GOLD}
             imageUri={cardPhotos.crew}
             delay={250}
             size="half"
             onPress={() => router.push('/crews' as any)}
           />
+        </View>
+
+        {/* ═══ DIVIDER — BUILD 36 ═══ */}
+        <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.04)', marginHorizontal: 4, marginBottom: 12 }} />
+
+        {/* ═══ ACTION CARDS — Crea Sfida + K-Scan (Separated) ═══ */}
+        <View style={s.heroGrid}>
           <HeroCard
             icon="create"
             title="CREA SFIDA"
@@ -547,13 +550,12 @@ function NexusDashboard() {
               size="half"
               onPress={() => router.push('/k-scan' as any)}
             />
-          )}}
-          />
+          )}
         </View>
 
         {/* FOOTER */}
         <View style={s.footer}>
-          <Text style={s.footerText}>NÈXUS PREMIUM · v3.2.0 · Build 34</Text>
+          <Text style={s.footerText}>ARENAKORE · v3.6.0 · Build 36</Text>
         </View>
       </ScrollView>
 
@@ -586,55 +588,55 @@ const s = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // K-RATING PROMINENTE — NIKE PREMIUM (0-1000)
+  // K-RATING PROMINENTE — BUILD 36: Bigger text, no purple
   kRatingCard: {
     backgroundColor: 'rgba(0,229,255,0.04)', borderRadius: 20,
     borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)',
-    padding: 20, marginBottom: 16, gap: 10,
+    padding: 20, marginBottom: 16, gap: 12,
   },
   kRatingHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  kRatingLabel: { color: CYAN, fontSize: 11, fontWeight: '900', letterSpacing: 4 },
+  kRatingLabel: { color: CYAN, fontSize: 14, fontWeight: '900', letterSpacing: 4 },
   kRatingRow: { flexDirection: 'row', alignItems: 'baseline', gap: 2, flexWrap: 'wrap' },
   kRatingValue: {
-    color: CYAN, fontSize: 64, fontWeight: '900',
-    letterSpacing: -3, lineHeight: 68,
+    color: CYAN, fontSize: 80, fontWeight: '900',
+    letterSpacing: -4, lineHeight: 84,
     fontStyle: 'italic',
   },
   kRatingMaxWrap: { flexDirection: 'row', alignItems: 'baseline', gap: 0, marginLeft: 2 },
-  kRatingSlash: { color: 'rgba(0,229,255,0.15)', fontSize: 28, fontWeight: '300', fontStyle: 'italic' },
-  kRatingMax: { color: 'rgba(0,229,255,0.15)', fontSize: 20, fontWeight: '700', fontStyle: 'italic' },
-  kRatingBar: { height: 5, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' },
+  kRatingSlash: { color: 'rgba(0,229,255,0.2)', fontSize: 36, fontWeight: '300', fontStyle: 'italic' },
+  kRatingMax: { color: 'rgba(0,229,255,0.2)', fontSize: 26, fontWeight: '700', fontStyle: 'italic' },
+  kRatingBar: { height: 6, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 3, overflow: 'hidden' },
   kRatingBarFill: { height: '100%', borderRadius: 3 },
   trendBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4, marginLeft: 12 },
   trendUp: { backgroundColor: 'rgba(50,215,75,0.12)' },
   trendDown: { backgroundColor: 'rgba(255,69,58,0.12)' },
-  trendText: { fontSize: 14, fontWeight: '900', letterSpacing: 0.5 },
+  trendText: { fontSize: 16, fontWeight: '900', letterSpacing: 0.5 },
   trendTextUp: { color: '#32D74B' },
   trendTextDown: { color: '#FF453A' },
   kScanInvite: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(0,229,255,0.08)', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, marginLeft: 12, borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)' },
-  kScanInviteText: { color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 1 },
+  kScanInviteText: { color: CYAN, fontSize: 11, fontWeight: '900', letterSpacing: 1 },
 
-  // Bio / RPE badges
+  // Bio / RPE badges — BUILD 36: RPE is amber (not purple)
   bioVerifiedBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: 'rgba(0,229,255,0.08)', borderRadius: 8,
-    paddingHorizontal: 8, paddingVertical: 3,
+    paddingHorizontal: 10, paddingVertical: 4,
     borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)',
   },
-  bioVerifiedText: { color: CYAN, fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
+  bioVerifiedText: { color: CYAN, fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
   rpeBadge: {
-    backgroundColor: 'rgba(191,90,242,0.08)', borderRadius: 8,
-    paddingHorizontal: 8, paddingVertical: 3,
-    borderWidth: 1, borderColor: 'rgba(191,90,242,0.15)',
+    backgroundColor: 'rgba(255,159,10,0.1)', borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 4,
+    borderWidth: 1, borderColor: 'rgba(255,159,10,0.2)',
   },
-  rpeBadgeText: { color: PURPLE, fontSize: 8, fontWeight: '900', letterSpacing: 1 },
+  rpeBadgeText: { color: '#FF9F0A', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
 
-  // Breakdown
-  breakdownRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 2 },
-  breakdownPillar: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  breakdownDot: { width: 5, height: 5, borderRadius: 3 },
-  breakdownLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 8, fontWeight: '800', letterSpacing: 1 },
-  breakdownVal: { fontSize: 10, fontWeight: '900' },
+  // Breakdown — BUILD 36: Bigger text
+  breakdownRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 4 },
+  breakdownPillar: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  breakdownDot: { width: 6, height: 6, borderRadius: 3 },
+  breakdownLabel: { color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+  breakdownVal: { fontSize: 13, fontWeight: '900' },
 
   footer: { alignItems: 'center', marginTop: 12, paddingBottom: 16 },
   footerText: { color: 'rgba(255,255,255,0.04)', fontSize: 8, fontWeight: '700', letterSpacing: 1 },

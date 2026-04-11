@@ -69,10 +69,7 @@
       "expo-font",
       "expo-asset",
       "expo-audio",
-      "expo-build-properties",
-      "expo-image",
-      "expo-sharing",
-      "expo-web-browser"
+      "expo-build-properties"
     ],
     "experiments": {
       "typedRoutes": true

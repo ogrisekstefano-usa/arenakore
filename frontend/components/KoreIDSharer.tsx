@@ -108,7 +108,7 @@ export function KoreIDSharer({ user, onShareStart, onShareEnd }: KoreIDSharerPro
     onShareStart?.();
     try {
       const uri = await captureRef(viewRef, { format: 'png', quality: 1 });
-      await shareImageWithText(uri, 'Sfidami su ARENA KORE! https://arenakore.app', 'ARENAKORE — KORE ID');
+      await shareImageWithText(uri, 'Sfidami su ARENAKORE! https://arenakore.app', 'ARENAKORE — KORE ID');
     } catch (e) {
       Alert.alert('Errore', 'Impossibile generare l\'immagine');
     } finally {

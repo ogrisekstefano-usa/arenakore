@@ -56,7 +56,7 @@ export function ChallengeShareCard({ visible, challenge, onClose }: Props) {
       } else if (viewRef.current) {
         const uri = await captureRef(viewRef, { format: 'png', quality: 0.9 });
         if (uri) {
-          await shareImageWithText(uri, `🔥 ${challenge.title} — Sfida ARENAKORE\n\n${exercises}\n+${challenge.flux_reward}⚡ FLUX`, 'ARENA KORE — Sfida');
+          await shareImageWithText(uri, `🔥 ${challenge.title} — Sfida ARENAKORE\n\n${exercises}\n+${challenge.flux_reward}⚡ FLUX`, 'ARENAKORE — Sfida');
         } else {
           // No URI from capture — fallback to text
           await shareText(`🔥 ${challenge.title}\n${exercises}\n+${challenge.flux_reward}⚡ FLUX\n\nSfida su ARENAKORE!`);

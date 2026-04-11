@@ -118,7 +118,7 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
     setExporting(true);
     try {
       const shareData = [
-        `🏋️ ARENA KORE — PERFORMANCE`,
+        `🏋️ ARENAKORE — PERFORMANCE`,
         `━━━━━━━━━━━━━━━━`,
         `${cfg.label} | ${record?.disciplina || 'Fitness'}`,
         `${primaryDisplay} ${primaryUnit}`,
@@ -129,7 +129,7 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
         `#ArenaKore #Performance`,
       ].filter(Boolean).join('\n');
 
-      await shareText(shareData, 'ARENA KORE Performance');
+      await shareText(shareData, 'ARENAKORE Performance');
     } catch {}
     setExporting(false);
   }, [record]);
@@ -156,7 +156,7 @@ export function PerformanceDetailModal({ visible, record, onClose }: Props) {
     setExporting(true);
     try {
       const uri = await captureRef(talentCardRef, { format: 'png', quality: 1 });
-      await shareImageWithText(uri, 'La mia Talent Card su ARENA KORE! 🏆', 'ARENA KORE — Talent Card');
+      await shareImageWithText(uri, 'La mia Talent Card su ARENAKORE! 🏆', 'ARENAKORE — Talent Card');
     } catch {
       Alert.alert('Errore', 'Impossibile generare la Talent Card');
     }

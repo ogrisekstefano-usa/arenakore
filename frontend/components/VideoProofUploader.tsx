@@ -1,5 +1,5 @@
 /**
- * VideoProofUploader — ARENA KORE
+ * VideoProofUploader — ARENAKORE
  * ═══════════════════════════════════
  * Premium video proof upload component for challenge validation.
  * - Record or pick video from gallery
