@@ -59,6 +59,12 @@ app.mount("/api/uploads", StaticFiles(directory=_os.path.join(_os.path.dirname(_
 api_router = APIRouter(prefix="/api")
 
 
+# ═══ HEALTH CHECK ENDPOINT ═══
+@api_router.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "arenakore-api", "version": "3.6.0"}
+
+
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
@@ -672,6 +678,14 @@ class GymJoin(BaseModel):
     role: str = "ATHLETE"  # Role requested when joining
 
 
+def _compute_dynamic_level(k_flux: int) -> int:
+    """Level formula: Lvl = floor(sqrt(KFlux) / 10), minimum 1."""
+    import math
+    if k_flux <= 0:
+        return 1
+    return max(1, int(math.floor(math.sqrt(k_flux) / 10)))
+
+
 def user_to_response(user: dict) -> dict:
     is_nexus_certified = bool(
         user.get("onboarding_completed") and
@@ -680,6 +694,9 @@ def user_to_response(user: dict) -> dict:
     )
     # Calculate total scans from dna_scans array
     total_scans = len(user.get("dna_scans", []))
+    # Dynamic K-Flux = ak_credits (primary) or xp (fallback)
+    k_flux = user.get("ak_credits", 0) or user.get("xp", 0) or 0
+    dynamic_level = _compute_dynamic_level(k_flux)
     return {
         "id": str(user["_id"]),
         "username": user["username"],
@@ -690,9 +707,9 @@ def user_to_response(user: dict) -> dict:
         "role": normalize_role(user),
         "gym_id": str(user["gym_id"]) if user.get("gym_id") else None,
         "sport": user.get("sport"),
-        "xp": user.get("xp", 0),
-        "flux": user.get("xp", 0),
-        "level": user.get("level", 1),
+        "xp": k_flux,
+        "flux": k_flux,
+        "level": dynamic_level,
         "onboarding_completed": user.get("onboarding_completed", False),
         "is_nexus_certified": is_nexus_certified,
         "baseline_scanned_at": user.get("baseline_scanned_at").isoformat() if user.get("baseline_scanned_at") else None,
@@ -5984,9 +6001,10 @@ async def send_pvp_challenge(data: PvPChallengeRequest, current_user: dict = Dep
     if str(challenged["_id"]) == str(current_user["_id"]):
         raise HTTPException(status_code=400, detail="Non puoi sfidare te stesso")
 
-    # Check user has enough XP to stake
-    if current_user.get("xp", 0) < data.xp_stake:
-        raise HTTPException(status_code=400, detail=f"XP insufficienti. Hai {current_user.get('xp', 0)} XP, ne servono {data.xp_stake}")
+    # Check user has enough FLUX to stake (ak_credits OR xp field)
+    user_flux = current_user.get("ak_credits", 0) or current_user.get("xp", 0) or 0
+    if user_flux < data.xp_stake:
+        raise HTTPException(status_code=400, detail=f"FLUX insufficienti. Hai {user_flux} FLUX, ne servono {data.xp_stake}")
 
     # Check no active challenge between these users
     existing = await db.pvp_challenges.find_one({
@@ -8299,7 +8317,7 @@ async def get_leaderboard(
 
         users = await db.users.find(
             {"onboarding_completed": True, **{k: v for k, v in query_filter.items() if k != "$or"}},
-        ).sort("xp", -1).to_list(limit)
+        ).sort([("ak_credits", -1), ("xp", -1)]).to_list(limit)
 
         for rank, u in enumerate(users, 1):
             is_nexus_certified = bool(
@@ -8307,18 +8325,22 @@ async def get_leaderboard(
                 u.get("baseline_scanned_at") and
                 u.get("dna")
             )
+            k_flux = u.get("ak_credits", 0) or u.get("xp", 0) or 0
             result.append({
                 "rank": rank,
                 "id": str(u["_id"]),
                 "username": u["username"],
                 "avatar_color": u.get("avatar_color", "#00F2FF"),
                 "sport": u.get("sport"),
+                "preferred_sport": u.get("preferred_sport") or u.get("sport"),
                 "category": u.get("category"),
-                "xp": u.get("xp", 0),
-                "level": u.get("level", 1),
+                "xp": k_flux,
+                "flux": k_flux,
+                "level": _compute_dynamic_level(k_flux),
                 "is_admin": u.get("is_admin", False),
                 "is_founder": u.get("is_founder", False),
                 "is_nexus_certified": is_nexus_certified,
+                "profile_picture": u.get("profile_picture"),
             })
 
     # Cache the result
@@ -8340,12 +8362,15 @@ async def get_my_rank(
     if category:
         query_filter["category"] = category
 
-    my_xp = current_user.get("xp", 0)
+    my_xp = current_user.get("ak_credits", 0) or current_user.get("xp", 0) or 0
 
-    # Count users with more XP = rank - 1
+    # Count users with more FLUX = rank - 1
     users_above = await db.users.count_documents({
         **query_filter,
-        "xp": {"$gt": my_xp},
+        "$or": [
+            {"ak_credits": {"$gt": my_xp}},
+            {"xp": {"$gt": my_xp}},
+        ],
     })
     my_rank = users_above + 1
 
@@ -12289,6 +12314,13 @@ async def serve_deploy_package():
         from fastapi.responses import FileResponse as _FR
         return _FR(path, media_type="application/gzip", filename="backend.tar.gz")
     return {"error": "Package not found"}
+
+# ═══ ROUTE MODULES (Refactored from monolith) ═══
+from routes.stats import router as stats_router
+from routes.flux import router as flux_balance_router
+
+app.include_router(stats_router)
+app.include_router(flux_balance_router)
 
 # Re-register router after all endpoints are defined
 app.include_router(api_router)

@@ -1,412 +1,316 @@
 #!/usr/bin/env python3
 """
-ARENAKORE Backend Testing - Video Proof API Endpoints
-Testing the 3 new Video Proof API endpoints as specified in the review request.
+ARENAKORE Backend API Testing Script
+Testing specific endpoints as requested in the review request
 """
 
 import requests
 import json
-import os
-import subprocess
-import time
+import sys
 from typing import Dict, Any, Optional
 
-# Configuration
+# Base URL from the review request
 BASE_URL = "https://arena-scan-lab.preview.emergentagent.com/api"
-CREDENTIALS = {
-    "email": "ogrisek.stefano@gmail.com",
-    "password": "Founder@KORE2026!"
-}
 
-class VideoProofAPITester:
+# Test credentials from review request
+ADMIN_EMAIL = "ogrisek.stefano@gmail.com"
+ADMIN_PASSWORD = "Founder@KORE2026!"
+
+class ArenakoreAPITester:
     def __init__(self):
         self.base_url = BASE_URL
         self.token = None
-        self.challenge_id = None
-        self.session = requests.Session()
+        self.test_results = []
         
-    def log(self, message: str, level: str = "INFO"):
-        """Log messages with timestamp"""
-        timestamp = time.strftime("%H:%M:%S")
-        print(f"[{timestamp}] {level}: {message}")
+    def log_test(self, test_name: str, status_code: int, response_data: Any, success: bool = True, error: str = None):
+        """Log test results"""
+        result = {
+            "test": test_name,
+            "status_code": status_code,
+            "success": success,
+            "response": response_data,
+            "error": error
+        }
+        self.test_results.append(result)
         
-    def login(self) -> bool:
-        """Step 1: Login and get Bearer token"""
-        self.log("=== STEP 1: Authentication ===")
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {test_name} - Status: {status_code}")
+        if error:
+            print(f"   Error: {error}")
+        if isinstance(response_data, dict) and len(str(response_data)) < 200:
+            print(f"   Response: {response_data}")
+        elif response_data:
+            print(f"   Response: {str(response_data)[:100]}...")
+        print()
         
+    def test_health_check(self):
+        """Test 1: Health Check - GET /api/health"""
         try:
-            response = self.session.post(
-                f"{self.base_url}/auth/login",
-                json=CREDENTIALS,
-                headers={"Content-Type": "application/json"}
-            )
+            response = requests.get(f"{self.base_url}/health", timeout=10)
+            expected_response = {"status": "ok"}
             
-            self.log(f"Login request to: {self.base_url}/auth/login")
-            self.log(f"Response status: {response.status_code}")
+            success = (response.status_code == 200 and 
+                      response.json().get("status") == "ok")
+            
+            self.log_test("Health Check", response.status_code, response.json(), success)
+            return success
+            
+        except Exception as e:
+            self.log_test("Health Check", 0, None, False, str(e))
+            return False
+    
+    def test_login(self):
+        """Test 2: Login - POST /api/auth/login"""
+        try:
+            login_data = {
+                "email": ADMIN_EMAIL,
+                "password": ADMIN_PASSWORD
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/login", 
+                                   json=login_data, timeout=10)
             
             if response.status_code == 200:
-                data = response.json()
-                self.token = data.get("token")
-                if self.token:
-                    self.session.headers.update({"Authorization": f"Bearer {self.token}"})
-                    self.log("✅ Login successful, token obtained")
-                    self.log(f"User: {data.get('user', {}).get('username', 'Unknown')}")
+                response_data = response.json()
+                if "token" in response_data:
+                    self.token = response_data["token"]
+                    self.log_test("Admin Login", response.status_code, 
+                                {"token": "***", "user": response_data.get("user", {})}, True)
                     return True
                 else:
-                    self.log("❌ Login failed: No token in response", "ERROR")
+                    self.log_test("Admin Login", response.status_code, response_data, False, "No token in response")
                     return False
             else:
-                self.log(f"❌ Login failed: {response.status_code} - {response.text}", "ERROR")
+                self.log_test("Admin Login", response.status_code, response.json(), False)
                 return False
                 
         except Exception as e:
-            self.log(f"❌ Login error: {str(e)}", "ERROR")
+            self.log_test("Admin Login", 0, None, False, str(e))
             return False
     
-    def create_challenge(self) -> bool:
-        """Step 2: Create a test challenge"""
-        self.log("\n=== STEP 2: Create Challenge ===")
-        
-        challenge_data = {
-            "exercise_type": "squat",
-            "tags": ["POWER"],
-            "validation_mode": "MANUAL_ENTRY"
-        }
-        
-        try:
-            response = self.session.post(
-                f"{self.base_url}/challenge/create",
-                json=challenge_data,
-                headers={"Content-Type": "application/json"}
-            )
+    def test_flux_balance(self):
+        """Test 3: Flux Balance - GET /api/flux/balance (new endpoint)"""
+        if not self.token:
+            self.log_test("Flux Balance", 0, None, False, "No auth token available")
+            return False
             
-            self.log(f"Create challenge request to: {self.base_url}/challenge/create")
-            self.log(f"Request body: {json.dumps(challenge_data)}")
-            self.log(f"Response status: {response.status_code}")
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            response = requests.get(f"{self.base_url}/flux/balance", 
+                                  headers=headers, timeout=10)
             
             if response.status_code == 200:
-                data = response.json()
-                self.challenge_id = data.get("challenge_id") or data.get("_id") or data.get("id")
-                if self.challenge_id:
-                    self.log(f"✅ Challenge created successfully")
-                    self.log(f"Challenge ID: {self.challenge_id}")
-                    self.log(f"Exercise: {data.get('exercise', 'Unknown')}")
-                    self.log(f"Tags: {data.get('tags', [])}")
-                    return True
+                response_data = response.json()
+                expected_fields = ["vital", "perform", "team", "total", "level", "k_flux", "progress"]
+                has_all_fields = all(field in response_data for field in expected_fields)
+                
+                self.log_test("Flux Balance", response.status_code, response_data, has_all_fields)
+                return has_all_fields
+            else:
+                self.log_test("Flux Balance", response.status_code, response.json(), False)
+                return False
+                
+        except Exception as e:
+            self.log_test("Flux Balance", 0, None, False, str(e))
+            return False
+    
+    def test_live_stats(self):
+        """Test 4: Live Stats - GET /api/stats/live (new endpoint)"""
+        if not self.token:
+            self.log_test("Live Stats", 0, None, False, "No auth token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            response = requests.get(f"{self.base_url}/stats/live", 
+                                  headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                expected_fields = ["kore_attivi", "sessioni_oggi", "record_battuti", "sfide_attive"]
+                has_all_fields = all(field in response_data for field in expected_fields)
+                
+                self.log_test("Live Stats", response.status_code, response_data, has_all_fields)
+                return has_all_fields
+            else:
+                self.log_test("Live Stats", response.status_code, response.json(), False)
+                return False
+                
+        except Exception as e:
+            self.log_test("Live Stats", 0, None, False, str(e))
+            return False
+    
+    def test_leaderboard(self):
+        """Test 5: Leaderboard - GET /api/leaderboard?type=global&limit=10"""
+        if not self.token:
+            self.log_test("Leaderboard", 0, None, False, "No auth token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            params = {"type": "global", "limit": 10}
+            response = requests.get(f"{self.base_url}/leaderboard", 
+                                  headers=headers, params=params, timeout=10)
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                
+                # Check if response is a list or has a list of users
+                users = response_data if isinstance(response_data, list) else response_data.get("users", [])
+                
+                if users and len(users) > 0:
+                    # Check if each entry has required fields
+                    first_user = users[0]
+                    required_fields = ["flux", "level", "preferred_sport"]
+                    has_required_fields = all(field in first_user for field in required_fields)
+                    
+                    self.log_test("Leaderboard", response.status_code, 
+                                {"users_count": len(users), "first_user_fields": list(first_user.keys())}, 
+                                has_required_fields)
+                    return has_required_fields
                 else:
-                    self.log("❌ Challenge creation failed: No challenge ID in response", "ERROR")
-                    self.log(f"Response: {response.text}")
+                    self.log_test("Leaderboard", response.status_code, response_data, False, "No users in response")
                     return False
             else:
-                self.log(f"❌ Challenge creation failed: {response.status_code} - {response.text}", "ERROR")
+                self.log_test("Leaderboard", response.status_code, response.json(), False)
                 return False
                 
         except Exception as e:
-            self.log(f"❌ Challenge creation error: {str(e)}", "ERROR")
+            self.log_test("Leaderboard", 0, None, False, str(e))
             return False
     
-    def complete_challenge(self) -> bool:
-        """Step 3: Complete the challenge"""
-        self.log("\n=== STEP 3: Complete Challenge ===")
-        
-        if not self.challenge_id:
-            self.log("❌ No challenge ID available", "ERROR")
+    def test_my_rank(self):
+        """Test 6: My Rank - GET /api/leaderboard/my-rank"""
+        if not self.token:
+            self.log_test("My Rank", 0, None, False, "No auth token available")
             return False
             
-        completion_data = {
-            "challenge_id": self.challenge_id,
-            "reps": 25,
-            "duration_seconds": 60,
-            "has_video_proof": False,
-            "proof_type": "NONE"
-        }
-        
         try:
-            response = self.session.post(
-                f"{self.base_url}/challenges/complete",
-                json=completion_data,
-                headers={"Content-Type": "application/json"}
-            )
+            headers = {"Authorization": f"Bearer {self.token}"}
+            response = requests.get(f"{self.base_url}/leaderboard/my-rank", 
+                                  headers=headers, timeout=10)
             
-            self.log(f"Complete challenge request to: {self.base_url}/challenges/complete")
-            self.log(f"Request body: {json.dumps(completion_data)}")
-            self.log(f"Response status: {response.status_code}")
+            success = response.status_code == 200
+            self.log_test("My Rank", response.status_code, response.json(), success)
+            return success
+                
+        except Exception as e:
+            self.log_test("My Rank", 0, None, False, str(e))
+            return False
+    
+    def test_pvp_challenge_send(self):
+        """Test 7: PvP Challenge Send - POST /api/pvp/challenge (critical fix)"""
+        if not self.token:
+            self.log_test("PvP Challenge Send", 0, None, False, "No auth token available")
+            return False
+        
+        # First, get a list of users from leaderboard to find a valid target
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
             
-            if response.status_code == 200:
-                data = response.json()
-                self.log("✅ Challenge completed successfully")
-                self.log(f"XP earned: {data.get('xp_earned', 'Unknown')}")
-                self.log(f"Status: {data.get('status', 'Unknown')}")
-                return True
-            else:
-                self.log(f"❌ Challenge completion failed: {response.status_code} - {response.text}", "ERROR")
+            # Get leaderboard to find a target user
+            leaderboard_response = requests.get(f"{self.base_url}/leaderboard", 
+                                              headers=headers, params={"type": "global", "limit": 5}, timeout=10)
+            
+            if leaderboard_response.status_code != 200:
+                self.log_test("PvP Challenge Send", 0, None, False, "Could not get leaderboard for target user")
                 return False
-                
-        except Exception as e:
-            self.log(f"❌ Challenge completion error: {str(e)}", "ERROR")
-            return False
-    
-    def create_test_video(self) -> bool:
-        """Create a small test video file"""
-        self.log("\n=== Creating Test Video File ===")
-        
-        try:
-            # Create a small test video file using dd command
-            result = subprocess.run([
-                "dd", "if=/dev/zero", "of=/tmp/test.mp4", "bs=1024", "count=100"
-            ], capture_output=True, text=True)
             
-            if result.returncode == 0:
-                self.log("✅ Test video file created: /tmp/test.mp4 (100KB)")
-                return True
-            else:
-                self.log(f"❌ Failed to create test video: {result.stderr}", "ERROR")
+            leaderboard_data = leaderboard_response.json()
+            users = leaderboard_data if isinstance(leaderboard_data, list) else leaderboard_data.get("users", [])
+            
+            if not users or len(users) < 2:
+                self.log_test("PvP Challenge Send", 0, None, False, "Not enough users in leaderboard for PvP")
                 return False
-                
-        except Exception as e:
-            self.log(f"❌ Error creating test video: {str(e)}", "ERROR")
-            return False
-    
-    def upload_video(self) -> bool:
-        """Step 4: Upload video proof"""
-        self.log("\n=== STEP 4: Upload Video Proof ===")
-        
-        if not self.challenge_id:
-            self.log("❌ No challenge ID available", "ERROR")
-            return False
-        
-        if not self.create_test_video():
-            return False
             
-        try:
-            # Prepare multipart form data
-            files = {
-                'video': ('test.mp4', open('/tmp/test.mp4', 'rb'), 'video/mp4')
-            }
-            data = {
-                'challenge_id': self.challenge_id
-            }
+            # Find a target user (not the current user)
+            target_user = None
+            for user in users:
+                if user.get("id") and user.get("username") != "The founder":
+                    target_user = user
+                    break
             
-            response = self.session.post(
-                f"{self.base_url}/challenge/upload-video",
-                files=files,
-                data=data
-            )
-            
-            files['video'][1].close()  # Close the file
-            
-            self.log(f"Upload video request to: {self.base_url}/challenge/upload-video")
-            self.log(f"Form data: challenge_id={self.challenge_id}, video=test.mp4")
-            self.log(f"Response status: {response.status_code}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.log("✅ Video uploaded successfully")
-                self.log(f"Upload status: {data.get('status', 'Unknown')}")
-                self.log(f"File size: {data.get('file_size_mb', 'Unknown')} MB")
-                self.log(f"Proof type: {data.get('proof_type', 'Unknown')}")
-                self.log(f"Message: {data.get('message', 'Unknown')}")
-                return True
-            else:
-                self.log(f"❌ Video upload failed: {response.status_code} - {response.text}", "ERROR")
+            if not target_user:
+                self.log_test("PvP Challenge Send", 0, None, False, "No valid target user found")
                 return False
-                
-        except Exception as e:
-            self.log(f"❌ Video upload error: {str(e)}", "ERROR")
-            return False
-    
-    def get_video_info(self) -> bool:
-        """Step 5: Get video info"""
-        self.log("\n=== STEP 5: Get Video Info ===")
-        
-        if not self.challenge_id:
-            self.log("❌ No challenge ID available", "ERROR")
-            return False
             
-        try:
-            response = self.session.get(
-                f"{self.base_url}/challenge/{self.challenge_id}/video"
-            )
-            
-            self.log(f"Get video info request to: {self.base_url}/challenge/{self.challenge_id}/video")
-            self.log(f"Response status: {response.status_code}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.log("✅ Video info retrieved successfully")
-                self.log(f"Video filename: {data.get('filename', 'Unknown')}")
-                self.log(f"Video URL: {data.get('video_url', 'Unknown')}")
-                self.log(f"Upload date: {data.get('uploaded_at', 'Unknown')}")
-                self.log(f"File size: {data.get('file_size_mb', 'Unknown')} MB")
-                return True
-            else:
-                self.log(f"❌ Get video info failed: {response.status_code} - {response.text}", "ERROR")
-                return False
-                
-        except Exception as e:
-            self.log(f"❌ Get video info error: {str(e)}", "ERROR")
-            return False
-    
-    def get_pending_proof_challenges(self) -> bool:
-        """Step 6: Get challenges pending proof"""
-        self.log("\n=== STEP 6: Get Pending Proof Challenges ===")
-        
-        try:
-            response = self.session.get(
-                f"{self.base_url}/challenges/pending-proof"
-            )
-            
-            self.log(f"Get pending proof request to: {self.base_url}/challenges/pending-proof")
-            self.log(f"Response status: {response.status_code}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                challenges = data if isinstance(data, list) else data.get('challenges', [])
-                self.log(f"✅ Pending proof challenges retrieved successfully")
-                self.log(f"Number of pending challenges: {len(challenges)}")
-                
-                for i, challenge in enumerate(challenges[:3]):  # Show first 3
-                    self.log(f"Challenge {i+1}: ID={challenge.get('id', 'Unknown')}, Exercise={challenge.get('exercise', 'Unknown')}")
-                
-                return True
-            else:
-                self.log(f"❌ Get pending proof failed: {response.status_code} - {response.text}", "ERROR")
-                return False
-                
-        except Exception as e:
-            self.log(f"❌ Get pending proof error: {str(e)}", "ERROR")
-            return False
-    
-    def test_error_cases(self) -> bool:
-        """Test error cases"""
-        self.log("\n=== ERROR CASE TESTING ===")
-        
-        success = True
-        
-        # Test 1: Upload with non-existent challenge_id
-        self.log("\n--- Test 1: Non-existent Challenge ID ---")
-        try:
-            files = {
-                'video': ('test.mp4', open('/tmp/test.mp4', 'rb'), 'video/mp4')
-            }
-            data = {
-                'challenge_id': 'nonexistent_challenge_id_12345'
+            # Now send the PvP challenge - using correct endpoint /api/pvp/challenge
+            challenge_data = {
+                "challenged_user_id": target_user["id"],  # Fixed: use challenged_user_id instead of opponent_id
+                "discipline": "power",
+                "xp_stake": 50  # Fixed: use valid stake value (50, 100, 200, or 500)
             }
             
-            response = self.session.post(
-                f"{self.base_url}/challenge/upload-video",
-                files=files,
-                data=data
-            )
+            response = requests.post(f"{self.base_url}/pvp/challenge", 
+                                   json=challenge_data, headers=headers, timeout=10)
             
-            files['video'][1].close()
+            # Expect 200 or 201 (NOT 500)
+            success = response.status_code in [200, 201]
             
-            self.log(f"Response status: {response.status_code}")
-            
-            if response.status_code in [400, 404]:
-                self.log("✅ Correctly rejected non-existent challenge ID")
-            elif response.status_code == 500:
-                self.log(f"⚠️  Got 500 error (server error) instead of 400/404: {response.text[:200]}")
-                # This might be acceptable as the server is rejecting invalid input
-                self.log("✅ Server correctly rejected non-existent challenge ID (with 500)")
-            else:
-                self.log(f"❌ Expected 400/404 error, got {response.status_code}", "ERROR")
-                success = False
+            self.log_test("PvP Challenge Send", response.status_code, 
+                        {"target_user": target_user["username"], "response": response.json()}, success)
+            return success
                 
         except Exception as e:
-            self.log(f"❌ Error testing non-existent challenge ID: {str(e)}", "ERROR")
-            success = False
-        
-        # Test 2: Upload wrong file type
-        self.log("\n--- Test 2: Wrong File Type ---")
-        try:
-            # Create a text file
-            with open('/tmp/test.txt', 'w') as f:
-                f.write("This is not a video file")
-            
-            files = {
-                'video': ('test.txt', open('/tmp/test.txt', 'rb'), 'text/plain')
-            }
-            data = {
-                'challenge_id': self.challenge_id or 'test_challenge'
-            }
-            
-            response = self.session.post(
-                f"{self.base_url}/challenge/upload-video",
-                files=files,
-                data=data
-            )
-            
-            files['video'][1].close()
-            
-            self.log(f"Response status: {response.status_code}")
-            
-            if response.status_code in [400, 415]:
-                self.log("✅ Correctly rejected wrong file type")
-            else:
-                self.log(f"❌ Expected 400/415 error, got {response.status_code}", "ERROR")
-                success = False
-                
-        except Exception as e:
-            self.log(f"❌ Error testing wrong file type: {str(e)}", "ERROR")
-            success = False
-        
-        return success
+            self.log_test("PvP Challenge Send", 0, None, False, str(e))
+            return False
     
-    def run_full_test(self) -> bool:
-        """Run the complete test sequence"""
-        self.log("🚀 Starting ARENAKORE Video Proof API Testing")
-        self.log(f"Backend URL: {self.base_url}")
-        self.log(f"Test credentials: {CREDENTIALS['email']}")
+    def run_all_tests(self):
+        """Run all tests in sequence"""
+        print("🚀 Starting ARENAKORE Backend API Tests")
+        print(f"Base URL: {self.base_url}")
+        print(f"Admin Email: {ADMIN_EMAIL}")
+        print("=" * 60)
         
-        # Execute test sequence
-        if not self.login():
-            return False
-            
-        if not self.create_challenge():
-            return False
-            
-        if not self.complete_challenge():
-            return False
-            
-        if not self.upload_video():
-            return False
-            
-        if not self.get_video_info():
-            return False
-            
-        if not self.get_pending_proof_challenges():
-            return False
-            
-        if not self.test_error_cases():
-            return False
+        tests = [
+            self.test_health_check,
+            self.test_login,
+            self.test_flux_balance,
+            self.test_live_stats,
+            self.test_leaderboard,
+            self.test_my_rank,
+            self.test_pvp_challenge_send
+        ]
         
-        self.log("\n🎉 ALL VIDEO PROOF API TESTS COMPLETED SUCCESSFULLY!")
-        return True
-
-def main():
-    """Main test execution"""
-    tester = VideoProofAPITester()
-    
-    try:
-        success = tester.run_full_test()
-        if success:
-            print("\n" + "="*60)
-            print("✅ VIDEO PROOF API TESTING: ALL TESTS PASSED")
-            print("="*60)
-            return 0
+        passed = 0
+        total = len(tests)
+        
+        for test in tests:
+            if test():
+                passed += 1
+        
+        print("=" * 60)
+        print(f"📊 Test Results: {passed}/{total} tests passed")
+        
+        if passed == total:
+            print("🎉 All tests PASSED!")
         else:
-            print("\n" + "="*60)
-            print("❌ VIDEO PROOF API TESTING: SOME TESTS FAILED")
-            print("="*60)
-            return 1
+            print(f"⚠️  {total - passed} tests FAILED")
+        
+        return passed == total
+    
+    def print_summary(self):
+        """Print detailed test summary"""
+        print("\n📋 DETAILED TEST SUMMARY:")
+        print("=" * 60)
+        
+        for result in self.test_results:
+            status = "✅ PASS" if result["success"] else "❌ FAIL"
+            print(f"{status} {result['test']}")
+            print(f"   HTTP Status: {result['status_code']}")
             
-    except KeyboardInterrupt:
-        print("\n\n⚠️  Testing interrupted by user")
-        return 1
-    except Exception as e:
-        print(f"\n\n💥 Unexpected error: {str(e)}")
-        return 1
+            if result["error"]:
+                print(f"   Error: {result['error']}")
+            elif result["response"]:
+                if isinstance(result["response"], dict):
+                    print(f"   Response Keys: {list(result['response'].keys())}")
+                else:
+                    print(f"   Response: {str(result['response'])[:100]}...")
+            print()
 
 if __name__ == "__main__":
-    exit(main())
+    tester = ArenakoreAPITester()
+    success = tester.run_all_tests()
+    tester.print_summary()
+    
+    sys.exit(0 if success else 1)
