@@ -432,12 +432,18 @@ function NexusDashboard() {
             )}
           </View>
           <View style={s.kRatingRow}>
-            <Text style={s.kRatingValue}>{koreScore ?? 0}</Text>
+            <Text style={s.kRatingValue}>{(koreScore !== null && koreScore > 0) ? koreScore : '---'}</Text>
             <View style={s.kRatingMaxWrap}>
               <Text style={s.kRatingSlash}>/</Text>
               <Text style={s.kRatingMax}>1000</Text>
             </View>
-            {koreData?.weekly_trend !== undefined && koreData.weekly_trend !== 0 && (
+            {(koreScore === null || koreScore === 0) && (
+              <TouchableOpacity style={s.kScanInvite} activeOpacity={0.8} onPress={() => router.push('/k-scan' as any)}>
+                <Ionicons name="scan" size={12} color={CYAN} />
+                <Text style={s.kScanInviteText}>AVVIA K-SCAN</Text>
+              </TouchableOpacity>
+            )}
+            {koreScore !== null && koreScore > 0 && koreData?.weekly_trend !== undefined && koreData.weekly_trend !== 0 && (
               <View style={[s.trendBadge, koreData.weekly_trend > 0 ? s.trendUp : s.trendDown]}>
                 <Ionicons name={koreData.weekly_trend > 0 ? 'trending-up' : 'trending-down'} size={14} color={koreData.weekly_trend > 0 ? '#32D74B' : '#FF453A'} />
                 <Text style={[s.trendText, koreData.weekly_trend > 0 ? s.trendTextUp : s.trendTextDown]}>
@@ -450,7 +456,7 @@ function NexusDashboard() {
             <LinearGradient
               colors={[CYAN, GOLD]}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-              style={[s.kRatingBarFill, { width: `${Math.min((koreScore || 0) / 10, 100)}%` as any }]}
+              style={[s.kRatingBarFill, { width: `${koreScore !== null ? Math.min(koreScore / 10, 100) : 0}%` as any }]}
             />
           </View>
           {/* Breakdown */}
@@ -605,6 +611,8 @@ const s = StyleSheet.create({
   trendText: { fontSize: 14, fontWeight: '900', letterSpacing: 0.5 },
   trendTextUp: { color: '#32D74B' },
   trendTextDown: { color: '#FF453A' },
+  kScanInvite: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(0,229,255,0.08)', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, marginLeft: 12, borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)' },
+  kScanInviteText: { color: CYAN, fontSize: 10, fontWeight: '900', letterSpacing: 1 },
 
   // Bio / RPE badges
   bioVerifiedBadge: {
