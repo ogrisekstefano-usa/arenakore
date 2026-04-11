@@ -135,7 +135,7 @@ export default function TabsLayout() {
             marginHorizontal: 0,
             minWidth: 0,
           },
-          tabBarActiveTintColor: GOLD,
+          tabBarActiveTintColor: CYAN,   // 4 side tabs: CYAN when active
           tabBarInactiveTintColor: 'rgba(255,255,255,0.25)',
           tabBarLabelStyle: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
         }}
