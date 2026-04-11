@@ -145,12 +145,81 @@ export default function Login() {
       handleAppleLogin();
       return;
     }
-    Alert.alert(
-      `${provider} Login`,
-      `Il login con ${provider} sarà disponibile nella prossima versione.`,
-      [{ text: 'OK' }]
-    );
+    if (provider === 'Google') {
+      handleGoogleLogin();
+      return;
+    }
+    Alert.alert(`${provider} Login`, `Login ${provider} non disponibile.`, [{ text: 'OK' }]);
   };
+
+  // ═══ GOOGLE SIGN-IN — Web GIS One Tap / Redirect ═══
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleGoogleLogin = useCallback(async () => {
+    setGoogleLoading(true);
+    setError('');
+    try {
+      // Step 1: Get Google Client ID from backend
+      const resp = await fetch(`${API_BASE}/api/auth/google/client-id`);
+      const data = await resp.json();
+      
+      if (!data.client_id || !data.configured) {
+        Alert.alert(
+          'Google Login',
+          'Google Sign-In sarà attivo appena il Client ID verrà configurato. Contatta l\'admin.',
+          [{ text: 'OK' }]
+        );
+        setGoogleLoading(false);
+        return;
+      }
+
+      if (Platform.OS === 'web') {
+        // Use Google Identity Services redirect flow
+        const params = new URLSearchParams({
+          client_id: data.client_id,
+          redirect_uri: `${API_BASE}/auth/google/callback`,
+          response_type: 'code',
+          scope: 'openid email profile',
+          access_type: 'offline',
+          prompt: 'select_account',
+          state: 'web'
+        });
+        const url = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+        
+        const width = 500, height = 600;
+        const left = (window.innerWidth - width) / 2 + window.screenX;
+        const top = (window.innerHeight - height) / 2 + window.screenY;
+        const popup = window.open(url, 'google-signin', `width=${width},height=${height},left=${left},top=${top}`);
+        
+        const handleMessage = async (event: MessageEvent) => {
+          if (event.data?.type === 'GOOGLE_AUTH_SUCCESS') {
+            window.removeEventListener('message', handleMessage);
+            const { token, user } = event.data.data;
+            if (token && user) {
+              await AsyncStorage.setItem('auth_token', token);
+              await AsyncStorage.setItem('user_data', JSON.stringify(user));
+              setLoggedUser(user);
+              setLoginSuccess(true);
+            }
+            setGoogleLoading(false);
+          }
+        };
+        window.addEventListener('message', handleMessage);
+        
+        const pollTimer = setInterval(() => {
+          if (popup?.closed) { clearInterval(pollTimer); window.removeEventListener('message', handleMessage); setGoogleLoading(false); }
+        }, 1000);
+        setTimeout(() => { clearInterval(pollTimer); window.removeEventListener('message', handleMessage); setGoogleLoading(false); }, 300000);
+      } else {
+        // Native: use Linking
+        await Linking.openURL(`https://accounts.google.com/o/oauth2/v2/auth?client_id=${data.client_id}&redirect_uri=${API_BASE}/auth/google/callback&response_type=code&scope=openid+email+profile`);
+        setGoogleLoading(false);
+      }
+    } catch (e: any) {
+      setError(e.message || 'Errore Google Login');
+      setGoogleLoading(false);
+    }
+  }, []);
 
   // ══════════════════════════════════════════════════
   // BUILD 15: LOGIN SUCCESS — Manual "ENTRA NEL NEXUS" gate
@@ -351,9 +420,16 @@ export default function Login() {
             style={s$.googleSocialBtn}
             onPress={() => handleSocialLogin('Google')}
             activeOpacity={0.85}
+            disabled={googleLoading}
           >
-            <Ionicons name="logo-google" size={18} color="#FFF" />
-            <Text style={s$.googleBtnText}>CONTINUA CON GOOGLE</Text>
+            {googleLoading ? (
+              <ActivityIndicator color="#FFF" size="small" />
+            ) : (
+              <Ionicons name="logo-google" size={18} color="#FFF" />
+            )}
+            <Text style={s$.googleBtnText}>
+              {googleLoading ? 'CONNESSIONE...' : 'CONTINUA CON GOOGLE'}
+            </Text>
           </TouchableOpacity>
         </Animated.View>
 

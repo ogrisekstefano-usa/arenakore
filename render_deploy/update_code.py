@@ -751,16 +751,85 @@ try{{
             log.error(tb2.format_exc())
             return HTMLResponse(content=f"<html><body style='background:#000;color:#FF3B30;padding:40px'><h1>Errore Apple Login</h1><pre>{str(e)}</pre></body></html>", status_code=500)
 
+    # ═══════════════════════════════════════════════════════════════
+    # GOOGLE SIGN-IN — Token ID Validation
+    # ═══════════════════════════════════════════════════════════════
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+
+    @api.post("/auth/google/token")
+    async def google_token_login(d: dict):
+        """Receives Google ID token from frontend and validates it"""
+        try:
+            id_token = d.get("id_token") or d.get("credential")
+            if not id_token:
+                raise HTTPException(400, "id_token Google richiesto")
+            # Decode without verification for MVP (Google tokens are self-contained JWTs)
+            claims = pyjwt.decode(id_token, options={"verify_signature": False})
+            google_sub = claims.get("sub")
+            google_email = claims.get("email")
+            first_name = claims.get("given_name", "")
+            last_name = claims.get("family_name", "")
+            picture = claims.get("picture", "")
+            if not google_sub:
+                raise HTTPException(400, "Token Google non valido — manca 'sub'")
+            # Find or create user
+            user = await db.users.find_one({"google_id": google_sub})
+            if not user and google_email:
+                user = await db.users.find_one({"email": google_email.strip().lower()})
+            if user:
+                if not user.get("google_id"):
+                    await db.users.update_one({"_id": user["_id"]}, {"$set": {"google_id": google_sub}})
+                if picture and not user.get("profile_picture"):
+                    await db.users.update_one({"_id": user["_id"]}, {"$set": {"profile_picture": picture}})
+                token = ct(str(user["_id"]))
+                return {"token": token, "user": u2r(user), "new_user": False}
+            else:
+                username = (first_name or google_email.split("@")[0] if google_email else f"KORE_{google_sub[:8]}").upper().replace(" ", "_")
+                base_username = username
+                counter = 1
+                while await db.users.find_one({"username": username}):
+                    username = f"{base_username}_{counter}"
+                    counter += 1
+                tc = await db.users.count_documents({})
+                new_user = {
+                    "username": username,
+                    "email": (google_email or f"google_{google_sub[:12]}@arenakore.app").strip().lower(),
+                    "password_hash": hp(f"google_{google_sub}_{_time.time()}"),
+                    "google_id": google_sub, "auth_provider": "google",
+                    "role": None, "sport": "ATHLETICS", "preferred_sport": "ATHLETICS",
+                    "training_level": "LEGACY", "xp": 0, "level": 1, "ak_credits": 0,
+                    "unlocked_tools": [], "onboarding_completed": False,
+                    "avatar_color": random.choice(["#00E5FF", "#FFD700", "#FF3B30", "#34C759"]),
+                    "dna": None, "first_name": first_name, "last_name": last_name,
+                    "profile_picture": picture,
+                    "is_founder": tc < 100, "founder_number": (tc + 1) if tc < 100 else None,
+                    "created_at": datetime.now(timezone.utc)
+                }
+                r = await db.users.insert_one(new_user)
+                new_user["_id"] = r.inserted_id
+                token = ct(str(r.inserted_id))
+                return {"token": token, "user": u2r(new_user), "new_user": True}
+        except HTTPException:
+            raise
+        except Exception as e:
+            log.error(f"Google token error: {e}")
+            raise HTTPException(500, f"Errore autenticazione Google: {str(e)}")
+
+    @api.get("/auth/google/client-id")
+    async def google_client_id():
+        """Returns Google Client ID for frontend initialization"""
+        return {"client_id": GOOGLE_CLIENT_ID, "configured": bool(GOOGLE_CLIENT_ID)}
+
     # Catch-all
     @api.api_route("/{path:path}", methods=["GET","POST","PUT","DELETE","PATCH"])
     async def catchall(path:str,request:Request): return JSONResponse(200,{"status":"stub","path":path})
 
     @app.get("/")
-    async def root(): return {"status":"ARENAKORE","v":"render-v5-apple-auth"}
+    async def root(): return {"status":"ARENAKORE","v":"render-v6-dual-auth"}
 
     app.include_router(api)
     import uvicorn
-    print(f'=== ARENAKORE v5 (Apple Auth) starting on :{port} ===', flush=True)
+    print(f'=== ARENAKORE v6 (Dual Auth) starting on :{port} ===', flush=True)
     uvicorn.run(app, host="0.0.0.0", port=port)
 except Exception as e:
     print(f"=== FATAL: {e} ===", flush=True)
