@@ -13,11 +13,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, ScrollView, TouchableOpacity,
-  ActivityIndicator, RefreshControl, useWindowDimensions
+  ActivityIndicator, RefreshControl, useWindowDimensions, Image, ImageBackground
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiClient } from '../../utils/api';
 import { RadarChart } from '../../components/RadarChart';
@@ -25,6 +26,28 @@ import { CertBadge, AKDropsWallet } from '../../components/CertBadge';
 import { KoreIDModal } from '../../components/KoreIDModal';
 import { CalendarModal } from '../../components/CalendarModal';
 import { Header } from '../../components/Header';
+
+// ═══ SPORT → HERO PHOTO MAP (Nike-Grade Cinematic) ═══
+const SPORT_HERO_PHOTOS: Record<string, string> = {
+  basket: 'https://images.unsplash.com/photo-1587296104393-8db6cda4418d?w=800&q=80',
+  basketball: 'https://images.unsplash.com/photo-1587296104393-8db6cda4418d?w=800&q=80',
+  running: 'https://images.unsplash.com/photo-1539620027837-6e457cff51dc?w=800&q=80',
+  atletica: 'https://images.unsplash.com/photo-1539620027837-6e457cff51dc?w=800&q=80',
+  corsa: 'https://images.unsplash.com/photo-1539620027837-6e457cff51dc?w=800&q=80',
+  fitness: 'https://images.unsplash.com/photo-1709315957145-a4bad1feef28?w=800&q=80',
+  gym: 'https://images.unsplash.com/photo-1709315957145-a4bad1feef28?w=800&q=80',
+  palestra: 'https://images.unsplash.com/photo-1709315957145-a4bad1feef28?w=800&q=80',
+  golf: 'https://images.unsplash.com/photo-1634152557768-b5bb22302a56?w=800&q=80',
+  calcio: 'https://images.unsplash.com/photo-1634152557768-b5bb22302a56?w=800&q=80',
+  football: 'https://images.unsplash.com/photo-1634152557768-b5bb22302a56?w=800&q=80',
+  default: 'https://images.unsplash.com/photo-1545115399-9e02335e0933?w=800&q=80',
+};
+
+function getHeroPhoto(sport?: string): string {
+  if (!sport) return SPORT_HERO_PHOTOS.default;
+  const key = sport.toLowerCase().trim();
+  return SPORT_HERO_PHOTOS[key] || SPORT_HERO_PHOTOS.default;
+}
 
 const GOLD = '#FFD700';
 const CYAN = '#00E5FF';
@@ -221,6 +244,17 @@ export default function KoreTab() {
   const hasDna = user?.dna && Object.values(user.dna).some((v: number) => v > 0);
   const koreNumber = user?.founder_number ? String(user.founder_number).padStart(5, '0') : String(Math.abs(parseInt((user?.id || '00001').slice(-5), 16)) % 99999).padStart(5, '0');
 
+  // ═══ AVATAR INITIALS (Nike Bold "SO" fallback) ═══
+  const getInitials = () => {
+    const name = user?.username || user?.full_name || '';
+    if (!name) return 'AK';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
+  const avatarInitials = getInitials();
+  const heroPhotoUri = getHeroPhoto(user?.sport || user?.preferred_sport);
+
   return (
     <SafeAreaView style={s.safe}>
       <StatusBar barStyle="light-content" />
@@ -228,37 +262,52 @@ export default function KoreTab() {
       <ScrollView style={s.scroll} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={GOLD} />}>
 
-        {/* ══════ HERO HEADER ══════ */}
-        <Animated.View entering={FadeInDown.duration(400)} style={s.heroHeader}>
-          <View style={s.heroTop}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Ionicons name="id-card" size={16} color={GOLD} />
-              <Text style={s.heroLabel}>KORE ID</Text>
-            </View>
-            <TouchableOpacity onPress={() => setShowKoreID(true)} style={s.koreIdBtn} activeOpacity={0.7}>
-              <Ionicons name="qr-code" size={14} color={CYAN} />
-              <Text style={s.koreIdBtnText}>KORE ID</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={s.identityRow}>
-            <View style={[s.avatar, { backgroundColor: user?.avatar_color || mood.color }]}>
-              <Text style={s.avatarLetter}>{username[0]}</Text>
-            </View>
-            <View style={s.identityInfo}>
-              <Text style={s.username} numberOfLines={1}>{username}</Text>
-              <View style={s.badgeRow}>
-                <View style={[s.moodBadge, { borderColor: mood.color + '40', backgroundColor: mood.color + '10' }]}>
-                  <Ionicons name={mood.icon} size={9} color={mood.color} />
-                  <Text style={[s.moodText, { color: mood.color }]}>{mood.label}</Text>
+        {/* ══════ HERO HEADER — Nike-Grade with Dynamic Sport Photo ══════ */}
+        <Animated.View entering={FadeInDown.duration(400)} style={s.heroWrapper}>
+          <ImageBackground
+            source={{ uri: heroPhotoUri }}
+            style={s.heroBanner}
+            imageStyle={s.heroBannerImage}
+            resizeMode="cover"
+          >
+            <LinearGradient
+              colors={['rgba(0,0,0,0.15)', 'rgba(0,0,0,0.75)', 'rgba(0,0,0,0.95)']}
+              style={s.heroGradient}
+            >
+              {/* Top Row — KORE ID label + QR Button */}
+              <View style={s.heroTop}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Ionicons name="id-card" size={16} color={GOLD} />
+                  <Text style={s.heroLabel}>KORE ID</Text>
                 </View>
-                <CertBadge certified={!!user?.is_nexus_certified} size="sm" />
-                {(user?.is_founder || user?.is_admin) && (
-                  <View style={s.founderBadge}><Ionicons name="star" size={8} color={GOLD} /><Text style={s.founderText}>F#{user?.founder_number || '—'}</Text></View>
-                )}
+                <TouchableOpacity onPress={() => setShowKoreID(true)} style={s.koreIdBtn} activeOpacity={0.7}>
+                  <Ionicons name="qr-code" size={14} color={CYAN} />
+                  <Text style={s.koreIdBtnText}>KORE ID</Text>
+                </TouchableOpacity>
               </View>
-              <Text style={s.koreSerial}>KORE #{koreNumber} · {user?.sport?.toUpperCase() || user?.preferred_sport?.toUpperCase() || 'MULTI'}</Text>
-            </View>
-          </View>
+
+              {/* Identity Row — Avatar "SO" Nike Bold + Info */}
+              <View style={s.identityRow}>
+                <View style={[s.avatar, { backgroundColor: user?.avatar_color || mood.color }]}>
+                  <Text style={s.avatarInitials}>{avatarInitials}</Text>
+                </View>
+                <View style={s.identityInfo}>
+                  <Text style={s.username} numberOfLines={1}>{username}</Text>
+                  <View style={s.badgeRow}>
+                    <View style={[s.moodBadge, { borderColor: mood.color + '40', backgroundColor: mood.color + '10' }]}>
+                      <Ionicons name={mood.icon} size={9} color={mood.color} />
+                      <Text style={[s.moodText, { color: mood.color }]}>{mood.label}</Text>
+                    </View>
+                    <CertBadge certified={!!user?.is_nexus_certified} size="sm" />
+                    {(user?.is_founder || user?.is_admin) && (
+                      <View style={s.founderBadge}><Ionicons name="star" size={8} color={GOLD} /><Text style={s.founderText}>F#{user?.founder_number || '—'}</Text></View>
+                    )}
+                  </View>
+                  <Text style={s.koreSerial}>KORE #{koreNumber} · {user?.sport?.toUpperCase() || user?.preferred_sport?.toUpperCase() || 'MULTI'}</Text>
+                </View>
+              </View>
+            </LinearGradient>
+          </ImageBackground>
         </Animated.View>
 
         {/* ══════ K-TIMELINE ══════ */}
@@ -343,7 +392,7 @@ export default function KoreTab() {
         <View style={s.footer}>
           <View style={s.footerLine} />
           <Text style={s.footerText}>KORE ID · FLAT PREMIUM</Text>
-          <Text style={s.versionLabel}>v3.4.0 — Build 34 · K-FLUX</Text>
+          <Text style={s.versionLabel}>v3.5.0 — Build 35 · KORE ID HERO</Text>
         </View>
       </ScrollView>
 
@@ -357,14 +406,18 @@ const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20, paddingBottom: 120 },
+  heroWrapper: { marginTop: 0, marginHorizontal: -20, overflow: 'hidden', borderRadius: 0 },
+  heroBanner: { width: '100%', minHeight: 200 },
+  heroBannerImage: { borderBottomLeftRadius: 20, borderBottomRightRadius: 20 },
+  heroGradient: { flex: 1, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 20, gap: 16, minHeight: 200, justifyContent: 'flex-end' },
   heroHeader: { marginTop: 8, gap: 16, paddingBottom: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)' },
   heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   heroLabel: { color: GOLD, fontSize: 13, fontWeight: '900', letterSpacing: 3 },
-  koreIdBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,229,255,0.06)', borderWidth: 1, borderColor: 'rgba(0,229,255,0.2)', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
+  koreIdBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,0,0,0.55)', borderWidth: 1, borderColor: 'rgba(0,229,255,0.35)', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
   koreIdBtnText: { color: CYAN, fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
   identityRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  avatar: { width: 56, height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  avatarLetter: { color: '#000', fontSize: 26, fontWeight: '900' },
+  avatar: { width: 60, height: 60, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.15)' },
+  avatarInitials: { color: '#000', fontSize: 22, fontWeight: '900', letterSpacing: 1 },
   identityInfo: { flex: 1, gap: 6 },
   username: { color: '#FFFFFF', fontSize: 22, fontWeight: '900', letterSpacing: -0.5 },
   badgeRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
