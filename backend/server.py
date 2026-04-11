@@ -1649,8 +1649,14 @@ async def upload_video_proof(
     """
     user_id = current_user["_id"]
 
+    # Validate challenge_id format
+    try:
+        challenge_oid = ObjectId(challenge_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID challenge non valido")
+
     # Validate challenge ownership
-    challenge = await db.challenges_engine.find_one({"_id": ObjectId(challenge_id), "user_id": user_id})
+    challenge = await db.challenges_engine.find_one({"_id": challenge_oid, "user_id": user_id})
     if not challenge:
         raise HTTPException(status_code=404, detail="Challenge non trovata o non autorizzato")
 
