@@ -60,9 +60,14 @@ export default function HubCheckinQR() {
   const pulseStyle = useAnimatedStyle(() => ({ opacity: pulseOpacity.value }));
 
   const loadQR = useCallback(async () => {
-    if (!token || !params.hub_id) {
+    if (!params.hub_id) {
       setError('Hub non specificato');
       setLoading(false);
+      return;
+    }
+    if (!token) {
+      // Auth still loading — wait and retry
+      setTimeout(() => loadQR(), 1000);
       return;
     }
 
