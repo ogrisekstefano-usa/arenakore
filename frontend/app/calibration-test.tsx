@@ -228,7 +228,16 @@ export default function CalibrationTestScreen() {
 
   // Load protocol on mount
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      // Token race condition fallback: wait briefly, then show error
+      const timeout = setTimeout(() => {
+        if (!token) {
+          setError('Effettua il login per accedere alla calibrazione');
+          setPhase('loading');
+        }
+      }, 3000);
+      return () => clearTimeout(timeout);
+    }
     (async () => {
       const res = await safeFetch('/calibration/protocol', {}, token);
       if (res?._error || !res) {

@@ -158,6 +158,8 @@ export default function RootLayout() {
                 <Stack.Screen name="register" />
                 <Stack.Screen name="onboarding" />
                 <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="calibration-test" />
+                <Stack.Screen name="activity-log" />
                 <Stack.Screen name="join/[code]" options={{ presentation: 'modal' }} />
               </Stack>
             </AuthProvider>
