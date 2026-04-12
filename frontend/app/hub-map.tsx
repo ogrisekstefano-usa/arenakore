@@ -163,8 +163,9 @@ function generateMapHTML(hubs: Hub[], userLat: number, userLng: number): string 
 // ═══════════════════════════════════════════════════════════
 // HUB INFO CARD (Bottom Sheet)
 // ═══════════════════════════════════════════════════════════
-function HubInfoCard({ hub, onClose }: { hub: Hub | null; onClose: () => void }) {
+function HubInfoCard({ hub, onClose, user, router }: { hub: Hub | null; onClose: () => void; user?: any; router?: any }) {
   if (!hub) return null;
+  const isAdminOrCoach = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'GYM_OWNER' || user?.role === 'COACH';
 
   return (
     <Animated.View entering={SlideInDown.duration(300)} style={hs.card}>
@@ -303,6 +304,28 @@ function HubInfoCard({ hub, onClose }: { hub: Hub | null; onClose: () => void })
             ))}
           </>
         )}
+
+        {/* ═══ QR CHECK-IN ACTIONS ═══ */}
+        <View style={hs.qrActionsRow}>
+          {isAdminOrCoach && (
+            <TouchableOpacity
+              style={[hs.qrBtn, { backgroundColor: 'rgba(0,255,135,0.08)', borderColor: 'rgba(0,255,135,0.2)' }]}
+              activeOpacity={0.8}
+              onPress={() => router?.push({ pathname: '/hub-checkin-qr', params: { hub_id: hub.id, hub_name: hub.name } } as any)}
+            >
+              <Ionicons name="qr-code" size={18} color="#00FF87" />
+              <Text style={[hs.qrBtnText, { color: '#00FF87' }]}>GENERA QR</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={[hs.qrBtn, { backgroundColor: 'rgba(0,229,255,0.08)', borderColor: 'rgba(0,229,255,0.2)' }]}
+            activeOpacity={0.8}
+            onPress={() => router?.push('/qr-checkin' as any)}
+          >
+            <Ionicons name="scan" size={18} color={CYAN} />
+            <Text style={[hs.qrBtnText, { color: CYAN }]}>CHECK-IN</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </Animated.View>
   );
@@ -314,7 +337,7 @@ function HubInfoCard({ hub, onClose }: { hub: Hub | null; onClose: () => void })
 export default function HubMapScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [hubs, setHubs] = useState<Hub[]>([]);
   const [filteredHubs, setFilteredHubs] = useState<Hub[]>([]);
   const [selectedHub, setSelectedHub] = useState<Hub | null>(null);
@@ -460,7 +483,7 @@ export default function HubMapScreen() {
 
       {/* Hub Info Card */}
       {selectedHub && (
-        <HubInfoCard hub={selectedHub} onClose={() => setSelectedHub(null)} />
+        <HubInfoCard hub={selectedHub} onClose={() => setSelectedHub(null)} user={user} router={router} />
       )}
     </SafeAreaView>
   );
@@ -575,4 +598,11 @@ const hs = StyleSheet.create({
   templateInfo: { flex: 1, gap: 1 },
   templateName: { color: '#FFF', fontSize: 12, fontWeight: '700' },
   templateMeta: { color: 'rgba(255,255,255,0.15)', fontSize: 10, fontWeight: '600' },
+  // QR Check-in actions
+  qrActionsRow: { flexDirection: 'row', gap: 10, marginTop: 6 },
+  qrBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    paddingVertical: 14, borderRadius: 14, borderWidth: 1.5,
+  },
+  qrBtnText: { fontSize: 13, fontWeight: '900', letterSpacing: 1.5 },
 });

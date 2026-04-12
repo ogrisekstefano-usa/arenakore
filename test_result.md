@@ -2993,3 +2993,91 @@ agent_communication:
       message: "Build 37.3: Hub Map Engine. Backend routes/hubs.py with 6 endpoints. 8 Italian hubs seeded with 2dsphere index. Frontend hub-map.tsx with Leaflet WebView. Credentials: ogrisek.stefano@gmail.com / Founder@KORE2026!"
     - agent: "testing"
       message: "ARENAKORE HUB MAP ENGINE TESTING COMPLETED: ALL 7 HUB MAP ENGINE ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test sequence executed as specified in review request: ✅ Step 1: GET /api/hubs/all returns 8 seeded Italian hubs with all required fields (name, hub_type, type_label, type_icon, type_color, latitude, longitude, rating_avg, athletes_count, coaches_count) ✅ Step 2: GET /api/hubs/nearby (Milan) returns multiple hubs near Milan (>=4 hubs) ✅ Step 3: GET /api/hubs/nearby (Rome) returns at least 1 hub near Rome (MMA Roma Fight Academy) ✅ Step 4: GET /api/hubs/{hub_id} returns detailed hub info with coaches, active_challenges_list, coach_templates, total_active arrays ✅ Step 5: GET /api/hubs/{hub_id}/challenges returns hub_name and challenges array ✅ Step 6: GET /api/hubs/types/list returns exactly 13 hub types (gym, crossfit, boxing, mma, basketball, football, athletics, swimming, yoga, tennis, climbing, golf, outdoor) ✅ Step 7: POST /api/hubs/register correctly enforces role-based access control (403 for SUPER_ADMIN, requires Gym Owner/Coach role). All Hub Map Engine features are production-ready: geolocation filtering, hub seeding, type management, role-based registration, and detailed hub information retrieval all functional."
+
+
+
+  - task: "QR KORE Check-in — Generate QR for Hub"
+    implemented: true
+    working: true
+    file: "routes/checkin.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Build 38: POST /api/checkin/hub/{hub_id}/generate-qr — Generates daily rotating QR token for a Hub. Only ADMIN/GYM_OWNER/COACH can generate. Returns qr_payload string for rendering."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/checkin/hub/{hub_id}/generate-qr working correctly. Admin login successful with ogrisek.stefano@gmail.com / Founder@KORE2026!. QR generation for hub 69db8a12a3887b45477d7689 (MMA Roma Fight Academy) successful. Returns all required fields: qr_payload='arenakore://checkin/69db8a12a3887b45477d7689/95BE6233BEF5258E', hub_name='MMA Roma Fight Academy', date='2026-04-12', token='95BE6233BEF5258E'. QR payload format validation passed."
+
+  - task: "QR KORE Check-in — Scan & Validate"
+    implemented: true
+    working: true
+    file: "routes/checkin.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Build 38: POST /api/checkin/scan — Athlete scans QR, validates token (arenakore://checkin/{hub_id}/{token}), enforces 1/day limit per hub, optional geo-fence, awards configurable Green K-Flux, creates attendance_logs entry, inserts in-app notification."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/checkin/scan working correctly for both first-time and duplicate scans. First scan: success=true, already_checked_in=false, flux_earned=50, streak=1, flux_color='green'. Duplicate scan (1/day limit): success=true, already_checked_in=true, flux_earned=0. QR payload validation, token verification, and attendance logging all functional."
+
+  - task: "QR KORE Check-in — Attendance History"
+    implemented: true
+    working: true
+    file: "routes/checkin.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Build 38: GET /api/checkin/my-attendance — Returns athlete's attendance log with hub names and flux earned. GET /api/checkin/hub/{hub_id}/attendance — Admin/coach view of hub attendance."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: Both attendance endpoints working correctly. GET /api/checkin/my-attendance returns 1 record with hub_name='MMA Roma Fight Academy', k_flux_earned=50, k_flux_color='green'. GET /api/checkin/hub/{hub_id}/attendance returns 1 record with username='The founder'. Attendance tracking and user identification functional."
+
+  - task: "QR KORE Check-in — Config & Enhanced Week"
+    implemented: true
+    working: true
+    file: "routes/checkin.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Build 38: PUT /api/checkin/hub/{hub_id}/config — Admin configures flux_reward (10-500), radius_meters, geo_required. GET /api/checkin/week-enhanced — Week view with hub attendance data."
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: All config and week endpoints working correctly. PUT /api/checkin/hub/{hub_id}/config successfully updates flux_reward=100, returns status='updated'. GET /api/checkin/hub/{hub_id}/config confirms flux_reward=100. GET /api/checkin/week-enhanced returns 7 days with today showing checked_in=true, is_qr_checkin=true, hub_name set. Configuration management and weekly view all functional."
+
+  - task: "QR KORE Check-in — QR Status Monitoring"
+    implemented: true
+    working: true
+    file: "routes/checkin.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/checkin/hub/{hub_id}/qr-status working correctly. Returns qr_active=true, checkins_today=0 (before scan), proper hub status monitoring. QR activation status and daily check-in counting functional."
+
+metadata:
+  created_by: "main_agent"
+  version: "38.0"
+  test_sequence: 38
+  run_ui: false
+
+test_plan: "Test the QR KORE Check-in system (Build 38, Prompt 5). CRITICAL FLOW: (1) Login as Admin: POST /api/auth/login with ogrisek.stefano@gmail.com / Founder@KORE2026! (2) Get all hubs: GET /api/hubs/all — pick the first hub_id (3) Generate QR for that hub: POST /api/checkin/hub/{hub_id}/generate-qr — should return qr_payload starting with 'arenakore://checkin/' (4) Get QR status: GET /api/checkin/hub/{hub_id}/qr-status — should show qr_active=true (5) Scan the QR: POST /api/checkin/scan with body {qr_payload: <from step 3>} — should return success=true, flux_earned=50, streak>=1 (6) Try scan again (idempotent 1/day): POST /api/checkin/scan with same payload — should return already_checked_in=true, flux_earned=0 (7) Get attendance history: GET /api/checkin/my-attendance — should show the check-in from step 5 (8) Get hub attendance (admin): GET /api/checkin/hub/{hub_id}/attendance — should show the check-in (9) Get enhanced week: GET /api/checkin/week-enhanced — should show today checked_in=true with hub_name (10) Update config: PUT /api/checkin/hub/{hub_id}/config with body {flux_reward: 100, geo_required: false} — should return status=updated (11) Get config: GET /api/checkin/hub/{hub_id}/config — should show flux_reward=100"
+
+agent_communication:
+    - agent: "main"
+      message: "Build 38: QR KORE Check-in & Continuità. Backend routes/checkin.py with 8 endpoints: POST generate-qr, GET qr-status, POST scan, GET my-attendance, GET hub/{id}/attendance, PUT hub/{id}/config, GET hub/{id}/config, GET week-enhanced. Frontend: hub-checkin-qr.tsx (QR Generator for Admin/Coach with react-native-qrcode-svg), qr-checkin.tsx (Scanner for Athletes with expo-camera + Neon-Elite success overlay with K-Flux rain animation). Integration: KORE Tab has QR CHECK-IN button, Hub Map has GENERA QR + CHECK-IN buttons. Credentials: ogrisek.stefano@gmail.com / Founder@KORE2026!"
+    - agent: "testing"
+      message: "QR KORE CHECK-IN SYSTEM TESTING COMPLETED: ALL 11 CRITICAL TEST STEPS PASSED SUCCESSFULLY (100% SUCCESS RATE). Full test sequence executed exactly as specified in review request: ✅ Step 1: Admin login successful with ogrisek.stefano@gmail.com / Founder@KORE2026! ✅ Step 2: Get all hubs - Found 8 hubs, selected hub_id: 69db8a12a3887b45477d7689 (MMA Roma Fight Academy) ✅ Step 3: Generate QR for hub - QR generated: arenakore://checkin/69db8a12a3887b45477d7689/95BE6233BEF5258E, hub: MMA Roma Fight Academy, date: 2026-04-12, token: 95BE6233BEF5258E ✅ Step 4: Get QR status - qr_active=true, checkins_today=0 ✅ Step 5: Scan QR (first time) - success=true, already_checked_in=false, flux_earned=50, streak=1, flux_color=green ✅ Step 6: Scan QR (duplicate) - success=true, already_checked_in=true, flux_earned=0 (1/day limit working) ✅ Step 7: Get my attendance - 1 record with hub_name=MMA Roma Fight Academy, k_flux_earned=50, k_flux_color=green ✅ Step 8: Get hub attendance (admin) - 1 record with username=The founder ✅ Step 9: Get enhanced week - 7 days with today showing checked_in=true, is_qr_checkin=true, hub_name set ✅ Step 10: Update config - flux_reward updated to 100, status=updated ✅ Step 11: Get config - flux_reward=100 confirmed. All QR KORE Check-in features are production-ready: QR generation, token validation, 1/day limit enforcement, Green K-Flux rewards, attendance tracking, configuration management, and weekly view all functional."

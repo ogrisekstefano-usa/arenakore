@@ -365,6 +365,28 @@ export default function KoreTab() {
           { date: '', day_name: 'DOM', checked_in: false },
         ]} streak={checkinStreak} onTap={() => setShowCalendar(true)} />
 
+        {/* ══════ QR CHECK-IN BUTTON ══════ */}
+        <Animated.View entering={FadeInDown.delay(100).duration(350)}>
+          <TouchableOpacity
+            style={s.checkinBtn}
+            activeOpacity={0.85}
+            onPress={() => router.push('/qr-checkin' as any)}
+          >
+            <View style={s.checkinBtnIcon}>
+              <Ionicons name="scan" size={20} color="#000" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.checkinBtnTitle}>QR CHECK-IN</Text>
+              <Text style={s.checkinBtnSub}>Scansiona il QR del tuo Hub per la presenza</Text>
+            </View>
+            <View style={s.checkinBtnFlux}>
+              <Text style={s.checkinBtnFluxText}>+50</Text>
+              <Text style={s.checkinBtnFluxLabel}>K-FLUX</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="rgba(0,255,135,0.4)" />
+          </TouchableOpacity>
+        </Animated.View>
+
         {/* ══════ RANK + LEVEL PROGRESS (Replaces BIO DATA) ══════ */}
         <SectionHeader icon="podium" title="RANK & LIVELLO" color={PURPLE} />
         <LevelProgressCard
@@ -508,4 +530,20 @@ const s = StyleSheet.create({
   archivioHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginRight: 0, paddingRight: 0 },
   archivioLink: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)', marginTop: 28 },
   archivioLinkText: { color: GOLD, fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+
+  // QR Check-in Button
+  checkinBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 14,
+    backgroundColor: 'rgba(0,255,135,0.04)', borderRadius: 16, padding: 14,
+    borderWidth: 1.5, borderColor: 'rgba(0,255,135,0.15)',
+  },
+  checkinBtnIcon: {
+    width: 44, height: 44, borderRadius: 14, backgroundColor: '#00FF87',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  checkinBtnTitle: { color: '#FFF', fontSize: 14, fontWeight: '800', letterSpacing: 1.5 },
+  checkinBtnSub: { color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: '500', marginTop: 2 },
+  checkinBtnFlux: { alignItems: 'center' },
+  checkinBtnFluxText: { color: '#00FF87', fontSize: 18, fontWeight: '900' },
+  checkinBtnFluxLabel: { color: 'rgba(0,255,135,0.5)', fontSize: 8, fontWeight: '900', letterSpacing: 2 },
 });

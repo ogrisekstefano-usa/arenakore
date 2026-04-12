@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-ARENAKORE Backend API Testing Script
-Tests the specific template endpoints mentioned in the review request
+ARENAKORE QR KORE Check-in System Testing (Build 38)
+Test Plan — Execute ALL steps in sequence as specified in review request
 """
 
 import requests
@@ -14,403 +14,315 @@ BASE_URL = "https://arena-scan-lab.preview.emergentagent.com/api"
 ADMIN_EMAIL = "ogrisek.stefano@gmail.com"
 ADMIN_PASSWORD = "Founder@KORE2026!"
 
-class ArenakoreAPITester:
+class QRCheckinTester:
     def __init__(self):
-        self.base_url = BASE_URL
         self.token = None
-        self.session = requests.Session()
-        self.test_results = []
+        self.hub_id = None
+        self.qr_payload = None
         
-    def log_test(self, test_name, success, status_code, response_data, error_msg=None):
-        """Log test results"""
-        result = {
-            'test': test_name,
-            'success': success,
-            'status_code': status_code,
-            'response': response_data,
-            'error': error_msg,
-            'timestamp': datetime.now().isoformat()
-        }
-        self.test_results.append(result)
+    def log(self, message):
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        print(f"[{timestamp}] {message}")
         
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status} {test_name} - Status: {status_code}")
-        if error_msg:
-            print(f"   Error: {error_msg}")
-        if response_data and isinstance(response_data, dict):
-            if 'message' in response_data:
-                print(f"   Message: {response_data['message']}")
-        print()
-
-    def test_login(self):
-        """Test 1: Admin Login"""
-        url = f"{self.base_url}/auth/login"
+    def test_step(self, step_num, description, func):
+        self.log(f"STEP {step_num}: {description}")
+        try:
+            result = func()
+            self.log(f"✅ STEP {step_num} PASSED: {result}")
+            return True
+        except Exception as e:
+            self.log(f"❌ STEP {step_num} FAILED: {str(e)}")
+            return False
+    
+    def step1_admin_login(self):
+        """Step 1: Login as Admin"""
+        url = f"{BASE_URL}/auth/login"
         payload = {
             "email": ADMIN_EMAIL,
             "password": ADMIN_PASSWORD
         }
         
-        try:
-            response = self.session.post(url, json=payload)
-            data = response.json() if response.content else {}
+        response = requests.post(url, json=payload)
+        if response.status_code != 200:
+            raise Exception(f"Login failed: {response.status_code} - {response.text}")
             
-            if response.status_code == 200 and 'token' in data:
-                self.token = data['token']
-                self.session.headers.update({'Authorization': f'Bearer {self.token}'})
-                self.log_test("Admin Login", True, response.status_code, data)
-                return True
-            else:
-                self.log_test("Admin Login", False, response.status_code, data, "No token received")
-                return False
-                
-        except Exception as e:
-            self.log_test("Admin Login", False, 0, {}, str(e))
-            return False
-
-    def test_system_templates(self):
-        """Test 2: System Templates API"""
-        url = f"{self.base_url}/templates/v2/system"
+        data = response.json()
+        if "token" not in data:
+            raise Exception(f"No token in response: {data}")
+            
+        self.token = data["token"]
+        return f"Admin login successful, token received: {self.token[:20]}..."
+    
+    def step2_get_all_hubs(self):
+        """Step 2: Get all hubs and pick the first hub's id"""
+        url = f"{BASE_URL}/hubs/all"
         
-        try:
-            response = self.session.get(url)
-            data = response.json() if response.content else {}
+        response = requests.get(url)
+        if response.status_code != 200:
+            raise Exception(f"Get hubs failed: {response.status_code} - {response.text}")
             
-            success = False
-            error_msg = None
+        data = response.json()
+        if "hubs" not in data or len(data["hubs"]) == 0:
+            raise Exception(f"No hubs found in response: {data}")
             
-            if response.status_code == 200:
-                if isinstance(data, list) and len(data) >= 8:
-                    # Check if templates have required fields
-                    sample_template = data[0] if data else {}
-                    required_fields = ['code', 'name', 'discipline', 'requires_nexus_bio', 'kpi_metrics', 'certified_by', 'source']
-                    
-                    if all(field in sample_template for field in required_fields):
-                        if sample_template.get('source') == 'system':
-                            success = True
-                        else:
-                            error_msg = f"Expected source='system', got '{sample_template.get('source')}'"
-                    else:
-                        missing_fields = [f for f in required_fields if f not in sample_template]
-                        error_msg = f"Missing required fields: {missing_fields}"
-                else:
-                    error_msg = f"Expected at least 8 templates, got {len(data) if isinstance(data, list) else 0}"
-            else:
-                error_msg = f"Expected status 200, got {response.status_code}"
-                
-            self.log_test("System Templates", success, response.status_code, data, error_msg)
-            return success
-            
-        except Exception as e:
-            self.log_test("System Templates", False, 0, {}, str(e))
-            return False
-
-    def test_base_templates(self):
-        """Test 3: Base Templates API"""
-        url = f"{self.base_url}/templates/v2/base"
+        self.hub_id = data["hubs"][0]["id"]
+        hub_name = data["hubs"][0]["name"]
+        return f"Found {len(data['hubs'])} hubs, selected hub_id: {self.hub_id} ({hub_name})"
+    
+    def step3_generate_qr(self):
+        """Step 3: Generate QR for hub"""
+        url = f"{BASE_URL}/checkin/hub/{self.hub_id}/generate-qr"
+        headers = {"Authorization": f"Bearer {self.token}"}
         
-        try:
-            response = self.session.get(url)
-            data = response.json() if response.content else {}
+        response = requests.post(url, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Generate QR failed: {response.status_code} - {response.text}")
             
-            success = False
-            error_msg = None
-            
-            if response.status_code == 200:
-                if isinstance(data, list) and len(data) >= 5:
-                    # Check if templates have required fields
-                    sample_template = data[0] if data else {}
-                    
-                    if sample_template.get('requires_nexus_bio') == False and sample_template.get('source') == 'base':
-                        success = True
-                    else:
-                        error_msg = f"Expected requires_nexus_bio=false and source='base', got requires_nexus_bio={sample_template.get('requires_nexus_bio')}, source='{sample_template.get('source')}'"
-                else:
-                    error_msg = f"Expected at least 5 templates, got {len(data) if isinstance(data, list) else 0}"
-            else:
-                error_msg = f"Expected status 200, got {response.status_code}"
+        data = response.json()
+        required_fields = ["qr_payload", "hub_name", "date", "token"]
+        for field in required_fields:
+            if field not in data:
+                raise Exception(f"Missing field '{field}' in response: {data}")
                 
-            self.log_test("Base Templates", success, response.status_code, data, error_msg)
-            return success
+        self.qr_payload = data["qr_payload"]
+        if not self.qr_payload.startswith("arenakore://checkin/"):
+            raise Exception(f"Invalid QR payload format: {self.qr_payload}")
             
-        except Exception as e:
-            self.log_test("Base Templates", False, 0, {}, str(e))
-            return False
-
-    def test_all_templates_unified(self):
-        """Test 4: All Templates Unified API"""
-        url = f"{self.base_url}/templates/v2/all"
+        return f"QR generated: {self.qr_payload}, hub: {data['hub_name']}, date: {data['date']}, token: {data['token']}"
+    
+    def step4_get_qr_status(self):
+        """Step 4: Get QR status"""
+        url = f"{BASE_URL}/checkin/hub/{self.hub_id}/qr-status"
+        headers = {"Authorization": f"Bearer {self.token}"}
         
-        try:
-            response = self.session.get(url)
-            data = response.json() if response.content else {}
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Get QR status failed: {response.status_code} - {response.text}")
             
-            success = False
-            error_msg = None
-            
-            if response.status_code == 200:
-                required_keys = ['system', 'base', 'coach', 'total']
-                if all(key in data for key in required_keys):
-                    if isinstance(data['system'], list) and isinstance(data['base'], list) and isinstance(data['coach'], list):
-                        if isinstance(data['total'], int) and data['total'] > 0:
-                            success = True
-                        else:
-                            error_msg = f"Expected total to be positive integer, got {data['total']}"
-                    else:
-                        error_msg = "Expected system, base, and coach to be arrays"
-                else:
-                    missing_keys = [k for k in required_keys if k not in data]
-                    error_msg = f"Missing required keys: {missing_keys}"
-            else:
-                error_msg = f"Expected status 200, got {response.status_code}"
+        data = response.json()
+        required_fields = ["qr_active", "checkins_today"]
+        for field in required_fields:
+            if field not in data:
+                raise Exception(f"Missing field '{field}' in response: {data}")
                 
-            self.log_test("All Templates Unified", success, response.status_code, data, error_msg)
-            return success
+        if not data["qr_active"]:
+            raise Exception(f"QR should be active but qr_active={data['qr_active']}")
             
-        except Exception as e:
-            self.log_test("All Templates Unified", False, 0, {}, str(e))
-            return False
-
-    def test_bio_check_system_template(self):
-        """Test 5: Bio Check for System Template Requiring Bio"""
-        url = f"{self.base_url}/templates/v2/check-bio/SYS_BIO_SYNC?source=system"
+        return f"QR status: qr_active={data['qr_active']}, checkins_today={data['checkins_today']}"
+    
+    def step5_scan_qr_first_time(self):
+        """Step 5: Scan QR (first time)"""
+        url = f"{BASE_URL}/checkin/scan"
+        headers = {"Authorization": f"Bearer {self.token}"}
+        payload = {"qr_payload": self.qr_payload}
         
-        try:
-            response = self.session.get(url)
-            data = response.json() if response.content else {}
+        response = requests.post(url, json=payload, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Scan QR failed: {response.status_code} - {response.text}")
             
-            success = False
-            error_msg = None
-            
-            if response.status_code == 200:
-                if 'allowed' in data:
-                    # Should return allowed: true/false with scan status and countdown
-                    success = True
-                else:
-                    error_msg = "Missing 'allowed' field in response"
-            else:
-                error_msg = f"Expected status 200, got {response.status_code}"
+        data = response.json()
+        required_fields = ["success", "already_checked_in", "flux_earned", "streak", "flux_color"]
+        for field in required_fields:
+            if field not in data:
+                raise Exception(f"Missing field '{field}' in response: {data}")
                 
-            self.log_test("Bio Check (System Template)", success, response.status_code, data, error_msg)
-            return success
+        if not data["success"]:
+            raise Exception(f"Scan should succeed but success={data['success']}")
             
-        except Exception as e:
-            self.log_test("Bio Check (System Template)", False, 0, {}, str(e))
-            return False
-
-    def test_bio_check_base_template(self):
-        """Test 6: Bio Check for Base Template NOT Requiring Bio"""
-        url = f"{self.base_url}/templates/v2/check-bio/BASE_CORDA_1MIN?source=base"
+        if data["already_checked_in"]:
+            raise Exception(f"First scan should not be already_checked_in but got {data['already_checked_in']}")
+            
+        if data["flux_earned"] <= 0:
+            raise Exception(f"Should earn flux but got flux_earned={data['flux_earned']}")
+            
+        if data["streak"] < 1:
+            raise Exception(f"Streak should be >= 1 but got {data['streak']}")
+            
+        if data["flux_color"] != "green":
+            raise Exception(f"Flux color should be green but got {data['flux_color']}")
+            
+        return f"First scan successful: flux_earned={data['flux_earned']}, streak={data['streak']}, flux_color={data['flux_color']}"
+    
+    def step6_scan_qr_duplicate(self):
+        """Step 6: Scan QR (duplicate — 1/day limit)"""
+        url = f"{BASE_URL}/checkin/scan"
+        headers = {"Authorization": f"Bearer {self.token}"}
+        payload = {"qr_payload": self.qr_payload}
         
-        try:
-            response = self.session.get(url)
-            data = response.json() if response.content else {}
+        response = requests.post(url, json=payload, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Duplicate scan failed: {response.status_code} - {response.text}")
             
-            success = False
-            error_msg = None
-            
-            if response.status_code == 200:
-                if data.get('allowed') == True and data.get('requires_nexus_bio') == False:
-                    success = True
-                else:
-                    error_msg = f"Expected allowed=true and requires_nexus_bio=false, got allowed={data.get('allowed')}, requires_nexus_bio={data.get('requires_nexus_bio')}"
-            else:
-                error_msg = f"Expected status 200, got {response.status_code}"
+        data = response.json()
+        required_fields = ["success", "already_checked_in", "flux_earned"]
+        for field in required_fields:
+            if field not in data:
+                raise Exception(f"Missing field '{field}' in response: {data}")
                 
-            self.log_test("Bio Check (Base Template)", success, response.status_code, data, error_msg)
-            return success
+        if not data["success"]:
+            raise Exception(f"Duplicate scan should succeed but success={data['success']}")
             
-        except Exception as e:
-            self.log_test("Bio Check (Base Template)", False, 0, {}, str(e))
-            return False
-
-    def test_coach_onboarding(self):
-        """Test 7: Coach Onboarding"""
-        url = f"{self.base_url}/coach/onboarding"
+        if not data["already_checked_in"]:
+            raise Exception(f"Duplicate scan should be already_checked_in but got {data['already_checked_in']}")
+            
+        if data["flux_earned"] != 0:
+            raise Exception(f"Duplicate scan should earn 0 flux but got flux_earned={data['flux_earned']}")
+            
+        return f"Duplicate scan successful: already_checked_in={data['already_checked_in']}, flux_earned={data['flux_earned']}"
+    
+    def step7_get_my_attendance(self):
+        """Step 7: Get my attendance"""
+        url = f"{BASE_URL}/checkin/my-attendance"
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Get my attendance failed: {response.status_code} - {response.text}")
+            
+        data = response.json()
+        if "records" not in data:
+            raise Exception(f"Missing 'records' field in response: {data}")
+            
+        if len(data["records"]) == 0:
+            raise Exception(f"Should have at least 1 attendance record but got {len(data['records'])}")
+            
+        record = data["records"][0]
+        required_fields = ["hub_name", "k_flux_earned", "k_flux_color"]
+        for field in required_fields:
+            if field not in record:
+                raise Exception(f"Missing field '{field}' in attendance record: {record}")
+                
+        if record["k_flux_earned"] <= 0:
+            raise Exception(f"Should have earned flux but got k_flux_earned={record['k_flux_earned']}")
+            
+        if record["k_flux_color"] != "green":
+            raise Exception(f"Flux color should be green but got {record['k_flux_color']}")
+            
+        return f"My attendance: {len(data['records'])} records, latest: hub={record['hub_name']}, flux={record['k_flux_earned']}, color={record['k_flux_color']}"
+    
+    def step8_get_hub_attendance(self):
+        """Step 8: Get hub attendance (admin)"""
+        url = f"{BASE_URL}/checkin/hub/{self.hub_id}/attendance"
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Get hub attendance failed: {response.status_code} - {response.text}")
+            
+        data = response.json()
+        if "records" not in data:
+            raise Exception(f"Missing 'records' field in response: {data}")
+            
+        if len(data["records"]) == 0:
+            raise Exception(f"Should have at least 1 attendance record but got {len(data['records'])}")
+            
+        record = data["records"][0]
+        if "username" not in record:
+            raise Exception(f"Missing 'username' field in attendance record: {record}")
+            
+        return f"Hub attendance: {len(data['records'])} records, latest user: {record['username']}"
+    
+    def step9_get_enhanced_week(self):
+        """Step 9: Get enhanced week"""
+        url = f"{BASE_URL}/checkin/week-enhanced"
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Get enhanced week failed: {response.status_code} - {response.text}")
+            
+        data = response.json()
+        if "week" not in data:
+            raise Exception(f"Missing 'week' field in response: {data}")
+            
+        if len(data["week"]) != 7:
+            raise Exception(f"Week should have 7 days but got {len(data['week'])}")
+            
+        # Find today's entry
+        today_found = False
+        for day in data["week"]:
+            if day.get("checked_in") and day.get("is_qr_checkin") and day.get("hub_name"):
+                today_found = True
+                break
+                
+        if not today_found:
+            raise Exception(f"Should find today as checked_in=true with is_qr_checkin=true and hub_name set")
+            
+        return f"Enhanced week: 7 days, found today's QR check-in with hub_name"
+    
+    def step10_update_config(self):
+        """Step 10: Update config"""
+        url = f"{BASE_URL}/checkin/hub/{self.hub_id}/config"
+        headers = {"Authorization": f"Bearer {self.token}"}
         payload = {
-            "professional_bio": "Allenatore certificato con 10 anni di esperienza nel functional fitness e preparazione atletica.",
-            "specialties": ["Functional Training", "HIIT", "Basket Performance"],
-            "certifications": ["CONI Livello 2", "CrossFit L1", "NASM CPT"],
-            "years_experience": 10,
-            "coaching_tier": "premium"
+            "flux_reward": 100,
+            "geo_required": False
         }
         
-        try:
-            response = self.session.post(url, json=payload)
-            data = response.json() if response.content else {}
+        response = requests.put(url, json=payload, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Update config failed: {response.status_code} - {response.text}")
             
-            success = False
-            error_msg = None
+        data = response.json()
+        if data.get("status") != "updated":
+            raise Exception(f"Config update should return status='updated' but got {data}")
             
-            if response.status_code == 200:
-                if data.get('status') == 'onboarding_completed' and 'coach_data' in data:
-                    success = True
-                else:
-                    error_msg = f"Expected status='onboarding_completed' with coach_data, got status='{data.get('status')}'"
-            else:
-                error_msg = f"Expected status 200, got {response.status_code}"
-                
-            self.log_test("Coach Onboarding", success, response.status_code, data, error_msg)
-            return success
-            
-        except Exception as e:
-            self.log_test("Coach Onboarding", False, 0, {}, str(e))
-            return False
-
-    def test_coach_profile(self):
-        """Test 8: Coach Profile"""
-        url = f"{self.base_url}/coach/profile"
+        return f"Config updated: status={data['status']}"
+    
+    def step11_get_config(self):
+        """Step 11: Get config"""
+        url = f"{BASE_URL}/checkin/hub/{self.hub_id}/config"
+        headers = {"Authorization": f"Bearer {self.token}"}
         
-        try:
-            response = self.session.get(url)
-            data = response.json() if response.content else {}
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Get config failed: {response.status_code} - {response.text}")
             
-            success = False
-            error_msg = None
+        data = response.json()
+        if data.get("flux_reward") != 100:
+            raise Exception(f"Flux reward should be 100 but got {data.get('flux_reward')}")
             
-            if response.status_code == 200:
-                if (data.get('has_coach_profile') == True and 
-                    data.get('onboarding_completed') == True and 
-                    'coach_data' in data):
-                    success = True
-                else:
-                    error_msg = f"Expected has_coach_profile=true, onboarding_completed=true with coach_data"
-            else:
-                error_msg = f"Expected status 200, got {response.status_code}"
-                
-            self.log_test("Coach Profile", success, response.status_code, data, error_msg)
-            return success
-            
-        except Exception as e:
-            self.log_test("Coach Profile", False, 0, {}, str(e))
-            return False
-
-    def test_create_coach_template(self):
-        """Test 9: Create Coach Template"""
-        url = f"{self.base_url}/templates/v2/coach"
-        payload = {
-            "name": "POWER PROTOCOL ELITE - COACH",
-            "discipline": "Fitness",
-            "exercise_type": "squat",
-            "description": "Protocollo di potenza da coach certificato",
-            "target_reps": 20,
-            "target_time_seconds": 60,
-            "difficulty": "hard",
-            "video_url": "https://youtube.com/watch?v=example",
-            "kpi_metrics": ["reps_per_minute", "peak_force"],
-            "requires_nexus_bio": True,
-            "xp_reward": 200,
-            "tags": ["forza", "power"]
-        }
-        
-        try:
-            response = self.session.post(url, json=payload)
-            data = response.json() if response.content else {}
-            
-            success = False
-            error_msg = None
-            
-            if response.status_code == 200:
-                if (data.get('source') == 'coach' and 
-                    'video_url' in data and 
-                    'kpi_metrics' in data):
-                    success = True
-                else:
-                    error_msg = f"Expected source='coach' with video_url and kpi_metrics fields"
-            else:
-                error_msg = f"Expected status 200, got {response.status_code}"
-                
-            self.log_test("Create Coach Template", success, response.status_code, data, error_msg)
-            return success
-            
-        except Exception as e:
-            self.log_test("Create Coach Template", False, 0, {}, str(e))
-            return False
-
-    def test_my_coach_templates(self):
-        """Test 10: My Coach Templates"""
-        url = f"{self.base_url}/templates/v2/mine"
-        
-        try:
-            response = self.session.get(url)
-            data = response.json() if response.content else {}
-            
-            success = False
-            error_msg = None
-            
-            if response.status_code == 200:
-                if isinstance(data, list) and len(data) >= 1:
-                    success = True
-                else:
-                    error_msg = f"Expected at least 1 template, got {len(data) if isinstance(data, list) else 0}"
-            else:
-                error_msg = f"Expected status 200, got {response.status_code}"
-                
-            self.log_test("My Coach Templates", success, response.status_code, data, error_msg)
-            return success
-            
-        except Exception as e:
-            self.log_test("My Coach Templates", False, 0, {}, str(e))
-            return False
-
+        return f"Config retrieved: flux_reward={data['flux_reward']}"
+    
     def run_all_tests(self):
-        """Run all tests in sequence"""
-        print("🚀 Starting ARENAKORE Backend API Tests")
-        print(f"📍 Base URL: {self.base_url}")
-        print(f"👤 Admin: {ADMIN_EMAIL}")
-        print("=" * 60)
-        print()
+        """Run all test steps in sequence"""
+        self.log("🚀 STARTING QR KORE CHECK-IN SYSTEM TESTING (Build 38)")
+        self.log("=" * 60)
         
-        # Test sequence
-        tests = [
-            self.test_login,
-            self.test_system_templates,
-            self.test_base_templates,
-            self.test_all_templates_unified,
-            self.test_bio_check_system_template,
-            self.test_bio_check_base_template,
-            self.test_coach_onboarding,
-            self.test_coach_profile,
-            self.test_create_coach_template,
-            self.test_my_coach_templates
+        test_steps = [
+            (1, "Login as Admin", self.step1_admin_login),
+            (2, "Get all hubs", self.step2_get_all_hubs),
+            (3, "Generate QR for hub", self.step3_generate_qr),
+            (4, "Get QR status", self.step4_get_qr_status),
+            (5, "Scan QR (first time)", self.step5_scan_qr_first_time),
+            (6, "Scan QR (duplicate)", self.step6_scan_qr_duplicate),
+            (7, "Get my attendance", self.step7_get_my_attendance),
+            (8, "Get hub attendance (admin)", self.step8_get_hub_attendance),
+            (9, "Get enhanced week", self.step9_get_enhanced_week),
+            (10, "Update config", self.step10_update_config),
+            (11, "Get config", self.step11_get_config),
         ]
         
         passed = 0
-        total = len(tests)
+        failed = 0
         
-        for test in tests:
-            if test():
+        for step_num, description, func in test_steps:
+            if self.test_step(step_num, description, func):
                 passed += 1
+            else:
+                failed += 1
+                
+        self.log("=" * 60)
+        self.log(f"🏁 TESTING COMPLETE: {passed} PASSED, {failed} FAILED")
         
-        print("=" * 60)
-        print(f"📊 Test Results: {passed}/{total} tests passed")
-        
-        if passed == total:
-            print("🎉 ALL TESTS PASSED! Backend is working correctly.")
+        if failed == 0:
+            self.log("🎉 ALL QR CHECK-IN TESTS PASSED!")
+            return True
         else:
-            print(f"⚠️  {total - passed} tests failed. Check the details above.")
-        
-        return passed == total
-
-    def print_summary(self):
-        """Print detailed test summary"""
-        print("\n" + "=" * 60)
-        print("📋 DETAILED TEST SUMMARY")
-        print("=" * 60)
-        
-        for result in self.test_results:
-            status = "✅ PASS" if result['success'] else "❌ FAIL"
-            print(f"{status} {result['test']}")
-            print(f"   Status Code: {result['status_code']}")
-            if result['error']:
-                print(f"   Error: {result['error']}")
-            if result['response'] and isinstance(result['response'], dict):
-                if 'message' in result['response']:
-                    print(f"   Response: {result['response']['message']}")
-            print()
+            self.log(f"⚠️  {failed} TESTS FAILED")
+            return False
 
 if __name__ == "__main__":
-    tester = ArenakoreAPITester()
+    tester = QRCheckinTester()
     success = tester.run_all_tests()
-    tester.print_summary()
-    
     sys.exit(0 if success else 1)

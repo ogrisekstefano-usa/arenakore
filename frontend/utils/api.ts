@@ -701,6 +701,38 @@ export const api = {
   getActivityStats: (token: string) =>
     request('/activity/stats', {}, token),
 
+  // ========== QR KORE CHECK-IN ENGINE (Build 38) ==========
+  generateHubQR: (hubId: string, token: string) =>
+    request(`/checkin/hub/${hubId}/generate-qr`, { method: 'POST' }, token),
+
+  getHubQRStatus: (hubId: string, token: string) =>
+    request(`/checkin/hub/${hubId}/qr-status`, {}, token),
+
+  scanCheckin: (data: { qr_payload: string; latitude?: number; longitude?: number }, token: string) =>
+    request('/checkin/scan', { method: 'POST', body: JSON.stringify(data) }, token),
+
+  getMyAttendance: (token: string, limit?: number, offset?: number) => {
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', String(limit));
+    if (offset) params.append('offset', String(offset));
+    return request(`/checkin/my-attendance?${params.toString()}`, {}, token);
+  },
+
+  getHubAttendance: (hubId: string, token: string, date?: string) => {
+    const params = new URLSearchParams();
+    if (date) params.append('date', date);
+    return request(`/checkin/hub/${hubId}/attendance?${params.toString()}`, {}, token);
+  },
+
+  updateCheckinConfig: (hubId: string, data: { flux_reward?: number; radius_meters?: number; geo_required?: boolean }, token: string) =>
+    request(`/checkin/hub/${hubId}/config`, { method: 'PUT', body: JSON.stringify(data) }, token),
+
+  getCheckinConfig: (hubId: string, token: string) =>
+    request(`/checkin/hub/${hubId}/config`, {}, token),
+
+  getEnhancedWeek: (token: string) =>
+    request('/checkin/week-enhanced', {}, token),
+
   createActivityLog: (data: {
     tipo: string;
     template_id?: string;

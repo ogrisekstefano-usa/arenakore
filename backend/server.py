@@ -12350,6 +12350,7 @@ from routes.activity import router as activity_router
 from routes.social import router as social_router
 from routes.calibration import router as calibration_router
 from routes.hubs import router as hubs_router, seed_hubs
+from routes.checkin import router as checkin_router
 
 app.include_router(stats_router)
 app.include_router(flux_balance_router)
@@ -12359,6 +12360,7 @@ app.include_router(activity_router)
 app.include_router(social_router)
 app.include_router(calibration_router)
 app.include_router(hubs_router)
+app.include_router(checkin_router)
 
 # Re-register router after all endpoints are defined
 app.include_router(api_router)
