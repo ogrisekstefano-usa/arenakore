@@ -758,6 +758,16 @@ export const api = {
   getMarketplaceCategories: (token: string) =>
     request('/marketplace/categories', {}, token),
 
+  // ========== THE HUNT — System Templates Leaderboard (Build 36 P0) ==========
+  getTheHuntLeaderboard: (token: string, timeRange?: string) => {
+    const params = new URLSearchParams();
+    if (timeRange) params.append('time_range', timeRange);
+    return request(`/leaderboard/the-hunt?${params.toString()}`, {}, token);
+  },
+
+  getMyHuntRank: (token: string) =>
+    request('/leaderboard/the-hunt/my-rank', {}, token),
+
   createActivityLog: (data: {
     tipo: string;
     template_id?: string;

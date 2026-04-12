@@ -41,7 +41,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   fitness: 'FITNESS', outdoor: 'OUTDOOR', mind_body: 'MIND & BODY', extreme: 'EXTREME'
 };
 
-type TabType = 'global' | 'sport' | 'crews';
+type TabType = 'global' | 'sport' | 'crews' | 'the_hunt';
 
 // SHIMMER ANIMATION for Top 3
 function ShimmerName({ name, color }: { name: string; color: string }) {
@@ -349,15 +349,37 @@ export function HallOfKore() {
     if (!token) return;
     setLoading(true);
     try {
-      const [lb, rank] = await Promise.all([
-        api.getLeaderboard(activeTab, token, activeTab === 'sport' && selectedCategory ? selectedCategory : undefined),
-        activeTab !== 'crews'
-          ? api.getMyRank(token, activeTab === 'sport' && selectedCategory ? selectedCategory : undefined)
-          : Promise.resolve(null),
-      ]);
-      setLeaderboard(lb);
-      setMyRank(rank);
-      if (rank?.is_top_10 && !hasPlayedTop10.current) {
+      if (activeTab === 'the_hunt') {
+        // THE HUNT: Load from dedicated system_templates endpoint
+        const [huntRes, huntRank] = await Promise.all([
+          api.getTheHuntLeaderboard(token),
+          api.getMyHuntRank(token),
+        ]);
+        if (huntRes && huntRes.leaderboard) {
+          setLeaderboard(huntRes.leaderboard);
+        } else {
+          setLeaderboard([]);
+        }
+        if (huntRank) {
+          setMyRank({
+            rank: huntRank.rank,
+            total: huntRank.total,
+            xp: huntRank.hunt_flux,
+            is_top_10: huntRank.rank <= 10 && huntRank.is_ranked,
+            is_ranked: huntRank.is_ranked,
+          });
+        }
+      } else {
+        const [lb, rank] = await Promise.all([
+          api.getLeaderboard(activeTab, token, activeTab === 'sport' && selectedCategory ? selectedCategory : undefined),
+          activeTab !== 'crews'
+            ? api.getMyRank(token, activeTab === 'sport' && selectedCategory ? selectedCategory : undefined)
+            : Promise.resolve(null),
+        ]);
+        setLeaderboard(lb);
+        setMyRank(rank);
+      }
+      if (myRank?.is_top_10 && !hasPlayedTop10.current) {
         playAcceptPing();
         hasPlayedTop10.current = true;
       }
@@ -367,11 +389,12 @@ export function HallOfKore() {
 
   useEffect(() => { hasPlayedTop10.current = false; loadData(); }, [loadData]);
 
-  const top3 = activeTab !== 'crews' ? leaderboard.slice(0, 3) : [];
-  const restAll = activeTab !== 'crews' ? leaderboard.slice(3) : leaderboard;
+  const top3 = (activeTab !== 'crews') ? leaderboard.slice(0, 3) : [];
+  const restAll = (activeTab !== 'crews') ? leaderboard.slice(3) : leaderboard;
   const rest = verifiedOnly ? restAll.filter((a: any) => a.is_nexus_certified) : restAll;
 
   const tabs: { key: TabType; label: string }[] = [
+    { key: 'the_hunt', label: '🏆 THE HUNT' },
     { key: 'global', label: 'GLOBAL' },
     { key: 'sport', label: 'PER SPORT' },
     { key: 'crews', label: 'CREWS' },
@@ -467,8 +490,8 @@ export function HallOfKore() {
             showsVerticalScrollIndicator={false}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} tintColor="#FFD700" />}
           >
-            {/* THE GIANTS (Top 3) */}
-            {top3.length > 0 && (
+            {/* THE GIANTS (Top 3) — skip for the_hunt to avoid showing generic data */}
+            {top3.length > 0 && activeTab !== 'the_hunt' && (
               <>
                 <View style={gl$.sectionRow}>
                   <Ionicons name="diamond" size={14} color="#FFD700" />
@@ -483,6 +506,24 @@ export function HallOfKore() {
               </>
             )}
 
+            {/* THE HUNT dedicated top-3 podium */}
+            {activeTab === 'the_hunt' && top3.length > 0 && (
+              <>
+                <View style={gl$.sectionRow}>
+                  <Ionicons name="flame" size={14} color="#FFD700" />
+                  <Text style={gl$.sectionTitle}>TOP HUNTERS</Text>
+                </View>
+                <View style={gl$.giantsRow}>
+                  {top3.map((item) => {
+                    const medal = (MEDAL_COLORS as any)[item.rank];
+                    // For THE HUNT, use hunt_flux as the display XP
+                    const huntItem = { ...item, xp: item.hunt_flux || item.xp, id: item.user_id || item.id };
+                    return medal ? <GiantCard key={huntItem.id} item={huntItem} medal={medal} /> : null;
+                  })}
+                </View>
+              </>
+            )}
+
             {/* Rest of leaderboard */}
             {activeTab === 'crews' ? (
               <>
@@ -491,6 +532,23 @@ export function HallOfKore() {
                   <Text style={gl$.sectionTitle}>CREW RANKING</Text>
                 </View>
                 {rest.map((item, i) => <CrewRow key={item.id} item={item} index={i} />)}
+              </>
+            ) : activeTab === 'the_hunt' ? (
+              <>
+                {rest.length > 0 && (
+                  <View style={gl$.sectionRow}>
+                    <Ionicons name="flash" size={14} color="#00FF87" />
+                    <Text style={gl$.sectionTitle}>SYSTEM TEMPLATES ONLY</Text>
+                  </View>
+                )}
+                {rest.map((item, i) => {
+                  const huntItem = { ...item, xp: item.hunt_flux || item.xp, id: item.user_id || item.id };
+                  return (
+                    <View key={huntItem.id} style={verifiedOnly && item.is_nexus_certified ? gl$.certifiedRow : undefined}>
+                      <LeaderRow item={huntItem} index={i} onChallenge={undefined} />
+                    </View>
+                  );
+                })}
               </>
             ) : (
               <>

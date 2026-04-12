@@ -8491,7 +8491,182 @@ async def get_my_rank(
     }
 
 
-def calculate_crew_weighted_average(members: list) -> dict:
+# ═══════════════════════════════════════════════════════════════
+# THE HUNT — System Templates Leaderboard (Build 36 P0)
+# Only results from system_templates count. Top 50.
+# ═══════════════════════════════════════════════════════════════
+
+@api_router.get("/leaderboard/the-hunt")
+async def get_the_hunt_leaderboard(
+    limit: int = 50,
+    time_range: str = "all",  # all | weekly | monthly
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    THE HUNT — Official ARENAKORE leaderboard.
+    Ranks athletes EXCLUSIVELY by total K-Flux earned on System Templates.
+    No generic XP, no social points — only certified performance counts.
+    """
+    # Get all system_template codes
+    sys_templates = await db.system_templates.find({}, {"code": 1, "_id": 1}).to_list(100)
+    sys_template_ids = [str(t["_id"]) for t in sys_templates]
+    sys_template_codes = [t["code"] for t in sys_templates]
+
+    # Build time filter
+    time_filter = {}
+    if time_range == "weekly":
+        time_filter["completed_at"] = {"$gte": datetime.now(timezone.utc) - timedelta(days=7)}
+    elif time_range == "monthly":
+        time_filter["completed_at"] = {"$gte": datetime.now(timezone.utc) - timedelta(days=30)}
+
+    # Aggregate from activity_log: sum flux earned on system templates per user
+    # Match: template_id in system_template IDs, OR template_code in system_template codes
+    match_stage = {
+        "$or": [
+            {"template_id": {"$in": sys_template_ids}},
+            {"template_code": {"$in": sys_template_codes}},
+            {"source": "system_template"},
+        ],
+        **time_filter,
+    }
+
+    pipeline = [
+        {"$match": match_stage},
+        {"$group": {
+            "_id": "$user_id",
+            "total_flux": {"$sum": {"$ifNull": ["$flux_earned", {"$ifNull": ["$k_flux_earned", 0]}]}},
+            "sessions_count": {"$sum": 1},
+            "best_score": {"$max": {"$ifNull": ["$result.performance_score", {"$ifNull": ["$result.score", 0]}]}},
+            "avg_score": {"$avg": {"$ifNull": ["$result.performance_score", {"$ifNull": ["$result.score", 0]}]}},
+            "last_session": {"$max": "$completed_at"},
+        }},
+        {"$sort": {"total_flux": -1, "best_score": -1}},
+        {"$limit": limit},
+    ]
+
+    results = []
+    async for entry in db.activity_log.aggregate(pipeline):
+        user_id = entry["_id"]
+        user = await db.users.find_one({"_id": user_id})
+        if not user:
+            continue
+
+        is_nexus = bool(user.get("baseline_scanned_at") and user.get("dna"))
+        total_f = user.get("ak_credits", 0) or 0
+        results.append({
+            "user_id": str(user_id),
+            "username": user.get("username", "Atleta"),
+            "avatar_color": user.get("avatar_color", "#00F2FF"),
+            "preferred_sport": user.get("preferred_sport") or user.get("sport"),
+            "profile_picture": user.get("profile_picture"),
+            "is_nexus_certified": is_nexus,
+            "is_admin": user.get("is_admin", False),
+            "is_founder": user.get("is_founder", False),
+            "hunt_flux": entry.get("total_flux", 0),
+            "sessions_count": entry.get("sessions_count", 0),
+            "best_score": round(entry.get("best_score", 0) or 0, 1),
+            "avg_score": round(entry.get("avg_score", 0) or 0, 1),
+            "last_session": entry.get("last_session").isoformat() if entry.get("last_session") else None,
+            "total_flux": total_f,
+            "level": _compute_dynamic_level(total_f),
+        })
+
+    # Assign ranks
+    for i, r in enumerate(results):
+        r["rank"] = i + 1
+
+    # Also check where current user stands
+    my_hunt_entry = None
+    for r in results:
+        if r["user_id"] == str(current_user["_id"]):
+            my_hunt_entry = r
+            break
+
+    # If user not in top list, calculate their rank separately
+    if not my_hunt_entry:
+        my_pipeline = [
+            {"$match": {"user_id": current_user["_id"], **match_stage}},
+            {"$group": {
+                "_id": "$user_id",
+                "total_flux": {"$sum": {"$ifNull": ["$flux_earned", {"$ifNull": ["$k_flux_earned", 0]}]}},
+                "sessions_count": {"$sum": 1},
+            }},
+        ]
+        async for entry in db.activity_log.aggregate(my_pipeline):
+            my_flux = entry.get("total_flux", 0)
+            # Count how many users have more hunt_flux
+            higher_count = 0
+            for r in results:
+                if r["hunt_flux"] > my_flux:
+                    higher_count += 1
+            my_hunt_entry = {
+                "user_id": str(current_user["_id"]),
+                "username": current_user.get("username", "Tu"),
+                "hunt_flux": my_flux,
+                "sessions_count": entry.get("sessions_count", 0),
+                "rank": higher_count + 1,
+            }
+
+    return {
+        "leaderboard": results,
+        "total_participants": len(results),
+        "my_position": my_hunt_entry,
+        "system_templates_count": len(sys_template_ids),
+        "time_range": time_range,
+    }
+
+
+@api_router.get("/leaderboard/the-hunt/my-rank")
+async def get_my_hunt_rank(current_user: dict = Depends(get_current_user)):
+    """Get current user's rank in The Hunt."""
+    sys_templates = await db.system_templates.find({}, {"_id": 1, "code": 1}).to_list(100)
+    sys_ids = [str(t["_id"]) for t in sys_templates]
+    sys_codes = [t["code"] for t in sys_templates]
+
+    match = {"$or": [
+        {"template_id": {"$in": sys_ids}},
+        {"template_code": {"$in": sys_codes}},
+        {"source": "system_template"},
+    ]}
+
+    # My total hunt flux
+    my_pipeline = [
+        {"$match": {"user_id": current_user["_id"], **match}},
+        {"$group": {"_id": None, "total": {"$sum": {"$ifNull": ["$flux_earned", {"$ifNull": ["$k_flux_earned", 0]}]}}, "count": {"$sum": 1}}},
+    ]
+    my_flux = 0
+    my_sessions = 0
+    async for doc in db.activity_log.aggregate(my_pipeline):
+        my_flux = doc.get("total", 0)
+        my_sessions = doc.get("count", 0)
+
+    # Count users with higher hunt flux
+    all_pipeline = [
+        {"$match": match},
+        {"$group": {"_id": "$user_id", "total": {"$sum": {"$ifNull": ["$flux_earned", {"$ifNull": ["$k_flux_earned", 0]}]}}}},
+        {"$match": {"total": {"$gt": my_flux}}},
+        {"$count": "above"},
+    ]
+    above = 0
+    async for doc in db.activity_log.aggregate(all_pipeline):
+        above = doc.get("above", 0)
+
+    total_pipeline = [
+        {"$match": match},
+        {"$group": {"_id": "$user_id"}},
+        {"$count": "total"},
+    ]
+    total = 0
+    async for doc in db.activity_log.aggregate(total_pipeline):
+        total = doc.get("total", 0)
+
+    return {
+        "rank": above + 1 if my_sessions > 0 else 0,
+        "total": total,
+        "hunt_flux": my_flux,
+        "sessions": my_sessions,
+        "is_ranked": my_sessions > 0,
+    }
     """Calculate weighted average DNA for a crew based on member XP weights"""
     if not members:
         return {"velocita": 0, "forza": 0, "resistenza": 0, "agilita": 0, "tecnica": 0, "potenza": 0}
