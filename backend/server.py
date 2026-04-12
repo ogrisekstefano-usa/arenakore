@@ -40,6 +40,21 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 7
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Fix passlib/bcrypt compatibility: newer bcrypt (>=4.1) removed __about__
+# Ensure verify works even with version mismatch
+def _safe_verify_password(plain: str, hashed: str) -> bool:
+    """Verify password with fallback for bcrypt version issues."""
+    try:
+        return pwd_context.verify(plain, hashed)
+    except Exception as e:
+        logging.warning(f"[AUTH] passlib verify failed ({e}), trying direct bcrypt...")
+        try:
+            import bcrypt
+            return bcrypt.checkpw(plain.encode('utf-8'), hashed.encode('utf-8'))
+        except Exception as e2:
+            logging.error(f"[AUTH] bcrypt fallback also failed: {e2}")
+            return False
 security = HTTPBearer()
 
 app = FastAPI()
@@ -62,7 +77,7 @@ api_router = APIRouter(prefix="/api")
 # ═══ HEALTH CHECK ENDPOINT ═══
 @api_router.get("/health")
 async def health_check():
-    return {"status": "ok", "service": "arenakore-api", "version": "3.6.0"}
+    return {"status": "ok", "service": "arenakore-api", "version": "3.7.1"}
 
 
 def hash_password(password: str) -> str:
@@ -70,7 +85,7 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return _safe_verify_password(plain, hashed)
 
 
 def create_token(user_id: str) -> str:
@@ -697,10 +712,19 @@ def user_to_response(user: dict) -> dict:
     # Dynamic K-Flux = ak_credits (primary) or xp (fallback)
     k_flux = user.get("ak_credits", 0) or user.get("xp", 0) or 0
     dynamic_level = _compute_dynamic_level(k_flux)
+    # Safe baseline_scanned_at serialization (handles datetime, string, or None)
+    bsa = user.get("baseline_scanned_at")
+    if bsa is not None:
+        try:
+            bsa_str = bsa.isoformat() if hasattr(bsa, 'isoformat') else str(bsa)
+        except Exception:
+            bsa_str = str(bsa) if bsa else None
+    else:
+        bsa_str = None
     return {
         "id": str(user["_id"]),
-        "username": user["username"],
-        "email": user["email"],
+        "username": user.get("username", ""),
+        "email": user.get("email", ""),
         "first_name": user.get("first_name", ""),
         "last_name": user.get("last_name", ""),
         "language": user.get("language", "IT"),
@@ -712,7 +736,7 @@ def user_to_response(user: dict) -> dict:
         "level": dynamic_level,
         "onboarding_completed": user.get("onboarding_completed", False),
         "is_nexus_certified": is_nexus_certified,
-        "baseline_scanned_at": user.get("baseline_scanned_at").isoformat() if user.get("baseline_scanned_at") else None,
+        "baseline_scanned_at": bsa_str,
         "scout_visible": user.get("scout_visible", True),
         "dna": user.get("dna"),
         "avatar_color": user.get("avatar_color", "#00E5FF"),
@@ -810,11 +834,20 @@ async def register(data: UserRegister):
 
 @api_router.post("/auth/login")
 async def login(data: UserLogin):
-    user = await db.users.find_one({"email": data.email.strip().lower()})
-    if not user or not verify_password(data.password, user["password_hash"]):
-        raise HTTPException(status_code=401, detail="Credenziali non valide")
-    token = create_token(str(user["_id"]))
-    return {"token": token, "user": user_to_response(user)}
+    try:
+        user = await db.users.find_one({"email": data.email.strip().lower()})
+        if not user:
+            raise HTTPException(status_code=401, detail="Credenziali non valide")
+        pw_hash = user.get("password_hash") or user.get("password", "")
+        if not pw_hash or not verify_password(data.password, pw_hash):
+            raise HTTPException(status_code=401, detail="Credenziali non valide")
+        token = create_token(str(user["_id"]))
+        return {"token": token, "user": user_to_response(user)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"[LOGIN] Exception for {data.email}: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=500, detail=f"Errore interno login: {type(e).__name__}: {str(e)}")
 
 
 # =====================================================================
