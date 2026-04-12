@@ -4142,12 +4142,10 @@ expo-image-picker@~17.0.10:
   dependencies:
     expo-image-loader "~6.0.0"
 
-expo-image@55.0.8:
-  version "55.0.8"
-  resolved "https://registry.yarnpkg.com/expo-image/-/expo-image-55.0.8.tgz#0b23054041508e70948bd4ab5d3f6bdd71c53989"
-  integrity sha512-fNdvdYVcGn3g1x6o5AXHKzk4xX8U6rg2W9vFdE1pQO80kWCNReh003ypqSrGy4dD+zA8FtZjrNF3oMDGnPpIGQ==
-  dependencies:
-    sf-symbols-typescript "^2.2.0"
+expo-image@~3.0.11:
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/expo-image/-/expo-image-3.0.11.tgz#54195565dc710e632c10414c3609deebb7149ac5"
+  integrity sha512-4TudfUCLgYgENv+f48omnU8tjS2S0Pd9EaON5/s1ZUBRwZ7K8acEr4NfvLPSaeXvxW24iLAiyQ7sV7BXQH3RoA==
 
 expo-keep-awake@~15.0.8:
   version "15.0.8"
@@ -7231,7 +7229,7 @@ sf-symbols-typescript@^2.0.0:
   resolved "https://registry.npmjs.org/sf-symbols-typescript/-/sf-symbols-typescript-2.1.0.tgz"
   integrity sha512-ezT7gu/SHTPIOEEoG6TF+O0m5eewl0ZDAO4AtdBi5HjsrUI6JdCG17+Q8+aKp0heM06wZKApRCn5olNbs0Wb/A==
 
-sf-symbols-typescript@^2.1.0, sf-symbols-typescript@^2.2.0:
+sf-symbols-typescript@^2.1.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/sf-symbols-typescript/-/sf-symbols-typescript-2.2.0.tgz#926d6e0715e3d8784cadf7658431e36581254208"
   integrity sha512-TPbeg0b7ylrswdGCji8FRGFAKuqbpQlLbL8SOle3j1iHSs5Ob5mhvMAxWN2UItOjgALAB5Zp3fmMfj8mbWvXKw==
