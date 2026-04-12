@@ -11,3 +11,4 @@ apscheduler
 qrcode[pil]
 aiofiles
 aiosmtplib
+reportlab
