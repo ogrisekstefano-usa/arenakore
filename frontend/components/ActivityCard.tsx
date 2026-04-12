@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeIn, Layout } from 'react-native-reanimated';
 import { NexusEvidenceBox } from './NexusEvidenceBox';
 import { TelemetryPanel } from './TelemetryPanel';
+import { ShareSheet } from './ShareSheet';
 
 const CYAN = '#00E5FF';
 const GOLD = '#FFD700';
@@ -78,6 +79,7 @@ function formatTime(isoString?: string): string {
 
 export function ActivityCard({ activity, index }: ActivityCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const config = TIPO_CONFIG[activity.tipo] || TIPO_CONFIG.ALLENAMENTO;
   const fluxColor = FLUX_COLORS[activity.flux_color] || GREEN;
   const resultValue = activity.result?.value || activity.kpi?.primary_result?.value;
@@ -196,8 +198,25 @@ export function ActivityCard({ activity, index }: ActivityCardProps) {
                 )}
               </View>
             )}
+
+            {/* ═══ CONDIVIDI BUTTON ═══ */}
+            <TouchableOpacity
+              style={[s.shareBtn, { borderColor: fluxColor + '25', backgroundColor: fluxColor + '08' }]}
+              activeOpacity={0.8}
+              onPress={() => setShowShare(true)}
+            >
+              <Ionicons name="share-social" size={14} color={fluxColor} />
+              <Text style={[s.shareBtnText, { color: fluxColor }]}>CONDIVIDI RISULTATO</Text>
+            </TouchableOpacity>
           </Animated.View>
         )}
+
+        {/* Share Sheet Modal */}
+        <ShareSheet
+          visible={showShare}
+          onClose={() => setShowShare(false)}
+          activityId={activity.id}
+        />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -288,4 +307,12 @@ const s = StyleSheet.create({
   kpiItem: { alignItems: 'center', gap: 4 },
   kpiLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 8, fontWeight: '900', letterSpacing: 1.5 },
   kpiValue: { fontSize: 18, fontWeight: '900' },
+
+  // Share button
+  shareBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, paddingVertical: 12, borderRadius: 12,
+    borderWidth: 1, marginTop: 4,
+  },
+  shareBtnText: { fontSize: 11, fontWeight: '900', letterSpacing: 2 },
 });

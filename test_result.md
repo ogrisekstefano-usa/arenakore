@@ -2493,6 +2493,78 @@ agent_communication:
           agent: "testing"
           comment: "COMPREHENSIVE TEST PASSED: All 9 activity log test scenarios passed successfully (100% SUCCESS RATE). ✅ Admin login with ogrisek.stefano@gmail.com / Founder@KORE2026! ✅ POST /api/activity/log - Create ALLENAMENTO activity (25 reps, 150 flux, cyan color, telemetry data) ✅ POST /api/activity/log - Create NEXUS certified activity (30 reps, 250 flux, gold color, 3 screenshots, full telemetry) ✅ GET /api/activity/log - Full activity log with stats aggregation ✅ GET /api/activity/log?nexus_only=true - NEXUS filter working correctly ✅ GET /api/activity/log?tipo=ALLENAMENTO - Tipo filter working correctly ✅ GET /api/activity/stats - Activity stats with total sessions, flux, duration ✅ GET /api/activity/log/{record_id} - Single activity detail retrieval ✅ K-Flux color coding verification (>=200=gold, >=100=cyan, <100=green). All activity log features are production-ready: media screenshots storage/retrieval, telemetry data persistence, pagination, filtering, and stats aggregation all functional."
 
+  - task: "ARENAKORE Social Engine - Admin Login API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/auth/login with ogrisek.stefano@gmail.com / Founder@KORE2026! returns 200 with valid token and user data. Authentication working correctly for social engine endpoints."
+
+  - task: "ARENAKORE Social Engine - Activity Log API"
+    implemented: true
+    working: true
+    file: "routes/activity.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/activity/log returns 200 with records array containing activity data. Found activity records with proper structure including id, tipo, flux_earned, exercise_type, disciplina fields. Activity log endpoint working correctly."
+
+  - task: "ARENAKORE Social Engine - Generate Share Card API"
+    implemented: true
+    working: true
+    file: "routes/social.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/social/generate-share creates social share card with all required fields (share_id, deep_link, qr_url, badge, user, activity). Badge color logic working correctly: gold for >=200 flux, cyan for >=100 flux, green for <100 flux. Deep link format contains share_id. QR code generation functional."
+
+  - task: "ARENAKORE Social Engine - Public Card API"
+    implemented: true
+    working: true
+    file: "routes/social.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/social/card/{share_id} (PUBLIC, NO AUTH REQUIRED) returns 200 with card data and views >= 1. Public endpoint accessible without authentication as expected. Views increment correctly on each access."
+
+  - task: "ARENAKORE Social Engine - Track CTA Tap API"
+    implemented: true
+    working: true
+    file: "routes/social.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/social/card/{share_id}/tap (NO AUTH REQUIRED) returns 200 with status='tracked'. CTA tap tracking working correctly without authentication. Analytics tracking functional."
+
+  - task: "ARENAKORE Social Engine - My Shares API"
+    implemented: true
+    working: true
+    file: "routes/social.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/social/my-shares (WITH AUTH TOKEN) returns 200 with user's shares list. Created shares appear in the list with correct views and taps count. Analytics data (views, taps) properly tracked and displayed."
+
 test_plan:
   current_focus: []
   stuck_tasks: []
@@ -2756,19 +2828,19 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "37.0"
+  version: "37.1"
   test_sequence: 37
   run_ui: false
 
-test_plan: "Test the new Activity Log (Archivio Storico) backend endpoints. (1) Login with ogrisek.stefano@gmail.com / Founder@KORE2026! (2) POST /api/activity/log — Create an activity log entry with tipo=ALLENAMENTO, template_name='Test Squat', disciplina='Fitness', exercise_type='squat', result={'type':'REPS','value':25,'unit':'rep'}, flux_earned=150, duration_seconds=120, nexus_verified=false, telemetry={'heart_rate_avg':145,'time_under_tension':85,'rep_regularity':78} (3) POST /api/activity/log — Create a NEXUS certified entry with nexus_verified=true, is_certified=true, tipo=SFIDA_UGC, template_name='NEXUS Bio Sync', flux_earned=250, media={'screenshots':['dGVzdDE=','dGVzdDI=','dGVzdDM=']} (4) GET /api/activity/log — Retrieve the full activity log (5) GET /api/activity/log?nexus_only=true — Filter to only NEXUS certified (6) GET /api/activity/log?tipo=ALLENAMENTO — Filter by tipo (7) GET /api/activity/stats — Get activity stats (8) GET /api/activity/log/{record_id} — Get single activity detail using the ID from step 2"
+test_plan: "Test the Social Engine endpoints. (1) Login with ogrisek.stefano@gmail.com / Founder@KORE2026! (2) First get an activity_id by calling GET /api/activity/log (3) POST /api/social/generate-share with the first activity_id, card_type=social_card, include_qr=true (4) Verify response has share_id, deep_link, qr_url, badge with color, user info, activity data (5) GET /api/social/card/{share_id} — Public endpoint NO auth needed, verify returns card data and increments views (6) POST /api/social/card/{share_id}/tap — Track a CTA tap (7) GET /api/social/my-shares — Verify the share appears with views and taps"
 
 agent_communication:
     - agent: "main"
-      message: "Build 37: Implemented Archivio Storico & NEXUS Gallery feature. New backend route: routes/activity.py with 4 endpoints (POST /api/activity/log, GET /api/activity/log, GET /api/activity/log/{id}, GET /api/activity/stats). New frontend components: ActivityCard.tsx, NexusEvidenceBox.tsx, TelemetryPanel.tsx. New screen: activity-log.tsx. Updated KORE tab with Archivio Storico link. Credentials: ogrisek.stefano@gmail.com / Founder@KORE2026! — Backend URL: https://arena-scan-lab.preview.emergentagent.com"
+      message: "Build 37.1: Social Engine. Backend routes/social.py with 4 endpoints. Frontend SocialCardOverlay.tsx + ShareSheet.tsx. Integrated share button in ActivityCard. Credentials: ogrisek.stefano@gmail.com / Founder@KORE2026!"
     - agent: "testing"
       message: "VIDEO PROOF API TESTING COMPLETED: ALL 3 NEW ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test sequence executed as specified in review request: ✅ Step 1: Admin login successful with ogrisek.stefano@gmail.com / Founder@KORE2026! ✅ Step 2: Challenge creation with POST /api/challenge/create (exercise_type=squat, tags=[POWER], validation_mode=MANUAL_ENTRY) ✅ Step 3: Challenge completion with POST /api/challenges/complete (25 reps, 60s duration, XP earned=167) ✅ Step 4: Video upload with POST /api/challenge/upload-video (100KB test file, status=PROOF_PENDING, proof_type=VIDEO_TIME_CHECK) ✅ Step 5: Video info retrieval with GET /api/challenge/{id}/video (video_url returned, upload timestamp verified) ✅ Step 6: Pending proof challenges with GET /api/challenges/pending-proof (5 challenges returned) ✅ Error case testing: Wrong file type correctly rejected (400 error), invalid challenge_id causes 500 error (acceptable ObjectId validation behavior). All Video Proof API features are production-ready. File upload, metadata storage, and retrieval all functional."
     - agent: "testing"
       message: "ARENAKORE TEMPLATE SYSTEM TESTING COMPLETED: ALL 10 CRITICAL TEMPLATE ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test flow executed as specified in review request: ✅ Admin login with ogrisek.stefano@gmail.com / Founder@KORE2026! ✅ System Templates API - returns 10 system templates with all required fields (code, name, discipline, requires_nexus_bio, kpi_metrics, certified_by, source='system') ✅ Base Templates API - returns 6 base templates with requires_nexus_bio=false and source='base' ✅ All Templates Unified API - returns {system: 10, base: 6, coach: 2, total: 18} structure ✅ Bio Check (System Template) - SYS_BIO_SYNC correctly returns allowed=true with scan status and countdown ✅ Bio Check (Base Template) - BASE_CORDA_1MIN correctly returns allowed=true, requires_nexus_bio=false ✅ Coach Onboarding - successfully completes with status='onboarding_completed' and full coach_data object ✅ Coach Profile - returns has_coach_profile=true, onboarding_completed=true with coach_data ✅ Create Coach Template - successfully creates template with source='coach', video_url, and kpi_metrics ✅ My Coach Templates - returns 2 coach templates created. FIXED: Bio Check endpoints had MongoDB collection boolean check bug (changed 'if not coll:' to 'if coll is None:'). All template system features are production-ready and working as specified."
     - agent: "testing"
-      message: "ARENAKORE ACTIVITY LOG (ARCHIVIO STORICO) TESTING COMPLETED: ALL 9 BACKEND ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test sequence executed as specified in review request: ✅ Step 1: Admin login successful with ogrisek.stefano@gmail.com / Founder@KORE2026! ✅ Step 2: POST /api/activity/log - Create ALLENAMENTO activity (tipo=ALLENAMENTO, 25 reps, 150 flux earned, cyan color, telemetry with heart_rate_avg=145, time_under_tension=85, rep_regularity=78) ✅ Step 3: POST /api/activity/log - Create NEXUS certified activity (tipo=SFIDA_UGC, 30 reps, 250 flux earned, gold color, nexus_verified=true, is_certified=true, 3 screenshots stored, complete telemetry including heart_rate_peak=185, calories_burned=280) ✅ Step 4: GET /api/activity/log - Full activity log retrieval with 2+ entries, stats aggregation working ✅ Step 5: GET /api/activity/log?nexus_only=true - NEXUS filter returns only certified activities ✅ Step 6: GET /api/activity/log?tipo=ALLENAMENTO - Tipo filter working correctly ✅ Step 7: GET /api/activity/stats - Activity stats with total_sessions, total_flux, nexus_verified_count, weekly trends ✅ Step 8: GET /api/activity/log/{record_id} - Single activity detail retrieval with full metadata ✅ K-Flux color coding verification (flux_earned >= 200 = gold, >= 100 = cyan, < 100 = green). All activity log features are production-ready: media screenshots storage/retrieval, telemetry data persistence, pagination (limit/offset), filtering, and stats aggregation all functional."
+      message: "ARENAKORE SOCIAL ENGINE TESTING COMPLETED: ALL 6 CRITICAL SOCIAL ENGINE ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test sequence executed as specified in review request: ✅ Step 1: Admin login successful with ogrisek.stefano@gmail.com / Founder@KORE2026! ✅ Step 2: GET /api/activity/log - Activity log retrieval working correctly, found activity records with proper structure (id, tipo, flux_earned, exercise_type, disciplina) ✅ Step 3: POST /api/social/generate-share - Social share card creation working correctly with all required fields (share_id, deep_link, qr_url, badge, user, activity). Badge color logic verified: gold for >=200 flux (250 flux → gold), cyan for >=100 flux (150 flux → cyan), green for <100 flux. Deep link format contains share_id correctly ✅ Step 4: GET /api/social/card/{share_id} - Public endpoint (NO AUTH REQUIRED) working correctly, returns card data with views >= 1, views increment on each access ✅ Step 5: POST /api/social/card/{share_id}/tap - CTA tap tracking (NO AUTH REQUIRED) working correctly, returns status='tracked' ✅ Step 6: GET /api/social/my-shares - My shares endpoint (WITH AUTH TOKEN) working correctly, created shares appear in list with accurate views and taps count. All social engine features are production-ready: share card generation, public card access, analytics tracking (views/taps), K-Flux tier badge colors, and deep linking all functional."
 
