@@ -80,6 +80,53 @@ async def health_check():
     return {"status": "ok", "service": "arenakore-api", "version": "3.7.1"}
 
 
+# ═══ DEBUG: Login diagnostics (temporary — remove in production) ═══
+@api_router.post("/debug/login-test")
+async def debug_login_test(data: dict = Body(...)):
+    """Temporary diagnostic endpoint to debug login failures on Render."""
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
+    steps = []
+    try:
+        # Step 1: Find user
+        user = await db.users.find_one({"email": email})
+        if not user:
+            return {"error": "User not found", "email": email, "steps": steps}
+        steps.append(f"User found: {user.get('username', 'no-username')}")
+        
+        # Step 2: Check password_hash field
+        pw_hash = user.get("password_hash") or user.get("password", "")
+        steps.append(f"Hash field: {'password_hash' if user.get('password_hash') else 'password' if user.get('password') else 'MISSING'}")
+        steps.append(f"Hash prefix: {pw_hash[:20]}..." if pw_hash else "Hash: EMPTY")
+        
+        # Step 3: Verify password
+        try:
+            result = verify_password(password, pw_hash)
+            steps.append(f"Password verify: {result}")
+        except Exception as e:
+            steps.append(f"Password verify EXCEPTION: {type(e).__name__}: {e}")
+        
+        # Step 4: Try user_to_response
+        try:
+            resp = user_to_response(user)
+            steps.append(f"user_to_response: OK (keys={len(resp)})")
+        except Exception as e:
+            steps.append(f"user_to_response EXCEPTION: {type(e).__name__}: {e}")
+        
+        # Step 5: bcrypt version info
+        try:
+            import bcrypt
+            steps.append(f"bcrypt version: {bcrypt.__version__}")
+        except Exception as e:
+            steps.append(f"bcrypt import: {e}")
+        
+        return {"steps": steps}
+    except Exception as e:
+        steps.append(f"FATAL: {type(e).__name__}: {e}")
+        return {"steps": steps}
+
+
+
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
