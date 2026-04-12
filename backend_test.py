@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 """
 ARENAKORE Backend API Testing Script
-Testing specific endpoints as requested in the review request
+Tests the specific template endpoints mentioned in the review request
 """
 
 import requests
 import json
 import sys
-from typing import Dict, Any, Optional
+from datetime import datetime
 
-# Base URL from the review request
+# Configuration
 BASE_URL = "https://arena-scan-lab.preview.emergentagent.com/api"
-
-# Test credentials from review request
 ADMIN_EMAIL = "ogrisek.stefano@gmail.com"
 ADMIN_PASSWORD = "Founder@KORE2026!"
 
@@ -20,256 +18,360 @@ class ArenakoreAPITester:
     def __init__(self):
         self.base_url = BASE_URL
         self.token = None
+        self.session = requests.Session()
         self.test_results = []
         
-    def log_test(self, test_name: str, status_code: int, response_data: Any, success: bool = True, error: str = None):
+    def log_test(self, test_name, success, status_code, response_data, error_msg=None):
         """Log test results"""
         result = {
-            "test": test_name,
-            "status_code": status_code,
-            "success": success,
-            "response": response_data,
-            "error": error
+            'test': test_name,
+            'success': success,
+            'status_code': status_code,
+            'response': response_data,
+            'error': error_msg,
+            'timestamp': datetime.now().isoformat()
         }
         self.test_results.append(result)
         
         status = "✅ PASS" if success else "❌ FAIL"
         print(f"{status} {test_name} - Status: {status_code}")
-        if error:
-            print(f"   Error: {error}")
-        if isinstance(response_data, dict) and len(str(response_data)) < 200:
-            print(f"   Response: {response_data}")
-        elif response_data:
-            print(f"   Response: {str(response_data)[:100]}...")
+        if error_msg:
+            print(f"   Error: {error_msg}")
+        if response_data and isinstance(response_data, dict):
+            if 'message' in response_data:
+                print(f"   Message: {response_data['message']}")
         print()
-        
-    def test_health_check(self):
-        """Test 1: Health Check - GET /api/health"""
-        try:
-            response = requests.get(f"{self.base_url}/health", timeout=10)
-            expected_response = {"status": "ok"}
-            
-            success = (response.status_code == 200 and 
-                      response.json().get("status") == "ok")
-            
-            self.log_test("Health Check", response.status_code, response.json(), success)
-            return success
-            
-        except Exception as e:
-            self.log_test("Health Check", 0, None, False, str(e))
-            return False
-    
+
     def test_login(self):
-        """Test 2: Login - POST /api/auth/login"""
-        try:
-            login_data = {
-                "email": ADMIN_EMAIL,
-                "password": ADMIN_PASSWORD
-            }
-            
-            response = requests.post(f"{self.base_url}/auth/login", 
-                                   json=login_data, timeout=10)
-            
-            if response.status_code == 200:
-                response_data = response.json()
-                if "token" in response_data:
-                    self.token = response_data["token"]
-                    self.log_test("Admin Login", response.status_code, 
-                                {"token": "***", "user": response_data.get("user", {})}, True)
-                    return True
-                else:
-                    self.log_test("Admin Login", response.status_code, response_data, False, "No token in response")
-                    return False
-            else:
-                self.log_test("Admin Login", response.status_code, response.json(), False)
-                return False
-                
-        except Exception as e:
-            self.log_test("Admin Login", 0, None, False, str(e))
-            return False
-    
-    def test_flux_balance(self):
-        """Test 3: Flux Balance - GET /api/flux/balance (new endpoint)"""
-        if not self.token:
-            self.log_test("Flux Balance", 0, None, False, "No auth token available")
-            return False
-            
-        try:
-            headers = {"Authorization": f"Bearer {self.token}"}
-            response = requests.get(f"{self.base_url}/flux/balance", 
-                                  headers=headers, timeout=10)
-            
-            if response.status_code == 200:
-                response_data = response.json()
-                expected_fields = ["vital", "perform", "team", "total", "level", "k_flux", "progress"]
-                has_all_fields = all(field in response_data for field in expected_fields)
-                
-                self.log_test("Flux Balance", response.status_code, response_data, has_all_fields)
-                return has_all_fields
-            else:
-                self.log_test("Flux Balance", response.status_code, response.json(), False)
-                return False
-                
-        except Exception as e:
-            self.log_test("Flux Balance", 0, None, False, str(e))
-            return False
-    
-    def test_live_stats(self):
-        """Test 4: Live Stats - GET /api/stats/live (new endpoint)"""
-        if not self.token:
-            self.log_test("Live Stats", 0, None, False, "No auth token available")
-            return False
-            
-        try:
-            headers = {"Authorization": f"Bearer {self.token}"}
-            response = requests.get(f"{self.base_url}/stats/live", 
-                                  headers=headers, timeout=10)
-            
-            if response.status_code == 200:
-                response_data = response.json()
-                expected_fields = ["kore_attivi", "sessioni_oggi", "record_battuti", "sfide_attive"]
-                has_all_fields = all(field in response_data for field in expected_fields)
-                
-                self.log_test("Live Stats", response.status_code, response_data, has_all_fields)
-                return has_all_fields
-            else:
-                self.log_test("Live Stats", response.status_code, response.json(), False)
-                return False
-                
-        except Exception as e:
-            self.log_test("Live Stats", 0, None, False, str(e))
-            return False
-    
-    def test_leaderboard(self):
-        """Test 5: Leaderboard - GET /api/leaderboard?type=global&limit=10"""
-        if not self.token:
-            self.log_test("Leaderboard", 0, None, False, "No auth token available")
-            return False
-            
-        try:
-            headers = {"Authorization": f"Bearer {self.token}"}
-            params = {"type": "global", "limit": 10}
-            response = requests.get(f"{self.base_url}/leaderboard", 
-                                  headers=headers, params=params, timeout=10)
-            
-            if response.status_code == 200:
-                response_data = response.json()
-                
-                # Check if response is a list or has a list of users
-                users = response_data if isinstance(response_data, list) else response_data.get("users", [])
-                
-                if users and len(users) > 0:
-                    # Check if each entry has required fields
-                    first_user = users[0]
-                    required_fields = ["flux", "level", "preferred_sport"]
-                    has_required_fields = all(field in first_user for field in required_fields)
-                    
-                    self.log_test("Leaderboard", response.status_code, 
-                                {"users_count": len(users), "first_user_fields": list(first_user.keys())}, 
-                                has_required_fields)
-                    return has_required_fields
-                else:
-                    self.log_test("Leaderboard", response.status_code, response_data, False, "No users in response")
-                    return False
-            else:
-                self.log_test("Leaderboard", response.status_code, response.json(), False)
-                return False
-                
-        except Exception as e:
-            self.log_test("Leaderboard", 0, None, False, str(e))
-            return False
-    
-    def test_my_rank(self):
-        """Test 6: My Rank - GET /api/leaderboard/my-rank"""
-        if not self.token:
-            self.log_test("My Rank", 0, None, False, "No auth token available")
-            return False
-            
-        try:
-            headers = {"Authorization": f"Bearer {self.token}"}
-            response = requests.get(f"{self.base_url}/leaderboard/my-rank", 
-                                  headers=headers, timeout=10)
-            
-            success = response.status_code == 200
-            self.log_test("My Rank", response.status_code, response.json(), success)
-            return success
-                
-        except Exception as e:
-            self.log_test("My Rank", 0, None, False, str(e))
-            return False
-    
-    def test_pvp_challenge_send(self):
-        """Test 7: PvP Challenge Send - POST /api/pvp/challenge (critical fix)"""
-        if not self.token:
-            self.log_test("PvP Challenge Send", 0, None, False, "No auth token available")
-            return False
+        """Test 1: Admin Login"""
+        url = f"{self.base_url}/auth/login"
+        payload = {
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
+        }
         
-        # First, get a list of users from leaderboard to find a valid target
         try:
-            headers = {"Authorization": f"Bearer {self.token}"}
+            response = self.session.post(url, json=payload)
+            data = response.json() if response.content else {}
             
-            # Get leaderboard to find a target user
-            leaderboard_response = requests.get(f"{self.base_url}/leaderboard", 
-                                              headers=headers, params={"type": "global", "limit": 5}, timeout=10)
-            
-            if leaderboard_response.status_code != 200:
-                self.log_test("PvP Challenge Send", 0, None, False, "Could not get leaderboard for target user")
+            if response.status_code == 200 and 'token' in data:
+                self.token = data['token']
+                self.session.headers.update({'Authorization': f'Bearer {self.token}'})
+                self.log_test("Admin Login", True, response.status_code, data)
+                return True
+            else:
+                self.log_test("Admin Login", False, response.status_code, data, "No token received")
                 return False
-            
-            leaderboard_data = leaderboard_response.json()
-            users = leaderboard_data if isinstance(leaderboard_data, list) else leaderboard_data.get("users", [])
-            
-            if not users or len(users) < 2:
-                self.log_test("PvP Challenge Send", 0, None, False, "Not enough users in leaderboard for PvP")
-                return False
-            
-            # Find a target user (not the current user)
-            target_user = None
-            for user in users:
-                if user.get("id") and user.get("username") != "The founder":
-                    target_user = user
-                    break
-            
-            if not target_user:
-                self.log_test("PvP Challenge Send", 0, None, False, "No valid target user found")
-                return False
-            
-            # Now send the PvP challenge - using correct endpoint /api/pvp/challenge
-            challenge_data = {
-                "challenged_user_id": target_user["id"],  # Fixed: use challenged_user_id instead of opponent_id
-                "discipline": "power",
-                "xp_stake": 50  # Fixed: use valid stake value (50, 100, 200, or 500)
-            }
-            
-            response = requests.post(f"{self.base_url}/pvp/challenge", 
-                                   json=challenge_data, headers=headers, timeout=10)
-            
-            # Expect 200 or 201 (NOT 500)
-            success = response.status_code in [200, 201]
-            
-            self.log_test("PvP Challenge Send", response.status_code, 
-                        {"target_user": target_user["username"], "response": response.json()}, success)
-            return success
                 
         except Exception as e:
-            self.log_test("PvP Challenge Send", 0, None, False, str(e))
+            self.log_test("Admin Login", False, 0, {}, str(e))
             return False
-    
+
+    def test_system_templates(self):
+        """Test 2: System Templates API"""
+        url = f"{self.base_url}/templates/v2/system"
+        
+        try:
+            response = self.session.get(url)
+            data = response.json() if response.content else {}
+            
+            success = False
+            error_msg = None
+            
+            if response.status_code == 200:
+                if isinstance(data, list) and len(data) >= 8:
+                    # Check if templates have required fields
+                    sample_template = data[0] if data else {}
+                    required_fields = ['code', 'name', 'discipline', 'requires_nexus_bio', 'kpi_metrics', 'certified_by', 'source']
+                    
+                    if all(field in sample_template for field in required_fields):
+                        if sample_template.get('source') == 'system':
+                            success = True
+                        else:
+                            error_msg = f"Expected source='system', got '{sample_template.get('source')}'"
+                    else:
+                        missing_fields = [f for f in required_fields if f not in sample_template]
+                        error_msg = f"Missing required fields: {missing_fields}"
+                else:
+                    error_msg = f"Expected at least 8 templates, got {len(data) if isinstance(data, list) else 0}"
+            else:
+                error_msg = f"Expected status 200, got {response.status_code}"
+                
+            self.log_test("System Templates", success, response.status_code, data, error_msg)
+            return success
+            
+        except Exception as e:
+            self.log_test("System Templates", False, 0, {}, str(e))
+            return False
+
+    def test_base_templates(self):
+        """Test 3: Base Templates API"""
+        url = f"{self.base_url}/templates/v2/base"
+        
+        try:
+            response = self.session.get(url)
+            data = response.json() if response.content else {}
+            
+            success = False
+            error_msg = None
+            
+            if response.status_code == 200:
+                if isinstance(data, list) and len(data) >= 5:
+                    # Check if templates have required fields
+                    sample_template = data[0] if data else {}
+                    
+                    if sample_template.get('requires_nexus_bio') == False and sample_template.get('source') == 'base':
+                        success = True
+                    else:
+                        error_msg = f"Expected requires_nexus_bio=false and source='base', got requires_nexus_bio={sample_template.get('requires_nexus_bio')}, source='{sample_template.get('source')}'"
+                else:
+                    error_msg = f"Expected at least 5 templates, got {len(data) if isinstance(data, list) else 0}"
+            else:
+                error_msg = f"Expected status 200, got {response.status_code}"
+                
+            self.log_test("Base Templates", success, response.status_code, data, error_msg)
+            return success
+            
+        except Exception as e:
+            self.log_test("Base Templates", False, 0, {}, str(e))
+            return False
+
+    def test_all_templates_unified(self):
+        """Test 4: All Templates Unified API"""
+        url = f"{self.base_url}/templates/v2/all"
+        
+        try:
+            response = self.session.get(url)
+            data = response.json() if response.content else {}
+            
+            success = False
+            error_msg = None
+            
+            if response.status_code == 200:
+                required_keys = ['system', 'base', 'coach', 'total']
+                if all(key in data for key in required_keys):
+                    if isinstance(data['system'], list) and isinstance(data['base'], list) and isinstance(data['coach'], list):
+                        if isinstance(data['total'], int) and data['total'] > 0:
+                            success = True
+                        else:
+                            error_msg = f"Expected total to be positive integer, got {data['total']}"
+                    else:
+                        error_msg = "Expected system, base, and coach to be arrays"
+                else:
+                    missing_keys = [k for k in required_keys if k not in data]
+                    error_msg = f"Missing required keys: {missing_keys}"
+            else:
+                error_msg = f"Expected status 200, got {response.status_code}"
+                
+            self.log_test("All Templates Unified", success, response.status_code, data, error_msg)
+            return success
+            
+        except Exception as e:
+            self.log_test("All Templates Unified", False, 0, {}, str(e))
+            return False
+
+    def test_bio_check_system_template(self):
+        """Test 5: Bio Check for System Template Requiring Bio"""
+        url = f"{self.base_url}/templates/v2/check-bio/SYS_BIO_SYNC?source=system"
+        
+        try:
+            response = self.session.get(url)
+            data = response.json() if response.content else {}
+            
+            success = False
+            error_msg = None
+            
+            if response.status_code == 200:
+                if 'allowed' in data:
+                    # Should return allowed: true/false with scan status and countdown
+                    success = True
+                else:
+                    error_msg = "Missing 'allowed' field in response"
+            else:
+                error_msg = f"Expected status 200, got {response.status_code}"
+                
+            self.log_test("Bio Check (System Template)", success, response.status_code, data, error_msg)
+            return success
+            
+        except Exception as e:
+            self.log_test("Bio Check (System Template)", False, 0, {}, str(e))
+            return False
+
+    def test_bio_check_base_template(self):
+        """Test 6: Bio Check for Base Template NOT Requiring Bio"""
+        url = f"{self.base_url}/templates/v2/check-bio/BASE_CORDA_1MIN?source=base"
+        
+        try:
+            response = self.session.get(url)
+            data = response.json() if response.content else {}
+            
+            success = False
+            error_msg = None
+            
+            if response.status_code == 200:
+                if data.get('allowed') == True and data.get('requires_nexus_bio') == False:
+                    success = True
+                else:
+                    error_msg = f"Expected allowed=true and requires_nexus_bio=false, got allowed={data.get('allowed')}, requires_nexus_bio={data.get('requires_nexus_bio')}"
+            else:
+                error_msg = f"Expected status 200, got {response.status_code}"
+                
+            self.log_test("Bio Check (Base Template)", success, response.status_code, data, error_msg)
+            return success
+            
+        except Exception as e:
+            self.log_test("Bio Check (Base Template)", False, 0, {}, str(e))
+            return False
+
+    def test_coach_onboarding(self):
+        """Test 7: Coach Onboarding"""
+        url = f"{self.base_url}/coach/onboarding"
+        payload = {
+            "professional_bio": "Allenatore certificato con 10 anni di esperienza nel functional fitness e preparazione atletica.",
+            "specialties": ["Functional Training", "HIIT", "Basket Performance"],
+            "certifications": ["CONI Livello 2", "CrossFit L1", "NASM CPT"],
+            "years_experience": 10,
+            "coaching_tier": "premium"
+        }
+        
+        try:
+            response = self.session.post(url, json=payload)
+            data = response.json() if response.content else {}
+            
+            success = False
+            error_msg = None
+            
+            if response.status_code == 200:
+                if data.get('status') == 'onboarding_completed' and 'coach_data' in data:
+                    success = True
+                else:
+                    error_msg = f"Expected status='onboarding_completed' with coach_data, got status='{data.get('status')}'"
+            else:
+                error_msg = f"Expected status 200, got {response.status_code}"
+                
+            self.log_test("Coach Onboarding", success, response.status_code, data, error_msg)
+            return success
+            
+        except Exception as e:
+            self.log_test("Coach Onboarding", False, 0, {}, str(e))
+            return False
+
+    def test_coach_profile(self):
+        """Test 8: Coach Profile"""
+        url = f"{self.base_url}/coach/profile"
+        
+        try:
+            response = self.session.get(url)
+            data = response.json() if response.content else {}
+            
+            success = False
+            error_msg = None
+            
+            if response.status_code == 200:
+                if (data.get('has_coach_profile') == True and 
+                    data.get('onboarding_completed') == True and 
+                    'coach_data' in data):
+                    success = True
+                else:
+                    error_msg = f"Expected has_coach_profile=true, onboarding_completed=true with coach_data"
+            else:
+                error_msg = f"Expected status 200, got {response.status_code}"
+                
+            self.log_test("Coach Profile", success, response.status_code, data, error_msg)
+            return success
+            
+        except Exception as e:
+            self.log_test("Coach Profile", False, 0, {}, str(e))
+            return False
+
+    def test_create_coach_template(self):
+        """Test 9: Create Coach Template"""
+        url = f"{self.base_url}/templates/v2/coach"
+        payload = {
+            "name": "POWER PROTOCOL ELITE - COACH",
+            "discipline": "Fitness",
+            "exercise_type": "squat",
+            "description": "Protocollo di potenza da coach certificato",
+            "target_reps": 20,
+            "target_time_seconds": 60,
+            "difficulty": "hard",
+            "video_url": "https://youtube.com/watch?v=example",
+            "kpi_metrics": ["reps_per_minute", "peak_force"],
+            "requires_nexus_bio": True,
+            "xp_reward": 200,
+            "tags": ["forza", "power"]
+        }
+        
+        try:
+            response = self.session.post(url, json=payload)
+            data = response.json() if response.content else {}
+            
+            success = False
+            error_msg = None
+            
+            if response.status_code == 200:
+                if (data.get('source') == 'coach' and 
+                    'video_url' in data and 
+                    'kpi_metrics' in data):
+                    success = True
+                else:
+                    error_msg = f"Expected source='coach' with video_url and kpi_metrics fields"
+            else:
+                error_msg = f"Expected status 200, got {response.status_code}"
+                
+            self.log_test("Create Coach Template", success, response.status_code, data, error_msg)
+            return success
+            
+        except Exception as e:
+            self.log_test("Create Coach Template", False, 0, {}, str(e))
+            return False
+
+    def test_my_coach_templates(self):
+        """Test 10: My Coach Templates"""
+        url = f"{self.base_url}/templates/v2/mine"
+        
+        try:
+            response = self.session.get(url)
+            data = response.json() if response.content else {}
+            
+            success = False
+            error_msg = None
+            
+            if response.status_code == 200:
+                if isinstance(data, list) and len(data) >= 1:
+                    success = True
+                else:
+                    error_msg = f"Expected at least 1 template, got {len(data) if isinstance(data, list) else 0}"
+            else:
+                error_msg = f"Expected status 200, got {response.status_code}"
+                
+            self.log_test("My Coach Templates", success, response.status_code, data, error_msg)
+            return success
+            
+        except Exception as e:
+            self.log_test("My Coach Templates", False, 0, {}, str(e))
+            return False
+
     def run_all_tests(self):
         """Run all tests in sequence"""
         print("🚀 Starting ARENAKORE Backend API Tests")
-        print(f"Base URL: {self.base_url}")
-        print(f"Admin Email: {ADMIN_EMAIL}")
+        print(f"📍 Base URL: {self.base_url}")
+        print(f"👤 Admin: {ADMIN_EMAIL}")
         print("=" * 60)
+        print()
         
+        # Test sequence
         tests = [
-            self.test_health_check,
             self.test_login,
-            self.test_flux_balance,
-            self.test_live_stats,
-            self.test_leaderboard,
-            self.test_my_rank,
-            self.test_pvp_challenge_send
+            self.test_system_templates,
+            self.test_base_templates,
+            self.test_all_templates_unified,
+            self.test_bio_check_system_template,
+            self.test_bio_check_base_template,
+            self.test_coach_onboarding,
+            self.test_coach_profile,
+            self.test_create_coach_template,
+            self.test_my_coach_templates
         ]
         
         passed = 0
@@ -283,29 +385,27 @@ class ArenakoreAPITester:
         print(f"📊 Test Results: {passed}/{total} tests passed")
         
         if passed == total:
-            print("🎉 All tests PASSED!")
+            print("🎉 ALL TESTS PASSED! Backend is working correctly.")
         else:
-            print(f"⚠️  {total - passed} tests FAILED")
+            print(f"⚠️  {total - passed} tests failed. Check the details above.")
         
         return passed == total
-    
+
     def print_summary(self):
         """Print detailed test summary"""
-        print("\n📋 DETAILED TEST SUMMARY:")
+        print("\n" + "=" * 60)
+        print("📋 DETAILED TEST SUMMARY")
         print("=" * 60)
         
         for result in self.test_results:
-            status = "✅ PASS" if result["success"] else "❌ FAIL"
+            status = "✅ PASS" if result['success'] else "❌ FAIL"
             print(f"{status} {result['test']}")
-            print(f"   HTTP Status: {result['status_code']}")
-            
-            if result["error"]:
+            print(f"   Status Code: {result['status_code']}")
+            if result['error']:
                 print(f"   Error: {result['error']}")
-            elif result["response"]:
-                if isinstance(result["response"], dict):
-                    print(f"   Response Keys: {list(result['response'].keys())}")
-                else:
-                    print(f"   Response: {str(result['response'])[:100]}...")
+            if result['response'] and isinstance(result['response'], dict):
+                if 'message' in result['response']:
+                    print(f"   Response: {result['response']['message']}")
             print()
 
 if __name__ == "__main__":

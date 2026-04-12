@@ -2469,6 +2469,18 @@ agent_communication:
           agent: "testing"
           comment: "COMPREHENSIVE REGRESSION TEST PASSED: ALL 18 SUPER_ADMIN API endpoints tested successfully (100% SUCCESS RATE). Admin Dashboard returns all KPIs (users=47, gyms=4, scans=6). Inbound CRM: gym lead creation (public), listing, activation with gym_code generation (MILA565), and rejection all working correctly. CMS Content Management: full CRUD cycle (create, read, update, delete) plus public endpoint all functional. Push Notification Engine: campaign creation and history retrieval working correctly. Push Token Registration: Expo token registration successful. RBAC Enforcement: All 4 admin endpoints correctly return 403 for athlete accounts. Cross-check: Existing endpoints (/auth/me, /leaderboard, /kore/stats) remain fully functional. Admin API refactoring from monolithic server.py to modular routes/admin.py completed successfully with zero regressions."
 
+  - task: "ARENAKORE Template System v2 API"
+    implemented: true
+    working: true
+    file: "routes/templates.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: All 10 template endpoints tested successfully. System Templates (10 templates with required fields), Base Templates (6 templates with requires_nexus_bio=false), All Templates Unified (system:10, base:6, coach:2, total:18), Bio Check endpoints working correctly, Coach Onboarding/Profile functional, Create/List Coach Templates working. Fixed MongoDB collection boolean check bug in Bio Check endpoints."
+
 test_plan:
   current_focus: []
   stuck_tasks: []
@@ -2695,4 +2707,6 @@ agent_communication:
       message: "Implemented Video Proof Upload feature. 3 new backend endpoints added to server.py. Frontend VideoProofUploader component created. Need backend API testing first. Credentials: ogrisek.stefano@gmail.com / Founder@KORE2026! — Backend URL: https://arena-scan-lab.preview.emergentagent.com"
     - agent: "testing"
       message: "VIDEO PROOF API TESTING COMPLETED: ALL 3 NEW ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test sequence executed as specified in review request: ✅ Step 1: Admin login successful with ogrisek.stefano@gmail.com / Founder@KORE2026! ✅ Step 2: Challenge creation with POST /api/challenge/create (exercise_type=squat, tags=[POWER], validation_mode=MANUAL_ENTRY) ✅ Step 3: Challenge completion with POST /api/challenges/complete (25 reps, 60s duration, XP earned=167) ✅ Step 4: Video upload with POST /api/challenge/upload-video (100KB test file, status=PROOF_PENDING, proof_type=VIDEO_TIME_CHECK) ✅ Step 5: Video info retrieval with GET /api/challenge/{id}/video (video_url returned, upload timestamp verified) ✅ Step 6: Pending proof challenges with GET /api/challenges/pending-proof (5 challenges returned) ✅ Error case testing: Wrong file type correctly rejected (400 error), invalid challenge_id causes 500 error (acceptable ObjectId validation behavior). All Video Proof API features are production-ready. File upload, metadata storage, and retrieval all functional."
+    - agent: "testing"
+      message: "ARENAKORE TEMPLATE SYSTEM TESTING COMPLETED: ALL 10 CRITICAL TEMPLATE ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test flow executed as specified in review request: ✅ Admin login with ogrisek.stefano@gmail.com / Founder@KORE2026! ✅ System Templates API - returns 10 system templates with all required fields (code, name, discipline, requires_nexus_bio, kpi_metrics, certified_by, source='system') ✅ Base Templates API - returns 6 base templates with requires_nexus_bio=false and source='base' ✅ All Templates Unified API - returns {system: 10, base: 6, coach: 2, total: 18} structure ✅ Bio Check (System Template) - SYS_BIO_SYNC correctly returns allowed=true with scan status and countdown ✅ Bio Check (Base Template) - BASE_CORDA_1MIN correctly returns allowed=true, requires_nexus_bio=false ✅ Coach Onboarding - successfully completes with status='onboarding_completed' and full coach_data object ✅ Coach Profile - returns has_coach_profile=true, onboarding_completed=true with coach_data ✅ Create Coach Template - successfully creates template with source='coach', video_url, and kpi_metrics ✅ My Coach Templates - returns 2 coach templates created. FIXED: Bio Check endpoints had MongoDB collection boolean check bug (changed 'if not coll:' to 'if coll is None:'). All template system features are production-ready and working as specified."
 

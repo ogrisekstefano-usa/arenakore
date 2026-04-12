@@ -2556,6 +2556,10 @@ async def seed_data():
             await db.challenges_engine.insert_many(mock_challenges)
             logger.info("[MockProof] Seeded 3 mock challenges with pending video proof")
 
+    # ═══ SEED TEMPLATE ENGINE v2 — System + Base templates ═══
+    await seed_templates()
+    logger.info("[TemplateEngine v2] Templates seeded/verified")
+
 
 # ====================================
 # CREW MANAGEMENT ENDPOINTS
@@ -12318,9 +12322,13 @@ async def serve_deploy_package():
 # ═══ ROUTE MODULES (Refactored from monolith) ═══
 from routes.stats import router as stats_router
 from routes.flux import router as flux_balance_router
+from routes.templates import router as templates_v2_router, seed_templates
+from routes.coach import router as coach_router
 
 app.include_router(stats_router)
 app.include_router(flux_balance_router)
+app.include_router(templates_v2_router)
+app.include_router(coach_router)
 
 # Re-register router after all endpoints are defined
 app.include_router(api_router)
