@@ -18,7 +18,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 
 let SW = 390; try { SW = Dimensions.get('window').width; } catch(e) {}
 const PENDING_EVENT_KEY = '@arenakore_pending_event';
-const API_BASE = 'https://arenakore-api.onrender.com';
+const API_BASE = 'https://arenakore-api-v2.onrender.com';
 
 export default function Login() {
   const router = useRouter();

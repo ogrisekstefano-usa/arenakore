@@ -46,7 +46,7 @@ export function CoachStudio({ token, myCrews }: { token: string; myCrews: any[] 
       const result = await api.generateWebToken(token);
       const webToken = result.token;
       // Build the authenticated URL for Coach Studio web
-      const baseUrl = 'https://arenakore-api.onrender.com' || 'https://arena-scan-lab.preview.emergentagent.com';
+      const baseUrl = 'https://arenakore-api-v2.onrender.com' || 'https://arena-scan-lab.preview.emergentagent.com';
       const url = `${baseUrl}/coach-studio?otp=${webToken}`;
 
       if (Platform.OS === 'web') {

@@ -37,7 +37,7 @@ export default function DuelSearch() {
       if (city.trim()) params.set('city', city.trim());
       if (discipline !== 'TUTTI') params.set('discipline', discipline.toLowerCase());
       if (status !== 'TUTTI') params.set('status', status.toLowerCase());
-      const res = await fetch(`${'https://arenakore-api.onrender.com'}/api/duel/search?${params}`, {
+      const res = await fetch(`${'https://arenakore-api-v2.onrender.com'}/api/duel/search?${params}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const d = await res.json();
@@ -53,7 +53,7 @@ export default function DuelSearch() {
     if (!token) return;
     setChallenging(opponentId);
     try {
-      const res = await fetch(`${'https://arenakore-api.onrender.com'}/api/pvp/challenge`, {
+      const res = await fetch(`${'https://arenakore-api-v2.onrender.com'}/api/pvp/challenge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ opponent_id: opponentId, exercise_type: discipline !== 'TUTTI' ? discipline.toLowerCase() : 'squat' }),

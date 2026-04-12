@@ -17,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { api } from '../../utils/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { BLERadarScanner } from './BLERadarScanner';
+import { useHealthKit } from '../../hooks/useHealthKit';
 
 // ═══ LIVE BPM DISPLAY — Compact header widget ═══
 export function LiveBPMWidget({ bpm, source }: { bpm: number | null; source?: string }) {
@@ -77,6 +78,9 @@ export default function HealthHub() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState<string | null>(null);
   const [showBLEScanner, setShowBLEScanner] = useState(false);
+
+  // ═══ NATIVE HEALTHKIT HOOK ═══
+  const healthKit = useHealthKit(token);
 
   const loadData = useCallback(async () => {
     if (!token) return;
@@ -151,6 +155,116 @@ export default function HealthHub() {
           </View>
         </View>
 
+        {/* ═══ APPLE HEALTH NATIVE — Live Data Panel ═══ */}
+        {Platform.OS === 'ios' && healthKit.isAvailable && (
+          <Animated.View entering={FadeInDown.delay(50).duration(400)}>
+            <View style={hk.card}>
+              <View style={hk.cardHeader}>
+                <View style={[hk.iconWrap, { backgroundColor: '#FF2D55' }]}>
+                  <Ionicons name="heart" size={16} color="#FFF" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={hk.cardTitle}>APPLE HEALTH</Text>
+                  <Text style={hk.cardSub}>
+                    {healthKit.isAuthorized ? 'CONNESSO · DATI LIVE' : 'PREMI PER ATTIVARE'}
+                  </Text>
+                </View>
+                {healthKit.isAuthorized && (
+                  <View style={[hk.liveDot, { backgroundColor: '#34C759' }]} />
+                )}
+              </View>
+
+              {!healthKit.isAuthorized ? (
+                <TouchableOpacity
+                  style={hk.activateBtn}
+                  onPress={healthKit.initialize}
+                  disabled={healthKit.isLoading}
+                  activeOpacity={0.85}
+                >
+                  {healthKit.isLoading ? (
+                    <ActivityIndicator size="small" color="#FF2D55" />
+                  ) : (
+                    <>
+                      <Ionicons name="shield-checkmark" size={16} color="#FF2D55" />
+                      <Text style={hk.activateText}>ATTIVA APPLE HEALTH</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              ) : (
+                <>
+                  {/* Live Metrics Grid */}
+                  <View style={hk.metricsGrid}>
+                    <View style={hk.metricBox}>
+                      <Ionicons name="footsteps" size={18} color="#00E5FF" />
+                      <Text style={hk.metricValue}>
+                        {healthKit.data.steps > 0 ? healthKit.data.steps.toLocaleString() : '—'}
+                      </Text>
+                      <Text style={hk.metricLabel}>PASSI</Text>
+                    </View>
+                    <View style={hk.metricBox}>
+                      <Ionicons name="heart" size={18} color="#FF2D55" />
+                      <Text style={[hk.metricValue, { color: '#FF2D55' }]}>
+                        {healthKit.data.heartRate || '—'}
+                      </Text>
+                      <Text style={hk.metricLabel}>BPM</Text>
+                    </View>
+                    <View style={hk.metricBox}>
+                      <Ionicons name="flame" size={18} color="#FF9500" />
+                      <Text style={[hk.metricValue, { color: '#FF9500' }]}>
+                        {healthKit.data.activeCalories > 0 ? healthKit.data.activeCalories : '—'}
+                      </Text>
+                      <Text style={hk.metricLabel}>KCAL</Text>
+                    </View>
+                    <View style={hk.metricBox}>
+                      <Ionicons name="navigate" size={18} color="#34C759" />
+                      <Text style={[hk.metricValue, { color: '#34C759' }]}>
+                        {healthKit.data.walkingDistance > 0
+                          ? (healthKit.data.walkingDistance / 1000).toFixed(1)
+                          : '—'}
+                      </Text>
+                      <Text style={hk.metricLabel}>KM</Text>
+                    </View>
+                  </View>
+
+                  {/* Action Buttons */}
+                  <View style={hk.actionsRow}>
+                    <TouchableOpacity
+                      style={hk.refreshBtn}
+                      onPress={healthKit.fetchData}
+                      disabled={healthKit.isLoading}
+                      activeOpacity={0.85}
+                    >
+                      {healthKit.isLoading ? (
+                        <ActivityIndicator size="small" color="#00E5FF" />
+                      ) : (
+                        <>
+                          <Ionicons name="refresh" size={14} color="#00E5FF" />
+                          <Text style={hk.refreshText}>AGGIORNA</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={hk.syncBtn}
+                      onPress={healthKit.syncToBackend}
+                      disabled={healthKit.isLoading || !healthKit.data.steps}
+                      activeOpacity={0.85}
+                    >
+                      <Ionicons name="cloud-upload" size={14} color="#D4AF37" />
+                      <Text style={hk.syncText}>SYNC AL SERVER</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {healthKit.lastSync && (
+                    <Text style={hk.lastSyncText}>
+                      Ultimo sync: {new Date(healthKit.lastSync).toLocaleString('it-IT')}
+                    </Text>
+                  )}
+                </>
+              )}
+            </View>
+          </Animated.View>
+        )}
+
         {/* Connection Cards */}
         {connections.map((conn, idx) => {
           const meta = SOURCE_ICONS[conn.source] || {};
@@ -218,7 +332,7 @@ export default function HealthHub() {
                       onPress={async () => {
                         setSyncing(conn.source);
                         try {
-                          await fetch(`${'https://arenakore-api.onrender.com'}/api/health/force-sync`, {
+                          await fetch(`${'https://arenakore-api-v2.onrender.com'}/api/health/force-sync`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                             body: JSON.stringify({ source: conn.source })
@@ -446,4 +560,135 @@ const hh = StyleSheet.create({
     fontFamily: "'Plus Jakarta Sans', 'Montserrat', sans-serif",
     fontWeight: '800'
   }
+});
+
+
+// ═══ APPLE HEALTH NATIVE STYLES ═══
+const hk = StyleSheet.create({
+  card: {
+    backgroundColor: 'rgba(255,45,85,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,45,85,0.2)',
+    borderRadius: 16,
+    padding: 16,
+    gap: 14,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  cardSub: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  activateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(255,45,85,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,45,85,0.3)',
+    borderRadius: 12,
+    paddingVertical: 14,
+  },
+  activateText: {
+    color: '#FF2D55',
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  metricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  metricBox: {
+    flex: 1,
+    minWidth: '40%' as any,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    gap: 4,
+  },
+  metricValue: {
+    color: '#00E5FF',
+    fontSize: 22,
+    fontWeight: '900',
+    fontFamily: 'Montserrat',
+  },
+  metricLabel: {
+    color: 'rgba(255,255,255,0.35)',
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 2,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  refreshBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(0,229,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,229,255,0.2)',
+    borderRadius: 10,
+    paddingVertical: 10,
+  },
+  refreshText: {
+    color: '#00E5FF',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+  syncBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(212,175,55,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(212,175,55,0.2)',
+    borderRadius: 10,
+    paddingVertical: 10,
+  },
+  syncText: {
+    color: '#D4AF37',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+  lastSyncText: {
+    color: 'rgba(255,255,255,0.25)',
+    fontSize: 10,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
 });

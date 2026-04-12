@@ -2,7 +2,7 @@
   "expo": {
     "name": "ARENA NEXUS",
     "slug": "arenakore",
-    "version": "3.5.0",
+    "version": "3.7.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "arenanexus",
@@ -11,7 +11,13 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.arenakore.app",
-      "buildNumber": "35",
+      "buildNumber": "37",
+      "entitlements": {
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.access": [
+          "health-records"
+        ]
+      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "UIViewControllerBasedStatusBarAppearance": false,
@@ -70,7 +76,13 @@
       "expo-font",
       "expo-asset",
       "expo-audio",
-      "expo-build-properties"
+      "expo-build-properties",
+      [
+        "react-native-health",
+        {
+          "isClinicalDataEnabled": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

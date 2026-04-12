@@ -118,7 +118,7 @@ export default function TalentReportPage() {
     if (!token || !athleteId) return;
     try {
       // Call real backend PDF endpoint
-      const backendUrl = 'https://arenakore-api.onrender.com' || '';
+      const backendUrl = 'https://arenakore-api-v2.onrender.com' || '';
       const response = await fetch(`${backendUrl}/api/report/athlete-pdf/${athleteId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -361,7 +361,7 @@ export default function TalentReportPage() {
           </View>
           <View style={rp$.qrSection}>
             <QRCode
-              value={`${'https://arenakore-api.onrender.com' || 'https://arenakore.app'}/athlete/${athleteId}`}
+              value={`${'https://arenakore-api-v2.onrender.com' || 'https://arenakore.app'}/athlete/${athleteId}`}
               size={56}
               backgroundColor="transparent"
               color="#00E5FF"

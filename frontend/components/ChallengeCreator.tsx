@@ -131,7 +131,7 @@ export function ChallengeCreator({ visible, onClose, onCreated }: ChallengeCreat
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
 
     try {
-      const backendUrl = 'https://arenakore-api.onrender.com';
+      const backendUrl = 'https://arenakore-api-v2.onrender.com';
       const res = await fetch(`${backendUrl}/api/ugc/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },

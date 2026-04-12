@@ -44,7 +44,7 @@ export function ChallengePreviewModal({ visible, challengeData, onClose, onImpor
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
 
     try {
-      const backendUrl = 'https://arenakore-api.onrender.com';
+      const backendUrl = 'https://arenakore-api-v2.onrender.com';
       const res = await fetch(`${backendUrl}/api/ugc/${challengeData.id}/import`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }

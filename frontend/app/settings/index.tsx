@@ -212,7 +212,7 @@ export default function SettingsScreen() {
       if (selectedSport) payload.preferred_sport = selectedSport;
       if (competencyLevel) payload.training_level = competencyLevel;
 
-      const backendUrl = 'https://arenakore-api.onrender.com';
+      const backendUrl = 'https://arenakore-api-v2.onrender.com';
       const res = await fetch(`${backendUrl}/api/auth/update-profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },

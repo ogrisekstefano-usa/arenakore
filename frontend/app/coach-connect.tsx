@@ -35,7 +35,7 @@ export default function CoachConnect() {
     setSending(crewId);
     try {
       // Send bio signature to coach
-      const res = await fetch(`${'https://arenakore-api.onrender.com'}/api/coach/receive-bio`, {
+      const res = await fetch(`${'https://arenakore-api-v2.onrender.com'}/api/coach/receive-bio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ crew_id: crewId }),
@@ -55,7 +55,7 @@ export default function CoachConnect() {
   const handleJoinGym = async () => {
     if (!gymCode.trim()) { Alert.alert('Inserisci codice', 'Inserisci il codice della palestra.'); return; }
     try {
-      const res = await fetch(`${'https://arenakore-api.onrender.com'}/api/gym/join`, {
+      const res = await fetch(`${'https://arenakore-api-v2.onrender.com'}/api/gym/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ code: gymCode.trim().toUpperCase() }),

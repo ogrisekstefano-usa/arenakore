@@ -24,7 +24,7 @@ export default function LiveEvents() {
   const loadEvents = useCallback(async () => {
     if (!token) { setLoading(false); return; }
     try {
-      const res = await fetch(`${'https://arenakore-api.onrender.com'}/api/live-events`, {
+      const res = await fetch(`${'https://arenakore-api-v2.onrender.com'}/api/live-events`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const d = await res.json();
@@ -39,7 +39,7 @@ export default function LiveEvents() {
     if (!form.title.trim()) { Alert.alert('Titolo richiesto'); return; }
     setCreating(true);
     try {
-      const res = await fetch(`${'https://arenakore-api.onrender.com'}/api/live-events/create`, {
+      const res = await fetch(`${'https://arenakore-api-v2.onrender.com'}/api/live-events/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
@@ -68,7 +68,7 @@ export default function LiveEvents() {
 
   const handleJoinEvent = async (eventId: string) => {
     try {
-      const res = await fetch(`${'https://arenakore-api.onrender.com'}/api/live-events/${eventId}/join`, {
+      const res = await fetch(`${'https://arenakore-api-v2.onrender.com'}/api/live-events/${eventId}/join`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
       });

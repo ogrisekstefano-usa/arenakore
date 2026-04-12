@@ -7,8 +7,8 @@ import Constants from 'expo-constants';
 const _envUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL
   || process.env.EXPO_PUBLIC_BACKEND_URL
   || '';
-const BASE_URL = _envUrl ? `${_envUrl}/api` : 'https://arenakore-api.onrender.com/api';
-export const BACKEND_BASE = _envUrl || 'https://arenakore-api.onrender.com';
+const BASE_URL = _envUrl ? `${_envUrl}/api` : 'https://arenakore-api-v2.onrender.com/api';
+export const BACKEND_BASE = _envUrl || 'https://arenakore-api-v2.onrender.com';
 export const API_BASE = BASE_URL;
 
 console.log('[ARENAKORE API] IRONCLAD v22 · URL:', BASE_URL);
@@ -126,7 +126,7 @@ export const apiClient = async (path: string, options: RequestInit = {}) => {
 };
 
 // ── Raw fetch wrapper ──
-const RAW_BASE = 'https://arenakore-api.onrender.com';
+const RAW_BASE = 'https://arenakore-api-v2.onrender.com';
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const url = path.startsWith('/api') ? `${RAW_BASE}${path}` : `${RAW_BASE}/api${path}`;
   return fetch(url, options);

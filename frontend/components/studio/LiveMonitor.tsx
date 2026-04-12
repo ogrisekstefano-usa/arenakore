@@ -103,7 +103,7 @@ export function LiveMonitorPanel({ gymId }: { gymId: string | null | undefined }
 
     // Try WebSocket
     try {
-      const baseUrl = 'https://arenakore-api.onrender.com' || 'https://arena-scan-lab.preview.emergentagent.com';
+      const baseUrl = 'https://arenakore-api-v2.onrender.com' || 'https://arena-scan-lab.preview.emergentagent.com';
       const wsUrl = baseUrl.replace('https://', 'wss://').replace('http://', 'ws://');
       const ws = new WebSocket(`${wsUrl}/api/ws/live-monitor/${gymId}?token=${token}`);
       wsRef.current = ws;

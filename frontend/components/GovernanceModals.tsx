@@ -18,7 +18,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const FONT_M = Platform.select({ web: 'Montserrat, sans-serif', default: undefined });
 const FONT_J = Platform.select({ web: "'Plus Jakarta Sans', sans-serif", default: undefined });
-const BACKEND = 'https://arenakore-api.onrender.com';
+const BACKEND = 'https://arenakore-api-v2.onrender.com';
 
 // ═══════════════════════════════════════════════════════════
 //  TEMPLATE REQUEST MODAL
