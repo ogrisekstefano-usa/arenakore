@@ -730,6 +730,7 @@ def user_to_response(user: dict) -> dict:
         "mic_enabled": user.get("mic_enabled", False),
         "city": user.get("city"),
         "ak_credits": user.get("ak_credits", 0),
+        "vital_flux": user.get("vital_flux", 0),
         "master_flux": user.get("master_flux", 0),
         "diamond_flux": user.get("diamond_flux", 0),
         "unlocked_tools": user.get("unlocked_tools", []),
@@ -1599,8 +1600,10 @@ async def complete_challenge(data: ChallengeComplete, current_user: dict = Depen
 
     updated = await db.users.find_one({"_id": current_user["_id"]})
 
-    # Award AK Credits for scan completion
-    await award_ak_credits(current_user["_id"], "nexus_scan")
+    # Award AK Credits for scan completion — Bio-verified sessions → Amber tier
+    is_nexus_bio = bool(data.quality_score and data.quality_score > 0) or bool(data.ai_feedback_score)
+    scan_tier = "amber" if is_nexus_bio else "cyan"
+    await award_ak_credits(current_user["_id"], "nexus_scan", flux_tier=scan_tier)
 
     # ── PERFORMANCE RECORD: Persist full metadata ──
     is_coach_template = bool(data.template_push_id)
@@ -5711,15 +5714,59 @@ AK_EARN_RULES = {
 }
 
 
-async def award_ak_credits(user_id, reason: str, custom_amount: int = 0) -> int:
-    """Award AK credits to a user. Returns new balance."""
+async def award_ak_credits(user_id, reason: str, custom_amount: int = 0, flux_tier: str = "auto") -> int:
+    """
+    Award AK credits with TIERED K-FLUX separation (Build 36 Pre-Flight Fix).
+    
+    Flux Tier Routing:
+      - "green"  / "vital"   → vital_flux   (Check-in, Consistency, Quick Training)
+      - "cyan"   / "perform" → master_flux  (Templates, Challenges WITHOUT bio-verify)
+      - "amber"  / "genetic" → diamond_flux (NEXUS Bio-Verified sessions only)
+      - "auto"               → Routes based on reason:
+          * nexus_scan, ranked_win, pvp_win → diamond_flux (Amber)
+          * practice_session, challenge → master_flux (Cyan)
+          * daily_login, qr_scan_reward → vital_flux (Green)
+    
+    Returns new total balance.
+    """
     rule = AK_EARN_RULES.get(reason)
     amount = custom_amount if custom_amount else (rule["amount"] if rule else 0)
     if amount == 0:
         return 0
     label = rule["label"] if rule else reason
     now = datetime.utcnow()
-    await db.users.update_one({"_id": user_id}, {"$inc": {"ak_credits": amount}})
+
+    # ═══ DETERMINE FLUX TIER ═══
+    if flux_tier == "auto":
+        # Route based on reason
+        AMBER_REASONS = {"nexus_scan", "ranked_win", "ranked_loss", "first_scan"}
+        CYAN_REASONS = {"pvp_win", "crew_battle_win", "practice_session", "challenge_complete", "qr_validated_challenge"}
+        GREEN_REASONS = {"daily_login", "qr_scan_reward", "checkin", "quick_training"}
+        
+        if reason in AMBER_REASONS:
+            flux_tier = "amber"
+        elif reason in CYAN_REASONS:
+            flux_tier = "cyan"
+        elif reason in GREEN_REASONS:
+            flux_tier = "green"
+        else:
+            flux_tier = "cyan"  # Default: performance tier
+
+    # Normalize tier names
+    tier_field_map = {
+        "green": "vital_flux",
+        "vital": "vital_flux",
+        "cyan": "master_flux",
+        "perform": "master_flux",
+        "amber": "diamond_flux",
+        "genetic": "diamond_flux",
+    }
+    tier_field = tier_field_map.get(flux_tier, "master_flux")
+
+    # ═══ INCREMENT BOTH ak_credits (total) AND tier-specific field ═══
+    inc_ops = {"ak_credits": amount, tier_field: amount}
+    await db.users.update_one({"_id": user_id}, {"$inc": inc_ops})
+
     tx_type = "earn" if amount > 0 else "penalty"
     await db.ak_transactions.insert_one({
         "user_id": user_id,
@@ -5727,13 +5774,24 @@ async def award_ak_credits(user_id, reason: str, custom_amount: int = 0) -> int:
         "reason": reason,
         "label": label,
         "type": tx_type,
+        "flux_tier": flux_tier,
+        "tier_field": tier_field,
         "created_at": now,
     })
     user = await db.users.find_one({"_id": user_id})
-    # Ensure balance doesn't go below 0
-    if user and user.get("ak_credits", 0) < 0:
-        await db.users.update_one({"_id": user_id}, {"$set": {"ak_credits": 0}})
-        return 0
+    # Ensure balances don't go below 0
+    if user:
+        fixes = {}
+        if user.get("ak_credits", 0) < 0:
+            fixes["ak_credits"] = 0
+        if user.get("vital_flux", 0) < 0:
+            fixes["vital_flux"] = 0
+        if user.get("master_flux", 0) < 0:
+            fixes["master_flux"] = 0
+        if user.get("diamond_flux", 0) < 0:
+            fixes["diamond_flux"] = 0
+        if fixes:
+            await db.users.update_one({"_id": user_id}, {"$set": fixes})
     return user.get("ak_credits", 0) if user else 0
 
 
@@ -6785,9 +6843,13 @@ async def complete_challenge_engine(data: ChallengeEngineComplete, current_user:
     else:
         hero_data = {"value": str(int(quality)), "unit": "%", "label": "QUALITÀ ESECUZIONE"}
 
-    # Award FLUX
+    # Award FLUX — Tier routing based on validation mode
     if earned_flux > 0:
-        new_balance = await award_ak_credits(user_id, "nexus_scan", earned_flux)
+        # AUTO_COUNT / SENSOR_IMPORT = NEXUS Bio-verified → AMBER (Genetic)
+        # MANUAL_ENTRY / UNVERIFIED = Standard → CYAN (Performance)
+        is_nexus_verified = val_mode in ("AUTO_COUNT", "SENSOR_IMPORT") and verification_status in ("AI_VERIFIED", "PROOF_PENDING")
+        flux_tier = "amber" if is_nexus_verified else "cyan"
+        new_balance = await award_ak_credits(user_id, "nexus_scan" if is_nexus_verified else "practice_session", earned_flux, flux_tier=flux_tier)
     else:
         new_balance = user_doc.get("ak_credits", 0)
 
@@ -9967,10 +10029,10 @@ async def save_quick_training(body: dict, current_user: dict = Depends(get_curre
     }
     await db.training_sessions.insert_one(record)
 
-    # Award Vital K-Flux
+    # Award Vital K-Flux (GREEN tier — Quick Training)
     await db.users.update_one(
         {"_id": current_user["_id"]},
-        {"$inc": {"flux_vital": vital_flux, "xp": vital_flux * 2}}
+        {"$inc": {"vital_flux": vital_flux, "ak_credits": vital_flux, "xp": vital_flux * 2}}
     )
 
     # Auto check-in for K-Timeline
