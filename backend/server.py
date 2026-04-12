@@ -12344,6 +12344,7 @@ from routes.templates import router as templates_v2_router, seed_templates
 from routes.coach import router as coach_router
 from routes.activity import router as activity_router
 from routes.social import router as social_router
+from routes.calibration import router as calibration_router
 
 app.include_router(stats_router)
 app.include_router(flux_balance_router)
@@ -12351,6 +12352,7 @@ app.include_router(templates_v2_router)
 app.include_router(coach_router)
 app.include_router(activity_router)
 app.include_router(social_router)
+app.include_router(calibration_router)
 
 # Re-register router after all endpoints are defined
 app.include_router(api_router)

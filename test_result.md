@@ -2565,6 +2565,54 @@ agent_communication:
           agent: "testing"
           comment: "COMPREHENSIVE TEST PASSED: GET /api/social/my-shares (WITH AUTH TOKEN) returns 200 with user's shares list. Created shares appear in the list with correct views and taps count. Analytics data (views, taps) properly tracked and displayed."
 
+  - task: "ARENAKORE Smart Calibration Engine - Protocol API"
+    implemented: true
+    working: true
+    file: "routes/calibration.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/calibration/protocol working correctly for both user states. Ready state returns protocol with exercises array (name, description, target_reps, duration_seconds, complexity). Calibrating state returns status='calibrating' with hours_remaining. Level-adaptive protocols confirmed (PRO vs ROOKIE)."
+
+  - task: "ARENAKORE Smart Calibration Engine - Status API"
+    implemented: true
+    working: true
+    file: "routes/calibration.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: GET /api/calibration/status working correctly with all required fields (status, hours_remaining, dna). Returns proper status values (pending/calibrating/ready). DNA markers correctly computed with all 5 keys (power, endurance, flexibility, speed, stability) for athlete and 6 keys for admin (velocita, forza, resistenza, tecnica, mentalita, flessibilita)."
+
+  - task: "ARENAKORE Smart Calibration Engine - Complete API"
+    implemented: true
+    working: true
+    file: "routes/calibration.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: POST /api/calibration/complete working correctly for both scenarios. Fresh calibration returns status='calibrating', hours_remaining=48, results with dna_markers, total_reps, flux_earned. 48h gate prevention working correctly with status 423 (Locked) and proper Italian error message 'Calibrazione già in corso. Attendi ancora 47h per ricalibrazione.'"
+
+  - task: "ARENAKORE Smart Calibration Engine - 48h Gate System"
+    implemented: true
+    working: true
+    file: "routes/calibration.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "COMPREHENSIVE TEST PASSED: 48h gate system working correctly. After calibration completion, subsequent attempts properly rejected with status 423 (Locked). Gate countdown accurately displayed in both protocol and status endpoints. DNA markers persist during calibration period. Recalibration prevention enforced as specified in review request."
+
 test_plan:
   current_focus: []
   stuck_tasks: []
@@ -2828,19 +2876,21 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "37.1"
-  test_sequence: 37
+  version: "37.2"
+  test_sequence: 38
   run_ui: false
 
-test_plan: "Test the Social Engine endpoints. (1) Login with ogrisek.stefano@gmail.com / Founder@KORE2026! (2) First get an activity_id by calling GET /api/activity/log (3) POST /api/social/generate-share with the first activity_id, card_type=social_card, include_qr=true (4) Verify response has share_id, deep_link, qr_url, badge with color, user info, activity data (5) GET /api/social/card/{share_id} — Public endpoint NO auth needed, verify returns card data and increments views (6) POST /api/social/card/{share_id}/tap — Track a CTA tap (7) GET /api/social/my-shares — Verify the share appears with views and taps"
+test_plan: "COMPLETED: Smart Calibration Engine endpoints tested successfully. All 4 critical endpoints (GET /api/calibration/protocol, GET /api/calibration/status, POST /api/calibration/complete, 48h gate verification) working correctly with both athlete and admin accounts. Level-adaptive protocols, DNA marker computation, and 48h gate enforcement all functional."
 
 agent_communication:
     - agent: "main"
-      message: "Build 37.1: Social Engine. Backend routes/social.py with 4 endpoints. Frontend SocialCardOverlay.tsx + ShareSheet.tsx. Integrated share button in ActivityCard. Credentials: ogrisek.stefano@gmail.com / Founder@KORE2026!"
+      message: "Build 37.2: Smart Calibration Engine. Backend routes/calibration.py with 3 endpoints (GET /protocol, POST /complete, GET /status). Level-adaptive protocols (Pro vs Rookie). 48h gate on completion. Frontend calibration-test.tsx with countdown, exercise HUD, rep counter. Credentials: ogrisek.stefano@gmail.com / Founder@KORE2026!"
     - agent: "testing"
       message: "VIDEO PROOF API TESTING COMPLETED: ALL 3 NEW ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test sequence executed as specified in review request: ✅ Step 1: Admin login successful with ogrisek.stefano@gmail.com / Founder@KORE2026! ✅ Step 2: Challenge creation with POST /api/challenge/create (exercise_type=squat, tags=[POWER], validation_mode=MANUAL_ENTRY) ✅ Step 3: Challenge completion with POST /api/challenges/complete (25 reps, 60s duration, XP earned=167) ✅ Step 4: Video upload with POST /api/challenge/upload-video (100KB test file, status=PROOF_PENDING, proof_type=VIDEO_TIME_CHECK) ✅ Step 5: Video info retrieval with GET /api/challenge/{id}/video (video_url returned, upload timestamp verified) ✅ Step 6: Pending proof challenges with GET /api/challenges/pending-proof (5 challenges returned) ✅ Error case testing: Wrong file type correctly rejected (400 error), invalid challenge_id causes 500 error (acceptable ObjectId validation behavior). All Video Proof API features are production-ready. File upload, metadata storage, and retrieval all functional."
     - agent: "testing"
       message: "ARENAKORE TEMPLATE SYSTEM TESTING COMPLETED: ALL 10 CRITICAL TEMPLATE ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test flow executed as specified in review request: ✅ Admin login with ogrisek.stefano@gmail.com / Founder@KORE2026! ✅ System Templates API - returns 10 system templates with all required fields (code, name, discipline, requires_nexus_bio, kpi_metrics, certified_by, source='system') ✅ Base Templates API - returns 6 base templates with requires_nexus_bio=false and source='base' ✅ All Templates Unified API - returns {system: 10, base: 6, coach: 2, total: 18} structure ✅ Bio Check (System Template) - SYS_BIO_SYNC correctly returns allowed=true with scan status and countdown ✅ Bio Check (Base Template) - BASE_CORDA_1MIN correctly returns allowed=true, requires_nexus_bio=false ✅ Coach Onboarding - successfully completes with status='onboarding_completed' and full coach_data object ✅ Coach Profile - returns has_coach_profile=true, onboarding_completed=true with coach_data ✅ Create Coach Template - successfully creates template with source='coach', video_url, and kpi_metrics ✅ My Coach Templates - returns 2 coach templates created. FIXED: Bio Check endpoints had MongoDB collection boolean check bug (changed 'if not coll:' to 'if coll is None:'). All template system features are production-ready and working as specified."
     - agent: "testing"
       message: "ARENAKORE SOCIAL ENGINE TESTING COMPLETED: ALL 6 CRITICAL SOCIAL ENGINE ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test sequence executed as specified in review request: ✅ Step 1: Admin login successful with ogrisek.stefano@gmail.com / Founder@KORE2026! ✅ Step 2: GET /api/activity/log - Activity log retrieval working correctly, found activity records with proper structure (id, tipo, flux_earned, exercise_type, disciplina) ✅ Step 3: POST /api/social/generate-share - Social share card creation working correctly with all required fields (share_id, deep_link, qr_url, badge, user, activity). Badge color logic verified: gold for >=200 flux (250 flux → gold), cyan for >=100 flux (150 flux → cyan), green for <100 flux. Deep link format contains share_id correctly ✅ Step 4: GET /api/social/card/{share_id} - Public endpoint (NO AUTH REQUIRED) working correctly, returns card data with views >= 1, views increment on each access ✅ Step 5: POST /api/social/card/{share_id}/tap - CTA tap tracking (NO AUTH REQUIRED) working correctly, returns status='tracked' ✅ Step 6: GET /api/social/my-shares - My shares endpoint (WITH AUTH TOKEN) working correctly, created shares appear in list with accurate views and taps count. All social engine features are production-ready: share card generation, public card access, analytics tracking (views/taps), K-Flux tier badge colors, and deep linking all functional."
+    - agent: "testing"
+      message: "ARENAKORE SMART CALIBRATION ENGINE TESTING COMPLETED: ALL 4 CRITICAL CALIBRATION ENDPOINTS TESTED SUCCESSFULLY (100% SUCCESS RATE). Full test sequence executed as specified in review request using both athlete (d.rose@chicago.kore / Seed@Chicago1) and admin (ogrisek.stefano@gmail.com / Founder@KORE2026!) accounts: ✅ Step 1: POST /api/auth/login - Both athlete and admin login successful ✅ Step 2: GET /api/calibration/protocol - Returns baseline test protocol based on user's level (PRO vs ROOKIE), exercises array with required fields (id, name, description, target_reps, duration_seconds, complexity), athlete_context included ✅ Step 3: GET /api/calibration/status - Returns proper status (pending/calibrating/ready), hours_remaining field, DNA markers with all required keys (power, endurance, flexibility, speed, stability) ✅ Step 4: POST /api/calibration/complete - Processes exercises_completed, fluidity_score, biometric_effort, heart_rate_avg, time_under_tension, rep_regularity. Returns status='calibrating', calibration.hours_remaining=48, results with dna_markers (0-100 values), total_reps, flux_earned ✅ Step 5: 48h Gate Verification - After completion, status returns 'calibrating' with countdown, protocol shows 'calibrating' status, subsequent calibration attempts properly rejected with status 423 (Locked) and Italian error message. All Smart Calibration Engine features are production-ready: level-adaptive protocols, DNA marker computation, 48h gate enforcement, and proper status transitions all functional."
 

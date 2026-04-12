@@ -9,7 +9,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity, StatusBar,
   useWindowDimensions, Share, Platform, ActivityIndicator
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown, useSharedValue, withRepeat, withSequence, withTiming, useAnimatedStyle, Easing } from 'react-native-reanimated';
@@ -65,6 +65,7 @@ const bar$ = StyleSheet.create({
 // ── Main ──────────────────────────────────────────────────────────
 export default function KoreIDScreen() {
   const router  = useRouter();
+  const params  = useLocalSearchParams();
   const insets  = useSafeAreaInsets();
   const { width: W } = useWindowDimensions();
   const cardRef = useRef<View>(null);
@@ -72,6 +73,8 @@ export default function KoreIDScreen() {
   const [result, setResult]       = useState<ScanResult | null>(null);
   const [sharing, setSharing]     = useState(false);
   const [downloadOk, setDownloadOk] = useState(false);
+
+  const shouldCalibrate = params.route_to_calibration === 'true';
 
   // ── Gold pulse on DNA SCORE
   const glow = useSharedValue(0.6);
@@ -111,8 +114,13 @@ export default function KoreIDScreen() {
   }, []);
 
   const handleContinue = useCallback(() => {
-    router.push('/onboarding/step3');
-  }, [router]);
+    if (shouldCalibrate) {
+      // Biometric path → K-Scan Calibration Test
+      router.replace('/calibration-test' as any);
+    } else {
+      router.push('/onboarding/step3');
+    }
+  }, [router, shouldCalibrate]);
 
   const handleDownload = useCallback(async () => {
     if (!cardRef.current || sharing) return;

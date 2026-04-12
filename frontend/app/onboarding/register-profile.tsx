@@ -193,6 +193,8 @@ export default function RegisterProfile() {
             amplitude: params.amplitude || '50',
             username: existingUser.username,
             sport,
+            level,
+            route_to_calibration: isNexus ? 'true' : 'false',
           }
         });
       } else {
@@ -221,6 +223,8 @@ export default function RegisterProfile() {
               amplitude: params.amplitude || '50',
               username: username.trim(),
               sport,
+              level,
+              route_to_calibration: isNexus ? 'true' : 'false',
             }
           });
         }
