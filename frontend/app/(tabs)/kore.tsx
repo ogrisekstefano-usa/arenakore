@@ -230,6 +230,7 @@ export default function KoreTab() {
   const [refreshing, setRefreshing] = useState(false);
   const [showKoreID, setShowKoreID] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showWallet, setShowWallet] = useState<string | null>(null);
   const [weekData, setWeekData] = useState<Array<{ date: string; day_name: string; checked_in: boolean }>>([]);
   const [checkinStreak, setCheckinStreak] = useState(0);
   const [fluxVital, setFluxVital] = useState(0);
@@ -398,7 +399,7 @@ export default function KoreTab() {
           rank={rank}
         />
 
-        {/* ══════ K-FLUX BREAKDOWN (Flat Premium Inline) ══════ */}
+        {/* ══════ K-FLUX BREAKDOWN (Clickable → Wallet & Marketplace) ══════ */}
         <View style={s.fluxInlineSection}>
           <View style={s.fluxInlineHeader}>
             <Ionicons name="flash" size={14} color={CYAN} />
@@ -407,24 +408,41 @@ export default function KoreTab() {
             <Text style={s.fluxTotalInline}>{totalFlux.toLocaleString()}</Text>
           </View>
           <View style={s.fluxInlineRow}>
-            <View style={s.fluxInlineItem}>
-              <Ionicons name="heart" size={18} color={CYAN} />
-              <Text style={[s.fluxInlineVal, { color: CYAN }]}>{fluxVital.toLocaleString()}</Text>
-              <Text style={s.fluxInlineLabel}>VITAL</Text>
-            </View>
+            <TouchableOpacity style={s.fluxInlineItem} activeOpacity={0.7} onPress={() => setShowWallet('green')}>
+              <Ionicons name="heart" size={18} color={'#00FF87'} />
+              <Text style={[s.fluxInlineVal, { color: '#00FF87' }]}>{fluxVital.toLocaleString()}</Text>
+              <Text style={s.fluxInlineLabel}>VERDE</Text>
+              <Text style={s.fluxTapHint}>SPENDIBILE</Text>
+            </TouchableOpacity>
             <View style={s.fluxInlineDivider} />
-            <View style={s.fluxInlineItem}>
-              <Ionicons name="trophy" size={18} color={GOLD} />
-              <Text style={[s.fluxInlineVal, { color: GOLD }]}>{fluxPerform.toLocaleString()}</Text>
-              <Text style={s.fluxInlineLabel}>PERFORM</Text>
-            </View>
+            <TouchableOpacity style={s.fluxInlineItem} activeOpacity={0.7} onPress={() => setShowWallet('cyan')}>
+              <Ionicons name="trophy" size={18} color={CYAN} />
+              <Text style={[s.fluxInlineVal, { color: CYAN }]}>{fluxPerform.toLocaleString()}</Text>
+              <Text style={s.fluxInlineLabel}>CIANO</Text>
+              <Text style={s.fluxTapHint}>SPENDIBILE</Text>
+            </TouchableOpacity>
             <View style={s.fluxInlineDivider} />
-            <View style={s.fluxInlineItem}>
-              <Ionicons name="people" size={18} color={PURPLE} />
-              <Text style={[s.fluxInlineVal, { color: PURPLE }]}>{fluxTeam.toLocaleString()}</Text>
-              <Text style={s.fluxInlineLabel}>TEAM</Text>
-            </View>
+            <TouchableOpacity style={s.fluxInlineItem} activeOpacity={0.7} onPress={() => setShowWallet('amber')}>
+              <Ionicons name="diamond" size={18} color={'#FF9500'} />
+              <Text style={[s.fluxInlineVal, { color: '#FF9500' }]}>{fluxTeam.toLocaleString()}</Text>
+              <Text style={s.fluxInlineLabel}>AMBRA</Text>
+              <Text style={s.fluxTapHint}>SPENDIBILE</Text>
+            </TouchableOpacity>
           </View>
+
+          {/* MARKETPLACE ENTRY POINT */}
+          <TouchableOpacity
+            style={s.marketplaceBtn}
+            activeOpacity={0.85}
+            onPress={() => router.push('/marketplace' as any)}
+          >
+            <Ionicons name="storefront" size={18} color={GOLD} />
+            <View style={{ flex: 1 }}>
+              <Text style={s.marketplaceBtnTitle}>K-FLUX MARKET</Text>
+              <Text style={s.marketplaceBtnSub}>Spendi i tuoi K-Flux per premi reali</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="rgba(255,215,0,0.4)" />
+          </TouchableOpacity>
         </View>
 
         {/* ══════ DNA RADAR ══════ */}
@@ -516,7 +534,15 @@ const s = StyleSheet.create({
   fluxInlineItem: { alignItems: 'center', gap: 4, flex: 1 },
   fluxInlineVal: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5 },
   fluxInlineLabel: { color: 'rgba(255,255,255,0.18)', fontSize: 9, fontWeight: '900', letterSpacing: 2.5 },
+  fluxTapHint: { color: 'rgba(255,255,255,0.08)', fontSize: 7, fontWeight: '700', letterSpacing: 1, marginTop: 1 },
   fluxInlineDivider: { width: 1, height: 40, backgroundColor: 'rgba(255,255,255,0.05)' },
+  marketplaceBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 14,
+    backgroundColor: 'rgba(255,215,0,0.04)', borderRadius: 14, padding: 14,
+    borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)',
+  },
+  marketplaceBtnTitle: { color: GOLD, fontSize: 13, fontWeight: '800', letterSpacing: 1.5 },
+  marketplaceBtnSub: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '500', marginTop: 1 },
 
   radarWrap: { alignItems: 'center', marginBottom: 8 },
   emptyDna: { alignItems: 'center', gap: 8, paddingVertical: 32, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)' },

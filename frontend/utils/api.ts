@@ -733,6 +733,31 @@ export const api = {
   getEnhancedWeek: (token: string) =>
     request('/checkin/week-enhanced', {}, token),
 
+  // ========== K-FLUX WALLET & MARKETPLACE (Build 38 · Prompt 6) ==========
+  getFluxWallet: (token: string) =>
+    request('/flux/wallet', {}, token),
+
+  getMarketplaceOffers: (token: string, category?: string) => {
+    const params = new URLSearchParams();
+    if (category) params.append('category', category);
+    return request(`/marketplace/offers?${params.toString()}`, {}, token);
+  },
+
+  getOfferDetail: (offerId: string, token: string) =>
+    request(`/marketplace/offers/${offerId}`, {}, token),
+
+  createMarketplaceOffer: (data: any, token: string) =>
+    request('/marketplace/offers', { method: 'POST', body: JSON.stringify(data) }, token),
+
+  redeemOffer: (offerId: string, token: string) =>
+    request(`/marketplace/redeem/${offerId}`, { method: 'POST' }, token),
+
+  getMyRedemptions: (token: string) =>
+    request('/marketplace/my-redemptions', {}, token),
+
+  getMarketplaceCategories: (token: string) =>
+    request('/marketplace/categories', {}, token),
+
   createActivityLog: (data: {
     tipo: string;
     template_id?: string;

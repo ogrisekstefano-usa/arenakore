@@ -2582,6 +2582,10 @@ async def seed_data():
     await seed_hubs()
     logger.info("[HubEngine] Hubs seeded/verified")
 
+    # ═══ SEED MARKETPLACE — Demo offers catalog ═══
+    await seed_marketplace_offers()
+    logger.info("[Marketplace] Offers seeded/verified")
+
 
 # ====================================
 # CREW MANAGEMENT ENDPOINTS
@@ -12351,6 +12355,7 @@ from routes.social import router as social_router
 from routes.calibration import router as calibration_router
 from routes.hubs import router as hubs_router, seed_hubs
 from routes.checkin import router as checkin_router
+from routes.marketplace import router as marketplace_router, seed_marketplace_offers
 
 app.include_router(stats_router)
 app.include_router(flux_balance_router)
@@ -12361,6 +12366,7 @@ app.include_router(social_router)
 app.include_router(calibration_router)
 app.include_router(hubs_router)
 app.include_router(checkin_router)
+app.include_router(marketplace_router)
 
 # Re-register router after all endpoints are defined
 app.include_router(api_router)
