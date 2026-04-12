@@ -22,7 +22,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../contexts/AuthContext';
-import { apiClient } from '../../utils/api';
+import { apiClient, request as apiRequest } from '../../utils/api';
 import { RadarChart } from '../../components/RadarChart';
 import { CertBadge, AKDropsWallet } from '../../components/CertBadge';
 import { KoreIDModal } from '../../components/KoreIDModal';
@@ -54,8 +54,8 @@ const CYAN = '#00E5FF';
 const PURPLE = '#BF5AF2';
 const BG = '#000000';
 
-async function safeFetchApi(path: string, options?: any): Promise<any> {
-  try { return await apiClient(path, options); }
+async function safeFetchApi(path: string, token?: string | null): Promise<any> {
+  try { return await apiRequest(path, {}, token); }
   catch { return { _error: true }; }
 }
 
@@ -239,11 +239,11 @@ export default function KoreTab() {
   const loadData = useCallback(async () => {
     if (!token) { setLoading(false); return; }
     const [histRes, rankRes, weekRes, todayRes, fluxRes] = await Promise.all([
-      safeFetchApi('/kore/history?limit=8'),
-      safeFetchApi('/leaderboard/my-rank'),
-      safeFetchApi('/checkin/week'),
-      safeFetchApi('/checkin/today'),
-      safeFetchApi('/flux/balance'),
+      safeFetchApi('/kore/history?limit=8', token),
+      safeFetchApi('/leaderboard/my-rank', token),
+      safeFetchApi('/checkin/week', token),
+      safeFetchApi('/checkin/today', token),
+      safeFetchApi('/flux/balance', token),
     ]);
     if (!histRes?._error && Array.isArray(histRes?.records)) setHistory(histRes.records);
     else if (!histRes?._error && Array.isArray(histRes)) setHistory(histRes);
@@ -273,7 +273,7 @@ export default function KoreTab() {
   const handleRefresh = () => { setRefreshing(true); loadData(); };
 
   const fetchCalendarHistory = useCallback(async (month: number, year: number): Promise<string[]> => {
-    const res = await safeFetchApi(`/checkin/history?month=${month}&year=${year}`);
+    const res = await safeFetchApi(`/checkin/history?month=${month}&year=${year}`, token);
     return res?.checked_dates || [];
   }, []);
 

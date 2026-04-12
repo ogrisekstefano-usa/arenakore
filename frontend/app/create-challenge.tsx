@@ -1,30 +1,43 @@
 /**
- * CREA SFIDA — Coach Template Engine (Build 35)
+ * CREA SFIDA — Template Engine v2 (Build 36)
  * ════════════════════════════════════════════════
- * Step 1: Select sport & template
- * Step 2: Customize parameters
- * Step 3: Search opponent → Launch challenge
+ * Step 1: Select source (SYSTEM / BASE / COACH) + sport filter
+ * Step 2: BIO-CHECK gate (countdown if scan expired/calibrating)
+ * Step 3: Customize parameters
+ * Step 4: Search opponent → Launch challenge
+ * Step 5: Confirmation
+ *
+ * ALL TEMPLATES FROM /api/templates/v2/all (no more hardcoded presets)
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, StatusBar, TouchableOpacity,
-  ScrollView, TextInput, Alert, ActivityIndicator, Dimensions, KeyboardAvoidingView, Platform,
+  ScrollView, TextInput, Alert, ActivityIndicator, Dimensions,
+  KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
-import { api, apiClient } from '../utils/api';
+import { api, apiClient, request } from '../utils/api';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
 const CYAN = '#00E5FF';
 const GOLD = '#FFD700';
 const RED = '#FF3B30';
+const PURPLE = '#BF5AF2';
 const { width: SW } = Dimensions.get('window');
 
-type Step = 'templates' | 'customize' | 'opponent' | 'confirm' | 'sent';
+type Step = 'templates' | 'bio_check' | 'customize' | 'opponent' | 'sent';
+type Source = 'system' | 'base' | 'coach';
+
+const SOURCE_CONFIG: Record<Source, { label: string; color: string; icon: string }> = {
+  system: { label: 'SYSTEM', color: CYAN, icon: 'shield-checkmark' },
+  base: { label: 'BASE', color: GOLD, icon: 'flash' },
+  coach: { label: 'COACH', color: PURPLE, icon: 'school' },
+};
 
 export default function CreateChallenge() {
   const insets = useSafeAreaInsets();
@@ -32,10 +45,12 @@ export default function CreateChallenge() {
   const { user, token } = useAuth();
 
   const [step, setStep] = useState<Step>('templates');
-  const [templates, setTemplates] = useState<any[]>([]);
-  const [sports, setSports] = useState<string[]>([]);
+  const [allTemplates, setAllTemplates] = useState<Record<Source, any[]>>({ system: [], base: [], coach: [] });
+  const [activeSource, setActiveSource] = useState<Source>('system');
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [bioCheck, setBioCheck] = useState<any>(null);
+  const [bioLoading, setBioLoading] = useState(false);
   const [customFields, setCustomFields] = useState<Record<string, any>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -44,33 +59,72 @@ export default function CreateChallenge() {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Load templates — static presets always available, server extends them
-  const FALLBACK_PRESETS = [
-    { id: 'basket_tiri_liberi', sport: 'BASKET', name: 'Tiri Liberi', icon: 'basketball', color: '#FF6B00', description: 'Sessione di tiri liberi cronometrata', fields: [{ key: 'tiri_totali', label: 'Tiri Totali', type: 'number', default: 20, min: 5, max: 100 }, { key: 'tempo_limite', label: 'Tempo Limite (sec)', type: 'number', default: 120, min: 30, max: 600 }], scoring: 'percentuale_canestri', xp_reward: 150, discipline: 'power' },
-    { id: 'basket_3_punti', sport: 'BASKET', name: 'Tiro da 3 Punti', icon: 'basketball', color: '#FF6B00', description: 'Challenge da oltre l\'arco dei 3 punti', fields: [{ key: 'tiri_totali', label: 'Tiri da 3', type: 'number', default: 15, min: 5, max: 50 }, { key: 'tempo_limite', label: 'Tempo Limite (sec)', type: 'number', default: 180, min: 60, max: 600 }], scoring: 'percentuale_canestri', xp_reward: 200, discipline: 'agility' },
-    { id: 'golf_putting', sport: 'GOLF', name: 'Putting Challenge', icon: 'golf', color: '#2ECC71', description: 'Sfida di precisione sul green', fields: [{ key: 'buche', label: 'Numero Buche', type: 'number', default: 9, min: 3, max: 18 }, { key: 'distanza_mt', label: 'Distanza Media (mt)', type: 'number', default: 3, min: 1, max: 15 }], scoring: 'colpi_totali', xp_reward: 180, discipline: 'agility' },
-    { id: 'golf_driving', sport: 'GOLF', name: 'Driving Range', icon: 'golf', color: '#2ECC71', description: 'Massima distanza dal tee', fields: [{ key: 'tiri', label: 'Numero Tiri', type: 'number', default: 10, min: 5, max: 30 }], scoring: 'distanza_media', xp_reward: 170, discipline: 'power' },
-    { id: 'fitness_ripetizioni', sport: 'FITNESS', name: 'Max Ripetizioni', icon: 'barbell', color: '#00E5FF', description: 'Massime ripetizioni in tempo limite', fields: [{ key: 'esercizio', label: 'Esercizio', type: 'select', options: ['Push-up', 'Squat', 'Burpee', 'Pull-up', 'Plank Hold'], default: 'Push-up' }, { key: 'tempo_limite', label: 'Tempo Limite (sec)', type: 'number', default: 60, min: 30, max: 300 }], scoring: 'ripetizioni_totali', xp_reward: 160, discipline: 'endurance' },
-    { id: 'fitness_circuito', sport: 'FITNESS', name: 'Circuito HIIT', icon: 'fitness', color: '#00E5FF', description: 'Circuito ad alta intensit\u00e0 multi-esercizio', fields: [{ key: 'rounds', label: 'Rounds', type: 'number', default: 3, min: 1, max: 10 }, { key: 'tempo_round', label: 'Tempo per Round (sec)', type: 'number', default: 45, min: 20, max: 120 }], scoring: 'rounds_completati', xp_reward: 200, discipline: 'endurance' },
-    { id: 'running_sprint', sport: 'RUNNING', name: 'Sprint Challenge', icon: 'walk', color: '#FFD700', description: 'Corsa sprint a tempo', fields: [{ key: 'distanza_mt', label: 'Distanza (mt)', type: 'number', default: 100, min: 50, max: 1000 }, { key: 'ripetizioni', label: 'Ripetizioni', type: 'number', default: 3, min: 1, max: 10 }], scoring: 'tempo_migliore', xp_reward: 180, discipline: 'agility' },
-    { id: 'running_endurance', sport: 'RUNNING', name: 'Endurance Run', icon: 'walk', color: '#FFD700', description: 'Corsa di resistenza a ritmo costante', fields: [{ key: 'tempo_minuti', label: 'Durata (min)', type: 'number', default: 20, min: 5, max: 120 }], scoring: 'distanza_coperta', xp_reward: 200, discipline: 'endurance' },
-  ];
-
-  // Immediately set templates from presets (no waiting for network)
+  // Load ALL templates from API
   useEffect(() => {
-    setTemplates(FALLBACK_PRESETS);
-    setSports([...new Set(FALLBACK_PRESETS.map(t => t.sport))]);
-    setLoading(false);
-  }, []);
+    if (!token) return;
+    (async () => {
+      try {
+        const data = await request('/templates/v2/all', {}, token);
+        if (data && !data._error) {
+          setAllTemplates({
+            system: data.system || [],
+            base: data.base || [],
+            coach: data.coach || [],
+          });
+        }
+      } catch (e) {
+        console.log('Template load error:', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [token]);
 
-  // Select template
-  const selectTemplate = (t: any) => {
+  // Get unique disciplines from current source
+  const currentTemplates = allTemplates[activeSource] || [];
+  const disciplines = [...new Set(currentTemplates.map(t => t.discipline).filter(Boolean))];
+
+  const filteredTemplates = selectedSport
+    ? currentTemplates.filter(t => t.discipline === selectedSport)
+    : currentTemplates;
+
+  // Select template → run Bio-Check if needed
+  const selectTemplate = async (t: any) => {
     setSelectedTemplate(t);
-    const defaults: Record<string, any> = {};
-    (t.fields || []).forEach((f: any) => { defaults[f.key] = f.default; });
-    setCustomFields(defaults);
-    setStep('customize');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+
+    if (t.requires_nexus_bio) {
+      setStep('bio_check');
+      setBioLoading(true);
+      setBioCheck(null);
+      try {
+        const check = await request(`/templates/v2/check-bio/${t.id}?source=${activeSource}`, {}, token);
+        setBioCheck(check);
+      } catch (e: any) {
+        setBioCheck({ allowed: false, reason: e?.message || 'Errore di verifica biometrica', scan_status: 'error' });
+      } finally {
+        setBioLoading(false);
+      }
+    } else {
+      // No bio needed → go to customize
+      const defaults: Record<string, any> = {};
+      setCustomFields({
+        target_reps: t.target_reps || 10,
+        target_time_seconds: t.target_time_seconds || 60,
+        rounds: t.rounds || 1,
+      });
+      setStep('customize');
+    }
+  };
+
+  // Proceed from bio_check to customize
+  const proceedFromBioCheck = () => {
+    setCustomFields({
+      target_reps: selectedTemplate?.target_reps || 10,
+      target_time_seconds: selectedTemplate?.target_time_seconds || 60,
+      rounds: selectedTemplate?.rounds || 1,
+    });
+    setStep('customize');
   };
 
   // Search opponents
@@ -92,7 +146,7 @@ export default function CreateChallenge() {
     try {
       await api.sendPvPChallenge(
         selectedOpponent.id,
-        selectedTemplate.discipline || 'power',
+        selectedTemplate.discipline?.toLowerCase() || 'power',
         selectedTemplate.xp_reward || 100,
         token
       );
@@ -103,15 +157,6 @@ export default function CreateChallenge() {
     } finally {
       setSending(false);
     }
-  };
-
-  const filteredTemplates = selectedSport
-    ? templates.filter(t => t.sport === selectedSport)
-    : templates;
-
-  const SPORT_ICONS: Record<string, string> = {
-    BASKET: 'basketball', GOLF: 'golf', FITNESS: 'barbell',
-    RUNNING: 'walk', SOCCER: 'football', TENNIS: 'tennisball',
   };
 
   // ═══ STEP: TEMPLATES ═══
@@ -128,42 +173,86 @@ export default function CreateChallenge() {
         </View>
 
         <ScrollView style={cs.scroll} contentContainerStyle={[cs.content, { paddingBottom: insets.bottom + 32 }]}>
-          {/* Sport Filter */}
-          <Text style={cs.sectionLabel}>SPORT</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={cs.sportRow}>
-            <TouchableOpacity
-              style={[cs.sportChip, !selectedSport && cs.sportChipActive]}
-              onPress={() => setSelectedSport(null)}
-            >
-              <Text style={[cs.sportChipText, !selectedSport && cs.sportChipTextActive]}>TUTTI</Text>
-            </TouchableOpacity>
-            {sports.map(sp => (
-              <TouchableOpacity
-                key={sp}
-                style={[cs.sportChip, selectedSport === sp && cs.sportChipActive]}
-                onPress={() => setSelectedSport(sp)}
-              >
-                <Ionicons name={(SPORT_ICONS[sp] || 'trophy') as any} size={14} color={selectedSport === sp ? '#000' : 'rgba(255,255,255,0.3)'} />
-                <Text style={[cs.sportChipText, selectedSport === sp && cs.sportChipTextActive]}>{sp}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          {/* Source Tabs: SYSTEM / BASE / COACH */}
+          <View style={cs.sourceRow}>
+            {(['system', 'base', 'coach'] as Source[]).map(src => {
+              const cfg = SOURCE_CONFIG[src];
+              const active = activeSource === src;
+              const count = allTemplates[src]?.length || 0;
+              return (
+                <TouchableOpacity
+                  key={src}
+                  style={[cs.sourceTab, active && { borderColor: cfg.color, backgroundColor: cfg.color + '10' }]}
+                  onPress={() => { setActiveSource(src); setSelectedSport(null); }}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name={cfg.icon as any} size={14} color={active ? cfg.color : 'rgba(255,255,255,0.2)'} />
+                  <Text style={[cs.sourceTabText, active && { color: cfg.color }]}>{cfg.label}</Text>
+                  <View style={[cs.sourceBadge, { backgroundColor: active ? cfg.color + '25' : 'rgba(255,255,255,0.04)' }]}>
+                    <Text style={[cs.sourceBadgeText, active && { color: cfg.color }]}>{count}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Discipline Filter */}
+          {disciplines.length > 0 && (
+            <>
+              <Text style={cs.sectionLabel}>DISCIPLINA</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={cs.sportRow}>
+                <TouchableOpacity
+                  style={[cs.sportChip, !selectedSport && cs.sportChipActive]}
+                  onPress={() => setSelectedSport(null)}
+                >
+                  <Text style={[cs.sportChipText, !selectedSport && cs.sportChipTextActive]}>TUTTE</Text>
+                </TouchableOpacity>
+                {disciplines.map(d => (
+                  <TouchableOpacity
+                    key={d}
+                    style={[cs.sportChip, selectedSport === d && cs.sportChipActive]}
+                    onPress={() => setSelectedSport(d)}
+                  >
+                    <Text style={[cs.sportChipText, selectedSport === d && cs.sportChipTextActive]}>{d.toUpperCase()}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </>
+          )}
 
           {/* Templates */}
-          <Text style={cs.sectionLabel}>TEMPLATE COACH</Text>
+          <Text style={cs.sectionLabel}>
+            {activeSource === 'system' ? 'SFIDE CERTIFICATE ARENAKORE' :
+             activeSource === 'base' ? 'SFIDE RAPIDE 1v1' :
+             'TEMPLATE COACH PRO'}
+          </Text>
+
           {loading ? <ActivityIndicator color={CYAN} style={{ marginTop: 20 }} /> :
+            filteredTemplates.length === 0 ? (
+              <View style={cs.emptyState}>
+                <Ionicons name="file-tray-outline" size={32} color="rgba(255,255,255,0.08)" />
+                <Text style={cs.emptyText}>Nessun template disponibile</Text>
+              </View>
+            ) :
             filteredTemplates.map((t, idx) => (
-              <Animated.View key={t.id} entering={FadeInDown.delay(idx * 60).duration(300)}>
+              <Animated.View key={t.id || t.code || idx} entering={FadeInDown.delay(idx * 50).duration(250)}>
                 <TouchableOpacity style={cs.templateCard} activeOpacity={0.85} onPress={() => selectTemplate(t)}>
-                  <View style={[cs.templateIcon, { backgroundColor: t.color + '15', borderColor: t.color + '25' }]}>
-                    <Ionicons name={(SPORT_ICONS[t.sport] || 'trophy') as any} size={22} color={t.color} />
+                  <View style={[cs.templateIcon, { backgroundColor: (t.color || CYAN) + '15', borderColor: (t.color || CYAN) + '25' }]}>
+                    <Ionicons name={(t.icon || 'flash') as any} size={22} color={t.color || CYAN} />
                   </View>
                   <View style={cs.templateText}>
                     <Text style={cs.templateName}>{t.name}</Text>
-                    <Text style={cs.templateDesc}>{t.description}</Text>
+                    <Text style={cs.templateDesc} numberOfLines={2}>{t.description}</Text>
                     <View style={cs.templateMeta}>
-                      <Text style={[cs.templateSport, { color: t.color }]}>{t.sport}</Text>
-                      <Text style={cs.templateXP}>{t.xp_reward} XP</Text>
+                      <Text style={[cs.templateSport, { color: t.color || CYAN }]}>{t.discipline?.toUpperCase()}</Text>
+                      <Text style={cs.templateXP}>+{t.xp_reward} FLUX</Text>
+                      {t.requires_nexus_bio && (
+                        <View style={cs.bioBadge}>
+                          <Ionicons name="body" size={8} color={RED} />
+                          <Text style={cs.bioBadgeText}>BIO</Text>
+                        </View>
+                      )}
+                      {t.difficulty && <Text style={cs.diffBadge}>{t.difficulty.toUpperCase()}</Text>}
                     </View>
                   </View>
                   <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.15)" />
@@ -172,6 +261,111 @@ export default function CreateChallenge() {
             ))
           }
         </ScrollView>
+      </View>
+    );
+  }
+
+  // ═══ STEP: BIO-CHECK GATE ═══
+  if (step === 'bio_check') {
+    const allowed = bioCheck?.allowed;
+    const scanStatus = bioCheck?.scan_status;
+    const countdown = bioCheck?.countdown;
+
+    return (
+      <View style={cs.container}>
+        <StatusBar barStyle="light-content" />
+        <View style={[cs.topBar, { paddingTop: insets.top + 8 }]}>
+          <TouchableOpacity onPress={() => setStep('templates')} style={cs.backBtn}>
+            <Ionicons name="chevron-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={cs.topTitle}>NEXUS BIO-CHECK</Text>
+          <View style={{ width: 44 }} />
+        </View>
+
+        <View style={cs.bioCenter}>
+          {bioLoading ? (
+            <>
+              <ActivityIndicator size="large" color={CYAN} />
+              <Text style={cs.bioLoadText}>Verifica biometrica in corso...</Text>
+            </>
+          ) : allowed ? (
+            <Animated.View entering={FadeIn.duration(500)} style={cs.bioResultCard}>
+              <View style={cs.bioIconWrap}>
+                <Ionicons name="shield-checkmark" size={48} color="#32D74B" />
+              </View>
+              <Text style={cs.bioResultTitle}>BIO-SCAN VALIDA</Text>
+              <Text style={cs.bioResultReason}>{bioCheck?.reason}</Text>
+              {countdown?.days != null && (
+                <View style={cs.bioCountdownBadge}>
+                  <Ionicons name="time" size={14} color={CYAN} />
+                  <Text style={cs.bioCountdownText}>Scade tra {countdown.days} giorni</Text>
+                </View>
+              )}
+              <Text style={cs.bioTemplateName}>{selectedTemplate?.name}</Text>
+              <TouchableOpacity style={cs.bioProceedBtn} onPress={proceedFromBioCheck} activeOpacity={0.85}>
+                <Text style={cs.bioProceedText}>PROCEDI ALLA SFIDA</Text>
+                <Ionicons name="arrow-forward" size={16} color="#000" />
+              </TouchableOpacity>
+            </Animated.View>
+          ) : (
+            <Animated.View entering={FadeIn.duration(500)} style={cs.bioResultCard}>
+              <View style={[cs.bioIconWrap, { backgroundColor: 'rgba(255,59,48,0.1)' }]}>
+                <Ionicons name="lock-closed" size={48} color={RED} />
+              </View>
+              <Text style={[cs.bioResultTitle, { color: RED }]}>
+                {scanStatus === 'no_scan' ? 'NESSUNA BIO-SCAN' :
+                 scanStatus === 'calibrating' ? 'CALIBRAZIONE IN CORSO' :
+                 scanStatus === 'expired' ? 'BIO-SCAN SCADUTA' :
+                 'ACCESSO BLOCCATO'}
+              </Text>
+              <Text style={cs.bioResultReason}>{bioCheck?.reason}</Text>
+
+              {/* COUNTDOWN DISPLAY */}
+              {countdown?.hours != null && countdown.hours > 0 && (
+                <View style={cs.countdownBox}>
+                  <Text style={cs.countdownLabel}>RICALIBRAZIONE TRA</Text>
+                  <Text style={cs.countdownValue}>
+                    {Math.floor(countdown.hours)}h {Math.floor((countdown.hours % 1) * 60).toString().padStart(2, '0')}m
+                  </Text>
+                  <View style={cs.countdownBarBg}>
+                    <View style={[cs.countdownBarFill, { width: `${Math.max(2, ((48 - countdown.hours) / 48) * 100)}%` }]} />
+                  </View>
+                </View>
+              )}
+              {countdown?.days === 0 && scanStatus === 'expired' && (
+                <View style={cs.countdownBox}>
+                  <Text style={cs.countdownLabel}>SCAN SCADUTA</Text>
+                  <Text style={cs.countdownValue}>EVOLUZIONE RICHIESTA</Text>
+                </View>
+              )}
+
+              <Text style={cs.bioTemplateName}>{selectedTemplate?.name}</Text>
+
+              {scanStatus === 'no_scan' && (
+                <TouchableOpacity style={[cs.bioProceedBtn, { backgroundColor: CYAN }]}
+                  onPress={() => { router.replace('/(tabs)/nexus-trigger'); }}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name="scan" size={16} color="#000" />
+                  <Text style={cs.bioProceedText}>VAI AL NEXUS SCANNER</Text>
+                </TouchableOpacity>
+              )}
+              {scanStatus === 'expired' && (
+                <TouchableOpacity style={[cs.bioProceedBtn, { backgroundColor: CYAN }]}
+                  onPress={() => { router.replace('/(tabs)/nexus-trigger'); }}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name="refresh" size={16} color="#000" />
+                  <Text style={cs.bioProceedText}>ESEGUI EVOLUZIONE</Text>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity style={cs.bioBackBtn} onPress={() => setStep('templates')} activeOpacity={0.85}>
+                <Text style={cs.bioBackText}>SCEGLI UN ALTRO TEMPLATE</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
+        </View>
       </View>
     );
   }
@@ -191,44 +385,78 @@ export default function CreateChallenge() {
 
         <ScrollView style={cs.scroll} contentContainerStyle={[cs.content, { paddingBottom: insets.bottom + 32 }]}>
           <View style={cs.customHeader}>
-            <Text style={[cs.customName, { color: selectedTemplate?.color }]}>{selectedTemplate?.name}</Text>
-            <Text style={cs.customSport}>{selectedTemplate?.sport}</Text>
+            <Text style={[cs.customName, { color: selectedTemplate?.color || CYAN }]}>{selectedTemplate?.name}</Text>
+            <Text style={cs.customSport}>{selectedTemplate?.discipline?.toUpperCase()}</Text>
+            {selectedTemplate?.requires_nexus_bio && (
+              <View style={[cs.bioBadge, { marginTop: 4 }]}>
+                <Ionicons name="body" size={9} color={RED} />
+                <Text style={cs.bioBadgeText}>BIO-SYNC ATTIVA</Text>
+              </View>
+            )}
           </View>
 
-          {(selectedTemplate?.fields || []).map((field: any, idx: number) => (
-            <Animated.View key={field.key} entering={FadeInDown.delay(idx * 80).duration(300)} style={cs.fieldCard}>
-              <Text style={cs.fieldLabel}>{field.label}</Text>
-              {field.type === 'select' ? (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={cs.selectRow}>
-                  {(field.options || []).map((opt: string) => (
-                    <TouchableOpacity
-                      key={opt}
-                      style={[cs.selectChip, customFields[field.key] === opt && cs.selectChipActive]}
-                      onPress={() => setCustomFields(p => ({ ...p, [field.key]: opt }))}
-                    >
-                      <Text style={[cs.selectChipText, customFields[field.key] === opt && cs.selectChipTextActive]}>{opt}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              ) : (
-                <View style={cs.numberRow}>
-                  <TouchableOpacity
-                    style={cs.numBtn}
-                    onPress={() => setCustomFields(p => ({ ...p, [field.key]: Math.max(field.min || 0, (p[field.key] || 0) - 1) }))}
-                  >
-                    <Ionicons name="remove" size={20} color="#fff" />
-                  </TouchableOpacity>
-                  <Text style={cs.numValue}>{customFields[field.key] || 0}</Text>
-                  <TouchableOpacity
-                    style={cs.numBtn}
-                    onPress={() => setCustomFields(p => ({ ...p, [field.key]: Math.min(field.max || 999, (p[field.key] || 0) + 1) }))}
-                  >
-                    <Ionicons name="add" size={20} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-              )}
-            </Animated.View>
-          ))}
+          {/* Reps */}
+          <View style={cs.fieldCard}>
+            <Text style={cs.fieldLabel}>RIPETIZIONI TARGET</Text>
+            <View style={cs.numberRow}>
+              <TouchableOpacity style={cs.numBtn}
+                onPress={() => setCustomFields(p => ({ ...p, target_reps: Math.max(1, (p.target_reps || 1) - 1) }))}>
+                <Ionicons name="remove" size={20} color="#fff" />
+              </TouchableOpacity>
+              <Text style={cs.numValue}>{customFields.target_reps || 10}</Text>
+              <TouchableOpacity style={cs.numBtn}
+                onPress={() => setCustomFields(p => ({ ...p, target_reps: Math.min(200, (p.target_reps || 10) + 1) }))}>
+                <Ionicons name="add" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Time */}
+          <View style={cs.fieldCard}>
+            <Text style={cs.fieldLabel}>TEMPO LIMITE (SECONDI)</Text>
+            <View style={cs.numberRow}>
+              <TouchableOpacity style={cs.numBtn}
+                onPress={() => setCustomFields(p => ({ ...p, target_time_seconds: Math.max(10, (p.target_time_seconds || 60) - 10) }))}>
+                <Ionicons name="remove" size={20} color="#fff" />
+              </TouchableOpacity>
+              <Text style={cs.numValue}>{customFields.target_time_seconds || 60}s</Text>
+              <TouchableOpacity style={cs.numBtn}
+                onPress={() => setCustomFields(p => ({ ...p, target_time_seconds: Math.min(600, (p.target_time_seconds || 60) + 10) }))}>
+                <Ionicons name="add" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Rounds */}
+          <View style={cs.fieldCard}>
+            <Text style={cs.fieldLabel}>ROUNDS</Text>
+            <View style={cs.numberRow}>
+              <TouchableOpacity style={cs.numBtn}
+                onPress={() => setCustomFields(p => ({ ...p, rounds: Math.max(1, (p.rounds || 1) - 1) }))}>
+                <Ionicons name="remove" size={20} color="#fff" />
+              </TouchableOpacity>
+              <Text style={cs.numValue}>{customFields.rounds || 1}</Text>
+              <TouchableOpacity style={cs.numBtn}
+                onPress={() => setCustomFields(p => ({ ...p, rounds: Math.min(10, (p.rounds || 1) + 1) }))}>
+                <Ionicons name="add" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* KPI Metrics Preview */}
+          {selectedTemplate?.kpi_metrics?.length > 0 && (
+            <View style={cs.kpiSection}>
+              <Text style={cs.fieldLabel}>KPI MISURATI</Text>
+              <View style={cs.kpiRow}>
+                {selectedTemplate.kpi_metrics.map((kpi: string, i: number) => (
+                  <View key={kpi} style={cs.kpiChip}>
+                    <Ionicons name="analytics" size={10} color={CYAN} />
+                    <Text style={cs.kpiText}>{kpi.replace(/_/g, ' ').toUpperCase()}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
 
           <TouchableOpacity style={cs.nextBtn} activeOpacity={0.85} onPress={() => setStep('opponent')}>
             <Text style={cs.nextBtnText}>SCEGLI AVVERSARIO</Text>
@@ -253,6 +481,15 @@ export default function CreateChallenge() {
         </View>
 
         <ScrollView style={cs.scroll} contentContainerStyle={[cs.content, { paddingBottom: insets.bottom + 32 }]}>
+          {/* Challenge summary */}
+          <View style={cs.challengeSummary}>
+            <View style={[cs.summaryDot, { backgroundColor: selectedTemplate?.color || CYAN }]} />
+            <Text style={cs.summaryName}>{selectedTemplate?.name}</Text>
+            <Text style={cs.summaryMeta}>
+              {customFields.target_reps} reps · {customFields.target_time_seconds}s · {customFields.rounds}R · +{selectedTemplate?.xp_reward} FLUX
+            </Text>
+          </View>
+
           <View style={cs.searchBar}>
             <Ionicons name="search" size={18} color="rgba(255,255,255,0.3)" />
             <TextInput
@@ -279,12 +516,12 @@ export default function CreateChallenge() {
                 activeOpacity={0.85}
                 onPress={() => setSelectedOpponent(u)}
               >
-                <View style={cs.userAvatar}>
-                  <Text style={cs.userInitial}>{(u.username || 'K')[0].toUpperCase()}</Text>
+                <View style={[cs.userAvatar, { backgroundColor: u.avatar_color ? u.avatar_color + '20' : 'rgba(0,229,255,0.1)' }]}>
+                  <Text style={[cs.userInitial, { color: u.avatar_color || CYAN }]}>{(u.username || 'K')[0].toUpperCase()}</Text>
                 </View>
                 <View style={cs.userText}>
                   <Text style={cs.userName}>{(u.username || '').toUpperCase()}</Text>
-                  <Text style={cs.userCity}>{u.city || 'KORE ATHLETE'}</Text>
+                  <Text style={cs.userCity}>LVL {u.level || 1} · {u.preferred_sport || u.sport || 'MULTI'}</Text>
                 </View>
                 {selectedOpponent?.id === u.id && <Ionicons name="checkmark-circle" size={22} color={CYAN} />}
               </TouchableOpacity>
@@ -317,10 +554,9 @@ export default function CreateChallenge() {
           <Text style={cs.sentSub}>
             {selectedOpponent?.username?.toUpperCase()} riceverà la notifica.
           </Text>
-          <Text style={cs.sentTemplate}>{selectedTemplate?.name} · {selectedTemplate?.sport}</Text>
-
+          <Text style={cs.sentTemplate}>{selectedTemplate?.name} · {selectedTemplate?.discipline}</Text>
           <TouchableOpacity style={cs.sentDone} activeOpacity={0.85} onPress={() => router.back()}>
-            <Text style={cs.sentDoneText}>TORNA AL NÈXUS</Text>
+            <Text style={cs.sentDoneText}>TORNA ALL'ARENA</Text>
           </TouchableOpacity>
         </Animated.View>
       </LinearGradient>
@@ -335,9 +571,15 @@ const cs = StyleSheet.create({
   topTitle: { flex: 1, color: '#fff', fontSize: 18, fontWeight: '900', letterSpacing: 2, textAlign: 'center' },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20, paddingTop: 8 },
-  sectionLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 10, marginTop: 8 },
+  sectionLabel: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '900', letterSpacing: 3, marginBottom: 10, marginTop: 16 },
+  // Source tabs
+  sourceRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
+  sourceTab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: 12, borderRadius: 12, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)' },
+  sourceTabText: { color: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+  sourceBadge: { borderRadius: 6, paddingHorizontal: 5, paddingVertical: 1, minWidth: 18, alignItems: 'center' },
+  sourceBadgeText: { color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: '900' },
   // Sport chips
-  sportRow: { marginBottom: 16 },
+  sportRow: { marginBottom: 8 },
   sportChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', marginRight: 8, backgroundColor: 'rgba(255,255,255,0.02)' },
   sportChipActive: { backgroundColor: GOLD, borderColor: GOLD },
   sportChipText: { color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: '900', letterSpacing: 1.5 },
@@ -348,34 +590,62 @@ const cs = StyleSheet.create({
   templateText: { flex: 1, gap: 3 },
   templateName: { color: '#fff', fontSize: 15, fontWeight: '900', letterSpacing: 0.5 },
   templateDesc: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '600' },
-  templateMeta: { flexDirection: 'row', gap: 8, marginTop: 2 },
+  templateMeta: { flexDirection: 'row', gap: 8, marginTop: 3, alignItems: 'center' },
   templateSport: { fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
   templateXP: { color: GOLD, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  bioBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(255,59,48,0.08)', borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(255,59,48,0.2)' },
+  bioBadgeText: { color: RED, fontSize: 7, fontWeight: '900', letterSpacing: 1 },
+  diffBadge: { color: 'rgba(255,255,255,0.15)', fontSize: 8, fontWeight: '800', letterSpacing: 1 },
+  emptyState: { alignItems: 'center', gap: 8, paddingVertical: 40 },
+  emptyText: { color: 'rgba(255,255,255,0.15)', fontSize: 13, fontWeight: '600' },
+  // Bio check
+  bioCenter: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },
+  bioLoadText: { color: 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: '600', marginTop: 14 },
+  bioResultCard: { alignItems: 'center', gap: 14, width: '100%' },
+  bioIconWrap: { width: 96, height: 96, borderRadius: 48, backgroundColor: 'rgba(50,215,75,0.1)', alignItems: 'center', justifyContent: 'center' },
+  bioResultTitle: { color: '#32D74B', fontSize: 20, fontWeight: '900', letterSpacing: 2 },
+  bioResultReason: { color: 'rgba(255,255,255,0.35)', fontSize: 13, fontWeight: '600', textAlign: 'center', lineHeight: 20 },
+  bioCountdownBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(0,229,255,0.06)', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)' },
+  bioCountdownText: { color: CYAN, fontSize: 13, fontWeight: '700' },
+  bioTemplateName: { color: 'rgba(255,255,255,0.15)', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
+  bioProceedBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: GOLD, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 28, width: '100%' },
+  bioProceedText: { color: '#000', fontSize: 14, fontWeight: '900', letterSpacing: 1.5 },
+  bioBackBtn: { paddingVertical: 10 },
+  bioBackText: { color: 'rgba(255,255,255,0.25)', fontSize: 12, fontWeight: '700', textDecorationLine: 'underline' },
+  // Countdown box
+  countdownBox: { alignItems: 'center', gap: 10, backgroundColor: 'rgba(255,59,48,0.04)', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,59,48,0.15)', paddingVertical: 20, paddingHorizontal: 24, width: '100%' },
+  countdownLabel: { color: RED, fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  countdownValue: { color: RED, fontSize: 32, fontWeight: '900', letterSpacing: 1 },
+  countdownBarBg: { height: 4, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 2, width: '100%', overflow: 'hidden' },
+  countdownBarFill: { height: 4, borderRadius: 2, backgroundColor: RED },
   // Customize
   customHeader: { alignItems: 'center', gap: 4, marginBottom: 20, paddingTop: 8 },
   customName: { fontSize: 22, fontWeight: '900', letterSpacing: 1 },
   customSport: { color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '800', letterSpacing: 2 },
   fieldCard: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
   fieldLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '800', letterSpacing: 2, marginBottom: 12 },
-  selectRow: { flexDirection: 'row' },
-  selectChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', marginRight: 8, backgroundColor: 'rgba(255,255,255,0.02)' },
-  selectChipActive: { backgroundColor: CYAN, borderColor: CYAN },
-  selectChipText: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '800' },
-  selectChipTextActive: { color: '#000' },
   numberRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 24 },
   numBtn: { width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.06)', alignItems: 'center', justifyContent: 'center' },
-  numValue: { color: CYAN, fontSize: 32, fontWeight: '900', minWidth: 60, textAlign: 'center' },
+  numValue: { color: CYAN, fontSize: 32, fontWeight: '900', minWidth: 80, textAlign: 'center' },
+  kpiSection: { marginTop: 8, gap: 8 },
+  kpiRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  kpiChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(0,229,255,0.06)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(0,229,255,0.12)' },
+  kpiText: { color: CYAN, fontSize: 8, fontWeight: '900', letterSpacing: 1 },
   nextBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: CYAN, borderRadius: 14, paddingVertical: 14, marginTop: 12 },
   nextBtnText: { color: '#000', fontSize: 15, fontWeight: '900', letterSpacing: 1.5 },
   // Opponent
+  challengeSummary: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 12, padding: 12, marginBottom: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)' },
+  summaryDot: { width: 8, height: 8, borderRadius: 4 },
+  summaryName: { color: '#fff', fontSize: 13, fontWeight: '900', flex: 1 },
+  summaryMeta: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '700' },
   searchBar: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 16 },
   searchInput: { flex: 1, color: '#fff', fontSize: 14, fontWeight: '600', paddingVertical: 10 },
   searchGoBtn: { backgroundColor: CYAN, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 6 },
   searchGoText: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   userCard: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 14, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 14, marginBottom: 8, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.04)' },
   userCardSelected: { borderColor: CYAN, backgroundColor: 'rgba(0,229,255,0.05)' },
-  userAvatar: { width: 40, height: 40, borderRadius: 14, backgroundColor: 'rgba(0,229,255,0.1)', alignItems: 'center', justifyContent: 'center' },
-  userInitial: { color: CYAN, fontSize: 16, fontWeight: '900' },
+  userAvatar: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  userInitial: { fontSize: 16, fontWeight: '900' },
   userText: { flex: 1, gap: 2 },
   userName: { color: '#fff', fontSize: 14, fontWeight: '900', letterSpacing: 0.5 },
   userCity: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '700' },

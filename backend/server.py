@@ -740,6 +740,24 @@ def user_to_response(user: dict) -> dict:
         "cover_photo": user.get("cover_photo"),
         "preferred_sport": user.get("preferred_sport") or user.get("sport"),
         "training_level": user.get("training_level", "Amateur"),
+        "coach_data": _format_coach_data(user.get("coach_data")),
+    }
+
+
+def _format_coach_data(cd):
+    """Format coach_data for API response. Returns None if no data."""
+    if not cd:
+        return None
+    return {
+        "verified": cd.get("verified", False),
+        "onboarding_completed": cd.get("onboarding_completed", False),
+        "professional_bio": cd.get("professional_bio", ""),
+        "specialties": cd.get("specialties", []),
+        "certifications": cd.get("certifications", []),
+        "years_experience": cd.get("years_experience", 0),
+        "coaching_tier": cd.get("coaching_tier", "standard"),
+        "rating_avg": cd.get("rating_avg", 0.0),
+        "rating_count": cd.get("rating_count", 0),
     }
 
 

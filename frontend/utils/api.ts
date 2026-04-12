@@ -43,7 +43,7 @@ async function singleFetch(url: string, options: RequestInit, timeoutMs: number)
 }
 
 // ═══ IRONCLAD REQUEST — 20s timeout, 2 auto-retries at 1.5s intervals ═══
-async function request(path: string, options: RequestInit = {}, token?: string | null) {
+export async function request(path: string, options: RequestInit = {}, token?: string | null) {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

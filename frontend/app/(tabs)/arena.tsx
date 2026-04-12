@@ -549,10 +549,10 @@ const pp$ = StyleSheet.create({
 // MatchmakingPanel REMOVED — Build 34 Cleanup
 
 // ═══ SAFE FETCH FOR ARENA STATS ═══
-async function safeFetchApiArena(path: string): Promise<any> {
+async function safeFetchApiArena(path: string, token?: string | null): Promise<any> {
   try {
-    const { apiClient } = require('../../utils/api');
-    return await apiClient(path);
+    const { request } = require('../../utils/api');
+    return await request(path, {}, token);
   } catch { return null; }
 }
 
@@ -568,7 +568,7 @@ export default function ArenaTab() {
 
   const loadStats = useCallback(async () => {
     if (!token) return;
-    const data = await safeFetchApiArena('/stats/live');
+    const data = await safeFetchApiArena('/stats/live', token);
     if (data && !data._error) setLiveStats(data);
   }, [token]);
 

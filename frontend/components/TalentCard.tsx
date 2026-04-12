@@ -143,6 +143,32 @@ export function TalentCard({ user, xpEarned, recordsBroken = [], challengeTitle,
         </View>
       </View>
 
+      {/* Coach Data Section (if user is Coach) */}
+      {user.coach_data?.onboarding_completed && (
+        <View style={styles.coachSection}>
+          <View style={styles.coachBadgeRow}>
+            <Ionicons name="school" size={12} color="#BF5AF2" />
+            <Text style={styles.coachBadgeText}>COACH {user.coach_data.coaching_tier?.toUpperCase() || 'PRO'}</Text>
+            {user.coach_data.verified && <Ionicons name="shield-checkmark" size={11} color="#32D74B" />}
+          </View>
+          {user.coach_data.specialties?.length > 0 && (
+            <View style={styles.coachSpecRow}>
+              {user.coach_data.specialties.slice(0, 3).map((sp: string) => (
+                <View key={sp} style={styles.coachSpecChip}>
+                  <Text style={styles.coachSpecText}>{sp.toUpperCase()}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+          {user.coach_data.rating_avg > 0 && (
+            <View style={styles.coachRatingRow}>
+              <Ionicons name="star" size={12} color="#FFD700" />
+              <Text style={styles.coachRatingText}>{user.coach_data.rating_avg.toFixed(1)} ({user.coach_data.rating_count})</Text>
+            </View>
+          )}
+        </View>
+      )}
+
       {/* Challenge result if present */}
       {challengeTitle && (
         <View style={styles.challengeRow}>
@@ -307,5 +333,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.3)'
   },
-  shareBtnText: { color: '#00E5FF', fontSize: 16, fontWeight: '800', letterSpacing: 2 }
+  shareBtnText: { color: '#00E5FF', fontSize: 16, fontWeight: '800', letterSpacing: 2 },
+  // Coach Section
+  coachSection: { backgroundColor: 'rgba(191,90,242,0.05)', borderRadius: 10, padding: 12, gap: 8, borderWidth: 1, borderColor: 'rgba(191,90,242,0.15)' },
+  coachBadgeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  coachBadgeText: { color: '#BF5AF2', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  coachSpecRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
+  coachSpecChip: { backgroundColor: 'rgba(191,90,242,0.08)', borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2, borderWidth: 1, borderColor: 'rgba(191,90,242,0.2)' },
+  coachSpecText: { color: 'rgba(191,90,242,0.7)', fontSize: 8, fontWeight: '800', letterSpacing: 1 },
+  coachRatingRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  coachRatingText: { color: '#FFD700', fontSize: 12, fontWeight: '800' },
 });
