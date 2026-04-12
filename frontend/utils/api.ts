@@ -681,4 +681,45 @@ export const api = {
 
   getRespondEligible: (token: string) =>
     request('/challenges/respond-eligible', {}, token),
+
+  // ========== ACTIVITY LOG — ARCHIVIO STORICO (Build 37) ==========
+  getActivityLog: (token: string, params?: { limit?: number; offset?: number; tipo?: string; nexus_only?: boolean; template_source?: string }) => {
+    let path = '/activity/log';
+    const qs: string[] = [];
+    if (params?.limit) qs.push(`limit=${params.limit}`);
+    if (params?.offset) qs.push(`offset=${params.offset}`);
+    if (params?.tipo) qs.push(`tipo=${encodeURIComponent(params.tipo)}`);
+    if (params?.nexus_only) qs.push('nexus_only=true');
+    if (params?.template_source) qs.push(`template_source=${encodeURIComponent(params.template_source)}`);
+    if (qs.length) path += `?${qs.join('&')}`;
+    return request(path, {}, token);
+  },
+
+  getActivityDetail: (token: string, recordId: string) =>
+    request(`/activity/log/${recordId}`, {}, token),
+
+  getActivityStats: (token: string) =>
+    request('/activity/stats', {}, token),
+
+  createActivityLog: (data: {
+    tipo: string;
+    template_id?: string;
+    template_source?: string;
+    template_name?: string;
+    disciplina?: string;
+    exercise_type?: string;
+    result?: Record<string, any>;
+    kpi?: Record<string, any>;
+    flux_earned?: number;
+    flux_type?: string;
+    duration_seconds?: number;
+    nexus_verified?: boolean;
+    is_certified?: boolean;
+    media?: { screenshots?: string[]; thumbnail?: string };
+    telemetry?: Record<string, any>;
+    source_id?: string;
+    source_collection?: string;
+    extra_meta?: Record<string, any>;
+  }, token: string) =>
+    request('/activity/log', { method: 'POST', body: JSON.stringify(data) }, token),
 };

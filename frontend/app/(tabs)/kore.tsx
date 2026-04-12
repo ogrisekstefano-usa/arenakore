@@ -28,6 +28,8 @@ import { CertBadge, AKDropsWallet } from '../../components/CertBadge';
 import { KoreIDModal } from '../../components/KoreIDModal';
 import { CalendarModal } from '../../components/CalendarModal';
 import { Header } from '../../components/Header';
+import { ActivityCard } from '../../components/ActivityCard';
+import { useRouter } from 'expo-router';
 
 // ═══ SPORT → HERO PHOTO MAP ═══
 const SPORT_HERO_PHOTOS: Record<string, string> = {
@@ -220,7 +222,9 @@ const lp$ = StyleSheet.create({
 export default function KoreTab() {
   const { user, token } = useAuth();
   const { width: SW } = useWindowDimensions();
+  const router = useRouter();
   const [history, setHistory] = useState<any[]>([]);
+  const [activityLog, setActivityLog] = useState<any[]>([]);
   const [rank, setRank] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -238,16 +242,21 @@ export default function KoreTab() {
 
   const loadData = useCallback(async () => {
     if (!token) { setLoading(false); return; }
-    const [histRes, rankRes, weekRes, todayRes, fluxRes] = await Promise.all([
+    const [histRes, rankRes, weekRes, todayRes, fluxRes, activityRes] = await Promise.all([
       safeFetchApi('/kore/history?limit=8', token),
       safeFetchApi('/leaderboard/my-rank', token),
       safeFetchApi('/checkin/week', token),
       safeFetchApi('/checkin/today', token),
       safeFetchApi('/flux/balance', token),
+      safeFetchApi('/activity/log?limit=5', token),
     ]);
     if (!histRes?._error && Array.isArray(histRes?.records)) setHistory(histRes.records);
     else if (!histRes?._error && Array.isArray(histRes)) setHistory(histRes);
     if (!rankRes?._error) setRank(rankRes?.rank || null);
+    // Activity log (new Build 37)
+    if (!activityRes?._error && Array.isArray(activityRes?.records)) {
+      setActivityLog(activityRes.records);
+    }
     if (!weekRes?._error && Array.isArray(weekRes?.week)) {
       setWeekData(weekRes.week);
       setCheckinStreak(weekRes.streak || 0);
@@ -419,18 +428,27 @@ export default function KoreTab() {
         <SectionHeader icon="flash" title="K-FLUX WALLET" color={CYAN} />
         <AKDropsWallet user={user} />
 
-        {/* ══════ PERFORMANCE HISTORY ══════ */}
-        <SectionHeader icon="time" title="ULTIME PRESTAZIONI" color={GOLD} />
+        {/* ══════ PERFORMANCE HISTORY / ARCHIVIO STORICO ══════ */}
+        <View style={s.archivioHeader}>
+          <SectionHeader icon="time" title="ARCHIVIO STORICO" color={GOLD} />
+          <TouchableOpacity style={s.archivioLink} activeOpacity={0.7} onPress={() => router.push('/activity-log' as any)}>
+            <Text style={s.archivioLinkText}>VEDI TUTTO</Text>
+            <Ionicons name="chevron-forward" size={12} color={GOLD} />
+          </TouchableOpacity>
+        </View>
         {loading ? (
           <View style={s.loadRow}>
             <ActivityIndicator size="small" color={GOLD} />
             <Text style={s.loadText}>Caricamento...</Text>
           </View>
+        ) : activityLog.length > 0 ? (
+          /* Show ActivityCards from the new activity_log API */
+          activityLog.map((activity, i) => <ActivityCard key={activity.id || i} activity={activity} index={i} />)
         ) : history.length === 0 ? (
           <View style={s.emptyHistory}>
             <Ionicons name="timer-outline" size={28} color="rgba(255,255,255,0.08)" />
             <Text style={s.emptyHistoryText}>Nessuna prestazione registrata</Text>
-            <Text style={s.emptyHistorySub}>Completa una sfida per popolare il tuo storico</Text>
+            <Text style={s.emptyHistorySub}>Completa una sfida per popolare il tuo archivio storico</Text>
           </View>
         ) : history.map((record, i) => <RecordCard key={record._id || record.id || i} record={record} index={i} />)}
 
@@ -487,4 +505,7 @@ const s = StyleSheet.create({
   emptyHistory: { alignItems: 'center', gap: 6, paddingVertical: 28, backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 14 },
   emptyHistoryText: { color: 'rgba(255,255,255,0.25)', fontSize: 13, fontWeight: '700' },
   emptyHistorySub: { color: 'rgba(255,255,255,0.12)', fontSize: 11, fontWeight: '500', textAlign: 'center', paddingHorizontal: 24 },
+  archivioHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginRight: 0, paddingRight: 0 },
+  archivioLink: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,215,0,0.06)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,215,0,0.12)', marginTop: 28 },
+  archivioLinkText: { color: GOLD, fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
 });
