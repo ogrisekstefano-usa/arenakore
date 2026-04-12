@@ -622,6 +622,24 @@ export default function ArenaTab() {
           </TouchableOpacity>
         </Animated.View>
 
+        {/* CTA: MAPPA HUB */}
+        <Animated.View entering={FadeInDown.delay(100).duration(300)} style={s.mapCtaSection}>
+          <TouchableOpacity
+            style={s.mapCtaCard}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); router.push('/hub-map' as any); }}
+            activeOpacity={0.85}
+          >
+            <View style={s.mapIconWrap}>
+              <Ionicons name="map" size={18} color="#00E5FF" />
+            </View>
+            <View style={s.guantoTextCol}>
+              <Text style={s.mapTitle}>MAPPA HUB</Text>
+              <Text style={s.mapSub}>Trova palestre, sfide e coach nelle vicinanze</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="rgba(0,229,255,0.4)" />
+          </TouchableOpacity>
+        </Animated.View>
+
         <LiveBattleDashboard key={refreshing ? 'r' : 's'} />
         <PendingProofsSection />
         <HeroBanner stats={liveStats} />
@@ -667,4 +685,20 @@ const s = StyleSheet.create({
   guantoTextCol: { flex: 1, gap: 2 },
   guantoTitle: { color: '#FFD700', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
   guantoSub: { color: 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: '600' },
+  // MAP HUB CTA
+  mapCtaSection: { paddingHorizontal: 16, marginBottom: 12 },
+  mapCtaCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: 'rgba(0,229,255,0.04)', borderRadius: 14,
+    paddingVertical: 14, paddingHorizontal: 16,
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.10)',
+  },
+  mapIconWrap: {
+    width: 38, height: 38, borderRadius: 10,
+    backgroundColor: 'rgba(0,229,255,0.08)',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: 'rgba(0,229,255,0.15)',
+  },
+  mapTitle: { color: '#00E5FF', fontSize: 14, fontWeight: '900', letterSpacing: 2 },
+  mapSub: { color: 'rgba(0,229,255,0.3)', fontSize: 10, fontWeight: '600' },
 });

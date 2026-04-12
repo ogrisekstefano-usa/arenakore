@@ -24,6 +24,7 @@
         "NSHealthShareUsageDescription": "Frequenza cardiaca per K-Rating bio-verified",
         "NSHealthUpdateUsageDescription": "Salvataggio dati allenamento su Apple Health",
         "NSMotionUsageDescription": "Tracking movimenti durante K-Scan",
+        "NSLocationWhenInUseUsageDescription": "Trova Hub sportivi e sfide nelle vicinanze",
         "UIBackgroundModes": [
           "processing",
           "fetch"

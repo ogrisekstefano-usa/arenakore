@@ -160,6 +160,7 @@ export default function RootLayout() {
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="calibration-test" />
                 <Stack.Screen name="activity-log" />
+                <Stack.Screen name="hub-map" />
                 <Stack.Screen name="join/[code]" options={{ presentation: 'modal' }} />
               </Stack>
             </AuthProvider>
