@@ -452,7 +452,7 @@ export default function DNATab() {
         )}
 
         {/* APPLE HEALTH — Quick Access Banner */}
-        {Platform.OS === 'ios' && dna && (
+        {dna && (
           <TouchableOpacity
             style={hkBanner.container}
             onPress={() => router.push('/settings/health-hub')}
