@@ -77,7 +77,7 @@ api_router = APIRouter(prefix="/api")
 # ═══ HEALTH CHECK ENDPOINT ═══
 @api_router.get("/health")
 async def health_check():
-    return {"status": "ok", "service": "arenakore-api", "version": "3.7.1"}
+    return {"status": "ok", "service": "arenakore-api", "version": "3.8.0"}
 
 
 # ═══ DEBUG: Login diagnostics (temporary — remove in production) ═══
@@ -2438,10 +2438,18 @@ async def seed_data():
         id='qr_timeout_enforcer',
         replace_existing=True,
     )
+    # ═══ PVP INVITE EXPIRATION — Check every 30min for expired 24h invites ═══
+    scheduler.add_job(
+        expire_stale_invites,
+        'interval', minutes=30,
+        id='pvp_invite_expirer',
+        replace_existing=True,
+    )
     scheduler.start()
     logger.info("[NotifEngine] Scheduler started — running every 6h")
     logger.info("[DuelEnforcer] Scheduler started — running every 1h")
     logger.info("[QR-Enforcer] Scheduler started — running every 15min")
+    logger.info("[PvP-Expirer] Scheduler started — running every 30min")
 
     # ── Performance Records Indexes ──
     await db.performance_records.create_index([("user_id", 1), ("completed_at", -1)])
@@ -12673,6 +12681,7 @@ from routes.calibration import router as calibration_router
 from routes.hubs import router as hubs_router, seed_hubs
 from routes.checkin import router as checkin_router
 from routes.marketplace import router as marketplace_router, seed_marketplace_offers
+from routes.challenges_v3 import router as challenges_v3_router, setup_challenge_indexes, expire_stale_invites
 
 app.include_router(stats_router)
 app.include_router(flux_balance_router)
@@ -12684,6 +12693,7 @@ app.include_router(calibration_router)
 app.include_router(hubs_router)
 app.include_router(checkin_router)
 app.include_router(marketplace_router)
+app.include_router(challenges_v3_router)
 
 # Re-register router after all endpoints are defined
 app.include_router(api_router)
