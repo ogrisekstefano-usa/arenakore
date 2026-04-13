@@ -17,6 +17,7 @@ from typing import Optional, List
 from datetime import datetime, timezone, timedelta
 from bson import ObjectId
 from .deps import db, get_current_user, compute_level
+from .coach_economics import process_premium_payout
 import logging
 
 logger = logging.getLogger("challenges_v3")
@@ -696,11 +697,27 @@ async def complete_launch(
 
     logger.info(f"[COMPLETE] {current_user.get('username')} | {launch.get('challenge_name')} | score={score} | +{flux_amount} {flux_tier}")
 
+    # ── PREMIUM PAYOUT — If template is premium coach template, pay the coach ──
+    payout_info = None
+    challenge_id_for_payout = launch.get("challenge_id")
+    if challenge_id_for_payout:
+        challenge_for_payout = await db.challenges.find_one({"_id": challenge_id_for_payout})
+        if challenge_for_payout:
+            try:
+                payout_info = await process_premium_payout(
+                    user_id=current_user["_id"],
+                    template_id=challenge_for_payout.get("template_id"),
+                    template_source=challenge_for_payout.get("template_source", ""),
+                )
+            except Exception as e:
+                logger.warning(f"[PAYOUT] Error processing payout: {e}")
+
     return {
         "status": "completed",
         "score": score,
         "flux_earned": flux_amount,
         "flux_tier": flux_tier,
+        "premium_payout": payout_info,
     }
 
 
