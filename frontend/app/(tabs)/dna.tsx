@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, StatusBar, ImageBackground,
-  Dimensions, TouchableOpacity, Linking
+  Dimensions, TouchableOpacity, Linking, Platform
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,7 +11,7 @@ import { RadarChart } from '../../components/RadarChart';
 import { RadarChartMulti, RadarMultiLegend } from '../../components/RadarChartMulti';
 import { NotificationDrawer } from '../../components/notifications/NotificationDrawer';
 import { TalentCard } from '../../components/TalentCard';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import Animated, {
   useSharedValue, withTiming, withSpring, withSequence, withRepeat,
   useAnimatedStyle, Easing
@@ -158,6 +158,7 @@ function getRoleColor(role?: string) {
 
 export default function DNATab() {
   const { user, token } = useAuth();
+  const router = useRouter();
   const dna = user?.dna;
 
   const [lastRecords, setLastRecords] = useState<string[]>([]);
@@ -450,6 +451,33 @@ export default function DNATab() {
           </Animated.View>
         )}
 
+        {/* APPLE HEALTH — Quick Access Banner */}
+        {Platform.OS === 'ios' && dna && (
+          <TouchableOpacity
+            style={hkBanner.container}
+            onPress={() => router.push('/settings/health-hub')}
+            activeOpacity={0.85}
+          >
+            <LinearGradient
+              colors={['rgba(255,45,85,0.08)', 'rgba(255,45,85,0.02)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={hkBanner.gradient}
+            >
+              <View style={hkBanner.left}>
+                <View style={hkBanner.iconWrap}>
+                  <Ionicons name="heart" size={18} color="#FF2D55" />
+                </View>
+                <View>
+                  <Text style={hkBanner.title}>APPLE HEALTH</Text>
+                  <Text style={hkBanner.sub}>Sincronizza passi, BPM e calorie</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.3)" />
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
+
         {/* KORE DNA ID */}
         {user && dna && (
           <View style={styles.talentSection}>
@@ -682,4 +710,49 @@ const styles = StyleSheet.create({
   footer: { alignItems: 'center', gap: 6, marginTop: 32, paddingBottom: 20 },
   footerText: { color: 'rgba(255,255,255,0.08)', fontSize: 9, fontWeight: '800', letterSpacing: 3 },
   footerVersion: { color: '#00E5FF', fontSize: 10, fontWeight: '700', letterSpacing: 1, opacity: 0.6 },
+});
+
+// ═══ APPLE HEALTH BANNER STYLES ═══
+const hkBanner = StyleSheet.create({
+  container: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 14,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,45,85,0.15)',
+  },
+  gradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 14,
+    paddingHorizontal: 16,
+  },
+  left: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,45,85,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  sub: {
+    color: 'rgba(255,255,255,0.35)',
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    marginTop: 2,
+  },
 });
