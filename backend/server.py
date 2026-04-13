@@ -12683,6 +12683,7 @@ from routes.checkin import router as checkin_router
 from routes.marketplace import router as marketplace_router, seed_marketplace_offers
 from routes.challenges_v3 import router as challenges_v3_router, setup_challenge_indexes, expire_stale_invites
 from routes.coach_economics import router as coach_economics_router, process_premium_payout
+from routes.social_network import router as social_network_router
 
 app.include_router(stats_router)
 app.include_router(flux_balance_router)
@@ -12696,6 +12697,7 @@ app.include_router(checkin_router)
 app.include_router(marketplace_router)
 app.include_router(challenges_v3_router)
 app.include_router(coach_economics_router)
+app.include_router(social_network_router)
 
 # Re-register router after all endpoints are defined
 app.include_router(api_router)
